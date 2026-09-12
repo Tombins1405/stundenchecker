@@ -249,8 +249,59 @@ var systemDatum = (jahrRaw.length === 2 ? "20" + jahrRaw : jahrRaw) + "-" + date
             });
 
             alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
-            berechneMonatlicheAbrechnung();
-        };
+               function berechneMonatlicheAbrechnung() {
+        var lohn = parseFloat(document.getElementById('reg-lohn').value) || 14.30;
+        var dSatz = parseFloat(document.getElementById('reg-diaet').value) || 24.15;
+        var zaSchieber = parseFloat(document.getElementById('za-schieber').value) || 0;
+        var datum = document.getElementById('datum').value;
+        var zielMonat = datum.substring(0, 7);
+
+        var grundStunden = 0; var uestGesamt = 0; var diaetenGesamt = 0; var naechtGesamt = 0;
+
+        for (var tag in masterDB) {
+            if (masterDB.hasOwnProperty(tag)) {
+                if (!tag.startsWith(zielMonat)) continue;
+                var d = masterDB[tag];
+                if (d.info === "Urlaub" || d.info === "Sonderurlaub" || d.info === "Krankenstand" || d.info === "Feiertag") {
+                    grundStunden += 8;
+                } else {
+                    grundStunden += Math.min(8, d.calc.netto);
+                    uestGesamt += d.calc.uest;
+                    if (d.calc.diaete) diaetenGesamt += dSatz;
+                    naechtGesamt += d.calc.naecht;
+                }
+            }
+        }
+
+        var zaGebucht = Math.min(uestGesamt, zaSchieber);
+        if(zaGebucht < 0) zaGebucht = 0;
+        var uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
+        
+        // 📊 Österreichische Brutto-Netto-Berechnung (SV: 18,12%, LSt Annäherung)
+        var bruttoVerdienst = (grundStunden * lohn) + (uestAuszahlung * lohn * 1.5);
+        var svBeitrag = bruttoVerdienst * 0.1812;
+        var lohnsteuerBase = Math.max(0, bruttoVerdienst - svBeitrag - 171.30); // Werbungskostenpauschale & SV-Abzug
+        var lohnsteuer = lohnsteuerBase * 0.20; // Durchschnittlicher LSt-Eingangsschnitt im DACH-Segment
+        if (bruttoVerdienst < 1300) lohnsteuer = 0; // Steuerfrei-Grenze
+        
+        var voraussichtlichNetto = Math.max(0, bruttoVerdienst - svBeitrag - lohnsteuer);
+        var gesamtNettoAuszahlung = voraussichtlichNetto + diaetenGesamt + naechtGesamt;
+
+        // Dom-Elemente befüllen
+        document.getElementById('l-grund-std').innerText = grundStunden.toFixed(2) + " h";
+        document.getElementById('l-uest-gesamt').innerText = uestGesamt.toFixed(2) + " h";
+        document.getElementById('l-za-gebuche').innerText = zaGebucht.toFixed(2) + " h";
+        document.getElementById('l-uest-auszahl').innerText = uestAuszahlung.toFixed(2) + " h";
+        
+        // Brutto-Zeile visuell anpassen & Netto-Zeile ausgeben
+        document.getElementById('l-brutto').innerHTML = bruttoVerdienst.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " € <span style='font-size:11px; color:#757575; font-weight:normal;'>(Netto: " + voraussichtlichNetto.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €)</span>";
+        document.getElementById('l-diaeten').innerText = diaetenGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        document.getElementById('l-naecht').innerText = naechtGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        
+        // Endergebnis ist jetzt echtes NETTO inklusive steuerfreier Bezüge
+        document.getElementById('l-gesamt').innerText = gesamtNettoAuszahlung.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+    }
+
         reader.readAsText(file, "UTF-8");
     }
 
