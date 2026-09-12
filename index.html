@@ -141,3 +141,44 @@
             <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
             <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten (Netto-Auszizahlung):</span><span id="l-diaeten">0,00 €</span></div>
             <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
+                    uestGesamt += d.calc.uest;
+                    if (d.calc.diaete) diaetenGesamt += dSatz;
+                    naechtGesamt += d.calc.naecht;
+                }
+            }
+        }
+
+        var zaGebucht = Math.min(uestGesamt, zaSchieber);
+        if(zaGebucht < 0) zaGebucht = 0;
+        var uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
+        var bruttoVerdienst = (grundStunden * lohn) + (uestAuszahlung * lohn * 1.5);
+
+        document.getElementById('l-grund-std').innerText = grundStunden.toFixed(2) + " h";
+        document.getElementById('l-uest-gesamt').innerText = uestGesamt.toFixed(2) + " h";
+        document.getElementById('l-za-gebuche').innerText = zaGebucht.toFixed(2) + " h";
+        document.getElementById('l-uest-auszahl').innerText = uestAuszahlung.toFixed(2) + " h";
+        
+        document.getElementById('l-brutto').innerText = bruttoVerdienst.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        document.getElementById('l-diaeten').innerText = diaetenGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        document.getElementById('l-naecht').innerText = naechtGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        
+        var gesamtNettoVorschau = bruttoVerdienst + diaetenGesamt + naechtGesamt;
+        document.getElementById('l-gesamt').innerText = gesamtNettoVorschau.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+    }
+
+    function generiereExcelText() {
+        var lines = [];
+        for (var tag in masterDB) {
+            if (masterDB.hasOwnProperty(tag)) {
+                var d = masterDB[tag];
+                lines.push(tag + "\t" + d.von + "\t" + d.bis + "\t" + d.calc.netto + "\t" + d.info);
+            }
+        }
+        document.getElementById('export-text-area').value = lines.join("\n");
+        document.getElementById('export-card').style.display = "block";
+    }
+
+    window.onload = function() { ladeTag(); };
+</script>
+</body>
+</html>
