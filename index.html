@@ -36,7 +36,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.3 Reparatur</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.5 Final</span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -127,7 +127,7 @@
             
             <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
             <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
-            <div class="result-row" style="color:var(--purple);"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
+            <div class="result-row" style="color:#8E24AA;"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
             <div class="result-row" style="border-bottom:1px solid #ccc; padding-bottom:4px;"><span>= Zur Auszahlung gelangende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
             
             <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
@@ -147,6 +147,6 @@
 </div>
 
 <script>
-    let masterDB = {};
+    var masterDB = {};
 
     function switchTab(tabId) {
