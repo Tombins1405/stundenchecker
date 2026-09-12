@@ -249,13 +249,7 @@
             alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
             berechneMonatlicheAbrechnung();
         };
-
         reader.readAsText(file, "UTF-8");
-    }
-
-           if (!masterDB[datum]) wStunden += t.netto;
-        document.getElementById('res-woche').innerText = wStunden.toFixed(2) + " Std";
-        return t;
     }
 
     function berechneLive() {
