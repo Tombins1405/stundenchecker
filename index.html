@@ -127,6 +127,24 @@
                 <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
                 <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
             </div>
+     </div>
+
+    <!-- BEREICH 3: LOHNZETTEL -->
+    <div id="sec-lohni" class="hidden">
+        <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
+            <div class="card-title" style="color:#37474f;">📥 Vorhandene Monatsdaten laden</div>
+            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
+            <input type="file" id="csv-file" accept=".csv" style="padding:5px; height:auto; background:white; margin-bottom:8px;">
+            <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
+        </div>
+
+        <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
+            <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
+            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
+            <div class="form-group">
+                <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
+                <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
+            </div>
         </div>
 
         <div class="card" style="background:#fafafa; border:2px dashed #b0bec5;">
@@ -200,6 +218,59 @@
         return summe;
     }
 
+    function importiereCSV() {
+        var fileInput = document.getElementById('csv-file');
+        if (!fileInput.files.length) return alert("Bitte wähle zuerst eine CSV-Datei aus!");
+
+        var file = fileInput.files[0];
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+            var text = e.target.result;
+            var zeilen = text.split('\n');
+            var geladeneTage = 0;
+
+            zeilen.forEach(function(zeile) {
+                if (!zeile.trim()) return;
+                var spalten = zeile.split(';');
+                if (spalten.length < 5) return;
+
+                var datumSpalte = spalten[0] ? spalten[0].trim() : "";
+                if (!/^\d{2}\.\d{2}\.\d{2}$/.test(datumSpalte)) return;
+
+                var von = spalten[1] ? spalten[1].trim() : "";
+                var bis = spalten[2] ? spalten[2].trim() : "";
+                var infoText = spalten[4] ? spalten[4].trim() : "";
+
+                var dateParts = datumSpalte.split('.');
+                var systemDatum = "20" + dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+
+                var infoStatus = "Arbeit";
+                if (infoText.toLowerCase().indexOf("urlaub") !== -1) infoStatus = "Urlaub";
+                else if (infoText.toLowerCase().indexOf("sonderurlaub") !== -1) infoStatus = "Sonderurlaub";
+                else if (infoText.toLowerCase().indexOf("krank") !== -1) infoStatus = "Krankenstand";
+                else if (infoText.toLowerCase().indexOf("frei") !== -1) infoStatus = "Frei";
+                else if (infoText.toLowerCase().indexOf("zeitausgleich") !== -1 || infoText.toLowerCase().indexOf("za") !== -1) infoStatus = "Zeitausgleich";
+
+                var netto = parseFloat(spalten[3] ? spalten[3].trim().replace(',', '.') : 0) || 0;
+                var uest = netto > 8 ? netto - 8 : 0;
+
+                masterDB[systemDatum] = {
+                    von: von || "--", bis: bis || "--",
+                    p_von: "12:00", p_bis: "12:30",
+                    info: infoStatus, naechstung: "0",
+                    calc: { netto: netto, uest: uest, gesamt: netto, p: 0.5, diaete: netto > 0 ? 1 : 0, naecht: 0 }
+                };
+                geladeneTage++;
+            });
+
+            alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
+            berechneMonatlicheAbrechnung();
+        };
+
+        reader.readAsText(file, "UTF-8");
+    }
+
     function berechneLive() {
         var von = document.getElementById('von').value; 
         var bis = document.getElementById('bis').value;
@@ -242,61 +313,3 @@
 
         var wStunden = berechneWochenStunden(datum);
         if (!masterDB[datum]) wStunden += t.netto;
-        document.getElementById('res-woche').innerText = wStunden.toFixed(2) + " Std";
-        return t;
-    }
-
-    function speichereTag() {
-        var datum = document.getElementById('datum').value; if (!datum) return;
-        masterDB[datum] = {
-            von: document.getElementById('von').value, 
-            bis: document.getElementById('bis').value,
-            p_von: document.getElementById('p_von').value, 
-            p_bis: document.getElementById('p_bis').value,
-            info: document.getElementById('info').value,
-            naechstung: document.getElementById('naechstung').value,
-            calc: berechneLive()
-        };
-        alert("Tag erfolgreich gesichert!");
-        var n = new Date(datum); n.setDate(n.getDate() + 1);
-        document.getElementById('datum').value = n.toISOString().substring(0,10);
-        ladeTag();
-    }
-
-    function ladeTag() {
-        var datum = document.getElementById('datum').value;
-        if (masterDB[datum]) {
-            var d = masterDB[datum];
-            document.getElementById('von').value = d.von; 
-            document.getElementById('bis').value = d.bis;
-            document.getElementById('p_von').value = d.p_von; 
-            document.getElementById('p_bis').value = d.p_bis;
-            document.getElementById('info').value = d.info; 
-            document.getElementById('naechstung').value = d.naechstung || "0";
-        } else {
-            document.getElementById('von').value = "06:30"; 
-            document.getElementById('bis').value = "17:00";
-            document.getElementById('p_von').value = "12:00"; 
-            document.getElementById('p_bis').value = "12:30";
-            document.getElementById('info').value = "Arbeit"; 
-            document.getElementById('naechstung').value = "0";
-        }
-        berechneLive();
-    }
-
-    function importiereCSV() {
-        var fileInput = document.getElementById('csv-file');
-        if (!fileInput.files.length) return alert("Bitte wähle zuerst eine CSV-Datei aus!");
-
-        var file = fileInput.files[0];
-        var reader = new FileReader();
-
-        reader.onload = function(e) {
-            var text = e.target.result;
-            var zeilen = text.split('\n');
-            var geladeneTage = 0;
-
-            zeilen.forEach(function(zeile) {
-                if (!zeile.trim()) return;
-                var spalten = zeile.split(';');
-                if (spalten.length < 5) return;
