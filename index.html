@@ -71,6 +71,7 @@
             <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
         </div>
     </div>
+
     <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
         <div class="card">
@@ -112,7 +113,6 @@
 
     <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
-        <!-- NEU: INTEGRATION EXCEL-CSV MONATS-IMPORT -->
         <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
             <div class="card-title" style="color:#37474f;">📥 1. Vorhandene Monatsdaten laden</div>
             <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
@@ -134,216 +134,11 @@
             
             <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
             <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
-            <div class="result-row" style="color:#8E24AA;"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
+            <div class="result-row" style="color:var(--purple);"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
             <div class="result-row" style="border-bottom:1px solid #ccc; padding-bottom:4px;"><span>= Zur Auszahlung gelangende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
             
             <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
             <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten (Netto-Auszahlung):</span><span id="l-diaeten">0,00 €</span></div>
             <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
             
-            <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
-        </div>
 
-        <div class="card">
-            <button type="button" onclick="generiereExcelText()" style="background:#1976D2; margin-bottom:10px;">📤 Gesamten Monat für Excel ausgeben</button>
-            <div id="export-card" style="display: none; margin-top: 10px;">
-                <textarea id="export-text-area" readonly></textarea>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-    let masterDB = {};
-
-    function switchTab(tabId) {
-        document.getElementById('sec-reg').classList.add('hidden');
-        document.getElementById('sec-input').classList.add('hidden');
-        document.getElementById('sec-lohni').classList.add('hidden');
-        document.getElementById('tab-reg').classList.remove('active');
-        document.getElementById('tab-input').classList.remove('active');
-        document.getElementById('tab-lohni').classList.remove('active');
-
-        document.getElementById('sec-' + tabId).classList.remove('hidden');
-        document.getElementById('tab-' + tabId).classList.add('active');
-        
-        berechneLive();
-        if(tabId === 'lohni') { berechneMonatlicheAbrechnung(); }
-    }
-
-    function timeToHours(t) { if (!t) return 0; const [h, m] = t.split(':').map(Number); return h + (m / 60); }
-
-    function getKalenderwoche(dateStr) {
-        if (!dateStr) return 0;
-        const d = new Date(dateStr); d.setHours(0,0,0,0);
-        d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
-        const week1 = new Date(d.getFullYear(), 0, 4);
-        return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
-    }
-
-    function berechneWochenStunden(zielDatum) {
-        if (!zielDatum) return 0;
-        const zielWoche = getKalenderwoche(zielDatum);
-        const zielJahr = new Date(zielDatum).getFullYear();
-        let summe = 0;
-        for (const [tag, d] of Object.entries(masterDB)) {
-            if (getKalenderwoche(tag) === zielWoche && new Date(tag).getFullYear() === zielJahr) {
-                summe += d.calc.netto;
-            }
-        }
-        return summe;
-    }
-
-    function berechneLive() {
-        const von = document.getElementById('von').value; const bis = document.getElementById('bis').value;
-        const info = document.getElementById('info').value; const zFelder = document.getElementById('zeit-felder');
-        const datum = document.getElementById('datum').value;
-
-        let t = { netto: 0, uest: 0, gesamt: 0, p: 0, diaete: 0, naecht: 0 };
-
-        if (info === "Urlaub" || info === "Sonderurlaub" || info === "Krankenstand" || info === "Feiertag") {
-            zFelder.style.display = "none";
-            document.getElementById('res-netto').innerText = "8.00 Std"; document.getElementById('res-uest').innerText = "0.00 Std";
-            t = { netto: 8, uest: 0, gesamt: 8, p: 0, diaete: 0, naecht: 0 };
-        } else if (info === "Zeitausgleich") {
-            zFelder.style.display = "none";
-            document.getElementById('res-netto').innerText = "0.00 Std"; document.getElementById('res-uest').innerText = "-8.00 Std";
-            t = { netto: 0, uest: -8, gesamt: 0, p: 0, diaete: 0, naecht: 0 };
-        } else if (info === "Frei") {
-            zFelder.style.display = "none";
-            document.getElementById('res-netto').innerText = "0.00 Std"; document.getElementById('res-uest').innerText = "0.00 Std";
-            t = { netto: 0, uest: 0, gesamt: 0, p: 0, diaete: 0, naecht: 0 };
-        } else {
-            zFelder.style.display = "block";
-            if (von && bis) {
-                let g = timeToHours(bis) - timeToHours(von); if (g < 0) g += 24;
-                let p = timeToHours(document.getElementById('p_bis').value) - timeToHours(document.getElementById('p_von').value); if (p < 0) p = 0;
-                let netto = Math.max(0, g - p);
-                let uest = info === "Wochendarbeit" ? netto : Math.max(0, netto - 8);
-
-                document.getElementById('res-netto').innerText = netto.toFixed(2) + " Std";
-                document.getElementById('res-uest').innerText = uest.toFixed(2) + " Std";
-                
-                let nPauschale = parseInt(document.getElementById('naechstung').value, 10) ? 15.00 : 0;
-                t = { netto, uest, gesamt: g, p, diaete: 1, naecht: nPauschale };
-            }
-        }
-
-        let wStunden = berechneWochenStunden(datum);
-        if (!masterDB[datum]) wStunden += t.netto;
-        document.getElementById('res-woche').innerText = wStunden.toFixed(2) + " Std";
-        return t;
-    }
-
-    function speichereTag() {
-        const datum = document.getElementById('datum').value; if (!datum) return;
-        masterDB[datum] = {
-            von: document.getElementById('von').value, bis: document.getElementById('bis').value,
-            p_von: document.getElementById('p_von').value, p_bis: document.getElementById('p_bis').value,
-            info: document.getElementById('info').value,
-            naechstung: document.getElementById('naechstung').value,
-            calc: berechneLive()
-        };
-        alert("Tag erfolgreich gesichert!");
-        let n = new Date(datum); n.setDate(n.getDate() + 1);
-        document.getElementById('datum').value = n.toISOString().substring(0,10);
-        ladeTag();
-    }
-
-    function ladeTag() {
-        const datum = document.getElementById('datum').value;
-        if (masterDB[datum]) {
-            const d = masterDB[datum];
-            document.getElementById('von').value = d.von; document.getElementById('bis').value = d.bis;
-            document.getElementById('p_von').value = d.p_von; document.getElementById('p_bis').value = d.p_bis;
-            document.getElementById('info').value = d.info; document.getElementById('naechstung').value = d.naechstung || "0";
-        } else {
-            document.getElementById('von').value = "06:30"; document.getElementById('bis').value = "17:00";
-            document.getElementById('p_von').value = "12:00"; document.getElementById('p_bis').value = "12:30";
-            document.getElementById('info').value = "Arbeit"; document.getElementById('naechstung').value = "0";
-        }
-        berechneLive();
-    }
-
-    // AUTOMATISCHE INTELLIGENTE IMPORT-LOGIK FÜR DEINE FIRMEN-CSV
-    function importiereCSV() {
-        const fileInput = document.getElementById('csv-file');
-        if (!fileInput.files.length) return alert("Bitte wähle zuerst eine CSV-Datei aus!");
-
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const zeilen = text.split('\n');
-            let geladeneTage = 0;
-
-            zeilen.forEach(zeile => {
-                if (!zeile.trim()) return;
-                const spalten = zeile.split(';');
-                if (spalten.length < 5) return;
-
-                const datumSpalte = spalten[1] ? spalten[1].trim() : "";
-                // Prüft ob die Zeile ein echtes Datum enthält (z.B. 03.03.26) und filtert Summenzeilen aus
-                if (!/^\d{2}\.\d{2}\.\d{2}$/.test(datumSpalte)) return;
-
-                const von = spalten[2] ? spalten[2].trim() : "";
-                const bis = spalten[3] ? spalten[3].trim() : "";
-                const infoText = spalten[16] ? spalten[16].trim() : ""; // Spalte Q
-
-                // Datum von DD.MM.YY in Systemformat YYYY-MM-DD umrechnen
-                const [tag, monat, jahr] = datumSpalte.split('.');
-                const systemDatum = `20${jahr}-${monat}-${tag}`;
-
-                let infoStatus = "Arbeit";
-                if (infoText.toLowerCase().includes("urlaub")) infoStatus = "Urlaub";
-                else if (infoText.toLowerCase().includes("sonderurlaub")) infoStatus = "Sonderurlaub";
-                else if (infoText.toLowerCase().includes("krank")) infoStatus = "Krankenstand";
-                else if (infoText.toLowerCase().includes("frei")) infoStatus = "Frei";
-                else if (infoText.toLowerCase().includes("zeitausgleich") || infoText.toLowerCase().includes("za")) infoStatus = "Zeitausgleich";
-
-                // Berechnungs-Dummy für importierte Werte
-                let netto = parseFloat(spalten[18] ? spalten[18].trim().replace(',', '.') : 0) || 0;
-                let uest = parseFloat(spalten[20] ? spalten[19].trim().replace(',', '.') : 0) || 0;
-                let gesamt = parseFloat(spalten[4] ? spalten[4].trim().replace(',', '.') : 0) || 0;
-
-                masterDB[systemDatum] = {
-                    von: von || "--", bis: bis || "--",
-                    p_von: "12:00", p_bis: "12:30",
-                    info: infoStatus, naechstung: "0",
-                    calc: { netto: netto, uest: uest, gesamt: gesamt, p: 0.5, diaete: netto > 0 ? 1 : 0, naecht: 0 }
-                };
-                geladeneTage++;
-            });
-
-            alert(`🎯 IMPORT ERFOLGREICH!\nEs wurden ${geladeneTage} Tage aus deiner Excel-CSV für den März eingelesen.`);
-            berechneMonatlicheAbrechnung();
-        };
-
-        reader.readAsText(file, "UTF-8");
-    }
-
-    function berechneMonatlicheAbrechnung() {
-        const lohn = parseFloat(document.getElementById('reg-lohn').value) || 14.30;
-        const dSatz = parseFloat(document.getElementById('reg-diaet').value) || 24.15;
-        const zaSchieber = parseFloat(document.getElementById('za-schieber').value) || 0;
-        const datum = document.getElementById('datum').value;
-        const zielMonat = datum.substring(0, 7);
-
-        let grundStunden = 0; let uestGesamt = 0; let diaetenGesamt = 0; let naechtGesamt = 0;
-
-        for (const [tag, d] of Object.entries(masterDB)) {
-            if (!tag.startsWith(zielMonat)) continue;
-            
-            if (d.info === "Urlaub" || d.info === "Sonderurlaub" || d.info === "Krankenstand" || d.info === "Feiertag") {
-                grundStunden += 8;
-            } else {
-                grundStunden += Math.min(8, d.calc.netto);
-                uestGesamt += d.calc.uest;
-                if (d.calc.diaete) diaetenGesamt += dSatz;
-                naechtGesamt += d.calc.naecht;
-            }
-        }
-
-        let zaGebucht = Math.min(uestGesamt, zaSchieber);
-        if(zaGebucht < 0) zaGebucht = 0;
-        let uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
