@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de-AT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stunden-Checker SaaS Prototyp</title>
+    <style>
+        :root { 
+            --primary: #1E88E5; --primary-dark: #1565C0; --success: #4CAF50; 
+            --bg: #eceff1; --card-bg: #ffffff; --text: #263238; --purple: #8E24AA;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 10px; }
+        .container { max-width: 480px; margin: 0 auto; }
+        h1 { text-align: center; color: var(--primary-dark); font-size: 22px; margin-bottom: 15px; }
+        .card { background: var(--card-bg); padding: 15px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 12px; }
+        .card-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #455A64; border-bottom: 2px solid #cfd8dc; padding-bottom: 4px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-size: 13px; margin-bottom: 4px; font-weight: 500; }
+        input, select, button { width: 100%; padding: 10px; border: 1px solid #b0bec5; border-radius: 8px; font-size: 15px; height: 44px; }
+        button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
+        button:hover { background: var(--primary-dark); }
+        .btn-save { background: var(--success); }
+        .result-box { background: #e3f2fd; border-left: 5px solid var(--primary); padding: 10px; border-radius: 6px; font-size: 13px; }
+        .result-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .result-row.total { font-weight: bold; color: var(--primary-dark); border-top: 1px dashed #b0bec5; padding-top: 4px; margin-top: 4px;}
+        .hidden { display: none; }
+        .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { flex: 1; background: #b0bec5; text-align: center; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; color: white; }
+        .tab.active { background: var(--primary-dark); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.0 SaaS Beta</span></h1>
+
+    <!-- SAAS APP NAVIGATION -->
+    <div class="nav-tabs">
+        <div id="tab-reg" class="tab active" onclick="switchTab('reg')">Stammdaten</div>
+        <div id="tab-input" class="tab" onclick="switchTab('input')">Erfassung</div>
+        <div id="tab-lohni" class="tab" onclick="switchTab('lohni')">Lohnzettel</div>
+    </div>
+
+    <!-- BEREICH 1: STAMMDATEN & REGISTRIERUNG -->
+    <div id="sec-reg" class="card">
+        <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
+        <div class="form-group">
+            <label>Beschäftigungsland (Steuerrecht)</label>
+            <select id="reg-land">
+                <option value="AT">Österreich (ÖGB / Kollektivvertrag)</option>
+                <option value="DE">Deutschland (MiLoG / EstG)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Aktueller Brutto-Stundenlohn (€)</label>
+            <input type="number" id="reg-lohn" step="0.01" value="14.30">
+        </div>
+        <div class="form-group">
+            <label>Tagesdiät Spedition / Fernverkehr (€)</label>
+            <input type="number" id="reg-diaet" step="0.01" value="24.15">
+        </div>
+        <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;">
+            <label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung (Optional)</label>
+            <input type="text" id="reg-f-code" placeholder="Firmen-Code eingeben (z.B. LKW-MUELLER)">
+        </div>
+        <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
+    </div>
+
+    <!-- BEREICH 2: ERFASSUNG -->
+    <div id="sec-input" class="hidden">
+        <div class="card">
+            <div class="card-title">📝 Arbeitsleistung eintragen</div>
+            <div class="form-group"><label>Datum</label><input type="date" id="datum" value="2026-04-01" onchange="ladeTag()"></div>
+            <div class="form-group">
+                <label>Status / Info</label>
+                <select id="info" onchange="berechneLive()">
+                    <option value="Arbeit">-- Normaler Arbeitstag --</option>
+                    <option value="Zeitausgleich">Zeitausgleich (ZA)</option>
+                    <option value="Urlaub">Regulärer Urlaub</option>
+                    <option value="Sonderurlaub">Sonderurlaub (8h fix)</option>
+                    <option value="Krankenstand">Krankenstand</option>
+                    <option value="Feiertag">Feiertag</option>
+                    <option value="Wochendarbeit">Wochenendarbeit</option>
+                    <option value="Frei">Frei / Ruhrtag</option>
+                </select>
+            </div>
+
+            <div id="zeit-felder">
+                <div class="form-group"><label>Arbeitsbeginn (Von)</label><input type="time" id="von" value="06:30" onchange="berechneLive()"></div>
+                <div class="form-group"><label>Arbeitsende (Bis)</label><input type="time" id="bis" value="17:00" onchange="berechneLive()"></div>
+                <div class="form-group"><label>Mittagspause</label>
+                    <div style="display:flex; gap:5px;"><input type="time" id="p_von" value="12:00" onchange="berechneLive()"><input type="time" id="p_bis" value="12:30" onchange="berechneLive()"></div>
+                </div>
+                <div class="form-group"><label>Fahrer-Nächtigung im Ausland?</label>
+                    <select id="naechstung" onchange="berechneLive()"><option value="0">Nein (Heimkehr)</option><option value="1">Ja (Pauschale buchen)</option></select>
+                </div>
+            </div>
+            <button type="button" class="btn-save" onclick="speichereTag()">💾 Tag im System sichern</button>
+        </div>
+
+        <div class="card result-box">
+            <div class="result-row"><span>Netto-Arbeitszeit:</span><span id="res-netto" style="font-weight:bold;">0.00 Std</span></div>
+            <div class="result-row"><span>Überstunden:</span><span id="res-uest" style="font-weight:bold;">0.00 Std</span></div>
+            <div class="result-row" style="color:var(--primary-dark); font-size:12px; border-top:1px solid #bbdefb; margin-top:4px; padding-top:4px;"><span>Geleistete Stunden diese Woche:</span><span id="res-woche" style="font-weight:bold;">0.00 Std</span></div>
+        </div>
+    </div>
+
+    <!-- BEREICH 3: VORAUSSICHTLICHER LOHNZETTEL -->
+    <div id="sec-lohni" class="hidden">
+        <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
+            <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
+            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
+            <div class="form-group">
+                <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
+                <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
+            </div>
+        </div>
+
+        <div class="card" style="background:#fafafa; border:2px dashed #b0bec5;">
+            <div class="card-title" style="text-align:center; font-size:16px;">📊 Voraussichtlicher Lohnzettel</div>
+            <div style="font-size:11px; text-align:center; color:#78909c; margin-bottom:10px;">Arbeitsleistung für den gewählten Monat</div>
+            
+            <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
+            <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
+            <div class="result-row" style="color:var(--purple);"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
+            <div class="result-row" style="border-bottom:1px solid #ccc; padding-bottom:4px;"><span>= Zur Auszahlung gelangende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
+            
+            <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
+            <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten (Netto-Auszahlung):</span><span id="l-diaeten">0,00 €</span></div>
+            <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
+            
+            <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let masterDB = {};
+
+    function switchTab(tabId) {
+        document.getElementById('sec-reg').classList.add('hidden');
+        document.getElementById('sec-input').classList.add('hidden');
+        document.getElementById('sec-lohni').classList.add('hidden');
+        document.getElementById('tab-reg').classList.remove('active');
+        document.getElementById('tab-input').classList.remove('active');
+        document.getElementById('tab-lohni').classList.remove('active');
+
+        document.getElementById('sec-' + tabId).classList.remove('hidden');
+        document.getElementById('tab-' + tabId).classList.add('active');
+        
+        if(tabId === 'lohni') berechneMonatlicheAbrechnung();
+    }
+
