@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="de-AT">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stunden-Checker SaaS Prototyp</title>
+    <meta name="google" content="notranslate">
+    <title>Stunden-Checker Prototyp</title>
     <style>
         :root { 
             --primary: #1E88E5; --primary-dark: #1565C0; --success: #4CAF50; 
@@ -21,7 +22,6 @@
         button { background: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; }
         button:hover { background: var(--primary-dark); }
         .btn-save { background: var(--success); }
-        .btn-import { background: #78909c; color: white; margin-bottom: 10px; font-weight: bold; }
         .result-box { background: #e3f2fd; border-left: 5px solid var(--primary); padding: 10px; border-radius: 6px; font-size: 13px; margin-top: 10px; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         .result-row.total { font-weight: bold; color: var(--primary-dark); border-top: 1px dashed #b0bec5; padding-top: 4px; margin-top: 4px;}
@@ -36,7 +36,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.1 CSV Import</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.2 Stabile Version</span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -76,7 +76,7 @@
     <div id="sec-input" class="hidden">
         <div class="card">
             <div class="card-title">📝 Arbeitsleistung eintragen</div>
-            <div class="form-group"><label>Datum</label><input type="date" id="datum" value="2026-03-01" onchange="ladeTag()"></div>
+            <div class="form-group"><label>Datum</label><input type="date" id="datum" value="2026-04-01" onchange="ladeTag()"></div>
             <div class="form-group">
                 <label>Status / Info</label>
                 <select id="info" onchange="berechneLive()">
@@ -113,13 +113,6 @@
 
     <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
-        <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
-            <div class="card-title" style="color:#37474f;">📥 Vorhandene Monatsdaten laden</div>
-            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
-            <input type="file" id="csv-file" accept=".csv" style="padding:5px; height:auto; background:white; margin-bottom:8px;">
-            <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
-        </div>
-
         <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
             <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
             <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
@@ -141,3 +134,19 @@
             <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten (Netto-Auszahlung):</span><span id="l-diaeten">0,00 €</span></div>
             <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
             
+            <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
+        </div>
+
+        <div class="card">
+            <button type="button" onclick="generiereExcelText()" style="background:#1976D2; margin-bottom:10px;">📤 Gesamten Monat für Excel ausgeben</button>
+            <div id="export-card" style="display: none; margin-top: 10px;">
+                <textarea id="export-text-area" readonly></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let masterDB = {};
+
+    function switchTab(tabId) {
