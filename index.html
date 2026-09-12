@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>Stunden-Checker Prototyp</title>
+    <title>Stunden-Checker SaaS Prototyp</title>
     <style>
         :root { 
             --primary: #1E88E5; --primary-dark: #1565C0; --success: #4CAF50; 
@@ -37,7 +37,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.8 Core</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.9 Premium</span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -72,6 +72,7 @@
             <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
         </div>
     </div>
+
     <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
         <div class="card">
@@ -110,7 +111,6 @@
             <div class="result-row" style="color:var(--primary-dark); font-size:12px; border-top:1px solid #bbdefb; margin-top:4px; padding-top:4px;"><span>Geleistete Stunden diese Woche:</span><span id="res-woche" style="font-weight:bold;">0.00 Std</span></div>
         </div>
     </div>
-
     <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
         <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
@@ -152,6 +152,7 @@
         </div>
     </div>
 </div>
+
 <script>
     var masterDB = {};
 
@@ -299,71 +300,3 @@
                 if (!zeile.trim()) return;
                 var spalten = zeile.split(';');
                 if (spalten.length < 5) return;
-
-                var datumSpalte = spalten[0] ? spalten[0].trim() : "";
-                if (!/^\d{2}\.\d{2}\.\d{2}$/.test(datumSpalte)) return;
-
-                var von = spalten[1] ? spalten[1].trim() : "";
-                var bis = spalten[2] ? spalten[2].trim() : "";
-                var infoText = spalten[4] ? spalten[4].trim() : "";
-
-                var dateParts = datumSpalte.split('.');
-                var systemDatum = "20" + dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
-
-                var infoStatus = "Arbeit";
-                if (infoText.toLowerCase().indexOf("urlaub") !== -1) infoStatus = "Urlaub";
-                else if (infoText.toLowerCase().indexOf("sonderurlaub") !== -1) infoStatus = "Sonderurlaub";
-                else if (infoText.toLowerCase().indexOf("krank") !== -1) infoStatus = "Krankenstand";
-                else if (infoText.toLowerCase().indexOf("frei") !== -1) infoStatus = "Frei";
-                else if (infoText.toLowerCase().indexOf("zeitausgleich") !== -1 || infoText.toLowerCase().indexOf("za") !== -1) infoStatus = "Zeitausgleich";
-
-                var netto = parseFloat(spalten[3] ? spalten[3].trim().replace(',', '.') : 0) || 0;
-                var uest = netto > 8 ? netto - 8 : 0;
-
-                masterDB[systemDatum] = {
-                    von: von || "--", bis: bis || "--",
-                    p_von: "12:00", p_bis: "12:30",
-                    info: infoStatus, naechstung: "0",
-                    calc: { netto: netto, uest: uest, gesamt: netto, p: 0.5, diaete: netto > 0 ? 1 : 0, naecht: 0 }
-                };
-                geladeneTage++;
-            });
-
-            alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
-            berechneMonatlicheAbrechnung();
-        };
-
-        reader.readAsText(file, "UTF-8");
-    }
-
-    function berechneMonatlicheAbrechnung() {
-        var lohn = parseFloat(document.getElementById('reg-lohn').value) || 14.30;
-        var dSatz = parseFloat(document.getElementById('reg-diaet').value) || 24.15;
-        var zaSchieber = parseFloat(document.getElementById('za-schieber').value) || 0;
-        var datum = document.getElementById('datum').value;
-        var zielMonat = datum.substring(0, 7);
-
-        var grundStunden = 0; var uestGesamt = 0; var diaetenGesamt = 0; var naechtGesamt = 0;
-
-        for (var tag in masterDB) {
-            if (masterDB.hasOwnProperty(tag)) {
-                if (!tag.startsWith(zielMonat)) continue;
-                var d = masterDB[tag];
-                if (d.info === "Urlaub" || d.info === "Sonderurlaub" || d.info === "Krankenstand" || d.info === "Feiertag") {
-                    grundStunden += 8;
-                } else {
-                    grundStunden += Math.min(8, d.calc.netto);
-                    uestGesamt += d.calc.uest;
-                    if (d.calc.diaete) diaetenGesamt += dSatz;
-                    naechtGesamt += d.calc.naecht;
-                }
-            }
-        }
-
-        var zaGebucht = Math.min(uestGesamt, zaSchieber);
-        if(zaGebucht < 0) zaGebucht = 0;
-        var uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
-        var bruttoVerdienst = (grundStunden * lohn) + (uestAuszahlung * lohn * 1.5);
-
-        document.getElementById('l-grund-std').innerText = grundStunden.toFixed(2) + " h";
-
