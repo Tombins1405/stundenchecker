@@ -37,7 +37,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.9 Premium</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.0 Final</span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -111,24 +111,6 @@
             <div class="result-row" style="color:var(--primary-dark); font-size:12px; border-top:1px solid #bbdefb; margin-top:4px; padding-top:4px;"><span>Geleistete Stunden diese Woche:</span><span id="res-woche" style="font-weight:bold;">0.00 Std</span></div>
         </div>
     </div>
-    <!-- BEREICH 3: LOHNZETTEL -->
-    <div id="sec-lohni" class="hidden">
-        <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
-            <div class="card-title" style="color:#37474f;">📥 Vorhandene Monatsdaten laden</div>
-            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
-            <input type="file" id="csv-file" accept=".csv" style="padding:5px; height:auto; background:white; margin-bottom:8px;">
-            <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
-        </div>
-
-        <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
-            <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
-            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
-            <div class="form-group">
-                <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
-                <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
-            </div>
-     </div>
-
     <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
         <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
@@ -312,4 +294,3 @@
         }
 
         var wStunden = berechneWochenStunden(datum);
-        if (!masterDB[datum]) wStunden += t.netto;
