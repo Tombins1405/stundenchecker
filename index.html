@@ -24,10 +24,12 @@
         .result-box { background: #e3f2fd; border-left: 5px solid var(--primary); padding: 10px; border-radius: 6px; font-size: 13px; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         .result-row.total { font-weight: bold; color: var(--primary-dark); border-top: 1px dashed #b0bec5; padding-top: 4px; margin-top: 4px;}
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .tab { flex: 1; background: #b0bec5; text-align: center; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; color: white; }
         .tab.active { background: var(--primary-dark); }
+        textarea { width: 100%; height: 120px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+        .list-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -35,36 +37,38 @@
 <div class="container">
     <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v1.0 SaaS Beta</span></h1>
 
-    <!-- SAAS APP NAVIGATION -->
+    <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
         <div id="tab-reg" class="tab active" onclick="switchTab('reg')">Stammdaten</div>
         <div id="tab-input" class="tab" onclick="switchTab('input')">Erfassung</div>
         <div id="tab-lohni" class="tab" onclick="switchTab('lohni')">Lohnzettel</div>
     </div>
 
-    <!-- BEREICH 1: STAMMDATEN & REGISTRIERUNG -->
-    <div id="sec-reg" class="card">
-        <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
-        <div class="form-group">
-            <label>Beschäftigungsland (Steuerrecht)</label>
-            <select id="reg-land">
-                <option value="AT">Österreich (ÖGB / Kollektivvertrag)</option>
-                <option value="DE">Deutschland (MiLoG / EstG)</option>
-            </select>
+    <!-- BEREICH 1: STAMMDATEN -->
+    <div id="sec-reg">
+        <div class="card">
+            <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
+            <div class="form-group">
+                <label>Beschäftigungsland (Steuerrecht)</label>
+                <select id="reg-land">
+                    <option value="AT">Österreich (ÖGB / Kollektivvertrag)</option>
+                    <option value="DE">Deutschland (MiLoG / EstG)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Aktueller Brutto-Stundenlohn (€)</label>
+                <input type="number" id="reg-lohn" step="0.01" value="14.30">
+            </div>
+            <div class="form-group">
+                <label>Tagesdiät Spedition / Fernverkehr (€)</label>
+                <input type="number" id="reg-diaet" step="0.01" value="24.15">
+            </div>
+            <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;">
+                <label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung (Optional)</label>
+                <input type="text" id="reg-f-code" placeholder="Firmen-Code (z.B. LKW-MUELLER)">
+            </div>
+            <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
         </div>
-        <div class="form-group">
-            <label>Aktueller Brutto-Stundenlohn (€)</label>
-            <input type="number" id="reg-lohn" step="0.01" value="14.30">
-        </div>
-        <div class="form-group">
-            <label>Tagesdiät Spedition / Fernverkehr (€)</label>
-            <input type="number" id="reg-diaet" step="0.01" value="24.15">
-        </div>
-        <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;">
-            <label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung (Optional)</label>
-            <input type="text" id="reg-f-code" placeholder="Firmen-Code eingeben (z.B. LKW-MUELLER)">
-        </div>
-        <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
     </div>
 
     <!-- BEREICH 2: ERFASSUNG -->
@@ -106,7 +110,7 @@
         </div>
     </div>
 
-    <!-- BEREICH 3: VORAUSSICHTLICHER LOHNZETTEL -->
+    <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
         <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
             <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
@@ -119,7 +123,6 @@
 
         <div class="card" style="background:#fafafa; border:2px dashed #b0bec5;">
             <div class="card-title" style="text-align:center; font-size:16px;">📊 Voraussichtlicher Lohnzettel</div>
-            <div style="font-size:11px; text-align:center; color:#78909c; margin-bottom:10px;">Arbeitsleistung für den gewählten Monat</div>
             
             <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
             <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
@@ -132,6 +135,13 @@
             
             <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
         </div>
+
+        <div class="card">
+            <button type="button" onclick="generiereExcelText()" style="background:#1976D2; margin-bottom:10px;">📤 Gesamten Monat für Excel ausgeben</button>
+            <div id="export-card" style="display: none; margin-top: 10px;">
+                <textarea id="export-text-area" readonly></textarea>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -140,15 +150,3 @@
 
     function switchTab(tabId) {
         document.getElementById('sec-reg').classList.add('hidden');
-        document.getElementById('sec-input').classList.add('hidden');
-        document.getElementById('sec-lohni').classList.add('hidden');
-        document.getElementById('tab-reg').classList.remove('active');
-        document.getElementById('tab-input').classList.remove('active');
-        document.getElementById('tab-lohni').classList.remove('active');
-
-        document.getElementById('sec-' + tabId).classList.remove('hidden');
-        document.getElementById('tab-' + tabId).classList.add('active');
-        
-        if(tabId === 'lohni') berechneMonatlicheAbrechnung();
-    }
-
