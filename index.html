@@ -225,7 +225,9 @@
                 var infoText = spalten[4] ? spalten[4].trim() : "";
 
                 var dateParts = datumSpalte.split('.');
-                var systemDatum = "20" + dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
+var jahrRaw = dateParts[2] ? dateParts[2].trim() : "26";
+var systemDatum = (jahrRaw.length === 2 ? "20" + jahrRaw : jahrRaw) + "-" + dateParts[1] + "-" + dateParts[0];
+
 
                 var infoStatus = "Arbeit";
                 if (infoText.toLowerCase().indexOf("urlaub") !== -1) infoStatus = "Urlaub";
