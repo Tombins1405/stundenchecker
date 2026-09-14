@@ -6,7 +6,10 @@
     <meta name="google" content="notranslate">
     <title>Stunden-Checker SaaS Prototyp</title>
     <style>
-        :root { --primary: #1E88E5; --primary-dark: #1565C0; --success: #4CAF50; --bg: #eceff1; --card-bg: #ffffff; --text: #263238; --purple: #8E24AA; }
+        :root { 
+            --primary: #1E88E5; --primary-dark: #1565C0; --success: #4CAF50; 
+            --bg: #eceff1; --card-bg: #ffffff; --text: #263238; --purple: #8E24AA;
+        }
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
         body { background-color: var(--bg); color: var(--text); padding: 15px; }
         .container { max-width: 480px; margin: 0 auto; }
@@ -22,49 +25,73 @@
         .btn-import { background: #78909c; color: white; margin-bottom: 10px; font-weight: bold; }
         .result-box { background: #e3f2fd; border-left: 5px solid var(--primary); padding: 10px; border-radius: 6px; font-size: 13px; margin-top: 10px; }
         .result-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .result-row.total { font-weight: bold; color: var(--primary-dark); border-top: 1px dashed #b0bec5; padding-top: 4px; margin-top: 4px;}
         .hidden { display: none !important; }
         .nav-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .tab { flex: 1; background: #b0bec5; text-align: center; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; color: white; }
         .tab.active { background: var(--primary-dark); }
         textarea { width: 100%; height: 120px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
+        .list-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.5 Fixed</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.0 Final</span></h1>
+
+    <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
         <div id="tab-reg" class="tab active" onclick="switchTab('reg')">Stammdaten</div>
         <div id="tab-input" class="tab" onclick="switchTab('input')">Erfassung</div>
         <div id="tab-lohni" class="tab" onclick="switchTab('lohni')">Lohnzettel</div>
     </div>
+
+    <!-- BEREICH 1: STAMMDATEN -->
     <div id="sec-reg">
         <div class="card">
             <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
-            <div class="form-group"><label>Beschäftigungsland (Steuerrecht)</label>
-                <select id="reg-land"><option value="AT">Österreich (ÖGB)</option><option value="DE">Deutschland (MiLoG)</option></select>
+            <div class="form-group">
+                <label>Beschäftigungsland (Steuerrecht)</label>
+                <select id="reg-land">
+                    <option value="AT">Österreich (ÖGB / Kollektivvertrag)</option>
+                    <option value="DE">Deutschland (MiLoG / EstG)</option>
+                </select>
             </div>
-            <div class="form-group"><label>Aktueller Brutto-Stundenlohn (€)</label><input type="number" id="reg-lohn" step="0.01" value="14.30"></div>
-            <div class="form-group"><label>Tagesdiät Spedition (€)</label><input type="number" id="reg-diaet" step="0.01" value="24.15"></div>
-            <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;"><label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung</label><input type="text" id="reg-f-code" placeholder="z.B. LKW-MUELLER"></div>
+            <div class="form-group">
+                <label>Aktueller Brutto-Stundenlohn (€)</label>
+                <input type="number" id="reg-lohn" step="0.01" value="14.30">
+            </div>
+            <div class="form-group">
+                <label>Tagesdiät Spedition / Fernverkehr (€)</label>
+                <input type="number" id="reg-diaet" step="0.01" value="24.15">
+            </div>
+            <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;">
+                <label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung (Optional)</label>
+                <input type="text" id="reg-f-code" placeholder="Firmen-Code eingeben (z.B. LKW-MUELLER)">
+            </div>
             <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
         </div>
     </div>
+
+    <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
         <div class="card">
             <div class="card-title">📝 Arbeitsleistung eintragen</div>
             <div class="form-group"><label>Datum</label><input type="date" id="datum" value="2026-03-01" onchange="ladeTag()"></div>
-            <div class="form-group"><label>Status / Info</label>
+            <div class="form-group">
+                <label>Status / Info</label>
                 <select id="info" onchange="berechneLive()">
                     <option value="Arbeit">-- Normaler Arbeitstag --</option>
                     <option value="Zeitausgleich">Zeitausgleich (ZA)</option>
                     <option value="Urlaub">Regulärer Urlaub</option>
-                    <option value="Sonderurlaub">Sonderurlaub</option>
+                    <option value="Sonderurlaub">Sonderurlaub (8h fix)</option>
                     <option value="Krankenstand">Krankenstand</option>
                     <option value="Feiertag">Feiertag</option>
                     <option value="Wochendarbeit">Wochenendarbeit</option>
-                    <option value="Frei">Frei</option>
+                    <option value="Frei">Frei / Ruhrtag</option>
                 </select>
             </div>
+
             <div id="zeit-felder">
                 <div class="form-group"><label>Arbeitsbeginn (Von)</label><input type="time" id="von" value="06:30" onchange="berechneLive()"></div>
                 <div class="form-group"><label>Arbeitsende (Bis)</label><input type="time" id="bis" value="17:00" onchange="berechneLive()"></div>
@@ -72,42 +99,60 @@
                     <div style="display:flex; gap:5px;"><input type="time" id="p_von" value="12:00" onchange="berechneLive()"><input type="time" id="p_bis" value="12:30" onchange="berechneLive()"></div>
                 </div>
                 <div class="form-group"><label>Fahrer-Nächtigung im Ausland?</label>
-                    <select id="naechstung" onchange="berechneLive()"><option value="0">Nein</option><option value="1">Ja</option></select>
+                    <select id="naechstung" onchange="berechneLive()"><option value="0">Nein (Heimkehr)</option><option value="1">Ja (Pauschale buchen)</option></select>
                 </div>
             </div>
             <button type="button" class="btn-save" onclick="speichereTag()">💾 Tag im System sichern</button>
         </div>
+
         <div class="card result-box">
             <div class="result-row"><span>Netto-Arbeitszeit:</span><span id="res-netto" style="font-weight:bold;">0.00 Std</span></div>
             <div class="result-row"><span>Überstunden:</span><span id="res-uest" style="font-weight:bold;">0.00 Std</span></div>
             <div class="result-row" style="color:var(--primary-dark); font-size:12px; border-top:1px solid #bbdefb; margin-top:4px; padding-top:4px;"><span>Geleistete Stunden diese Woche:</span><span id="res-woche" style="font-weight:bold;">0.00 Std</span></div>
         </div>
     </div>
+    <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
         <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
             <div class="card-title" style="color:#37474f;">📥 Vorhandene Monatsdaten laden</div>
-            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine original exportierte März-CSV-Datei aus (; getrennt).</p>
+            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
             <input type="file" id="csv-file" accept=".csv" style="padding:5px; height:auto; background:white; margin-bottom:8px;">
             <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
         </div>
+
         <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
             <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
-            <div class="form-group"><label>Überstunden in ZA schieben:</label><input type="number" id="za-schieber" value="10" onchange="berechneMonatlicheAbrechnung()"></div>
+            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
+            <div class="form-group">
+                <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
+                <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
+            </div>
         </div>
+
         <div class="card" style="background:#fafafa; border:2px dashed #b0bec5;">
             <div class="card-title" style="text-align:center; font-size:16px;">📊 Voraussichtlicher Lohnzettel</div>
-            <div class="result-row"><span>Grundstunden:</span><span id="l-grund-std">0.00 h</span></div>
-            <div class="result-row"><span>+ Überstunden gesamt:</span><span id="l-uest-gesamt">0.00 h</span></div>
-            <div class="result-row" style="color:#8E24AA;"><span>- In ZA gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
-            <div class="result-row" style="border-bottom:1px solid #ccc; padding-bottom:4px;"><span>= Auszuzahlende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
-            <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Bruttogehalt (Vorschau):</span><span id="l-brutto">0,00 €</span></div>
-            <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten:</span><span id="l-diaeten">0,00 €</span></div>
-            <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
-            <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (NETTO):</span><span id="l-gesamt">0,00 €</span></div>
+            
+            <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
+            <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
+            <div class="result-row" style="color:#8E24AA;"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
+            <div class="result-row" style="border-bottom:1px solid #ccc; padding-bottom:4px;"><span>= Zur Auszahlung gelangende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
+            
+            <div class="result-row" style="margin-top:8px; font-weight:bold; color:#2e7d32;"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
+            <div class="result-row" style="color:#2e7d32;"><span>+ Steuerfreie Diäten (Netto-Auszahlung):</span><span id="l-diaeten">0,00 €</span></div>
+            <div class="result-row" style="color:#2e7d32; border-bottom:2px solid #2e7d32; padding-bottom:4px;"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
+            
+            <div class="result-row" style="font-size:16px; font-weight:bold; color:var(--primary-dark); margin-top:6px;"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
         </div>
-        <div class="card"><button type="button" onclick="generiereExcelText()" style="background:#1976D2;">📤 Für Excel ausgeben</button><div id="export-card" style="display: none; margin-top:10px;"><textarea id="export-text-area" readonly></textarea></div></div>
+
+        <div class="card">
+            <button type="button" onclick="generiereExcelText()" style="background:#1976D2; margin-bottom:10px;">📤 Gesamten Monat für Excel ausgeben</button>
+            <div id="export-card" style="display: none; margin-top: 10px;">
+                <textarea id="export-text-area" readonly></textarea>
+            </div>
+        </div>
     </div>
 </div>
+
 <script>
     var masterDB = {};
 
@@ -172,30 +217,24 @@
                 var spalten = zeile.split(';');
                 if (spalten.length < 5) return;
 
-                // Index 1 zieht das echte Datum (z.B. 03.03.26) statt des Wochentags an Index 0
-                var datumSpalte = spalten[1] ? spalten[1].trim() : "";
+                var datumSpalte = spalten[0] ? spalten[0].trim() : "";
                 if (!/^\d{2}\.\d{2}\.\d{2}$/.test(datumSpalte)) return;
 
-                var von = spalten[2] ? spalten[2].trim() : "";
-                var bis = spalten[3] ? spalten[3].trim() : "";
-                
-                // Da nach den Pausenzeiten oft leere Spalten kommen, holen wir uns das Netto-Feld sicher
-                var netto = parseFloat(spalten[6] ? spalten[6].trim().replace(',', '.') : 0) || 0;
-                
-                // Falls in deiner Datei die Spalten verschoben sind, passen wir das an. 
-                // Hier gehen wir davon aus, dass irgendwo ein Freitext steht (z.B. Urlaub/Krank)
-                var infoText = "";
-                spalten.forEach(function(s) { if(s.toLowerCase().indexOf("urlaub")!==-1||s.toLowerCase().indexOf("krank")!==-1||s.toLowerCase().indexOf("za")!==-1) infoText = s; });
+                var von = spalten[1] ? spalten[1].trim() : "";
+                var bis = spalten[2] ? spalten[2].trim() : "";
+                var infoText = spalten[4] ? spalten[4].trim() : "";
 
                 var dateParts = datumSpalte.split('.');
                 var systemDatum = "20" + dateParts[2] + "-" + dateParts[1] + "-" + dateParts[0];
 
                 var infoStatus = "Arbeit";
                 if (infoText.toLowerCase().indexOf("urlaub") !== -1) infoStatus = "Urlaub";
+                else if (infoText.toLowerCase().indexOf("sonderurlaub") !== -1) infoStatus = "Sonderurlaub";
                 else if (infoText.toLowerCase().indexOf("krank") !== -1) infoStatus = "Krankenstand";
+                else if (infoText.toLowerCase().indexOf("frei") !== -1) infoStatus = "Frei";
                 else if (infoText.toLowerCase().indexOf("zeitausgleich") !== -1 || infoText.toLowerCase().indexOf("za") !== -1) infoStatus = "Zeitausgleich";
-                else if (netto === 0) infoStatus = "Frei";
 
+                var netto = parseFloat(spalten[3] ? spalten[3].trim().replace(',', '.') : 0) || 0;
                 var uest = netto > 8 ? netto - 8 : 0;
 
                 masterDB[systemDatum] = {
@@ -207,10 +246,9 @@
                 geladeneTage++;
             });
 
-            alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner originalen CSV eingelesen.");
+            alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
             berechneMonatlicheAbrechnung();
         };
-
         reader.readAsText(file, "UTF-8");
     }
 
@@ -316,6 +354,30 @@
                 } else {
                     grundStunden += Math.min(8, d.calc.netto);
                     uestGesamt += d.calc.uest;
+                    if (d.calc.diaete) diaetenGesamt += dSatz;
+                    naechtGesamt += d.calc.naecht;
+                }
+            }
+        }
+
+        var zaGebucht = Math.min(uestGesamt, zaSchieber);
+        if(zaGebucht < 0) zaGebucht = 0;
+        var uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
+        var bruttoVerdienst = (grundStunden * lohn) + (uestAuszahlung * lohn * 1.5);
+
+        document.getElementById('l-grund-std').innerText = grundStunden.toFixed(2) + " h";
+        document.getElementById('l-uest-gesamt').innerText = uestGesamt.toFixed(2) + " h";
+        document.getElementById('l-za-gebuche').innerText = zaGebucht.toFixed(2) + " h";
+        document.getElementById('l-uest-auszahl').innerText = uestAuszahlung.toFixed(2) + " h";
+        
+        document.getElementById('l-brutto').innerText = bruttoVerdienst.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        document.getElementById('l-diaeten').innerText = diaetenGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        document.getElementById('l-naecht').innerText = naechtGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+        
+        var gesamtNettoVorschau = bruttoVerdienst + diaetenGesamt + naechtGesamt;
+        document.getElementById('l-gesamt').innerText = gesamtNettoVorschau.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
+    }
+
     function generiereExcelText() {
         var lines = [];
         for (var tag in masterDB) {
