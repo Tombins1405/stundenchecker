@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.0 Final</span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.0 </span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -471,9 +471,23 @@
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
                 alert("Anmeldung fehlgeschlagen: " + error.message);
             });
-    }
+    }    window.onload = function() { 
+        ladeTag(); 
+        
+        // 🔄 Automatische Versions-Erhöhung bei jedem Neuladen
+        var hauptVersion = 2.0; 
+        var subVersion = parseFloat(localStorage.getItem('stunden_checker_sub')) || 0.00;
+        
+        subVersion = parseFloat((subVersion + 0.01).toFixed(2));
+        localStorage.setItem('stunden_checker_sub', subVersion);
+        
+        var finaleVersion = (hauptVersion + subVersion).toFixed(2);
+        
+        // Tauscht die feste v2.0 Final oben im blauen Titel dynamisch aus
+        var vSpan = document.querySelector('h1 span');
+        if (vSpan) { vSpan.innerText = 'v' + finaleVersion + ' Pro'; }
+    };
 
-    window.onload = function() { ladeTag(); };
 </script>
 </body>
 </html>
