@@ -51,7 +51,7 @@
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.80 </span></h1>
+        <h1>⏱️ STUNDEN-CHECKER <span id="live-version-balken" style="font-size:12px; vertical-align:middle; color:#78909c;">v2.80 Pro (Prüfe GitHub...)</span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -502,15 +502,28 @@
                 alert("Anmeldung fehlgeschlagen: " + error.message);
                       });
         }
-           window.onload = function() { 
+    window.onload = function() { 
         firebase.initializeApp(firebaseConfig);
-               ladeTag(); 
+        ladeTag(); 
         
-      
-               var liveVersion = "2.80";
-        // Schreibt die neue Nummer live oben in den blauen Balken
-        var vSpan = document.querySelector('h1 span');
-        if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' Pro'; }
+        var liveVersion = "2.81 Pro";
+        var vSpan = document.getElementById('live-version-balken');
+        
+                // Holt live das echte Speicherdatum DIESER Datei direkt von GitHub
+        fetch('https://api.github.com/repos/Tombins1405/stundenchecker/commits?path=index.html&per_page=1')
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data && data.length > 0) {
+                    var commitDate = new Date(data[0].commit.committer.date);
+                    var zeitText = commitDate.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' (Upload: ' + zeitText + ' Uhr)'; }
+                } else {
+                    if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' (Live)'; }
+                }
+            })
+            .catch(function(error) {
+                if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' (Aktiv)'; }
+            });
     };
 </script>
 </body>
