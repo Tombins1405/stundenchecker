@@ -45,7 +45,6 @@
   messagingSenderId: "1086750675976",
   appId: "1:1086750675976:web:141b66edcdc14261ce6dbd"
 };
-        firebase.initializeApp(firebaseConfig);
     </script>
 </head>
 <body>
@@ -473,19 +472,12 @@
                       });
         }
            window.onload = function() { 
-        ladeTag(); 
+        firebase.initializeApp(firebaseConfig);
+               ladeTag(); 
         
         // 🔄 Automatischer Zähler: Erhöht sich nur, wenn du echten neuen Code hochlädst!
-        // Um zu sehen, ob das Skript live ist, ändern wir hier beim nächsten Mal die Basis-Zahl händisch.
-        var basisVersion = 2.50; 
-        
-        // Holt den Zähler aus dem Browser, erhöht ihn und speichert ihn ab
-        var subVersion = parseFloat(localStorage.getItem('stunden_checker_build')) || 0.00;
-        subVersion = parseFloat((subVersion + 0.01).toFixed(2));
-        localStorage.setItem('stunden_checker_build', subVersion);
-        
-        var liveVersion = (basisVersion + subVersion).toFixed(2);
-        
+        // Fest eingebrannte Version - ändert sich NUR bei einem neuen GitHub-Upload!
+               var liveVersion = "2.80";
         // Schreibt die neue Nummer live oben in den blauen Balken
         var vSpan = document.querySelector('h1 span');
         if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' Pro'; }
