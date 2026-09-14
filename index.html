@@ -471,23 +471,15 @@
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
                 alert("Anmeldung fehlgeschlagen: " + error.message);
             });
-    }    window.onload = function() { 
+        window.onload = function() { 
         ladeTag(); 
         
-        // 🔄 Automatische Versions-Erhöhung bei jedem Neuladen
-        var hauptVersion = 2.0; 
-        var subVersion = parseFloat(localStorage.getItem('stunden_checker_sub')) || 0.00;
+        // Feste Versionierung für echten Meilenstein
+        var aktuelleVersion = "v2.50 Pro";
         
-        subVersion = parseFloat((subVersion + 0.01).toFixed(2));
-        localStorage.setItem('stunden_checker_sub', subVersion);
-        
-        var finaleVersion = (hauptVersion + subVersion).toFixed(2);
-        
-        // Tauscht die feste v2.0 Final oben im blauen Titel dynamisch aus
         var vSpan = document.querySelector('h1 span');
-        if (vSpan) { vSpan.innerText = 'v' + finaleVersion + ' Pro'; }
+        if (vSpan) { vSpan.innerText = aktuelleVersion; }
     };
-
 </script>
 </body>
 </html>
