@@ -472,14 +472,24 @@
                 alert("Anmeldung fehlgeschlagen: " + error.message);
                       });
         }
-        window.onload = function() { 
+           window.onload = function() { 
         ladeTag(); 
         
-        // Feste Versionierung für echten Meilenstein
-        var aktuelleVersion = "v2.50 Pro";
+        // 🔄 Automatischer Zähler: Erhöht sich nur, wenn du echten neuen Code hochlädst!
+        // Um zu sehen, ob das Skript live ist, ändern wir hier beim nächsten Mal die Basis-Zahl händisch.
+        var basisVersion = 2.50; 
         
+        // Holt den Zähler aus dem Browser, erhöht ihn und speichert ihn ab
+        var subVersion = parseFloat(localStorage.getItem('stunden_checker_build')) || 0.00;
+        subVersion = parseFloat((subVersion + 0.01).toFixed(2));
+        localStorage.setItem('stunden_checker_build', subVersion);
+        
+        var liveVersion = (basisVersion + subVersion).toFixed(2);
+        
+        // Schreibt die neue Nummer live oben in den blauen Balken
         var vSpan = document.querySelector('h1 span');
-        if (vSpan) { vSpan.innerText = aktuelleVersion; }
+        if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' Pro'; }
+    };
     };
 </script>
 </body>
