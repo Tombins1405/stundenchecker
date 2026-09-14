@@ -33,6 +33,20 @@
         textarea { width: 100%; height: 120px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; }
         .list-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
+    <!-- Firebase Server-Anbindung (Compat-Modus) -->
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5Hw0oY4WRbZErr0F7Y8umC6S7wmFqWxI",
+            authDomain: "://firebaseapp.com",
+            projectId: "stunden-checker",
+            storageBucket: "stunden-checker.firebasestorage.app",
+            messagingSenderId: "1086750675976",
+            appId: "1:1086750675976:web:141b66edcdc14261ce6dbd"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
 </head>
 <body>
 
@@ -48,6 +62,26 @@
 
     <!-- BEREICH 1: STAMMDATEN -->
     <div id="sec-reg">
+                <!-- SPERRBILDSCHIRM: SERVER-LOGIN -->
+        <div class="card" id="auth-box" style="border: 2px solid var(--primary); background: #ffffff;">
+            <div class="card-title" id="auth-title" style="color: var(--primary-dark); font-size:16px;">🔐 Fahrer-Konto (Zentraler Server-Login)</div>
+            <p style="font-size:11px; margin-bottom:12px; color:#555;">Melde dich an oder registriere dich, um die App-Funktionen freizuschalten und deine Stunden auf dem Server zu sichern.</p>
+            
+            <div class="form-group">
+                <label>E-Mail-Adresse</label>
+                <input type="email" id="auth-email" placeholder="fahrer@spedition.at" style="background: #fafafa;">
+            </div>
+            <div class="form-group">
+                <label>Passwort (mind. 6 Zeichen)</label>
+                <input type="password" id="auth-passwort" placeholder="••••••••" style="background: #fafafa;">
+            </div>
+            
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <button type="button" onclick="serverAnmeldung()" style="flex: 1; background: var(--primary-dark); color:white;">Anmelden</button>
+                <button type="button" onclick="serverRegistrierung()" style="flex: 1; background: #546e7a; color:white;">Registrieren</button>
+            </div>
+            <div id="auth-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:var(--purple); min-height:16px;"></div>
+        </div>
         <div class="card">
             <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
             <div class="form-group">
@@ -388,6 +422,55 @@
         }
         document.getElementById('export-text-area').value = lines.join("\n");
         document.getElementById('export-card').style.display = "block";
+    }
+    // 🌐 SERVER-AUTHENTIFIZIERUNG (FIREBASE LIVE-LOGIK)
+    var aktuellerUser = null;
+
+    function serverRegistrierung() {
+        var email = document.getElementById('auth-email').value;
+        var pass = document.getElementById('auth-passwort').value;
+        if (!email || !pass) return alert("Bitte E-Mail und Passwort eingeben!");
+        if (pass.length < 6) return alert("Das Passwort muss mindestens 6 Zeichen lang sein!");
+
+        document.getElementById('auth-status').style.color = "var(--purple)";
+        document.getElementById('auth-status').innerText = "⏳ Erstelle Server-Account...";
+
+        firebase.auth().createUserWithEmailAndPassword(email, pass)
+            .then(function(userCredential) {
+                alert("🎯 ACCOUNT ERFOLGREICH ERSTELLT!\nBitte klicke jetzt auf 'Anmelden', um das System freizuschalten.");
+                document.getElementById('auth-status').style.color = "var(--success)";
+                document.getElementById('auth-status').innerText = "✅ Account registriert. Bitte Anmelden klicken.";
+            })
+            .catch(function(error) {
+                document.getElementById('auth-status').style.color = "red";
+                document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
+                alert("Registrierung fehlgeschlagen: " + error.message);
+            });
+    }
+
+    function serverAnmeldung() {
+        var email = document.getElementById('auth-email').value;
+        var pass = document.getElementById('auth-passwort').value;
+        if (!email || !pass) return alert("Bitte E-Mail und Passwort eingeben!");
+
+        document.getElementById('auth-status').style.color = "var(--purple)";
+        document.getElementById('auth-status').innerText = "⏳ Prüfe Server-Anmeldung...";
+
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .then(function(userCredential) {
+                aktuellerUser = email;
+                document.getElementById('auth-status').style.color = "var(--success)";
+                document.getElementById('auth-status').innerText = "🔓 Angemeldet als: " + email;
+                document.getElementById('auth-box').style.borderColor = "var(--success)";
+                document.getElementById('auth-title').innerText = "✅ Server-Verbindung aktiv";
+                alert("🔓 LOGIN ERFOLGREICH!\nWillkommen zurück. Deine Daten sind jetzt servergesichert.");
+                ladeTag();
+            })
+            .catch(function(error) {
+                document.getElementById('auth-status').style.color = "red";
+                document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
+                alert("Anmeldung fehlgeschlagen: " + error.message);
+            });
     }
 
     window.onload = function() { ladeTag(); };
