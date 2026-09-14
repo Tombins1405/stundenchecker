@@ -34,25 +34,24 @@
         .list-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
     </style>
      <!-- Firebase Server-Anbindung (Compat-Modus) -->
-<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com/firebasejs/10.8.0/firebase-compat.js"></script>
 
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyA5Hw0oY4WRbZErr0F7Y8umC6S7wmFqWxI",
-        authDomain: "://firebaseapp.com",
+        authDomain: "stunden-checker.firebaseapp.com",
         projectId: "stunden-checker",
         storageBucket: "stunden-checker.firebasestorage.app",
         messagingSenderId: "1086750675976",
         appId: "1:1086750675976:web:141b66edcdc14261ce6dbd"
     };
 </script>
-</head>
-
+    
 </head>
 <body>
 
 <div class="container">
-    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.0 </span></h1>
+    <h1>⏱️ STUNDEN-CHECKER <span style="font-size:12px; vertical-align:middle; color:#78909c;">v2.80 </span></h1>
 
     <!-- NAVIGATION TABS -->
     <div class="nav-tabs">
@@ -477,8 +476,7 @@
         firebase.initializeApp(firebaseConfig);
                ladeTag(); 
         
-        // 🔄 Automatischer Zähler: Erhöht sich nur, wenn du echten neuen Code hochlädst!
-        // Fest eingebrannte Version - ändert sich NUR bei einem neuen GitHub-Upload!
+      
                var liveVersion = "2.80";
         // Schreibt die neue Nummer live oben in den blauen Balken
         var vSpan = document.querySelector('h1 span');
