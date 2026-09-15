@@ -280,11 +280,9 @@
                     calc: { netto: netto, uest: uest, gesamt: netto, p: 0.5, diaete: netto > 0 ? 1 : 0, naecht: 0 }
                 };
                 geladeneTage++;
-            });
-
-            alert("🎯 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
-            berechneMonatlicheAbrechnung();
-            var userEmail = firebase.auth().currentUser.email;
+                    alert("📅 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
+    berechneMonatlicheAbrechnung();
+    var userEmail = firebase.auth().currentUser.email;
     var bereinigteEmail = userEmail.replace(/\./g, '_');
     firebase.firestore().collection("monate").doc(bereinigteEmail).set({
         daten: JSON.stringify(masterDB)
@@ -294,8 +292,9 @@
     .catch(function(error) {
         console.error("❌ Fehler beim Cloud-Backup: ", error);
     });
+ 
 reader.readAsText(file, "UTF-8");
-}
+};
 
     function berechneLive() {
         var von = document.getElementById('von').value; 
