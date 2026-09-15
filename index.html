@@ -235,7 +235,6 @@
         }
         return summe;
     }
-
     function importiereCSV() {
         var fileInput = document.getElementById('csv-file');
         if (!fileInput.files.length) return alert("Bitte wähle zuerst eine CSV-Datei aus!");
@@ -280,22 +279,25 @@
                     calc: { netto: netto, uest: uest, gesamt: netto, p: 0.5, diaete: netto > 0 ? 1 : 0, naecht: 0 }
                 };
                 geladeneTage++;
-                    alert("📅 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
-    berechneMonatlicheAbrechnung();
-    var userEmail = firebase.auth().currentUser.email;
-    var bereinigteEmail = userEmail.replace(/\./g, '_');
-    firebase.firestore().collection("monate").doc(bereinigteEmail).set({
-        daten: JSON.stringify(masterDB)
-    .then(function() {
-        console.log("☁️ CSV-Daten erfolgreich in der Cloud gesichert!");
-    })
-    .catch(function(error) {
-        console.error("❌ Fehler beim Cloud-Backup: ", error);
             });
 
-};
-reader.readAsText(file, "UTF-8");
-}
+            alert("📅 IMPORT ERFOLGREICH!\nEs wurden " + geladeneTage + " Tage aus deiner Excel-CSV für den März eingelesen.");
+            berechneMonatlicheAbrechnung();
+
+            var userEmail = firebase.auth().currentUser.email;
+            var bereinigteEmail = userEmail.replace(/\./g, '_');
+            firebase.firestore().collection("monate").doc(bereinigteEmail).set({
+                daten: JSON.stringify(masterDB)
+            })
+            .then(function() {
+                console.log("☁️ CSV-Daten erfolgreich in der Cloud gesichert!");
+            })
+            .catch(function(error) {
+                console.error("❌ Fehler beim Cloud-Backup: ", error);
+            });
+        };
+        reader.readAsText(file, "UTF-8");
+    }
 
     function berechneLive() {
         var von = document.getElementById('von').value; 
@@ -342,7 +344,6 @@ reader.readAsText(file, "UTF-8");
         document.getElementById('res-woche').innerText = wStunden.toFixed(2) + " Std";
         return t;
     }
-
     function speichereTag() {
         var datum = document.getElementById('datum').value; if (!datum) return;
         masterDB[datum] = {
@@ -409,12 +410,10 @@ reader.readAsText(file, "UTF-8");
         if(zaGebucht < 0) zaGebucht = 0;
         var uestAuszahlung = Math.max(0, uestGesamt - zaGebucht);
         
-        // 🛠️ BRUTTO-VERDIENST BERECHNEN
         var bruttoVerdienst = (grundStunden * lohn) + (uestAuszahlung * lohn * 1.5);
 
-        // 🧮 ÖSTERREICHISCHE NETTO-STEUERFORMEL (Näherungswerte nach Tarifstufen)
-        var svBeitrag = bruttoVerdienst * 0.1812; // 18,12% Sozialversicherung für Arbeiter
-        var lohnsteuerBasis = bruttoVerdienst - svBeitrag - 300; // Werbungskostenpauschale abgezogen
+        var svBeitrag = bruttoVerdienst * 0.1812; 
+        var lohnsteuerBasis = bruttoVerdienst - svBeitrag - 300; 
         var lohnsteuer = 0;
 
         if (lohnsteuerBasis > 0) {
@@ -423,22 +422,16 @@ reader.readAsText(file, "UTF-8");
             } else if (lohnsteuerBasis <= 19134 / 12) {
                 lohnsteuer = (lohnsteuerBasis - (11693 / 12)) * 0.20;
             } else if (lohnsteuerBasis <= 32075 / 12) {
-                lohnsteuer = (7441 / 12 * 0.20) + (lohnsteuerBasis - (19134 / 12)) * 0.30;
-            } else if (lohnsteuerBasis <= 62080 / 12) {
-                lohnsteuer = (7441 / 12 * 0.20) + (12941 / 12 * 0.30) + (lohnsteuerBasis - (32075 / 12)) * 0.40;
+                lohnsteuer = (7441 / 12 * 0.20) + (19134 / 12 * 0.30) + (lohnsteuerBasis - (32075 / 12)) * 0.40;
             } else {
                 lohnsteuer = (7441 / 12 * 0.20) + (12941 / 12 * 0.30) + (30005 / 12 * 0.40) + (lohnsteuerBasis - (62080 / 12)) * 0.48;
             }
         }
         if (lohnsteuer < 0) lohnsteuer = 0;
 
-        // Echtes Netto aus dem Bruttolohn ermitteln
         var nettoLohn = Math.max(0, bruttoVerdienst - svBeitrag - lohnsteuer);
-
-        // 🚀 GESAMTAUSZAHLUNG: Netto-Lohn PLUS steuerfreie Spesen!
         var gesamtNettoVorschau = nettoLohn + diaetenGesamt + naechtGesamt;
 
-        // Werte live ins HTML-Formular schreiben
         document.getElementById('l-grund-std').innerText = grundStunden.toFixed(2) + " h";
         document.getElementById('l-uest-gesamt').innerText = uestGesamt.toFixed(2) + " h";
         document.getElementById('l-za-gebuche').innerText = zaGebucht.toFixed(2) + " h";
@@ -447,12 +440,8 @@ reader.readAsText(file, "UTF-8");
         document.getElementById('l-brutto').innerText = bruttoVerdienst.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
         document.getElementById('l-diaeten').innerText = diaetenGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
         document.getElementById('l-naecht').innerText = naechtGesamt.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
-        
-        // Label-Anpassung zur korrekten Netto-Vorschau
         document.getElementById('l-gesamt').innerText = gesamtNettoVorschau.toLocaleString('de-AT', {minimumFractionDigits: 2}) + " €";
     }
-
-
     function generiereExcelText() {
         var lines = [];
         for (var tag in masterDB) {
@@ -464,7 +453,7 @@ reader.readAsText(file, "UTF-8");
         document.getElementById('export-text-area').value = lines.join("\n");
         document.getElementById('export-card').style.display = "block";
     }
-    // 🌐 SERVER-AUTHENTIFIZIERUNG (FIREBASE LIVE-LOGIK)
+
     var aktuellerUser = null;
 
     function serverRegistrierung() {
@@ -507,15 +496,16 @@ reader.readAsText(file, "UTF-8");
                 alert("🔓 LOGIN ERFOLGREICH!\nWillkommen zurück. Deine Daten sind jetzt servergesichert.");
                 document.getElementById('import-box-container').classList.remove('hidden');
                 ladeTag();
-                                document.getElementById('auth-box').classList.add('hidden');
+                document.getElementById('auth-box').classList.add('hidden');
                 document.getElementById('profil-box-container').classList.remove('hidden');
             })
             .catch(function(error) {
                 document.getElementById('auth-status').style.color = "red";
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
                 alert("Anmeldung fehlgeschlagen: " + error.message);
-                      })
-        }
+            });
+    }
+
     window.onload = function() { 
         firebase.initializeApp(firebaseConfig);
         ladeTag(); 
@@ -523,8 +513,7 @@ reader.readAsText(file, "UTF-8");
         var liveVersion = "2.81 Pro";
         var vSpan = document.getElementById('live-version-balken');
         
-                // Holt live das echte Speicherdatum DIESER Datei direkt von GitHub
-        fetch('https://api.github.com/repos/Tombins1405/stundenchecker/commits?path=index.html&per_page=1')
+        fetch('https://github.com')
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data && data.length > 0) {
