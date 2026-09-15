@@ -109,7 +109,7 @@
 
     <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
-                <div id="import-box-container" class="hidden" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 15px; border-radius: 14px; margin-bottom: 12px;">
+           <div id="import-box-container" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 15px; border-radius: 14px; margin-bottom: 12px;">
             <div class="card-title" style="color: #0d47a1; border-bottom: 2px solid #90caf9;">📅 Excel / CSV Daten-Import</div>
             <p style="font-size: 11px; margin: 0 0 8px 0; color: #1565c0;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
             <input type="file" id="csv-file" accept=".csv" style="padding: 5px; height: auto; background: white; margin-bottom: 8px; border: 1px solid #90caf9;">
@@ -292,9 +292,10 @@
     .catch(function(error) {
         console.error("❌ Fehler beim Cloud-Backup: ", error);
     });
- 
-reader.readAsText(file, "UTF-8");
+    });
 };
+reader.readAsText(file, "UTF-8");
+}
 
     function berechneLive() {
         var von = document.getElementById('von').value; 
