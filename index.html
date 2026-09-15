@@ -147,12 +147,7 @@
     </div>
     <!-- BEREICH 3: LOHNZETTEL -->
     <div id="sec-lohni" class="hidden">
-        <div class="card" style="background:#eceff1; border:1px solid #b0bec5;">
-            <div class="card-title" style="color:#37474f;">📥 Vorhandene Monatsdaten laden</div>
-            <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
-            <input type="file" id="csv-file" accept=".csv" style="padding:5px; height:auto; background:white; margin-bottom:8px;">
-            <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
-        </div>
+     
 
         <div class="card" style="background:#fff3e0; border:1px solid #ffe0b2;">
             <div class="card-title" style="color:#e65100;">⏳ Überstunden- &amp; ZA-Konto Steuerung</div>
@@ -494,6 +489,7 @@
                 document.getElementById('auth-box').style.borderColor = "var(--success)";
                 document.getElementById('auth-title').innerText = "✅ Server-Verbindung aktiv";
                 alert("🔓 LOGIN ERFOLGREICH!\nWillkommen zurück. Deine Daten sind jetzt servergesichert.");
+                document.getElementById('import-box-container').classList.remove('hidden');
                 ladeTag();
             })
             .catch(function(error) {
