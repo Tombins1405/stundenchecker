@@ -161,7 +161,7 @@
             <p style="font-size:11px; margin:0 0 8px 0; color:#555;">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
             <div class="form-group">
                 <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
-                <input type="number" id="za-schieber" value="10" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
+                <input type="number" id="za-schieber" placeholder="0" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
             </div>
         </div>
 
@@ -502,7 +502,7 @@
                     .then(function(doc) {
                         if (doc.exists && doc.data().rolle === "admin") {
                             console.log("👑 Admin-Rechte über eindeutige UID erkannt!");
-                            document.getElementById('import-box-container').classList.remove('hidden');
+                            document.getElementById('import-box-container').style.display = "block";
                         } else {
                             console.log("🚚 Normaler Fahrer-Account aktiv. Import bleibt geschützt.");
                         }
