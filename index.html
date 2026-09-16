@@ -507,6 +507,9 @@
                             var importBox = document.getElementById('import-box-container');
                             importBox.classList.remove('hidden');
                             importBox.style.display = "block";
+                                                        ladeTag();
+                            document.getElementById('auth-box').classList.add('hidden');
+                            document.getElementById('profil-box-container').classList.remove('hidden');
                         } else {
                             console.log("🚚 Normaler Fahrer-Account aktiv.");
                             document.getElementById('auth-title').innerText = "✅ Server-Verbindung aktiv";
@@ -514,6 +517,9 @@
                             
                             var importBox = document.getElementById('import-box-container');
                             importBox.style.display = "none";
+                                                        ladeTag();
+                            document.getElementById('auth-box').classList.add('hidden');
+                            document.getElementById('profil-box-container').classList.remove('hidden');
                         }
                     })
                     .catch(function(err) {
@@ -521,9 +527,6 @@
                         alert("🔓 LOGIN ERFOLGREICH!\n(Hinweis: Rechteprüfung im Offline-Modus)");
                     });
 
-                ladeTag();
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('profil-box-container').classList.remove('hidden');
             })
             .catch(function(error) {
                 document.getElementById('auth-status').style.color = "red";
@@ -533,7 +536,6 @@
     }
 
         window.onload = function() { 
-        firebase.initializeApp(firebaseConfig);
         ladeTag(); 
         
         var liveVersion = "2.82 Pro";
