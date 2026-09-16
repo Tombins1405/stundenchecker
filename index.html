@@ -531,20 +531,29 @@
             });
     }
 
-    window.onload = function() { 
+        window.onload = function() { 
         firebase.initializeApp(firebaseConfig);
         ladeTag(); 
         
-        var liveVersion = "2.81 Pro";
+        var liveVersion = "2.82 Pro";
         var vSpan = document.getElementById('live-version-balken');
         
-        fetch('https://github.com')
+        // 🔒 Zwingt die API durch einen dynamischen Zeitstempel, den alten Cache zu ignorieren
+        var cacheBuster = new Date().getTime();
+        
+        fetch('https://api.github.com/repos/Tombins1405/stundenchecker/commits?path=index.html&per_page=1&_cb=' + cacheBuster)
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (data && data.length > 0) {
                     var commitDate = new Date(data[0].commit.committer.date);
-                    var zeitText = commitDate.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' (Upload: ' + zeitText + ' Uhr)'; }
+                    
+                    // Formatiert Datum und Uhrzeit des echten GitHub-Uploads (Österreich-Format)
+                    var optionen = { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
+                    var zeitText = commitDate.toLocaleString('de-AT', optionen) + " Uhr";
+                    
+                    if (vSpan) { 
+                        vSpan.innerText = 'v' + liveVersion + ' (Upload: ' + zeitText + ')'; 
+                    }
                 } else {
                     if (vSpan) { vSpan.innerText = 'v' + liveVersion + ' (Live)'; }
                 }
