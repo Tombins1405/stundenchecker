@@ -93,11 +93,11 @@
             </div>
             <div class="form-group">
                 <label>Aktueller Brutto-Stundenlohn (€)</label>
-                <input type="number" id="reg-lohn" step="0.01" value="14.30">
+                <input type="number" id="reg-lohn" step="0.01" placeholder="z.B. 11.50">
             </div>
             <div class="form-group">
                 <label>Tagesdiät Spedition / Fernverkehr (€)</label>
-                <input type="number" id="reg-diaet" step="0.01" value="24.15">
+                <input type="number" id="reg-diaet" step="0.01" placeholder="z.B. 24.15">
             </div>
             <div class="form-group" style="background:#f1f8e9; padding:8px; border-radius:6px; border:1px solid #c5e1a5;">
                 <label style="color:#33691e; font-weight:bold;">💼 B2B Firmen-Verknüpfung (Optional)</label>
@@ -109,7 +109,7 @@
 
     <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
-           <div id="import-box-container" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 15px; border-radius: 14px; margin-bottom: 12px;">
+           <div id="import-box-container" class="hidden" style="background-color: #e3f2fd; border: 2px solid #2196f3; padding: 15px; border-radius: 14px; margin-bottom: 12px;">
             <div class="card-title" style="color: #0d47a1; border-bottom: 2px solid #90caf9;">📅 Excel / CSV Daten-Import</div>
             <p style="font-size: 11px; margin: 0 0 8px 0; color: #1565c0;">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch einzulesen.</p>
             <input type="file" id="csv-file" accept=".csv" style="padding: 5px; height: auto; background: white; margin-bottom: 8px; border: 1px solid #90caf9;">
