@@ -547,7 +547,8 @@
                         console.error("Fehler bei Rechteprüfung:", err);
                         alert("🔓 LOGIN ERFOLGREICH!\n(Hinweis: Rechteprüfung im Offline-Modus)");
                     });
-            })
+            }
+                  });
 // 👤 LIVE-VORSCHAU FÜR DEN USER-AVATAR
 document.getElementById('upload-avatar').addEventListener('change', function(e) {
     var datei = e.target.files[0];
@@ -579,7 +580,6 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
                 alert("Anmeldung fehlgeschlagen: " + error.message);
             });
-}
     
         window.onload = function() { 
         ladeTag(); 
