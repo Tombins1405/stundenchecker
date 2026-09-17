@@ -85,6 +85,31 @@
         </div>
         <div id="profil-box-container" class="card hidden">
             <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
+                        <div class="form-group">
+                <label>Username (Schützt deine Anonymität in der Community)</label>
+                <input type="text" id="reg-username" placeholder="z.B. KipperKoenig oder AsphaltPro">
+            </div>
+            <div class="form-group">
+                <label>In welcher Branche arbeitest du?</label>
+                <select id="reg-branche">
+                    <option value="transport">🚚 Transportwesen / Logistik</option>
+                    <option value="bau">🏗️ Baugewerbe / Tiefbau</option>
+                    <option value="sonstige">💼 Sonstige (System lernt mit)</option>
+                </select>
+            </div>
+            <div class="form-group" style="background: #fafafa; padding: 10px; border-radius: 8px; border: 1px dashed #ccc;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">🎨 Gestalte deine Fahrer-App:</label>
+                
+                <div style="margin-bottom: 8px;">
+                    <label style="font-size: 12px; color: #555;">👤 Profilbild / Avatar (Optional):</label>
+                    <input type="file" id="upload-avatar" accept="image/*" style="font-size: 12px;">
+                </div>
+                
+                <div>
+                    <label style="font-size: 12px; color: #555;">🚛 Hintergrundbild (Dein LKW oder Bagger):</label>
+                    <input type="file" id="upload-hintergrund" accept="image/*" style="font-size: 12px;">
+                </div>
+            </div>
             <div class="form-group">
                 <label>Beschäftigungsland (Steuerrecht)</label>
                 <select id="reg-land">
