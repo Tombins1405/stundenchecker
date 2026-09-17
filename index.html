@@ -547,7 +547,8 @@
                         console.error("Fehler bei Rechteprüfung:", err);
                         alert("🔓 LOGIN ERFOLGREICH!\n(Hinweis: Rechteprüfung im Offline-Modus)");
                     }
-        })
+
+                           })
         .catch(function(error) {
             document.getElementById('auth-status').style.color = "red";
             document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
