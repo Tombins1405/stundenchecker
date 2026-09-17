@@ -546,17 +546,21 @@
                     .catch(function(err) {
                         console.error("Fehler bei Rechteprüfung:", err);
                         alert("🔓 LOGIN ERFOLGREICH!\n(Hinweis: Rechteprüfung im Offline-Modus)");
-                    });
-            }
-                  });
+                    }
+        })
+        .catch(function(error) {
+            document.getElementById('auth-status').style.color = "red";
+            document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
+            alert("Anmeldung fehlgeschlagen: " + error.message);
+        });
+}
+
 // 👤 LIVE-VORSCHAU FÜR DEN USER-AVATAR
 document.getElementById('upload-avatar').addEventListener('change', function(e) {
     var datei = e.target.files[0];
     if (datei) {
         var reader = new FileReader();
-        reader.onload = function(event) {
-            console.log("Avatar geladen");
-        };
+        reader.onload = function(event) { console.log("Avatar geladen"); };
         reader.readAsDataURL(datei);
     }
 });
@@ -574,13 +578,8 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
         };
         reader.readAsDataURL(datei);
     }
-}
-            .catch(function(error) {
-                document.getElementById('auth-status').style.color = "red";
-                document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
-                alert("Anmeldung fehlgeschlagen: " + error.message);
-            });
-    
+});
+
         window.onload = function() { 
         ladeTag(); 
         
