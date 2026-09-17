@@ -549,6 +549,35 @@
                     });
 
             })
+            // 👤 LIVE-VORSCHAU FÜR DEN USER-AVATAR
+document.getElementById('upload-avatar').addEventListener('change', function(e) {
+    var datei = e.target.files[0];
+    if (datei) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            // Falls du später ein kleines Vorschaubild im Profil hast, setzen wir es hier
+            console.log("Avatar geladen");
+        };
+        reader.readAsDataURL(datei);
+    }
+});
+
+// 🚛 LIVE-VORSCHAU FÜR DAS TRUCK-/BAGGER-HINTERGRUNDBILD
+document.getElementById('upload-hintergrund').addEventListener('change', function(e) {
+    var datei = e.target.files[0];
+    if (datei) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            // Setzt das ausgewählte Bild sofort als echten Hintergrund für die ganze App
+            document.body.style.backgroundImage = "url('" + event.target.result + "')";
+            document.body.style.backgroundSize = "cover";
+            document.body.style.backgroundPosition = "center";
+            document.body.style.backgroundAttachment = "fixed";
+        };
+        reader.readAsDataURL(datei);
+    }
+});
+
             .catch(function(error) {
                 document.getElementById('auth-status').style.color = "red";
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
