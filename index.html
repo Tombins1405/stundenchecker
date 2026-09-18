@@ -63,51 +63,75 @@
 
     <!-- BEREICH 1: STAMMDATEN -->
     <div id="sec-reg">
-                <!-- SPERRBILDSCHIRM: SERVER-LOGIN -->
-         <!-- APP-ERKLÄRUNG & ABO-PAKETE (LANDINGPAGE) -->
-        <div class="card" style="background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; border: none; padding: 18px; text-align: center;">
-            <h2 style="font-size: 18px; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">Speditiv &amp; Sicher: Deine Fahrer-Zentrale</h2>
-            <p style="font-size: 12px; opacity: 0.95; line-height: 1.4; max-width: 400px; margin: 0 auto 15px auto;">
-                Die erste mitdenkende Zeiterfassung im DACH Raum für LKW- und Baggerfahrer. Leichte Zeitenerfassung. Kontrolliere deine Stunden, Diäten und Prämien unbestechlich auf den Cent genau – absolut anonym und servergesichert!
+                        <!-- APP-ERKLÄRUNG & INTERAKTIVES 3-PAKETE-KARUSSELL (LANDINGPAGE - FINALES SETUP) -->
+        <div class="card" style="background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; border: none; padding: 20px; text-align: center; box-shadow: 0 8px 25px rgba(0,0,0,0.25);">
+            <h2 style="font-size: 20px; margin-bottom: 8px; text-shadow: 0 1px 4px rgba(0,0,0,0.35); font-weight: 800; letter-spacing: 0.3px;">Unbestechlich &amp; Sicher: Deine digitale Schicht-Zentrale</h2>
+            <p style="font-size: 12px; opacity: 0.95; line-height: 1.5; max-width: 420px; margin: 0 auto 5px auto;">
+                Die erste mitdenkende Zeiterfassung für Leistungsträger im gesamten DACH-Raum. Erfasse deine Schichten spielend leicht. Kontrolliere deine Stunden, Diäten und Prämien unbestechlich auf den Cent genau – absolut anonym und servergesichert!
             </p>
             
-                                      <!-- DIE ZWEI PREIS-PAKETE IM DIREKTVERGLEICH (MAXIMALE SEHBARKEIT & PLATZ) -->
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px; text-align: left;">
+            <!-- HIER STARTET DAS INTERAKTIVE KARUSSELL -->
+            <div class="carousel-container">
+                <button type="button" class="carousel-btn left" onclick="moveCarousel(-1)">◀</button>
+                <button type="button" class="carousel-btn right" onclick="moveCarousel(1)">▶</button>
                 
-                <!-- STARKES, BLICKDICHTES BASIS PAKET -->
-                <div style="background: #ffffff; color: #263238; padding: 16px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 2px solid #1E88E5;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eceff1; padding-bottom: 6px; margin-bottom: 10px;">
-                        <span style="font-size: 14px; font-weight: bold; text-transform: uppercase; color: #1565C0; display: flex; align-items: center; gap: 4px;">📦 Basis-Mitgliedschaft</span>
-                        <span style="font-size: 20px; font-weight: 900; color: #263238;">€ 4,99 <span style="font-size:11px; font-weight:normal; color:#78909c;">/ Monat</span></span>
-                    </div>
-                    <ul style="font-size: 13px; list-style: none; padding: 0; line-height: 1.6; color: #37474f;">
-                        <li>✅ <b>Anonymer Username:</b> Absoluter Schutz deiner Identität im Netz</li>
-                        <li>✅ <b>Präzise Schichterfassung:</b> Einfaches Eintragen von Arbeits- &amp; Pausenzeiten</li>
-                        <li>✅ <b>Inlands-Diäten:</b> Automatische Spesenabrechnung für normale Schichten</li>
-                        <li>✅ <b>Lohnzettel-Vorschau:</b> Monatliche Hochrechnung deiner Stunden als Übersicht</li>
-                    </ul>
-                </div>
-                
-                <!-- PSYCHOLOGISCH OPTIMIERTES PREMIUM PAKET (MAXIMALER KAUFREIZ) -->
-                <div style="background: #ffffff; color: #1a237e; padding: 18px; border-radius: 14px; box-shadow: 0 6px 22px rgba(76,175,80,0.35); border: 3px solid #4CAF50; position: relative;">
-                    <div style="position: absolute; top: -12px; right: 15px; background: #ff9800; color: #ffffff; font-size: 10px; font-weight: bold; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.25); letter-spacing: 0.5px; font-family: sans-serif;">⭐ MEISTGEWÄHLT</div>
+                <div class="carousel-track" id="carouselTrack">
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 6px; margin-bottom: 10px;">
-                        <span style="font-size: 16px; font-weight: bold; text-transform: uppercase; color: #2e7d32; display: flex; align-items: center; gap: 4px;">💎 Premium-Vollversion</span>
-                        <span style="font-size: 24px; font-weight: 900; color: #1b5e20;">€ 9,99 <span style="font-size:12px; font-weight:normal; color: #757575;">/ Monat</span></span>
+                    <!-- 📦 TARIF 1: BASIS PAKET -->
+                    <div class="carousel-card">
+                        <div style="background: #ffffff; color: #263238; padding: 16px; border-radius: 14px; box-shadow: 0 6px 15px rgba(0,0,0,0.15); border: 2px solid #1E88E5; text-align: left; min-height: 310px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eceff1; padding-bottom: 6px; margin-bottom: 10px;">
+                                <span style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #1565C0;">📦 Basis-Version</span>
+                                <span style="font-size: 20px; font-weight: 900; color: #263238;">€ 2,99 <span style="font-size:11px; font-weight:normal; color:#78909c;">/M</span></span>
+                            </div>
+                            <ul style="font-size: 12px; list-style: none; padding: 0; line-height: 1.6; color: #37474f;">
+                                <li><span style="color: #1E88E5; font-weight: bold;">✓</span> <b>Anonymer Username:</b> Voller Identitätsschutz im Netz</li>
+                                <li><span style="color: #1E88E5; font-weight: bold;">✓</span> <b>Schichterfassung:</b> Arbeits- &amp; Pausenzeiten eintragen</li>
+                                <li><span style="color: #1E88E5; font-weight: bold;">✓</span> <b>Inlands-Diäten:</b> Automatische Standard-Spesen</li>
+                                <li><span style="color: #1E88E5; font-weight: bold;">✓</span> <b>Lohnzettel-Vorschau:</b> Monatliche Stundenhochrechnung</li>
+                            </ul>
+                        </div>
                     </div>
                     
-                    <p style="font-size: 12px; font-style: italic; color: #e65100; margin-bottom: 10px; font-weight: bold;">🔥 Schaltet alle Funktionen und die komplette App sofort frei:</p>
+                    <!-- 💎 TARIF 2: PREMIUM PAKET (STANDARD STARTPOSITION) -->
+                    <div class="carousel-card">
+                        <div style="background: #ffffff; color: #1a237e; padding: 16px; border-radius: 14px; box-shadow: 0 8px 20px rgba(76,175,80,0.3); border: 3px solid #4CAF50; position: relative; text-align: left; min-height: 310px;">
+                            <div style="position: absolute; top: -12px; right: 10px; background: #ff9800; color: #ffffff; font-size: 8px; font-weight: bold; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">⭐ BELIEBT</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e8f5e9; padding-bottom: 6px; margin-bottom: 8px;">
+                                <span style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #2e7d32;">💎 Premium-Vollversion</span>
+                                <span style="font-size: 20px; font-weight: 900; color: #1b5e20;">€ 5,99 <span style="font-size:11px; font-weight:normal; color: #757575;">/M</span></span>
+                            </div>
+                            <p style="font-size: 11px; color: #e65100; margin-bottom: 6px; font-weight: bold;">🔥 Schaltet alle Kernfunktionen frei:</p>
+                            <ul style="font-size: 12px; list-style: none; padding: 0; line-height: 1.5; color: #263238;">
+                                <li><span style="color: #4CAF50; font-weight: bold;">★</span> <b>Freie Prämien:</b> Mulden-, Anhänger-, Unfallfreiprämien frei anlegen</li>
+                                <li><span style="color: #4CAF50; font-weight: bold;">★</span> <b>Bonusrechner:</b> Prämien sekundengenau kalkulieren</li>
+                                <li><span style="color: #4CAF50; font-weight: bold;">★</span> <b>Ausfallgeld:</b> Schutz bei Stillstand, Feiertag oder Krankenstand</li>
+                                <li><span style="color: #4CAF50; font-weight: bold;">★</span> <b>Fristen-Warner:</b> Automatischer Mail/SMS-Alarm für Code 95/CZV/Module</li>
+                                <li><span style="color: #4CAF50; font-weight: bold;">★</span> <b>🎨 Personalisierung:</b> Eigener Truck/Bagger als App-Hintergrund</li>
+                            </ul>
+                        </div>
+                    </div>
                     
-                    <ul style="font-size: 13px; list-style: none; padding: 0; line-height: 1.6; color: #263238;">
-                        <li>🔹 <b>Freie Prämiengestaltung:</b> Individuelle Zulagen (z.B. Muldenprämien, Anhängerprämien, Unfallfreiprämien) komplett frei anlegen</li>
-                        <li>🔹 <b>Automatische Bonusberechnung:</b> Das System rechnet deine eigenen Prämien sekundengenau aus</li>
-                        <li>🔹 <b>Ausfall- &amp; Krankengeldrechnung:</b> Krisensichere Kontrolle bei Stillstand oder Krankenstand</li>
-                        <li>🔹 <b>Unbestechliche Fristen-Warner:</b> Automatische Warnung via Mail/SMS für Code 95, CZV und Module</li>
-                        <li>🔹 <b>DACH-Lohnplaner &amp; Pendlerpauschale:</b> Maximale Steuer-Vorteile perfekt auf dein Land optimiert</li>
-                    </ul>
+                    <!-- 🚀 TARIF 3: ULTIMATE PAKET -->
+                    <div class="carousel-card">
+                        <div style="background: #ffffff; color: #37474f; padding: 16px; border-radius: 14px; box-shadow: 0 6px 15px rgba(0,0,0,0.18); border: 2px solid #7e57c2; text-align: left; min-height: 310px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3e5f5; padding-bottom: 6px; margin-bottom: 10px;">
+                                <span style="font-size: 13px; font-weight: bold; text-transform: uppercase; color: #5e35b1;">🚀 Profi-Export Pro</span>
+                                <span style="font-size: 20px; font-weight: 900; color: #4a148c;">€ 8,99 <span style="font-size:11px; font-weight:normal; color:#9575cd;">/M</span></span>
+                            </div>
+                            <p style="font-size: 11px; color: #5e35b1; margin-bottom: 6px; font-weight: bold;">💼 Maximaler Komfort &amp; Büro-Sorglos-Ablauf:</p>
+                            <ul style="font-size: 12px; list-style: none; padding: 0; line-height: 1.5; color: #37474f;">
+                                <li><span style="color: #7e57c2; font-weight: bold;">✦</span> <b>Büro-Direktversand:</b> Export aller Monatsdaten per Klick an deine Mail</li>
+                                <li><span style="color: #7e57c2; font-weight: bold;">✦</span> <b>Erweiterter Bericht:</b> Tacho-Kilometerstand &amp; Tankbericht (Liter/Kosten)</li>
+                                <li><span style="color: #7e57c2; font-weight: bold;">✦</span> <b>Notizenaufzeichnung:</b> Freies Textfeld für Infos an jedem Arbeitstag</li>
+                                <li><span style="color: #7e57c2; font-weight: bold;">✦</span> <b>Spritspar-Kontrolle:</b> Werte deinen Verbrauch digital gegen Abweichungen aus</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                 </div>
             </div>
+
 
         <!-- MODERNE LOGIN-MASKE -->
         <div class="card" id="login-box" style="border: 2px solid var(--primary); background: #ffffff;">
@@ -727,6 +751,38 @@ function zeigeRegistrierung() {
     document.getElementById('login-box').classList.add('hidden');
     document.getElementById('register-box').classList.remove('hidden');
 }
+    // 🎠 GLOBALER INTERAKTIVER PRODUKT-SLIDER (KARUSSELL) STEUERUNG
+var currentCarouselIndex = 1;
+
+function updateCarousel() {
+    var track = document.getElementById('carouselTrack');
+    if(!track) return;
+    var percentage = -currentCarouselIndex * 33.333;
+    track.style.transform = 'translateX(' + percentage + '%)';
+    
+    for(var i=0; i<=2; i++) {
+        var dot = document.getElementById('dot' + i);
+        if(dot) {
+            if(i === currentCarouselIndex) { dot.classList.add('active'); }
+            else { dot.classList.remove('active'); }
+        }
+    }
+}
+
+function moveCarousel(direction) {
+    currentCarouselIndex += direction;
+    if(currentCarouselIndex < 0) currentCarouselIndex = 0;
+    if(currentCarouselIndex > 2) currentCarouselIndex = 2;
+    updateCarousel();
+}
+
+function setCarouselIndex(index) {
+    currentCarouselIndex = index;
+    updateCarousel();
+}
+
+setTimeout(function() { updateCarousel(); }, 500);
+    
         window.onload = function() { 
         ladeTag(); 
         
