@@ -642,6 +642,17 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
     }
 });
 
+    // 🔄 SWITCH-FUNKTION: LOGIN-MASKE ANZEIGEN
+function zeigeLogin() {
+    document.getElementById('login-box').classList.remove('hidden');
+    document.getElementById('register-box').classList.add('hidden');
+}
+
+// 🔄 SWITCH-FUNKTION: REGISTRIERUNGS-MASKE ANZEIGEN
+function zeigeRegistrierung() {
+    document.getElementById('login-box').classList.add('hidden');
+    document.getElementById('register-box').classList.remove('hidden');
+}
         window.onload = function() { 
         ladeTag(); 
         
