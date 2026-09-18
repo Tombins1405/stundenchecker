@@ -622,7 +622,7 @@ function serverRegistrierung() {
                 
                 document.getElementById('auth-status').style.color = "var(--success)";
                 document.getElementById('auth-status').innerText = "🔓 Angemeldet als: " + email;
-                document.getElementById('auth-box').style.borderColor = "var(--success)";
+                document.getElementById('login-box').style.borderColor = "var(--success)";
                 
                 // ☁️ RECHTE-ABFRAGE AUS FIRESTORE STARTEN, BEVOR DIE MELDUNG KOMMT
                 firebase.firestore().collection("users").doc(userUid).get()
