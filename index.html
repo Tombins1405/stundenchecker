@@ -545,22 +545,73 @@
 
     var aktuellerUser = null;
 
-    function serverRegistrierung() {
-        var email = document.getElementById('auth-email').value;
-        var pass = document.getElementById('auth-passwort').value;
-        if (!email || !pass) return alert("Bitte E-Mail und Passwort eingeben!");
-        if (pass.length < 6) return alert("Das Passwort muss mindestens 6 Zeichen lang sein!");
+function serverRegistrierung() {
+    var email = document.getElementById('reg-email').value.trim();
+    var pw = document.getElementById('reg-passwort').value;
+    var pwWh = document.getElementById('reg-passwort-wh').value;
+    var statusFeld = document.getElementById('reg-status');
+    
+    if (!statusFeld) { statusFeld = document.getElementById('auth-status'); }
+    statusFeld.innerText = ""; // Zurücksetzen
 
-        document.getElementById('auth-status').style.color = "var(--purple)";
-        document.getElementById('auth-status').innerText = "⏳ Erstelle Server-Account...";
+    // 🛑 1. PRÜFUNG: LEERE FELDER
+    if (!email || !pw || !pwWh) {
+        statusFeld.innerText = "❌ Bitte alle Felder ausfüllen!";
+        alert("⚠️ REGISTRIERUNG UNVOLLSTÄNDIG!\nBitte fülle E-Mail und beide Passwortfelder aus.");
+        return;
+    }
+    
+    // 🛑 2. PRÜFUNG: PASSWORT-MINDESTLÄNGE
+    if (pw.length < 6) {
+        statusFeld.innerText = "❌ Passwort muss mindestens 6 Zeichen lang sein!";
+        alert("⚠️ SICHERHEITS-HINWEIS:\nDein Passwort ist zu kurz. Es muss mindestens 6 Zeichen enthalten.");
+        return;
+    }
+    
+    // 🛑 3. PRÜFUNG: PASSWORT-ÜBEREINSTIMMUNG
+    if (pw !== pwWh) {
+        statusFeld.innerText = "❌ Die Passwörter stimmen nicht überein!";
+        alert("⚠️ TIPPFEHLER GEFUNDEN!\nDie eingegebenen Passwörter stimmen nicht überein. Bitte korrigiere deine Eingabe.");
+        return;
+    }
+    
+    statusFeld.style.color = "orange";
+    statusFeld.innerText = "⏳ Profil wird auf dem Server gesichert...";
+    
+    // ☁️ FIREBASE ACCOUNT ERSTELLEN
+    firebase.auth().createUserWithEmailAndPassword(email, pw)
+        .then(function(userCredential) {
+            var uid = userCredential.user.uid;
+            
+            // Vorausschauendes Datenblatt für die Cloud-Datenbank
+            var registrierungsDaten = {
+                email: email,
+                uid: uid,
+                rolle: "fahrer",
+                abo_typ: "basis",
+                username: document.getElementById('reg-username') ? document.getElementById('reg-username').value : "Anonymer_Fahrer",
+                branche: document.getElementById('reg-branche') ? document.getElementById('reg-branche').value : "nicht_angegeben",
+                land: document.getElementById('reg-land') ? document.getElementById('reg-land').value : "AT",
+                stundenlohn: document.getElementById('reg-lohn') ? (parseFloat(document.getElementById('reg-lohn').value) || 0) : 0,
+                diaetensatz: document.getElementById('reg-diaet') ? (parseFloat(document.getElementById('reg-diaet').value) || 0) : 0,
+                erstelltAm: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
-        firebase.auth().createUserWithEmailAndPassword(email, pass)
-            .then(function(userCredential) {
-                alert("🎯 ACCOUNT ERFOLGREICH ERSTELLT!\nBitte klicke jetzt auf 'Anmelden', um das System freizuschalten.");
-                document.getElementById('auth-status').style.color = "var(--success)";
-                document.getElementById('auth-status').innerText = "✅ Account registriert. Bitte Anmelden klicken.";
-            })
-            .catch(function(error) {
+            firebase.firestore().collection("users").doc(uid).set(registrierungsDaten)
+                .then(function() {
+                    alert("🎉 REGISTRIERUNG ERFOLGREICH!\nDein Fahrer-Konto wurde auf dem Server gesichert. Du wirst jetzt zum Login weitergeleitet.");
+                    zeigeLogin();
+                    document.getElementById('auth-email').value = email; // Übergibt die Mail direkt an den Login
+                    document.getElementById('auth-status').style.color = "var(--success)";
+                    document.getElementById('auth-status').innerText = "✅ Account erstellt! Bitte gib dein Passwort ein.";
+                });
+        })
+        .catch(function(error) { 
+            statusFeld.style.color = "red";
+            statusFeld.innerText = "❌ Server-Fehler: " + error.message; 
+            alert("❌ REGISTRIERUNG FEHLGESCHLAGEN!\n" + error.message);
+        });
+}
                 document.getElementById('auth-status').style.color = "red";
                 document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
                 alert("Registrierung fehlgeschlagen: " + error.message);
