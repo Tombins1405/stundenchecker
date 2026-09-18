@@ -64,28 +64,91 @@
     <!-- BEREICH 1: STAMMDATEN -->
     <div id="sec-reg">
                 <!-- SPERRBILDSCHIRM: SERVER-LOGIN -->
-        <div class="card" id="auth-box" style="border: 2px solid var(--primary); background: #ffffff;">
-            <div class="card-title" id="auth-title" style="color: var(--primary-dark); font-size:16px;">🔐 Fahrer-Konto (Zentraler Server-Login)</div>
-            <p style="font-size:11px; margin-bottom:12px; color:#555;">Melde dich an oder registriere dich, um die App-Funktionen freizuschalten und deine Stunden auf dem Server zu sichern.</p>
+         <!-- APP-ERKLÄRUNG & ABO-PAKETE (LANDINGPAGE) -->
+        <div class="card" style="background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; border: none; padding: 18px; text-align: center;">
+            <h2 style="font-size: 18px; margin-bottom: 6px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">Speditiv &amp; Sicher: Deine Fahrer-Zentrale</h2>
+            <p style="font-size: 12px; opacity: 0.95; line-height: 1.4; max-width: 400px; margin: 0 auto 15px auto;">
+                Die erste mitdenkende Zeiterfassung im DACH+CH Raum für LKW- und Baggerfahrer. Kontrolliere deine Stunden, Diäten und Prämien unbestechlich auf den Cent genau – absolut anonym und servergesichert!
+            </p>
+            
+            <!-- DIE ZWEI PREIS-PAKETE IM DIREKTVERGLEICH -->
+            <div style="display: flex; gap: 8px; margin-top: 10px; text-align: left;">
+                <!-- BASIS PAKET -->
+                <div style="flex: 1; background: rgba(255,255,255,0.15); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.25);">
+                    <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; opacity: 0.8;">📦 Basis</div>
+                    <div style="font-size: 18px; font-weight: bold; margin: 2px 0 6px 0;">€ 4,99 <span style="font-size:10px; font-weight:normal;">/M</span></div>
+                    <ul style="font-size: 11px; list-style: none; padding: 0; line-height: 1.4; opacity: 0.9;">
+                        <li>• Anonymer Username</li>
+                        <li>• Reine Zeiterfassung</li>
+                        <li>• Gesetzliche Diäten (Inland)</li>
+                        <li>• Manueller Monats-Lohnzettel</li>
+                    </ul>
+                </div>
+                
+                <!-- PREMIUM PAKET -->
+                <div style="flex: 1; background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; border: 2px solid #fff; position: relative;">
+                    <div style="position: absolute; top: -8px; right: 5px; background: #fff; color: #1565c0; font-size: 8px; font-weight: bold; padding: 1px 4px; border-radius: 4px; text-transform: uppercase;">Beliebt</div>
+                    <div style="font-size: 11px; font-weight: bold; text-transform: uppercase; color: #fff;">💎 Premium</div>
+                    <div style="font-size: 18px; font-weight: bold; margin: 2px 0 6px 0;">€ 9,99 <span style="font-size:10px; font-weight:normal;">/M</span></div>
+                    <ul style="font-size: 11px; list-style: none; padding: 0; line-height: 1.4;">
+                        <li>• <b>Alles aus Basis</b></li>
+                        <li>• <b>Lernende Prämien</b> (Mulden...)</li>
+                        <li>• <b>Lernende Kassen</b> (BUAK 60%)</li>
+                        <li>• <b>Ablauf-Warner</b> via Mail/SMS</li>
+                        <li>• DACH+CH Lohnplaner &amp; Pendler</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODERNE LOGIN-MASKE -->
+        <div class="card" id="login-box" style="border: 2px solid var(--primary); background: #ffffff;">
+            <div class="card-title" style="color: var(--primary-dark); font-size:16px;">🔐 Server-Login</div>
+            <p style="font-size:11px; margin-bottom:12px; color:#555;">Melde dich an, um deine Stunden auf dem Server zu sichern.</p>
             
             <div class="form-group">
                 <label>E-Mail-Adresse</label>
-               <input type="email" id="auth-email" placeholder="fahrer@spedition.at" style="background: #fafafa;" autocomplete="username">
+                <input type="email" id="auth-email" placeholder="fahrer@spedition.at" style="background: #fafafa;" autocomplete="username">
             </div>
             <div class="form-group">
-                <label>Passwort (mind. 6 Zeichen)</label>
-                <input type="password" id="auth-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
-            </div>
-                        <div class="form-group">
-                <label>Passwort wiederholen</label>
-                <input type="password" id="auth-passwort-wh" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+                <label>Passwort</label>
+                <input type="password" id="auth-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="current-password">
             </div>
             
-            <div style="display: flex; gap: 8px; margin-top: 14px;">
-                <button type="button" onclick="serverAnmeldung()" style="flex: 1; background: var(--primary-dark); color:white;">Anmelden</button>
-                <button type="button" onclick="serverRegistrierung()" style="flex: 1; background: #546e7a; color:white;">Registrieren</button>
-            </div>
+            <button type="button" onclick="serverAnmeldung()" style="background: var(--primary-dark); color:white; margin-top: 10px;">Login ➔</button>
+            
+            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
+                Noch kein Konto? <a href="#" onclick="zeigeRegistrierung(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Jetzt registrieren</a>
+            </p>
             <div id="auth-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:var(--purple); min-height:16px;"></div>
+        </div>
+
+        <!-- PROFESSIONELLE REGISTRIERUNGS-MASKE (Standardmäßig ausgeblendet) -->
+        <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
+            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Fahrer-Konto erstellen</div>
+            <p style="font-size:11px; margin-bottom:12px; color:#555;">Erstelle dein anonymes Profil und starte die sichere Cloud-Zeiterfassung.</p>
+            
+            <div class="form-group">
+                <label>E-Mail-Adresse</label>
+                <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
+            </div>
+            <div style="display:flex; gap:8px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Passwort (mind. 6 Zeichen)</label>
+                    <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Passwort wiederholen</label>
+                    <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+                </div>
+            </div>
+            
+            <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px;">Registrierung abschließen ✔</button>
+            
+            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
+                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Zurück zum Login</a>
+            </p>
+            <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
         </div>
         <div id="profil-box-container" class="card hidden">
             <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
