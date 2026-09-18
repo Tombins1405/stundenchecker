@@ -549,64 +549,86 @@ function serverRegistrierung() {
     var email = document.getElementById('reg-email').value.trim();
     var pw = document.getElementById('reg-passwort').value;
     var pwWh = document.getElementById('reg-passwort-wh').value;
+    var gewaehltesAbo = document.getElementById('reg-abo-auswahl') ? document.getElementById('reg-abo-auswahl').value : "premium";
     var statusFeld = document.getElementById('reg-status');
     
     if (!statusFeld) { statusFeld = document.getElementById('auth-status'); }
-    statusFeld.innerText = ""; // Zurücksetzen
+    statusFeld.innerText = "";
 
-    // 🛑 1. PRÜFUNG: LEERE FELDER
+    // 🛑 1. VALIDIERUNGEN
     if (!email || !pw || !pwWh) {
         statusFeld.innerText = "❌ Bitte alle Felder ausfüllen!";
         alert("⚠️ REGISTRIERUNG UNVOLLSTÄNDIG!\nBitte fülle E-Mail und beide Passwortfelder aus.");
         return;
     }
-    
-    // 🛑 2. PRÜFUNG: PASSWORT-MINDESTLÄNGE
     if (pw.length < 6) {
         statusFeld.innerText = "❌ Passwort muss mindestens 6 Zeichen lang sein!";
         alert("⚠️ SICHERHEITS-HINWEIS:\nDein Passwort ist zu kurz. Es muss mindestens 6 Zeichen enthalten.");
         return;
     }
-    
-    // 🛑 3. PRÜFUNG: PASSWORT-ÜBEREINSTIMMUNG
     if (pw !== pwWh) {
         statusFeld.innerText = "❌ Die Passwörter stimmen nicht überein!";
-        alert("⚠️ TIPPFEHLER GEFUNDEN!\nDie eingegebenen Passwörter stimmen nicht überein. Bitte korrigiere deine Eingabe.");
+        alert("⚠️ TIPPFEHLER GEFUNDEN!\nDie eingegebenen Passwörter stimmen nicht überein.");
         return;
     }
     
     statusFeld.style.color = "orange";
-    statusFeld.innerText = "⏳ Profil wird auf dem Server gesichert...";
+    statusFeld.innerText = "⏳ Verbindung zum Server wird aufgebaut...";
     
     // ☁️ FIREBASE ACCOUNT ERSTELLEN
     firebase.auth().createUserWithEmailAndPassword(email, pw)
         .then(function(userCredential) {
-            var uid = userCredential.user.uid;
+            var user = userCredential.user;
+            var uid = user.uid;
             
-            // Vorausschauendes Datenblatt für die Cloud-Datenbank
+            // 📅 MATHEMATISCHE BERECHNUNG DER 30-TAGE-TESTPHASE
+            var heute = new Date();
+            var testphaseBis = new Date();
+            testphaseBis.setDate(heute.getDate() + 30);
+            
+            // 🔒 VORAUSSCHAUENDES SAAS-DATENBLATT FÜR DIE CLOUD
             var registrierungsDaten = {
                 email: email,
                 uid: uid,
-                rolle: "fahrer",
-                abo_typ: "basis",
-                };
-           
+                rolle: (email.toLowerCase() === "thomas@teichmann-privat.at") ? "admin" : "fahrer",
+                abo_typ: gewaehltesAbo,
+                zahlungs_status: "testphase",
+                testphase_aktiv: true,
+                testphase_von: heute.toISOString().substring(0, 10),
+                testphase_bis: testphaseBis.toISOString().substring(0, 10),
+                username: document.getElementById('reg-username') ? document.getElementById('reg-username').value : "Anonymer_Fahrer",
+                branche: document.getElementById('reg-branche') ? document.getElementById('reg-branche').value : "nicht_angegeben",
+                land: document.getElementById('reg-land') ? document.getElementById('reg-land').value : "AT",
+                stundenlohn: document.getElementById('reg-lohn') ? (parseFloat(document.getElementById('reg-lohn').value) || 0) : 0,
+                diaetensatz: document.getElementById('reg-diaet') ? (parseFloat(document.getElementById('reg-diaet').value) || 0) : 0,
+                erstelltAm: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // 1. Daten in Firestore sichern
             firebase.firestore().collection("users").doc(uid).set(registrierungsDaten)
                 .then(function() {
-                    alert("🎉 REGISTRIERUNG ERFOLGREICH!\nDein Fahrer-Konto wurde auf dem Server gesichert. Du wirst jetzt zum Login weitergeleitet.");
-                    zeigeLogin();
-                    document.getElementById('auth-email').value = email; // Übergibt die Mail direkt an den Login
-                    document.getElementById('auth-status').style.color = "var(--success)";
-                    document.getElementById('auth-status').innerText = "✅ Account erstellt! Bitte gib dein Passwort ein.";
+                    // 2. 📧 AUTOMATISCHEN AKTIVIERUNGSLINK ABFEUERN
+                    user.sendEmailVerification()
+                        .then(function() {
+                            alert("🎉 ACCOUNT ERSTELLT!\n\nEin Aktivierungslink wurde an deine E-Mail gesendet.\nBitte klicke auf den Link in deinem Postfach, um dein Konto freizuschalten.");
+                            statusFeld.style.color = "var(--success)";
+                            statusFeld.innerText = "📩 Aktivierungs-Mail gesendet! Bitte Link im Postfach klicken.";
+                            zeigeLogin();
+                            document.getElementById('auth-email').value = email;
+                        })
+                        .catch(function(mailErr) {
+                            console.error("Fehler beim Mail-Versand:", mailErr);
+                            alert("⚠️ Account erstellt, aber der Aktivierungslink konnte nicht gesendet werden: " + mailErr.message);
+                            zeigeLogin();
+                        });
                 });
         })
         .catch(function(error) { 
             statusFeld.style.color = "red";
-            statusFeld.innerText = "❌ Server-Fehler: " + error.message; 
+            statusFeld.innerText = "❌ Registrierung fehlgeschlagen: " + error.message; 
             alert("❌ REGISTRIERUNG FEHLGESCHLAGEN!\n" + error.message);
         });
 }
-
     function serverAnmeldung() {
         var email = document.getElementById('auth-email').value;
         var pass = document.getElementById('auth-passwort').value;
