@@ -761,6 +761,60 @@ function zeigeRegistrierung() {
     document.getElementById('login-box').classList.add('hidden');
     document.getElementById('register-box').classList.remove('hidden');
 }
+ // 🌀 ENDLOS SCHWEBENDES 3D-KARUSSELL (CINEMATIC MATRIX LOGIK)
+var index3D = 1;
+
+function aktualisiere3D() {
+    var kartenAnzahl = 3;
+    
+    for (var i = 0; i < kartenAnzahl; i++) {
+        var karte = document.getElementById("karte-3d-" + i);
+        var punkt = document.getElementById("punkt-3d-" + i);
+        if (!karte) continue;
+        
+        var abstand = i - index3D;
+        
+        // Endlos-Umlauf-Arithmell
+        if (abstand < -1) abstand += kartenAnzahl;
+        if (abstand > 1) abstand -= kartenAnzahl;
+        
+        if (abstand === 0) {
+            // 🔥 DIE ACTIVE MITTEN-KARTE (RIESIG & VORNE)
+            karte.style.transform = "translateX(0px) translateZ(100px) scale(1.05) rotateY(0deg)";
+            karte.style.zIndex = "10";
+            karte.style.opacity = "1";
+            if (punkt) { punkt.style.background = "#ffffff"; punkt.style.width = "18px"; punkt.style.borderRadius = "10px"; }
+        } else if (abstand === -1 || abstand === 2) {
+            // ◀ LINKE KARTE (WEGGEKIPPT & NACH HINTEN VERSETZT)
+            karte.style.transform = "translateX(-140px) translateZ(-150px) scale(0.8) rotateY(25deg)";
+            karte.style.zIndex = "5";
+            karte.style.opacity = "0.5";
+            if (punkt) { punkt.style.background = "rgba(255,255,255,0.4)"; punkt.style.width = "8px"; punkt.style.borderRadius = "50%"; }
+        } else if (abstand === 1 || abstand === -2) {
+            // ▶ RECHTE KARTE (IN GEGENRICHTUNG GEKIPPT & HINTEN)
+            karte.style.transform = "translateX(140px) translateZ(-150px) scale(0.8) rotateY(-25deg)";
+            karte.style.zIndex = "5";
+            karte.style.opacity = "0.5";
+            if (punkt) { punkt.style.background = "rgba(255,255,255,0.4)"; punkt.style.width = "8px"; punkt.style.borderRadius = "50%"; }
+        }
+    }
+}
+
+function drehe3D(richtung) {
+    index3D += richtung;
+    if (index3D < 0) index3D = 2;
+    if (index3D > 2) index3D = 0;
+    aktualisiere3D();
+}
+
+function setze3DIndex(zielIndex) {
+    index3D = zielIndex;
+    aktualisiere3D();
+}
+
+// Zündung aktivieren
+setTimeout(function() { aktualisiere3D(); }, 600);
+   
     // 🎠 GLOBALER INTERAKTIVER PRODUKT-SLIDER (KARUSSELL) STEUERUNG
 var currentCarouselIndex = 1;
 
