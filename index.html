@@ -608,6 +608,7 @@ function serverRegistrierung() {
             firebase.firestore().collection("users").doc(uid).set(registrierungsDaten)
                 .then(function() {
                     // 2. 📧 AUTOMATISCHEN AKTIVIERUNGSLINK ABFEUERN
+                    firebase.auth().useDeviceLanguage();
                     user.sendEmailVerification()
                         .then(function() {
                             alert("🎉 ACCOUNT ERSTELLT!\n\nEin Aktivierungslink wurde an deine E-Mail gesendet.\nBitte klicke auf den Link in deinem Postfach, um dein Konto freizuschalten.");
