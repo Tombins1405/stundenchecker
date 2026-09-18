@@ -589,14 +589,8 @@ function serverRegistrierung() {
                 uid: uid,
                 rolle: "fahrer",
                 abo_typ: "basis",
-                username: document.getElementById('reg-username') ? document.getElementById('reg-username').value : "Anonymer_Fahrer",
-                branche: document.getElementById('reg-branche') ? document.getElementById('reg-branche').value : "nicht_angegeben",
-                land: document.getElementById('reg-land') ? document.getElementById('reg-land').value : "AT",
-                stundenlohn: document.getElementById('reg-lohn') ? (parseFloat(document.getElementById('reg-lohn').value) || 0) : 0,
-                diaetensatz: document.getElementById('reg-diaet') ? (parseFloat(document.getElementById('reg-diaet').value) || 0) : 0,
-                erstelltAm: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
+                };
+           
             firebase.firestore().collection("users").doc(uid).set(registrierungsDaten)
                 .then(function() {
                     alert("🎉 REGISTRIERUNG ERFOLGREICH!\nDein Fahrer-Konto wurde auf dem Server gesichert. Du wirst jetzt zum Login weitergeleitet.");
@@ -612,11 +606,6 @@ function serverRegistrierung() {
             alert("❌ REGISTRIERUNG FEHLGESCHLAGEN!\n" + error.message);
         });
 }
-                document.getElementById('auth-status').style.color = "red";
-                document.getElementById('auth-status').innerText = "❌ Fehler: " + error.message;
-                alert("Registrierung fehlgeschlagen: " + error.message);
-            });
-    }
 
     function serverAnmeldung() {
         var email = document.getElementById('auth-email').value;
