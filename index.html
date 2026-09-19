@@ -240,10 +240,10 @@
                 
                 <div style="margin-bottom: 8px;">
                     <label style="font-size: 12px; color: #555;">👤 Profilbild / Avatar (Optional):</label>
-                    <input type="file" id="upload-avatar" accept="image/*" style="font-size: 12px;">
+                    <input type="file" id="upload-avatar" accept="image/*" sty
+                <div>le="font-size: 12px;">
                 </div>
                 
-                <div>
                     <label style="font-size: 12px; color: #555;">🚛 Hintergrundbild (Dein LKW oder Bagger):</label>
                     <input type="file" id="upload-hintergrund" accept="image/*" style="font-size: 12px;">
                 </div>
@@ -693,19 +693,28 @@ function serverRegistrierung() {
 
             firebase.firestore().collection("users").doc(uid).set(registrierungsDaten)
                 .then(function() {
-                    firebase.auth().useDeviceLanguage();
-                    user.sendEmailVerification()
-                        .then(function() {
-                            alert("🎉 ACCOUNT ERSTELLT!\n\nEin Aktivierungslink wurde an deine E-Mail gesendet.\nBitte klicke auf den Link in deinem Postfach (prüfe auch den SPAM-ORDNER!), um dein Konto freizuschalten.");
-                            statusFeld.style.color = "var(--success)";
-                            statusFeld.innerText = "📩 Aktivierungs-Mail gesendet! Bitte Link im Postfach klicken.";
-                            zeigeLogin();
-                            document.getElementById('auth-email').value = email;
-                        })
-                        .catch(function(mailErr) {
-                            alert("⚠️ Account erstellt, aber der Aktivierungslink konnte nicht gesendet werden.");
-                            zeigeLogin();
-                        });
+                               // Lokalisierungs-Einstellungen für die automatische App-Rückleitung
+            var actionCodeSettings = {
+                url: 'https://firebaseapp.com', 
+                handleCodeInApp: false
+            };
+
+            // Aktiviert die vollautomatische Erkennung der Smartphone-Hardware-Sprache
+            firebase.auth().useDeviceLanguage(); 
+            
+            user.sendEmailVerification(actionCodeSettings)
+                .then(function() {
+                    alert("🎉 ACCOUNT ERSTELLT!\n\nEin Aktivierungslink wurde an deine E-Mail gesendet.\nBitte klicke auf den Link in deinem Postfach (prüfe auch den SPAM-ORDNER!), um dein Konto freizuschalten.\n\nNach dem Klick kannst du direkt zur App zurückkehren!");
+                    statusFeld.style.color = "var(--success)";
+                    statusFeld.innerText = "📩 Aktivierungs-Mail gesendet! Bitte Link im Postfach klicken.";
+                    zeigeLogin();
+                    document.getElementById('auth-email').value = email;
+                })
+                .catch(function(mailErr) {
+                    console.error("Mail-Fehler:", mailErr);
+                    alert("⚠️ Account erstellt, aber der Aktivierungslink konnte nicht gesendet werden.");
+                    zeigeLogin();
+                })
                 });
         })
         .catch(function(error) { 
