@@ -132,107 +132,83 @@
             </div>
         </div>
 </div>
-<br>        <!-- KUGELSICHERE REGISTRIERUNGS-MASKE (SAAS-TESTPHASEN-READY) -->
-        <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
-            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Konto erstellen</div>
-            <p style="font-size:11px; margin-bottom:12px; color:#555;">Dein gewähltes Paket startet automatisch mit einer <b>kostenlosen 30-Tage-Testphase</b>!</p>
+        <!-- 🔑 GÄSTE-ZONE: REINER LOGIN- & REGISTRIERUNGSBEREICH -->
+        <div id="gaeste-bereich-container">
             
-           <div class="form-group" style="display: block; margin-bottom: 15px; background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5;">
-    <label style="font-weight: bold; color: #2e7d32; font-size: 13px;">🛒 Gewähltes Paket an der Kassa:</label>
-    <select id="reg-abo-auswahl" disabled style="background: #ffffff; border: 2px solid #2e7d32; font-weight: bold; color: #2e7d32; cursor: not-allowed; -webkit-appearance: none; appearance: none; padding-left: 10px;">
-        <option value="basis">📦 BASIS-VERSION (€ 4,99 / Monat)</option>
-        <option value="premium">💎 PREMIUM-VOLLVERSION (€ 7,99 / Monat)</option>
-        <option value="ultimate">🚀 PROFI-EXPORT PRO (€ 9,99 / Monat)</option>
-    </select>
-    <p style="font-size: 11px; color: #555; margin-top: 5px; font-weight: 500;">
-        🔥 1. Monat kostenlos! Erste Zahlung fällig am: <b>19.10.2026</b>
-    </p>
-</div>
-
-            <div class="form-group">
-                <label>E-Mail-Adresse</label>
-                <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
-            </div>
-            
-            <div style="display:flex; gap:8px;">
-                <div class="form-group" style="flex:1;">
-                    <label>Passwort (mind. 6 Zeichen)</label>
-                    <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+            <!-- KUGELSICHERE REGISTRIERUNGS-MASKE (SABINES VERSION INKL. PASSWORT-AUGE) -->
+            <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
+                <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Konto erstellen</div>
+                <p style="font-size:11px; margin-bottom:12px; color:#555;">Dein gewähltes Paket startet automatisch mit einer <b>kostenlosen 30-Tage-Testphase</b>!</p>
+                
+                <div class="form-group" style="display: block; margin-bottom: 15px; background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5;">
+                    <label style="font-weight: bold; color: #2e7d32; font-size: 13px;">🛒 Gewähltes Paket an der Kassa:</label>
+                    <select id="reg-abo-auswahl" disabled style="background: #ffffff; border: 2px solid #2e7d32; font-weight: bold; color: #2e7d32; cursor: not-allowed; -webkit-appearance: none; appearance: none; padding-left: 10px;">
+                        <option value="basis">📦 BASIS-VERSION (€ 4,99 / Monat)</option>
+                        <option value="premium">💎 PREMIUM-VOLLVERSION (€ 7,99 / Monat)</option>
+                        <option value="ultimate">🚀 PROFI-EXPORT PRO (€ 9,99 / Monat)</option>
+                    </select>
+                    <p style="font-size: 11px; color: #555; margin-top: 5px; font-weight: 500;">
+                        🔥 1. Monat kostenlos! Erste Zahlung fällig am: <b>19.10.2026</b>
+                    </p>
                 </div>
-                <div class="form-group" style="flex:1;">
-                    <label>Passwort wiederholen</label>
-                    <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
-                </div>
-            </div>
-            
-            <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px; width: 100%;">Kostenlose Testphase starten ➔</button>
-            
-            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
-                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">➔ Zurück zur Auswahl</a>
-            </p>
-            <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
-        </div>
-        
-        <!-- MODERNE LOGIN-MASKE -->
-        <div class="card" id="login-box" style="border: 2px solid var(--primary); background: #ffffff;">
-                       <div class="card-title" style="color: var(--primary-dark); font-size:16px;">🔐 Server-Login</div>
-            <p style="font-size:11px; margin-bottom:12px; color:#555;">Melde dich an, um deine Stunden auf dem Server zu sichern.</p>
-            
-            <div class="form-group">
-                <label>E-Mail-Adresse</label>
-                <input type="email" id="auth-email" placeholder="fahrer@spedition.at" style="background: #fafafa;" autocomplete="username">
-            </div>
-            <div class="form-group">
-                <label>Passwort</label>
-                <input type="password" id="auth-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="current-password">
-            </div>
-            
-            <button type="button" onclick="serverAnmeldung()" style="background: var(--primary-dark); color:white; margin-top: 10px;">Login ➔</button>
-            
-            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
-                Noch kein Konto? <a href="#" onclick="zeigeRegistrierung(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Jetzt registrieren</a>
-            </p>
-            <div id="auth-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:var(--purple); min-height:16px;"></div>
-        </div>
 
-        <!-- PROFESSIONELLE REGISTRIERUNGS-MASKE (Standardmäßig ausgeblendet) -->
-        <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
-            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Fahrer-Konto erstellen</div>
-                       <p style="font-size:11px; margin-bottom:12px; color:#555;">Erstelle dein Profil und starte die sichere Cloud-Zeiterfassung.</p>
-            <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px; border-radius: 4px; font-size: 11px; color: #e65100; margin-bottom: 12px; font-weight: 500;">
-                ⚠️ <b>WICHTIGER HINWEIS:</b> Nach dem Absenden erhältst du einen Aktivierungslink. Bitte prüfe auch deinen <b>Spam- / Junk-Ordner</b>, falls die Mail nicht sofort im Posteingang ankommt!
+                <div class="form-group">
+                    <label>E-Mail-Adresse</label>
+                    <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
+                </div>
+                
+                <div style="display:flex; gap:8px; margin-bottom: 10px;">
+                    <div class="form-group" style="flex:1; position: relative;">
+                        <label>Passwort (mind. 6 Zeichen)</label>
+                        <div style="position: relative;">
+                            <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
+                            <span onclick="togglePasswortSichtbarkeit('reg-passwort', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex:1; position: relative;">
+                        <label>Passwort wiederholen</label>
+                        <div style="position: relative;">
+                            <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
+                            <span onclick="togglePasswortSichtbarkeit('reg-passwort-wh', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px; width: 100%;">Kostenlose Testphase starten ➔</button>
+                
+                <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
+                    Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">➔ Zurück zur Auswahl</a>
+                </p>
+                <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
             </div>
             
+            <!-- MODERNE LOGIN-MASKE -->
+            <div class="card" id="login-box" style="border: 2px solid var(--primary); background: #ffffff;">
+                <div class="card-title" id="auth-title" style="color: var(--primary-dark); font-size:16px;">🔐 Server-Login</div>
+                <p style="font-size:11px; margin-bottom:12px; color:#555;">Melde dich an, um deine Stunden auf dem Server zu sichern.</p>
+                
+                <div class="form-group">
+                    <label>E-Mail-Adresse</label>
+                    <input type="email" id="auth-email" placeholder="fahrer@spedition.at" style="background: #fafafa;" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>Passwort</label>
+                    <input type="password" id="auth-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="current-password">
+                </div>
+                
+                <button type="button" onclick="serverAnmeldung()" style="background: var(--primary-dark); color:white; margin-top: 10px;">Login ➔</button>
+                
+                <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
+                    Noch kein Konto? <a href="#" onclick="zeigeRegistrierung(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Jetzt registrieren</a>
+                </p>
+                <div id="auth-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:var(--purple); min-height:16px;"></div>
+            </div>
+        </div> <!-- ENDE #gaeste-bereich-container -->
+
+        <!-- PROFIL-BOX-CONTAINER: ONBOARDING FÜR SPÄTER -->
+        <div id="profil-box-container" class="card hidden" style="display: none; border: 2px solid var(--purple); background: #ffffff;">
+            <div class="card-title" style="color: var(--purple); font-size:16px;">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
             <div class="form-group">
-                <label>E-Mail-Adresse</label>
-                <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
-            </div>
-           <div style="display:flex; gap:8px;">
-    <div class="form-group" style="flex:1; position: relative;">
-        <label>Passwort (mind. 6 Zeichen)</label>
-        <div style="position: relative;">
-            <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
-            <span onclick="togglePasswortSichtbarkeit('reg-passwort', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
-        </div>
-    </div>
-    <div class="form-group" style="flex:1; position: relative;">
-        <label>Passwort wiederholen</label>
-        <div style="position: relative;">
-            <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
-            <span onclick="togglePasswortSichtbarkeit('reg-passwort-wh', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
-        </div>
-            
-            <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px;">Registrierung abschließen ✔</button>
-            
-            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
-                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Zurück zum Login</a>
-            </p>
-            <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
-        </div>
-                        </div> <!-- Schließt gaeste-bereich-container -->
-        <div id="profil-box-container" class="card hidden" style="display: none;">
-            <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
-                        <div class="form-group">
                 <label>Username (Schützt deine Anonymität in der Community)</label>
                 <input type="text" id="reg-username" placeholder="z.B. KipperKoenig oder AsphaltPro">
             </div>
@@ -246,13 +222,11 @@
             </div>
             <div class="form-group" style="background: #fafafa; padding: 10px; border-radius: 8px; border: 1px dashed #ccc;">
                 <label style="font-weight: bold; display: block; margin-bottom: 5px;">🎨 Gestalte deine Fahrer-App:</label>
-                
                 <div style="margin-bottom: 8px;">
                     <label style="font-size: 12px; color: #555;">👤 Profilbild / Avatar (Optional):</label>
-                    <input type="file" id="upload-avatar" accept="image/*" sty
-                <div>le="font-size: 12px;">
+                    <input type="file" id="upload-avatar" accept="image/*" style="font-size: 12px;">
                 </div>
-                
+                <div>
                     <label style="font-size: 12px; color: #555;">🚛 Hintergrundbild (Dein LKW oder Bagger):</label>
                     <input type="file" id="upload-hintergrund" accept="image/*" style="font-size: 12px;">
                 </div>
@@ -272,9 +246,8 @@
                 <label>Tagesdiät Spedition / Fernverkehr (€)</label>
                 <input type="number" id="reg-diaet" step="0.01" placeholder="z.B. 24.15">
             </div>
-            <button type="button" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
+            <button type="button" class="btn-save" onclick="switchTab('input')">Profil sichern &amp; Weiter ➔</button>
         </div>
-    </div>
 
     <!-- BEREICH 2: ERFASSUNG -->
     <div id="sec-input" class="hidden">
@@ -858,6 +831,62 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
 });
 
     // 🔄 SWITCH-FUNKTION: LOGIN-MASKE ANZEIGEN
+    // 👁️ PASSWORT-AUGE: Schaltet die Sichtbarkeit am Handy um (SabINES WUNSCH)
+function togglePasswortSichtbarkeit(feldId, iconElement) {
+    var feld = document.getElementById(feldId);
+    if (!feld) return;
+    if (feld.type === "password") {
+        feld.type = "text";
+        iconElement.innerText = "🙈";
+    } else {
+        feld.type = "password";
+        iconElement.innerText = "👁️";
+    }
+}
+
+// 🟢 VOLLFLÄCHIGER LIVE-FARBWÄCHTER FÜR PASSWORT-ÜBEREINSTIMMUNG (SABINES WUNSCH)
+function pruefePasswortFarben() {
+    var pw = document.getElementById('reg-passwort');
+    var pwWh = document.getElementById('reg-passwort-wh');
+    if (!pw || !pwWh) return;
+
+    if (pw.value.length > 0 && pwWh.value.length > 0) {
+        if (pw.value === pwWh.value && pw.value.length >= 6) {
+            // Vollflächig sanftes Grün bei Erfolg
+            pw.style.borderColor = "#2e7d32";
+            pwWh.style.borderColor = "#2e7d32";
+            pw.style.backgroundColor = "#c8e6c9";
+            pwWh.style.backgroundColor = "#c8e6c9";
+            pw.style.color = "#1b5e20";
+            pwWh.style.color = "#1b5e20";
+        } else {
+            // Vollflächig sanftes Rot bei Fehler oder zu kurz
+            pw.style.borderColor = "#c62828";
+            pwWh.style.borderColor = "#c62828";
+            pw.style.backgroundColor = "#ffcdd2";
+            pwWh.style.backgroundColor = "#ffcdd2";
+            pw.style.color = "#b71c1c";
+            pwWh.style.color = "#b71c1c";
+        }
+    } else {
+        // Standard-Zurücksetzung
+        pw.style.borderColor = "#b0bec5";
+        pwWh.style.borderColor = "#b0bec5";
+        pw.style.backgroundColor = "#fafafa";
+        pwWh.style.backgroundColor = "#fafafa";
+        pw.style.color = "#000000";
+        pwWh.style.color = "#000000";
+    }
+}
+
+// Aktiviert den Event-Listener für Sabines Live-Tastatur-Eingabe
+document.addEventListener('DOMContentLoaded', function() {
+    var pw = document.getElementById('reg-passwort');
+    var pwWh = document.getElementById('reg-passwort-wh');
+    if(pw) pw.addEventListener('input', pruefePasswortFarben);
+    if(pwWh) pwWh.addEventListener('input', pruefePasswortFarben);
+});
+
 function zeigeLogin() {
     // 🎭 Das 3D-Karussell-Element sofort wieder einblenden
     var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
