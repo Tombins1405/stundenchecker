@@ -133,7 +133,7 @@
 </div>
 <br>        <!-- KUGELSICHERE REGISTRIERUNGS-MASKE (SAAS-TESTPHASEN-READY) -->
         <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
-            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Fahrer-Konto erstellen</div>
+            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Konto erstellen</div>
             <p style="font-size:11px; margin-bottom:12px; color:#555;">Dein gewähltes Paket startet automatisch mit einer <b>kostenlosen 30-Tage-Testphase</b>!</p>
             
             <div class="form-group" style="display: none;">
@@ -617,10 +617,18 @@
     var aktuellerUser = null;
 
 // ⚡ BRÜCKE: Klick auf 3D-Karte öffnet Registrierung mit richtigem Abo
+// ⚡ BRÜCKE: Klick auf 3D-Karte blendet Pakete aus und holt Registrierung nach oben
 function waehlePaketUndRegistriere(paketName) {
     var auswahlFeld = document.getElementById('reg-abo-auswahl');
-    if(auswahlFeld) { auswahlFeld.value = paketName; }
-    zeigeRegistrierung();
+    if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
+    
+    // 🎭 Zaubertrick: Das Karussell und die Login-Box unsichtbar machen
+    var karussellKasten = document.querySelector('.carousel-container') ? document.querySelector('.carousel-container').parentElement : null;
+    if(karussellKasten) { karussellKasten.classList.add('hidden'); }
+    document.getElementById('login-box').classList.add('hidden');
+    
+    // 🚀 Das branchenneutrale Registrierungs-Tool nach ganz oben holen
+    document.getElementById('register-box').classList.remove('hidden');
 }
 
 function serverRegistrierung() {
