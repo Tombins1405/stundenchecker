@@ -619,16 +619,20 @@
 // ⚡ BRÜCKE: Klick auf 3D-Karte öffnet Registrierung mit richtigem Abo
 // ⚡ BRÜCKE: Klick auf 3D-Karte blendet Pakete aus und holt Registrierung nach oben
 function waehlePaketUndRegistriere(paketName) {
-    var auswahlFeld = document.getElementById('reg-abo-auswahl');
+        var auswahlFeld = document.getElementById('reg-abo-auswahl');
     if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
     
-    // 🎭 Zaubertrick: Das Karussell und die Login-Box unsichtbar machen
-    var karussellKasten = document.querySelector('.carousel-container') ? document.querySelector('.carousel-container').parentElement : null;
-    if(karussellKasten) { karussellKasten.classList.add('hidden'); }
-    document.getElementById('login-box').classList.add('hidden');
+    // 🎭 Das komplette 3D-Karussell-Element knallhart unsichtbar machen
+    var 3dKasten = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
+    if(3dKasten) { 3dKasten.style.display = 'none'; }
     
-    // 🚀 Das branchenneutrale Registrierungs-Tool nach ganz oben holen
-    document.getElementById('register-box').classList.remove('hidden');
+    // Die Login-Box ebenfalls verstecken
+    var loginBox = document.getElementById('login-box');
+    if(loginBox) { loginBox.classList.add('hidden'); loginBox.style.display = 'none'; }
+    
+    // 🚀 Das branchenneutrale Registrierungs-Tool vollflächig in den Fokus holen
+    var regBox = document.getElementById('register-box');
+    if(regBox) { regBox.classList.remove('hidden'); regBox.style.display = 'block'; }
 }
 
 function serverRegistrierung() {
