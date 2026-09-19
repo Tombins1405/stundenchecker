@@ -891,8 +891,8 @@ function handleTouchSwipe() {
 
     // ⚡ BRÜCKE: Klick auf 3D-Karte öffnet Registrierung mit richtigem Abo
 function waehlePaketUndRegistriere(paketName) {
-    var auswahlFeld = document.getElementById('reg-abo-auswahl');
-    if(auswahlFeld) { auswahlFeld.value = paketName; }
+        var auswahlFeld = document.getElementById('reg-abo-auswahl');
+    if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
     zeigeRegistrierung();
 }
 
