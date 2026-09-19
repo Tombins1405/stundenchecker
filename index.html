@@ -832,6 +832,10 @@ function zeigeLogin() {
     if(regStatus) { regStatus.innerText = ""; }
     var authStatus = document.getElementById('auth-status');
     if(authStatus) { authStatus.innerText = ""; }
+    
+     // 🛡️ Verhindert, dass der unpassende Unterbau beim Login sichtbar wird
+    var profBox = document.getElementById('profil-box-container');
+    if(profBox) { profBox.style.display = 'none'; }
 }
 
 // 🔄 SWITCH-FUNKTION: REGISTRIERUNGS-MASKE ANZEIGEN
