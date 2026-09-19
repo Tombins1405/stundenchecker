@@ -838,7 +838,49 @@ function setCarouselIndex(index) {
 }
 
 setTimeout(function() { updateCarousel(); }, 500);
+
+    // ⚡ LAYOUT-RETTER & DYNAMISCHE HANDY-WISCH-AUTOMATIK (TOUCH GESTEN)
+function erzwingerKompaktFormat() {
+    var breiteFix = "max-width: 480px; margin: 0 auto; width: 100%; box-sizing: border-box;";
+    var boxen = ['sec-input', 'sec-lohni', 'profil-box-container', 'import-box-container'];
+    boxen.forEach(function(id) {
+        var el = document.getElementById(id);
+        if(el) { el.style.cssText += breiteFix; }
+    });
+}
+// Zündung direkt beim Laden der Seite aktivieren
+setTimeout(erzwingerKompaktFormat, 300);
+
+// 📱 HANDY-WISCH-STEUERUNG FÜR DAS 3D-KARUSSELL
+var touchStartX = 0;
+var touchEndX = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    var cContainer = document.querySelector('.carousel-container');
+    if (!cContainer) { cContainer = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').parentElement : null; }
     
+    if (cContainer) {
+        cContainer.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        
+        cContainer.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleTouchSwipe();
+        }, {passive: true});
+    }
+});
+
+function handleTouchSwipe() {
+    var threshold = 40; // Mindest-Wischweite in Pixeln
+    if (touchStartX - touchEndX > threshold) {
+        drehe3D(1); // Nach links wischen -> Nächste Karte holen
+    }
+    if (touchEndX - touchStartX > threshold) {
+        drehe3D(-1); // Nach rechts wischen -> Vorherige Karte holen
+    }
+}
+
         window.onload = function() { 
         ladeTag(); 
         
