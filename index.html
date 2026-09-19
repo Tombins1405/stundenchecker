@@ -207,16 +207,20 @@
                 <label>E-Mail-Adresse</label>
                 <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
             </div>
-            <div style="display:flex; gap:8px;">
-                <div class="form-group" style="flex:1;">
-                    <label>Passwort (mind. 6 Zeichen)</label>
-                    <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
-                </div>
-                <div class="form-group" style="flex:1;">
-                    <label>Passwort wiederholen</label>
-                    <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
-                </div>
-            </div>
+           <div style="display:flex; gap:8px;">
+    <div class="form-group" style="flex:1; position: relative;">
+        <label>Passwort (mind. 6 Zeichen)</label>
+        <div style="position: relative;">
+            <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
+            <span onclick="togglePasswortSichtbarkeit('reg-passwort', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+        </div>
+    </div>
+    <div class="form-group" style="flex:1; position: relative;">
+        <label>Passwort wiederholen</label>
+        <div style="position: relative;">
+            <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa; padding-right: 35px;" autocomplete="new-password">
+            <span onclick="togglePasswortSichtbarkeit('reg-passwort-wh', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+        </div>
             
             <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px;">Registrierung abschließen ✔</button>
             
@@ -701,7 +705,7 @@ function serverRegistrierung() {
                 .then(function() {
                                // Lokalisierungs-Einstellungen für die automatische App-Rückleitung
             var actionCodeSettings = {
-                url: 'https://firebaseapp.com', 
+                url: 'https://stunden-checker.firebaseapp.com', 
                 handleCodeInApp: false
             };
 
@@ -790,7 +794,45 @@ function serverRegistrierung() {
             alert("Anmeldung fehlgeschlagen: " + error.message);
         });
 }
-// 👤 LIVE-VORSCHAU FÜR DEN USER-AVATAR
+// 🟢 LIVE-FARBWÄCHTER FÜR PASSWORT-ÜBEREINSTIMMUNG (SABINES WUNSCH)
+function pruefePasswortFarben() {
+    var pw = document.getElementById('reg-passwort');
+    var pwWh = document.getElementById('reg-passwort-wh');
+    if (!pw || !pwWh) return;
+
+    // Nur prüfen, wenn in beiden Feldern schon etwas getippt wurde
+    if (pw.value.length > 0 && pwWh.value.length > 0) {
+        if (pw.value === pwWh.value && pw.value.length >= 6) {
+            // Passwörter stimmen überein und sind lang genug -> GRÜN
+            pw.style.borderColor = "var(--success)";
+            pwWh.style.borderColor = "var(--success)";
+            pw.style.backgroundColor = "#e8f5e9";
+            pwWh.style.backgroundColor = "#e8f5e9";
+        } else {
+            // Stimmen nicht überein oder zu kurz -> ROT
+            pw.style.borderColor = "red";
+            pwWh.style.borderColor = "red";
+            pw.style.backgroundColor = "#ffebee";
+            pwWh.style.backgroundColor = "#ffebee";
+        }
+    } else {
+        // Standard-Hintergrund, wenn Felder leer sind
+        pw.style.borderColor = "#b0bec5";
+        pwWh.style.borderColor = "#b0bec5";
+        pw.style.backgroundColor = "#fafafa";
+        pwWh.style.backgroundColor = "#fafafa";
+    }
+}
+
+// Aktiviert die Live-Prüfung bei jedem Tastendruck der Testperson
+document.addEventListener('DOMContentLoaded', function() {
+    var pw = document.getElementById('reg-passwort');
+    var pwWh = document.getElementById('reg-passwort-wh');
+    if(pw) { pw.addEventListener('input', pruefePasswortFarben); }
+    if(pwWh) { pwWh.addEventListener('input', pruefePasswortFarben); }
+});
+
+    // 👤 LIVE-VORSCHAU FÜR DEN USER-AVATAR
 document.getElementById('upload-avatar').addEventListener('change', function(e) {
     var datei = e.target.files[0];
     if (datei) {
