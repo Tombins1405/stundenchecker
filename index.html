@@ -136,14 +136,17 @@
             <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Konto erstellen</div>
             <p style="font-size:11px; margin-bottom:12px; color:#555;">Dein gewähltes Paket startet automatisch mit einer <b>kostenlosen 30-Tage-Testphase</b>!</p>
             
-            <div class="form-group" style="display: none;">
-                <label>Gewähltes Abo-Modell</label>
-                <select id="reg-abo-auswahl" style="background: #e3f2fd; border: 1px solid var(--primary); font-weight: bold; color: var(--primary-dark);">
-                    <option value="basis">Basis</option>
-                    <option value="premium" selected>Premium</option>
-                    <option value="ultimate">Ultimate</option>
-                </select>
-            </div>
+           <div class="form-group" style="display: block; margin-bottom: 15px; background: #f1f8e9; padding: 10px; border-radius: 8px; border: 1px solid #c5e1a5;">
+    <label style="font-weight: bold; color: #2e7d32; font-size: 13px;">🛒 Gewähltes Paket an der Kassa:</label>
+    <select id="reg-abo-auswahl" disabled style="background: #ffffff; border: 2px solid #2e7d32; font-weight: bold; color: #2e7d32; cursor: not-allowed; -webkit-appearance: none; appearance: none; padding-left: 10px;">
+        <option value="basis">📦 BASIS-VERSION (€ 4,99 / Monat)</option>
+        <option value="premium">💎 PREMIUM-VOLLVERSION (€ 7,99 / Monat)</option>
+        <option value="ultimate">🚀 PROFI-EXPORT PRO (€ 9,99 / Monat)</option>
+    </select>
+    <p style="font-size: 11px; color: #555; margin-top: 5px; font-weight: 500;">
+        🔥 1. Monat kostenlos! Erste Zahlung fällig am: <b>19.10.2026</b>
+    </p>
+</div>
 
             <div class="form-group">
                 <label>E-Mail-Adresse</label>
@@ -164,7 +167,7 @@
             <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px; width: 100%;">Kostenlose Testphase starten ➔</button>
             
             <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
-                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Zurück zum Login</a>
+                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">➔ Zurück zur Auswahl</a>
             </p>
             <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
         </div>
@@ -221,7 +224,7 @@
             </p>
             <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
         </div>
-        <div id="profil-box-container" class="card hidden">
+        <div id="profil-box-container" class="card hidden" style="display: none;">
             <div class="card-title">🌍 Profil &amp; Gesetzliche Basis (DACH)</div>
                         <div class="form-group">
                 <label>Username (Schützt deine Anonymität in der Community)</label>
@@ -618,19 +621,20 @@
 
 // ⚡ BRÜCKE: Klick auf 3D-Karte öffnet Registrierung mit richtigem Abo
 // ⚡ BRÜCKE: Klick auf 3D-Karte blendet Pakete aus und holt Registrierung nach oben
+// ⚡ BRÜCKE: Klick auf 3D-Karte öffnet die Registrierung mit der transparenten Kassa-Vorschau
 function waehlePaketUndRegistriere(paketName) {
-        var auswahlFeld = document.getElementById('reg-abo-auswahl');
+    var auswahlFeld = document.getElementById('reg-abo-auswahl');
     if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
     
     // 🎭 Das komplette 3D-Karussell-Element knallhart unsichtbar machen
-        var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
+    var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
     if(kasten3D) { kasten3D.style.display = 'none'; }
     
     // Die Login-Box ebenfalls verstecken
     var loginBox = document.getElementById('login-box');
-    if(loginBox) { loginBox.classList.add('hidden'); loginBox.style.display = 'none'; }
+    if(loginBox) { loginBox.style.display = 'none'; }
     
-    // 🚀 Das branchenneutrale Registrierungs-Tool vollflächig in den Fokus holen
+    // 🚀 Das transparente Registrierungs-Tool vollflächig in den Fokus holen
     var regBox = document.getElementById('register-box');
     if(regBox) { regBox.classList.remove('hidden'); regBox.style.display = 'block'; }
 }
@@ -811,17 +815,23 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
 
     // 🔄 SWITCH-FUNKTION: LOGIN-MASKE ANZEIGEN
 function zeigeLogin() {
-    // 🎭 Das 3D-Karussell-Element sofort wieder sichtbar machen
+    // 🎭 Das 3D-Karussell-Element sofort wieder einblenden
     var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
     if(kasten3D) { kasten3D.style.display = 'block'; }
     
-    // Die Login-Box wieder ins Rampenlicht holen
+    // Die Login-Box wieder vollflächig anzeigen
     var loginBox = document.getElementById('login-box');
     if(loginBox) { loginBox.classList.remove('hidden'); loginBox.style.display = 'block'; }
     
-    // Die Registrierungsmaske unsichtbar machen
+    // Die Registrierungsmaske knallhart ausblenden
     var regBox = document.getElementById('register-box');
     if(regBox) { regBox.classList.add('hidden'); regBox.style.display = 'none'; }
+    
+    // Status-Texte leeren, damit keine alten Fehlermeldungen stehen bleiben
+    var regStatus = document.getElementById('reg-status');
+    if(regStatus) { regStatus.innerText = ""; }
+    var authStatus = document.getElementById('auth-status');
+    if(authStatus) { authStatus.innerText = ""; }
 }
 
 // 🔄 SWITCH-FUNKTION: REGISTRIERUNGS-MASKE ANZEIGEN
