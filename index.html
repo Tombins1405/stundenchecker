@@ -623,8 +623,8 @@ function waehlePaketUndRegistriere(paketName) {
     if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
     
     // 🎭 Das komplette 3D-Karussell-Element knallhart unsichtbar machen
-    var 3dKasten = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
-    if(3dKasten) { 3dKasten.style.display = 'none'; }
+        var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
+    if(kasten3D) { kasten3D.style.display = 'none'; }
     
     // Die Login-Box ebenfalls verstecken
     var loginBox = document.getElementById('login-box');
@@ -937,13 +937,6 @@ function handleTouchSwipe() {
     if (touchEndX - touchStartX > threshold) {
         drehe3D(-1); // Nach rechts wischen -> Vorherige Karte holen
     }
-}
-
-    // ⚡ BRÜCKE: Klick auf 3D-Karte öffnet Registrierung mit richtigem Abo
-function waehlePaketUndRegistriere(paketName) {
-        var auswahlFeld = document.getElementById('reg-abo-auswahl');
-    if(auswahlFeld && paketName) { auswahlFeld.value = paketName; }
-    zeigeRegistrierung();
 }
 
         window.onload = function() { 
