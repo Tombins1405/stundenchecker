@@ -131,7 +131,44 @@
             </div>
         </div>
 </div>
-<br>
+<br>        <!-- KUGELSICHERE REGISTRIERUNGS-MASKE (SAAS-TESTPHASEN-READY) -->
+        <div class="card hidden" id="register-box" style="border: 2px solid #546e7a; background: #ffffff;">
+            <div class="card-title" style="color: #37474f; font-size:16px;">📝 Neues Fahrer-Konto erstellen</div>
+            <p style="font-size:11px; margin-bottom:12px; color:#555;">Dein gewähltes Paket startet automatisch mit einer <b>kostenlosen 30-Tage-Testphase</b>!</p>
+            
+            <div class="form-group" style="display: none;">
+                <label>Gewähltes Abo-Modell</label>
+                <select id="reg-abo-auswahl" style="background: #e3f2fd; border: 1px solid var(--primary); font-weight: bold; color: var(--primary-dark);">
+                    <option value="basis">Basis</option>
+                    <option value="premium" selected>Premium</option>
+                    <option value="ultimate">Ultimate</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>E-Mail-Adresse</label>
+                <input type="email" id="reg-email" placeholder="deine-mail@provider.at" style="background: #fafafa;" autocomplete="username">
+            </div>
+            
+            <div style="display:flex; gap:8px;">
+                <div class="form-group" style="flex:1;">
+                    <label>Passwort (mind. 6 Zeichen)</label>
+                    <input type="password" id="reg-passwort" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Passwort wiederholen</label>
+                    <input type="password" id="reg-passwort-wh" placeholder="••••••••" style="background: #fafafa;" autocomplete="new-password">
+                </div>
+            </div>
+            
+            <button type="button" onclick="serverRegistrierung()" style="background: #546e7a; color:white; margin-top: 10px; width: 100%;">Kostenlose Testphase starten ➔</button>
+            
+            <p style="font-size:12px; text-align:center; margin-top:15px; color:#555;">
+                Bereits registriert? <a href="#" onclick="zeigeLogin(); return false;" style="color:var(--primary); font-weight:bold; text-decoration:none;">Zurück zum Login</a>
+            </p>
+            <div id="reg-status" style="font-size:12px; margin-top:10px; text-align:center; font-weight:bold; color:red; min-height:16px;"></div>
+        </div>
+        
         <!-- MODERNE LOGIN-MASKE -->
         <div class="card" id="login-box" style="border: 2px solid var(--primary); background: #ffffff;">
                        <div class="card-title" style="color: var(--primary-dark); font-size:16px;">🔐 Server-Login</div>
