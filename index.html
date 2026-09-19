@@ -639,7 +639,8 @@ function serverRegistrierung() {
     var email = document.getElementById('reg-email').value.trim();
     var pw = document.getElementById('reg-passwort').value;
     var pwWh = document.getElementById('reg-passwort-wh').value;
-    var gewaehltesAbo = document.getElementById('reg-abo-auswahl') ? document.getElementById('reg-abo-auswahl').value : "premium";
+        var regAboFeld = document.getElementById('reg-abo-auswahl');
+    var gewaehltesAbo = regAboFeld ? regAboFeld.value : "premium";
     var statusFeld = document.getElementById('reg-status');
     
     if (!statusFeld) { statusFeld = document.getElementById('auth-status'); }
