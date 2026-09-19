@@ -802,8 +802,17 @@ document.getElementById('upload-hintergrund').addEventListener('change', functio
 
     // 🔄 SWITCH-FUNKTION: LOGIN-MASKE ANZEIGEN
 function zeigeLogin() {
-    document.getElementById('login-box').classList.remove('hidden');
-    document.getElementById('register-box').classList.add('hidden');
+    // 🎭 Das 3D-Karussell-Element sofort wieder sichtbar machen
+    var kasten3D = document.getElementById('karte-3d-1') ? document.getElementById('karte-3d-1').closest('.card') : null;
+    if(kasten3D) { kasten3D.style.display = 'block'; }
+    
+    // Die Login-Box wieder ins Rampenlicht holen
+    var loginBox = document.getElementById('login-box');
+    if(loginBox) { loginBox.classList.remove('hidden'); loginBox.style.display = 'block'; }
+    
+    // Die Registrierungsmaske unsichtbar machen
+    var regBox = document.getElementById('register-box');
+    if(regBox) { regBox.classList.add('hidden'); regBox.style.display = 'none'; }
 }
 
 // 🔄 SWITCH-FUNKTION: REGISTRIERUNGS-MASKE ANZEIGEN
