@@ -1,1 +1,497 @@
+/* ==========================================================================
+   ⚙️ COCKPIT-BASE-DESIGN & FARBPALETTE
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
 
+body {
+    background-color: #1f2937; /* Tiefes, unaufdringliches Anthrazit */
+    color: #f3f4f6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* 1. DAS BANNER GANZ OBEN */
+.app-banner {
+    background: linear-gradient(135deg, #111827, #1f2937);
+    padding: 15px;
+    text-align: center;
+    border-bottom: 3px solid #1e88e5; /* Digital-Blau */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.app-banner h1 {
+    font-size: 1.6rem;
+    color: #1e88e5;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.app-banner h1 i {
+    margin-right: 8px;
+}
+
+.version-ticker {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 4px;
+    font-family: monospace;
+}
+
+/* ==========================================================================
+   📦 SCHREIENDES 3D-KARUSSELL (DIE RÄUMLICHE STAFFELUNG)
+   ========================================================================== */
+.carousel-container {
+    padding: 30px 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1200px; /* Aktiviert die 3D-Raumtiefe */
+}
+
+.carousel-3d {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 800px;
+    justify-content: center;
+    flex-wrap: wrap;
+    transform-style: preserve-3d; /* Zwingt Elemente in den 3D-Raum */
+}
+
+.carousel-card {
+    background: linear-gradient(145deg, #2d3748, #1a202c);
+    border: 2px solid #374151;
+    border-radius: 16px;
+    padding: 25px;
+    width: 340px;
+    position: relative;
+    box-shadow: 0 20px 35px rgba(0,0,0,0.6);
+    cursor: pointer;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease, border-color 0.3s ease;
+    transform-style: preserve-3d;
+}
+
+/* Die extreme räumliche Neigung im 3D-Raum */
+.card-basis {
+    transform: rotateY(12deg) translateZ(10px);
+}
+
+.card-premium {
+    transform: rotateY(-12deg) translateZ(10px);
+    border-color: #2e7d32; /* Signal-Grün */
+}
+
+/* 3D-Schwebe-Effekt beim Überfahren oder Anklicken */
+.carousel-card:hover, .carousel-card.selected {
+    border-color: #1e88e5;
+    box-shadow: 0 30px 50px rgba(30, 136, 229, 0.3);
+}
+
+.card-basis:hover, .card-basis.selected {
+    transform: rotateY(0deg) translateZ(50px) scale(1.03);
+}
+
+.card-premium:hover, .card-premium.selected {
+    transform: rotateY(0deg) translateZ(50px) scale(1.03);
+    box-shadow: 0 30px 50px rgba(46, 125, 50, 0.3);
+}
+
+/* Visuelle Pop-Out-Effekte innerhalb der Karten */
+.card-badge {
+    position: absolute;
+    top: -12px;
+    left: 15px;
+    background-color: #1e88e5;
+    color: white;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transform: translateZ(20px); /* Hebt das Badge optisch heraus */
+}
+
+.card-premium .card-badge {
+    background-color: #2e7d32;
+}
+
+.carousel-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #ffffff;
+    transform: translateZ(25px);
+}
+
+.card-price {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #2e7d32;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    transform: translateZ(30px);
+}
+
+.card-price span {
+    font-size: 1rem;
+    color: #9ca3af;
+}
+
+.card-features {
+    list-style: none;
+    margin-bottom: 20px;
+    transform: translateZ(15px);
+}
+
+.card-features li {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    color: #d1d5db;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-features li i {
+    color: #1e88e5;
+}
+
+.card-premium .card-features li i {
+    color: #2e7d32;
+}
+
+.card-trial-info {
+    font-size: 0.8rem;
+    color: #f59e0b; /* Warn-Orange */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    transform: translateZ(20px);
+}
+
+.btn-card-select {
+    width: 100%;
+    background-color: #1e88e5;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: translateZ(35px);
+    transition: background 0.2s;
+}
+
+.btn-card-select:hover {
+    background-color: #1565c0;
+}
+
+.premium-btn {
+    background-color: #2e7d32;
+}
+
+.premium-btn:hover {
+    background-color: #1b5e20;
+}
+
+/* ==========================================================================
+   🔐 REGISTRIERUNGS- & ANMELDETOOL (DIE PFORTEN)
+   ========================================================================== */
+.auth-container {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto 40px auto;
+    padding: 0 15px;
+}
+
+.auth-box {
+    background-color: #111827;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.auth-box h2 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-align: center;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 10px;
+}
+
+.input-group {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 6px;
+}
+
+.input-group label i {
+    margin-right: 4px;
+}
+
+.input-group input {
+    width: 100%;
+    background-color: #1f2937;
+    border: 1px solid #4b5563;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: #1e88e5;
+}
+
+/* Sanfte UX Farbwächter-Klassen für den Passwort-Check */
+.auth-box.pwd-weak {
+    background-color: #2d1416 !important; /* Sanftes Rot */
+    border-color: #ef4444;
+}
+
+.auth-box.pwd-strong {
+    background-color: #102a18 !important; /* Sanftes Grün */
+    border-color: #22c55e;
+}
+
+/* Auge & Wächter-Äffchen Ausrichtung */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    cursor: pointer;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    user-select: none;
+}
+
+.password-toggle:hover {
+    color: white;
+}
+
+.monkey-icon {
+    font-size: 1.2rem;
+}
+
+/* BUTTONS */
+.btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+}
+
+.btn-primary {
+    background-color: #1e88e5;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+}
+
+.btn-secondary {
+    background-color: #4b5563;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.btn-secondary:hover {
+    background-color: #374151;
+}
+
+.auth-links {
+    text-align: right;
+    margin-bottom: 15px;
+}
+
+.auth-links a {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.auth-links a:hover {
+    color: #1e88e5;
+    text-decoration: underline;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+.auth-switch a {
+    color: #1e88e5;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Logische Sichtbarkeiten */
+.auth-hidden, .input-hidden, .account-details-hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   🐒 CHATBOT-ÄFFCHEN MIA (ANIMIERTE ASSISTENTIN)
+   ========================================================================== */
+#mia-chatbot-container {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    z-index: 1000;
+}
+
+#mia-trigger-btn {
+    background: linear-gradient(135deg, #1e88e5, #1565c0);
+    border: 2px solid #ffffff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#mia-avatar {
+    font-size: 1.8rem;
+}
+
+.mia-badge {
+    position: absolute;
+    bottom: -5px;
+    background-color: #2e7d32;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid white;
+}
+
+#mia-chat-window {
+    position: fixed;
+    bottom: 150px;
+    right: 20px;
+    width: 320px;
+    height: 400px;
+    background-color: #111827;
+    border: 2px solid #374151;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.chat-header {
+    background-color: #1f2937;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #374151;
+}
+
+.chat-header h3 {
+    font-size: 0.95rem;
+    color: white;
+}
+
+.chat-header button {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg-mia, .msg-user {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    max-width: 85%;
+    line-height: 1.3;
+}
+
+.msg-mia {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+.msg-user {
+    background-color: #1e88e5;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-input-area {
+    padding: 10px;
+    background-color: #1f2937;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid #374151;
+}
+
+.chat-input-area input {
+    flex: 1;
+    background-color: #111827;
+    border: 1px solid #4b5563;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
