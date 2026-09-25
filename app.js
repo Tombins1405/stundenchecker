@@ -9,6 +9,10 @@ const firebaseConfig = {
     messagingSenderId: "825980043510",
     appId: "1:825980043510:web:c822d7cfaa363f9b17acd7"
 };
+// Firebase offiziell im Code starten
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Weichenstellung für die Oberflächen-Zonen
 let currentTab = 'tab-tagesbericht';
