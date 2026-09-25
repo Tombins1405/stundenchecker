@@ -24,7 +24,7 @@ async function loadAppVersion() {
     const user = "Tombins1405";
     const repo = "stundenchecker";
     // Unzerstörbare API-Trennregel gegen Link-Kürzungen
-    const base = "https://github.com";
+    const base = "https://api.github.com";
     const url = base + "repos/" + user + "/" + repo + "/commits/main";
     
     try {
