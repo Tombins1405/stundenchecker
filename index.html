@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stunden-Checker | Dein Lohn-Schutzschild</title>
+    <!-- Symbol-Netzwerk für schicke Buttons mit Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Unsere Design-Zentrale -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <!-- 1. DAS BANNER GANZ OBEN -->
+    <header class="app-banner">
+        <h1><i class="fas fa-clock-history"></i> STUNDEN-CHECKER</h1>
+        <div id="app-version-display" class="version-ticker">Live-Update: Lädt...</div>
+    </header>
+
+    <!-- GÄSTE-ZONE (NUR DIESE IST ZU BEGINN SICHTBAR) -->
+    <main id="guest-zone" class="zone-active">
+        
+        <!-- 2. DAS 3D-KARUSSELL (DIE 2 ABO-KARTEN MIT INTEGR. GRATISMONAT) -->
+        <section class="carousel-container">
+            <div class="carousel-3d">
+                
+                <!-- KARTE 1: BASIS-ABO -->
+                <div class="carousel-card card-basis" onclick="selectPackage('basis')">
+                    <div class="card-badge">⏱️ Beliebt für Handwerk & Gastro</div>
+                    <h3>Basis Komfort-Abo</h3>
+                    <div class="card-price">€ 2,99<span>/Monat</span></div>
+                    <ul class="card-features">
+                        <li><i class="fas fa-check-circle"></i> Universelle Arbeitszeit-Kontrolle</li>
+                        <li><i class="fas fa-check-circle"></i> Unbegrenzte Pausenzeilen</li>
+                        <li><i class="fas fa-check-circle"></i> Uhrzeit-Gedächtnis (1 Klick)</li>
+                        <li><i class="fas fa-check-circle"></i> Ausdruckbare Monatsübersicht</li>
+                    </ul>
+                    <div class="card-trial-info">🎁 1. Monat 100% kostenlos! Daten dauerhaft gesichert.</div>
+                    <button class="btn-card-select">Jetzt kostenlos testen</button>
+                </div>
+
+                <!-- KARTE 2: PREMIUM-ABO -->
+                <div class="carousel-card card-premium" onclick="selectPackage('premium')">
+                    <div class="card-badge">💎 Das LKW & Bagger Schutzschild</div>
+                    <h3>Premium SaaS-Abo</h3>
+                    <div class="card-price">€ 4,99<span>/Monat</span></div>
+                    <ul class="card-features">
+                        <li><i class="fas fa-star"></i> Alles aus dem Basis-Abo</li>
+                        <li><i class="fas fa-globe"></i> Flexible Diäten- & Zulagen-Engine</li>
+                        <li><i class="fas fa-calculator"></i> Unverbindlicher Brutto-Netto-Rechner</li>
+                        <li><i class="fas fa-shield-halved"></i> Überstunden-Wächter (Gesetz vs. Firma)</li>
+                        <li><i class="fas fa-folder-open"></i> Integriertes Arbeitgeber-Archiv</li>
+                        <li><i class="fas fa-cloud-arrow-up"></i> Inklusive Schlechtwetter- & Ausfall-Automatik</li>
+                    </ul>
+                    <div class="card-trial-info">🎁 1. Monat 100% kostenlos! Daten dauerhaft gesichert.</div>
+                    <button class="btn-card-select premium-btn">Jetzt Premium testen</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. DAS REGISTRIERUNGS- & ANMELDETOOL (DIE PFORTEN) -->
+        <section class="auth-container">
+            
+            <!-- ANMELDE-BOX (LOGIN) -->
+            <div id="login-box" class="auth-box">
+                <h2><i class="fas fa-lock"></i> Am Server anmelden</h2>
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> E-Mail-Adresse</label>
+                    <input type="email" id="login-email" placeholder="name@firma.com" required>
+                </div>
+                <div class="input-group password-wrapper">
+                    <label><i class="fas fa-key"></i> Passwort</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                    <!-- Passwort-Auge & Passwort-Äffchen Mia -->
+                    <span class="password-toggle" onclick="togglePasswordVisibility('login-password')">
+                        <i class="fas fa-eye" id="eye-icon-login"></i>
+                        <span id="monkey-auth-login" class="monkey-icon">🐒</span>
+                    </span>
+                </div>
+                <div class="auth-links">
+                    <a href="#" onclick="triggerPasswordReset()">Passwort vergessen?</a>
+                </div>
+                <button class="btn-primary" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Einloggen</button>
+                <p class="auth-switch">Noch kein Konto? <a href="#" onclick="switchAuthBox('register')">Jetzt registrieren</a></p>
+            </div>
+
+            <!-- REGISTRIERUNGS-BOX -->
+            <div id="register-box" class="auth-box auth-hidden">
+                <h2><i class="fas fa-user-plus"></i> Neues Konto erstellen</h2>
+                
+                <!-- SCHRITT 1: ANTI-HOPPER-SCHUTZ (SMS-WÄCHTER) -->
+                <div id="sms-verification-section">
+                    <div class="input-group">
+                        <label><i class="fas fa-phone"></i> Mobiltelefonnummer (Für SMS-Sicherheitscode)</label>
+                        <input type="tel" id="register-phone" placeholder="+43 664 1234567" required>
+                    </div>
+                    <button class="btn-secondary" id="btn-send-sms" onclick="sendSMSCode()"><i class="fas fa-sms"></i> SMS-Sicherheitscode anfordern</button>
+                    
+                    <div id="sms-code-input-wrapper" class="input-hidden">
+                        <div class="input-group">
+                            <label><i class="fas fa-shield-check"></i> 6-stelliger SMS-Code</label>
+                            <input type="number" id="sms-verification-code" placeholder="123456">
+                        </div>
+                        <button class="btn-primary" onclick="verifySMSCode()"><i class="fas fa-check"></i> Code verifizieren</button>
+                    </div>
+                </div>
+
+                <!-- SCHRITT 2: DATEN-PFORTEN (Erst nach SMS-Freigabe sichtbar) -->
+                <div id="account-details-section" class="account-details-hidden">
+                    <div class="input-group">
+                        <label><i class="fas fa-envelope"></i> E-Mail-Adresse</label>
+                        <input type="email" id="register-email" placeholder="name@web.com" required>
+                    </div>
+                    <div class="input-group password-wrapper">
+                        <label><i class="fas fa-key"></i> Passwort wählen</label>
+                        <input type="password" id="register-password" placeholder="Mindestens 6 Zeichen" required oninput="validatePasswordStrength()">
+                        <span class="password-toggle" onclick="togglePasswordVisibility('register-password')">
+                            <i class="fas fa-eye" id="eye-icon-register"></i>
+                            <span id="monkey-auth-register" class="monkey-icon">🐒</span>
+                        </span>
+                    </div>
+                    <button class="btn-primary" onclick="handleRegistration()"><i class="fas fa-rocket"></i> Registrierung abschließen</button>
+                </div>
+                
+                <p class="auth-switch">Bereits registriert? <a href="#" onclick="switchAuthBox('login')">Zur Anmeldung</a></p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- 4. DAS LERNENDE CHATBOT-ÄFFCHEN MIA -->
+    <div id="mia-chatbot-container">
+        <button id="mia-trigger-btn" onclick="toggleChatbot()">
+            <span id="mia-avatar">🐒</span>
+            <span class="mia-badge">Mia</span>
+        </button>
+        <div id="mia-chat-window" class="chat-hidden">
+            <div class="chat-header">
+                <h3>🐒 Mia – Deine Assistentin</h3>
+                <button onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chat-output" class="chat-messages">
+                <div class="msg-mia">Hallo! Ich bin Mia. Ich helfe dir, die Kontrolle über deine Arbeitszeit und deinen Brutto-Netto-Rechner zu behalten. Frag mich ruhig etwas zu unseren Abos!</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input-field" placeholder="Frage an Mia tippen..." onkeypress="handleChatKey(event)">
+                <button onclick="sendMessageToMia()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERNE REITER (DURCH CSS STRIKT GESPERRT UND UNSICHTBAR FÜR GÄSTE) -->
+    <nav id="main-navigation" class="nav-hidden">
+        <button onclick="switchTab('tab-tagesbericht')" class="nav-item active"><i class="fas fa-file-signature"></i> Tagesbericht</button>
+        <button onclick="switchTab('tab-rechner')" class="nav-item"><i class="fas fa-calculator"></i> Brutto-Netto</button>
+        <button onclick="switchTab('tab-profil')" class="nav-item"><i class="fas fa-user-gear"></i> Profil</button>
+    </nav>
+
+    <div id="internal-zone" class="zone-hidden">
+        <section id="tab-tagesbericht" class="tab-content"><!-- Phase 4 --></section>
+        <section id="tab-rechner" class="tab-content tab-hidden"><!-- Phase 6 --></section>
+        <section id="tab-profil" class="tab-content tab-hidden"><!-- Phase 3 --></section>
+    </div>
+
+     <!-- 5. DIE GESETZLICHE FUSSZEILE -->
+    <footer class="app-footer">
+        <div class="footer-links">
+            <a href="#" onclick="showLegal('impressum')">Impressum</a> | 
+            <a href="#" onclick="showLegal('datenschutz')">Datenschutz (DSGVO)</a> | 
+            <a href="#" onclick="showLegal('agb')">AGB</a>
+        </div>
+        <p>&copy; 2026 Stunden-Checker. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <!-- Unsere Server- & Rechenzentrale -->
+    <script src="app.js"></script>
+</body>
+</html>
