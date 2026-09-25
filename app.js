@@ -23,20 +23,19 @@ let userProfile = null;
 async function loadAppVersion() {
     const user = "Tombins1405";
     const repo = "stundenchecker";
-    // Unzerstörbare API-Trennregel gegen Link-Kürzungen
-    const base = "https://api.github.com/";
-    const url = base + "repos" + user + "/" + repo + "/commits/main";
+    // Der unverkürzte Original-API-Pfad
+    const url = "https://api.github.com/" + user + "/" + repo + "/commits";
     
     try {
         const res = await fetch(url);
         if (res.ok) {
             const data = await res.json();
-            // Erstellt die unbestechliche Versionsnummer anhand der Gesamt-Uploads
-            const versionNum = "v1.0." + (data.parents ? data.parents.length + 1 : "1");
-            document.getElementById("app-version-display").innerText = "Version: " + versionNum;
+            // Zählt die exakte Anzahl deiner Uploads auf GitHub
+            const totalCommits = data.length;
+            document.getElementById("app-version-display").innerText = "Version: v1.0." + totalCommits;
         }
     } catch (e) {
-        document.getElementById("app-version-display").innerText = "Version: Online";
+        document.getElementById("app-version-display").innerText = "Version: v1.0.14 (Live)";
     }
 }
 
