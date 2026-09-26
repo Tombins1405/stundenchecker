@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
     <title>Stunden-Checker | Dein Lohn-Schutzschild</title>
     <!-- Symbol-Netzwerk für schicke Buttons mit Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Unsere Design-Zentrale -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
+    <!-- Firebase Server-Anbindung (Compat-Modus aus Thomas' Original-Skript) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-    <!-- 1. DAS BANNER GANZ OBEN -->
+    <!-- 1. DAS HAUPT-BANNER GANZ OBEN -->
     <header class="app-banner">
-        <h1><i class="fas fa-clock-history"></i> STUNDEN-CHECKER</h1>
-        <div id="app-version-display" class="version-ticker">Live-Update: Lädt...</div>
+        <h1><i class="fas fa-clock-history"></i> STUNDEN-CHECKER <span id="live-version-balken">v2.82 Pro (Prüfe GitHub...)</span></h1>
     </header>
 
-    <!-- GÄSTE-ZONE (NUR DIESE IST ZU BEGINN SICHTBAR) -->
+    <!-- ==========================================================================
+         📦 GÄSTE-ZONE (LANDINGPAGE - STANDARDMÄSSIG SICHTBAR)
+         ========================================================================== -->
     <main id="guest-zone" class="zone-active">
         
-        <!-- 2. DAS 3D-KARUSSELL (DIE 2 ABO-KARTEN MIT INTEGR. GRATISMONAT) -->
+        <!-- 2. DAS SCHREIENDE 3D-KARUSSELL (DIE 2 ABO-KARTEN) -->
         <section class="carousel-container">
             <div class="carousel-3d">
                 
@@ -36,7 +42,7 @@
                         <li><i class="fas fa-check-circle"></i> Ausdruckbare Monatsübersicht</li>
                     </ul>
                     <div class="card-trial-info">🎁 1. Monat 100% kostenlos! Daten dauerhaft gesichert.</div>
-                    <button class="btn-card-select">Jetzt kostenlos testen</button>
+                    <button class="btn-card-select" type="button">Jetzt kostenlos testen</button>
                 </div>
 
                 <!-- KARTE 2: PREMIUM-ABO -->
@@ -53,7 +59,7 @@
                         <li><i class="fas fa-cloud-arrow-up"></i> Inklusive Schlechtwetter- & Ausfall-Automatik</li>
                     </ul>
                     <div class="card-trial-info">🎁 1. Monat 100% kostenlos! Daten dauerhaft gesichert.</div>
-                    <button class="btn-card-select premium-btn">Jetzt Premium testen</button>
+                    <button class="btn-card-select premium-btn" type="button">Jetzt Premium testen</button>
                 </div>
 
             </div>
@@ -67,12 +73,12 @@
                 <h2><i class="fas fa-lock"></i> Am Server anmelden</h2>
                 <div class="input-group">
                     <label><i class="fas fa-envelope"></i> E-Mail-Adresse</label>
-                    <input type="email" id="login-email" placeholder="name@firma.com" required>
+                    <input type="email" id="login-email" placeholder="name@firma.com" required autocomplete="username">
                 </div>
                 <div class="input-group password-wrapper">
                     <label><i class="fas fa-key"></i> Passwort</label>
-                    <input type="password" id="login-password" placeholder="••••••••" required>
-                    <!-- Passwort-Auge & Passwort-Äffchen Mia -->
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                    <!-- Passwort-Auge & Passwort-Äffchen -->
                     <span class="password-toggle" onclick="togglePasswordVisibility('login-password')">
                         <i class="fas fa-eye" id="eye-icon-login"></i>
                         <span id="monkey-auth-login" class="monkey-icon">🐒</span>
@@ -81,7 +87,8 @@
                 <div class="auth-links">
                     <a href="#" onclick="triggerPasswordReset()">Passwort vergessen?</a>
                 </div>
-                <button class="btn-primary" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Einloggen</button>
+                <button class="btn-primary" type="button" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> Einloggen</button>
+                <div id="auth-status-login" class="auth-status-message"></div>
                 <p class="auth-switch">Noch kein Konto? <a href="#" onclick="switchAuthBox('register')">Jetzt registrieren</a></p>
             </div>
 
@@ -95,14 +102,14 @@
                         <label><i class="fas fa-phone"></i> Mobiltelefonnummer (Für SMS-Sicherheitscode)</label>
                         <input type="tel" id="register-phone" placeholder="+43 664 1234567" required>
                     </div>
-                    <button class="btn-secondary" id="btn-send-sms" onclick="sendSMSCode()"><i class="fas fa-sms"></i> SMS-Sicherheitscode anfordern</button>
+                    <button class="btn-secondary" type="button" id="btn-send-sms" onclick="sendSMSCode()"><i class="fas fa-sms"></i> SMS-Sicherheitscode anfordern</button>
                     
                     <div id="sms-code-input-wrapper" class="input-hidden">
                         <div class="input-group">
                             <label><i class="fas fa-shield-check"></i> 6-stelliger SMS-Code</label>
                             <input type="number" id="sms-verification-code" placeholder="123456">
                         </div>
-                        <button class="btn-primary" onclick="verifySMSCode()"><i class="fas fa-check"></i> Code verifizieren</button>
+                        <button class="btn-primary" type="button" onclick="verifySMSCode()"><i class="fas fa-check"></i> Code verifizieren</button>
                     </div>
                 </div>
 
@@ -110,19 +117,19 @@
                 <div id="account-details-section" class="account-details-hidden">
                     <div class="input-group">
                         <label><i class="fas fa-envelope"></i> E-Mail-Adresse</label>
-                        <input type="email" id="register-email" placeholder="name@web.com" required>
+                        <input type="email" id="register-email" placeholder="name@web.com" required autocomplete="new-password">
                     </div>
                     <div class="input-group password-wrapper">
                         <label><i class="fas fa-key"></i> Passwort wählen</label>
-                        <input type="password" id="register-password" placeholder="Mindestens 6 Zeichen" required oninput="validatePasswordStrength()">
+                        <input type="password" id="register-password" placeholder="Mindestens 6 Zeichen" required autocomplete="new-password" oninput="validatePasswordStrength()">
                         <span class="password-toggle" onclick="togglePasswordVisibility('register-password')">
                             <i class="fas fa-eye" id="eye-icon-register"></i>
                             <span id="monkey-auth-register" class="monkey-icon">🐒</span>
                         </span>
                     </div>
-                    <button class="btn-primary" onclick="handleRegistration()"><i class="fas fa-rocket"></i> Registrierung abschließen</button>
+                    <button class="btn-primary" type="button" onclick="handleRegistration()"><i class="fas fa-rocket"></i> Registrierung abschließen</button>
                 </div>
-                
+                <div id="auth-status-register" class="auth-status-message"></div>
                 <p class="auth-switch">Bereits registriert? <a href="#" onclick="switchAuthBox('login')">Zur Anmeldung</a></p>
             </div>
 
@@ -130,38 +137,178 @@
 
     </main>
 
-    <!-- 4. DAS LERNENDE CHATBOT-ÄFFCHEN MIA -->
-    <div id="mia-chatbot-container">
-        <button id="mia-trigger-btn" onclick="toggleChatbot()">
-            <span id="mia-avatar">🐒</span>
-            <span class="mia-badge">Mia</span>
-        </button>
-        <div id="mia-chat-window" class="chat-hidden">
-            <div class="chat-header">
-                <h3>🐒 Mia – Deine Assistentin</h3>
-                <button onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
-            </div>
-            <div id="chat-output" class="chat-messages">
-                <div class="msg-mia">Hallo! Ich bin Mia. Ich helfe dir, die Kontrolle über deine Arbeitszeit und deinen Brutto-Netto-Rechner zu behalten. Frag mich ruhig etwas zu unseren Abos!</div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input-field" placeholder="Frage an Mia tippen..." onkeypress="handleChatKey(event)">
-                <button onclick="sendMessageToMia()"><i class="fas fa-paper-plane"></i></button>
-            </div>
+    <!-- ==========================================================================
+         🌍 INTERNE COCKPIT-ZONE (FÜR ANGEMELDETE FAHRER UND ADMINS)
+         ========================================================================== -->
+    <div id="internal-zone" class="zone-hidden">
+        
+        <!-- INTERNE REITER-NAVIGATION GANZ UNTEN ODER HIER POSITIONIERT -->
+        <nav id="main-navigation">
+            <button type="button" id="tab-btn-reg" onclick="switchTab('reg')" class="nav-item active"><i class="fas fa-user-gear"></i> Stammdaten</button>
+            <button type="button" id="tab-btn-input" onclick="switchTab('input')" class="nav-item"><i class="fas fa-file-signature"></i> Erfassung</button>
+            <button type="button" id="tab-btn-lohni" onclick="switchTab('lohni')" class="nav-item"><i class="fas fa-calculator"></i> Lohnzettel</button>
+        </nav>
+
+        <div class="container cockpit-padding">
+            
+            <!-- COCKPIT-REITER 1: STAMMDATEN & PROFIL -->
+            <section id="sec-reg" class="tab-content">
+                <div class="cockpit-card">
+                    <div class="cockpit-card-title"><i class="fas fa-globe"></i> Profil & Gesetzliche Basis (DACH)</div>
+                    <div class="form-group">
+                        <label>Beschäftigungsland (Steuerrecht)</label>
+                        <select id="reg-land">
+                            <option value="AT">Österreich (ÖGB / Kollektivvertrag)</option>
+                            <option value="DE">Deutschland (MiLoG / EstG)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Aktueller Brutto-Stundenlohn (€)</label>
+                        <input type="number" id="reg-lohn" step="0.01" placeholder="z.B. 14.30">
+                    </div>
+                    <div class="form-group">
+                        <label>Tagesdiät Spedition / Fernverkehr (€)</label>
+                        <input type="number" id="reg-diaet" step="0.01" placeholder="z.B. 24.15">
+                    </div>
+                    <div class="form-group company-link-box">
+                        <label><i class="fas fa-briefcase"></i> B2B Firmen-Verknüpfung (Optional)</label>
+                        <input type="text" id="reg-f-code" placeholder="Firmen-Code eingeben (z.B. LKW-MUELLER)">
+                    </div>
+                    <button type="button" class="btn-primary-cockpit" onclick="switchTab('input')">Profil sichern & Weiter ➔</button>
+                </div>
+            </section>
+
+            <!-- COCKPIT-REITER 2: ARBEITSZEIT-ERFASSUNG & IMPORT -->
+            <section id="sec-input" class="tab-content tab-hidden">
+                <!-- B2B ADMIN EXCEL/CSV IMPORT BOX (NUR FÜR LEUTE MIT ADMIN-ROLLE) -->
+                <div id="import-box-container" class="admin-import-box admin-hidden">
+                    <div class="cockpit-card-title admin-title"><i class="fas fa-file-excel"></i> Excel / CSV Daten-Import (Chef-Zentrale)</div>
+                    <p class="admin-text">Wähle deine aus Excel exportierte März-CSV-Datei aus (; getrennt), um alle Tage automatisch in die Cloud einzulesen.</p>
+                    <input type="file" id="csv-file" accept=".csv" class="admin-file-input">
+                    <button type="button" class="btn-import" onclick="importiereCSV()">März-CSV jetzt einlesen</button>
+                </div>
+
+                <div class="cockpit-card">
+                    <div class="cockpit-card-title"><i class="fas fa-pen-to-square"></i> Arbeitsleistung eintragen</div>
+                    <div class="form-group">
+                        <label>Datum</label>
+                        <input type="date" id="datum" value="2026-03-01" onchange="ladeTag()">
+                    </div>
+                    <div class="form-group">
+                        <label>Status / Info</label>
+                        <select id="info" onchange="berechneLive()">
+                            <option value="Arbeit">-- Normaler Arbeitstag --</option>
+                            <option value="Zeitausgleich">Zeitausgleich (ZA)</option>
+                            <option value="Urlaub">Regulärer Urlaub</option>
+                            <option value="Sonderurlaub">Sonderurlaub (8h fix)</option>
+                            <option value="Krankenstand">Krankenstand</option>
+                            <option value="Feiertag">Feiertag</option>
+                            <option value="Wochendarbeit">Wochenendarbeit</option>
+                            <option value="Frei">Frei / Ruhrtag</option>
+                        </select>
+                    </div>
+
+                    <div id="zeit-felder">
+                        <div class="form-group">
+                            <label>Arbeitsbeginn (Von)</label>
+                            <input type="time" id="von" value="06:30" onchange="berechneLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Arbeitsende (Bis)</label>
+                            <input type="time" id="bis" value="17:00" onchange="berechneLive()">
+                        </div>
+                        <div class="form-group">
+                            <label>Mittagspause</label>
+                            <div class="pause-split-row">
+                                <input type="time" id="p_von" value="12:00" onchange="berechneLive()">
+                                <input type="time" id="p_bis" value="12:30" onchange="berechneLive()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Fahrer-Nächtigung im Ausland?</label>
+                            <select id="naechstung" onchange="berechneLive()">
+                                <option value="0">Nein (Heimkehr)</option>
+                                <option value="1">Ja (Pauschale buchen)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-save-day" onclick="speichereTag()"><i class="fas fa-cloud-arrow-up"></i> Tag im System sichern</button>
+                </div>
+
+                <div class="cockpit-card live-result-box">
+                    <div class="result-row"><span>Netto-Arbeitszeit:</span><span id="res-netto">0.00 Std</span></div>
+                    <div class="result-row"><span>Überstunden:</span><span id="res-uest">0.00 Std</span></div>
+                    <div class="result-row weekly-total-row"><span>Geleistete Stunden diese Woche:</span><span id="res-woche">0.00 Std</span></div>
+                </div>
+            </section>
+
+            <!-- COCKPIT-REITER 3: VORAUSSICHTLICHER LOHNZETTEL & EXPORT -->
+            <section id="sec-lohni" class="tab-content tab-hidden">
+                <div class="cockpit-card za-control-box">
+                    <div class="cockpit-card-title control-title"><i class="fas fa-clock"></i> Überstunden- & ZA-Konto Steuerung</div>
+                    <p class="control-text">Definiere, wie viele Überstunden diesen Monat für den Winter auf das Zeitausgleichskonto fließen sollen.</p>
+                    <div class="form-group">
+                        <label><b>Überstunden in ZA schieben (z.B. 10):</b></label>
+                        <input type="number" id="za-schieber" placeholder="0" min="0" max="100" onchange="berechneMonatlicheAbrechnung()">
+                    </div>
+                </div>
+
+                <div class="cockpit-card lohn-preview-card">
+                    <div class="cockpit-card-title preview-title"><i class="fas fa-file-invoice-dollar"></i> Voraussichtlicher Lohnzettel</div>
+                    
+                    <div class="result-row"><span>Grundstunden (Soll):</span><span id="l-grund-std">0.00 h</span></div>
+                    <div class="result-row"><span>+ Gearbeitete Überstunden:</span><span id="l-uest-gesamt">0.00 h</span></div>
+                    <div class="result-row za-purple-text"><span>- Davon in Zeitausgleich (ZA) gebucht:</span><span id="l-za-gebuche">0.00 h</span></div>
+                    <div class="result-row total-calc-row"><span>= Zur Auszahlung gelangende ÜST:</span><span id="l-uest-auszahl">0.00 h</span></div>
+                    
+                    <div class="result-row final-green-row"><span>Voraussichtliches Bruttogehalt:</span><span id="l-brutto">0,00 €</span></div>
+                    <div class="result-row tax-free-row"><span>+ Steuerfreie Diäten (Netto-Auszahlung):</span><span id="l-diaeten">0,00 €</span></div>
+                    <div class="result-row tax-free-row border-bottom-green"><span>+ Steuerfreie Nächtigungsgelder:</span><span id="l-naecht">0,00 €</span></div>
+                    
+                    <div class="result-row grand-total-row"><span>GESAMTAUSZAHLUNG (Vorschau):</span><span id="l-gesamt">0,00 €</span></div>
+                </div>
+
+                <div class="cockpit-card">
+                    <button type="button" class="btn-primary" onclick="generiereExcelText()"><i class="fas fa-file-export"></i> Gesamten Monat für Excel ausgeben</button>
+                    <div id="export-card" class="export-area-hidden">
+                        <textarea id="export-text-area" readonly placeholder="Excel-Daten laden..."></textarea>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </div>
 
-    <!-- INTERNE REITER (DURCH CSS STRIKT GESPERRT UND UNSICHTBAR FÜR GÄSTE) -->
-    <nav id="main-navigation" class="nav-hidden">
-        <button onclick="switchTab('tab-tagesbericht')" class="nav-item active"><i class="fas fa-file-signature"></i> Tagesbericht</button>
-        <button onclick="switchTab('tab-rechner')" class="nav-item"><i class="fas fa-calculator"></i> Brutto-Netto</button>
-        <button onclick="switchTab('tab-profil')" class="nav-item"><i class="fas fa-user-gear"></i> Profil</button>
-    </nav>
-
-    <div id="internal-zone" class="zone-hidden">
-        <section id="tab-tagesbericht" class="tab-content"><!-- Phase 4 --></section>
-        <section id="tab-rechner" class="tab-content tab-hidden"><!-- Phase 6 --></section>
-        <section id="tab-profil" class="tab-content tab-hidden"><!-- Phase 3 --></section>
+    <!-- ==========================================================================
+         🐒 ANIMIERTES CHATBOT-ÄFFCHEN MIA MIT DYNAMISCHER SPRECHBLASE
+         ========================================================================== -->
+    <div id="mia-chatbot-container">
+        <!-- Die schicke, schwebende Sprechblase direkt über Mias Kopf -->
+        <div id="mia-speech-bubble" class="bubble-hidden">
+            <div class="bubble-text" id="mia-bubble-content">Hallo! Ich bin Mia. Ich helfe dir, die Kontrolle über deine Stunden zu behalten! 🐒</div>
+            <div class="bubble-arrow"></div>
+        </div>
+        
+        <!-- Mias runder, interaktiver Klick-Button -->
+        <button type="button" id="mia-trigger-btn" onclick="toggleChatbot()">
+            <span id="mia-avatar">🐒</span>
+            <span class="mia-badge">Mia</span>
+        </button>
+        
+        <!-- Das eigentliche Chat-Fenster (Öffnet sich flüssig) -->
+        <div id="mia-chat-window" class="chat-hidden">
+            <div class="chat-header">
+                <h3>🐒 Mia – Deine Assistentin</h3>
+                <button type="button" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="chat-output" class="chat-messages">
+                <div class="msg-mia">Frag mich ruhig etwas zu unseren Tarifen, Diäten oder wie der Excel-Import funktioniert!</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input-field" placeholder="Frage an Mia tippen..." onkeypress="handleChatKey(event)">
+                <button type="button" onclick="sendMessageToMia()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
     </div>
 
     <!-- 5. DIE GESETZLICHE FUSSZEILE -->
@@ -174,10 +321,7 @@
         <p>&copy; 2026 Stunden-Checker. Alle Rechte vorbehalten.</p>
     </footer>
 
-    <!-- Firebase Bibliotheken fehlerfrei geladen -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="app.js"></script>
+    <!-- Unser unbestechliches Haupt-Gehirn -->
+    <script src="app.js?v=2"></script>
 </body>
 </html>
