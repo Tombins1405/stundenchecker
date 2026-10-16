@@ -285,6 +285,10 @@
       days = ohne;
     }
     var n = daysInMonth(y, m), tage = [];
+    // Beginn der Aufzeichnung: der erste eingetragene Tag. Davor gibt es kein Soll (wichtig, wenn man mitten im Monat anfängt).
+    var firstKey = null, live = false;
+    if (heute) { var hq = parseISO(heute); live = hq.y === y && hq.m === m; }
+    Object.keys(days).forEach(function (k) { if (days[k] && (!firstKey || k < firstKey)) firstKey = k; });
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
       arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, za: 0, feiertageBezahlt: 0, zuschlagMin: 0,
       feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
@@ -294,6 +298,8 @@
       var ds = iso(y, m, d), w = wertAt(settings, ds), r = calcDay(days[ds], ds, w);
       tage.push(r);
       if (r.leer) continue;
+      // Automatischer Feiertag ohne Eintrag: vor dem ersten Eintrag und in der Zukunft noch nicht mitzählen (nur Modell "monat").
+      if (!days[ds] && w.ueberstunden.modell === 'monat' && ((heute && ds > heute) || (live && firstKey && ds < firstKey))) continue;
       s.istMin += r.nettoMin;
       s.lohnMin += r.wertMin + r.creditMin;
       s.zuschlagMin += r.wertMin - r.nettoMin;
@@ -322,7 +328,8 @@
       var bis = n;
       if (heute) { var hp = parseISO(heute); if (hp.y === y && hp.m === m) bis = hp.d; else if (hp.y < y || (hp.y === y && hp.m < m)) bis = 0; }
       var sollMin = 0;
-      for (var q = 1; q <= bis; q++) {
+      var ab = 1; if (live && firstKey) { var fp = parseISO(firstKey); if (fp.y === y && fp.m === m) ab = fp.d; else if (fp.y > y || (fp.y === y && fp.m > m)) ab = n + 1; }
+      for (var q = ab; q <= bis; q++) {
         var dq = iso(y, m, q), wq = weekday(dq);
         if (wq >= 1 && wq <= 5 && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(tagesSoll(wertAt(settings, dq).ueberstunden) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }

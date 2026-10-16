@@ -638,5 +638,5 @@
   $('#e-form').addEventListener('submit', function (ev) { ev.preventDefault(); saveDay(); });
 
   /* ============================================================ Start */
-  show('monat');
+  show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 })();
