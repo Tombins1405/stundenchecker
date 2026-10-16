@@ -318,7 +318,7 @@
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
     $('#e-notiz').value = d.notiz || '';
-    $('#e-spaeter').checked = !!d.spaeter;
+    if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
     $('#e-work').hidden = d.status !== 'arbeit';
