@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2937">
+<title>Stunden-Checker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Stunden<b>-</b>Checker</div>
+    <div class="slogan">Jede Stunde. Jeder Euro. Im Blick.</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ MONAT ============ -->
+  <section id="v-monat" class="view" aria-label="Monatsübersicht">
+    <div id="storage-warn" class="notice bad" hidden>Dieser Browser erlaubt kein Speichern. Deine Eingaben gehen beim Schließen der Seite verloren. Bitte erlaube Website-Daten oder öffne die Seite in einem normalen (nicht privaten) Fenster.</div>
+
+    <div id="onboard" class="card" hidden>
+      <h3>Willkommen im Stunden-Checker</h3>
+      <p class="hint">Wähle deine Branche. Die App lädt dann die passenden Regeln aus dem Kollektivvertrag. Alle Werte kannst du später ändern, auch ab einem bestimmten Datum.</p>
+      <div class="btns">
+        <button type="button" class="btn primary" data-start="gueter">Lkw / Güterbeförderung</button>
+        <button type="button" class="btn primary" data-start="bau">Bau / Maschinist / Bagger</button>
+        <button type="button" class="btn" data-start="eigen">Eigene Werte</button>
+      </div>
+    </div>
+
+    <div class="monthnav">
+      <button type="button" class="iconbtn" id="m-prev" aria-label="Vorheriger Monat"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div style="text-align:center"><h2 id="m-title"></h2><button type="button" class="linkbtn" id="m-today">Zum aktuellen Monat</button></div>
+      <button type="button" class="iconbtn" id="m-next" aria-label="Nächster Monat"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+
+    <div id="m-summary"></div>
+    <p id="m-counts" class="counts"></p>
+    <div id="m-abgleich" class="card">
+      <h3>Stimmt mein Lohnzettel?</h3>
+      <p class="hint">Schau auf deinen Lohnzettel und tippe die Stunden ab, so wie sie dort stehen. Jede Zeile hier heißt wie auf dem Lohnzettel. Du musst nicht alle Zeilen ausfüllen.</p>
+      <div id="ab-spaeter"></div>
+      <div id="ab-rows"></div>
+      <button type="button" class="linkbtn" id="ab-more" style="align-self:flex-start">Mein Lohnzettel hat noch andere Zeilen (Feiertag, Urlaub, Krankenstand)</button>
+      <div id="ab-result" aria-live="polite"></div>
+      <details class="how"><summary>Wie kommt die App auf diese Zahlen?</summary>
+        <p>Die App zählt alle Stunden des Monats zusammen, auch bezahlten Urlaub, Krankenstand und Feiertage. Davon zieht sie die Sollstunden ab: alle Tage von Montag bis Freitag mal Tagessoll. Was darüber liegt, sind die Überstunden. Den Rest teilt sie auf die Zeilen „Lohn“, „Feiertagslohn“, „Urlaub“ und „Krankenstand“ auf, so wie es auch dein Lohnzettel macht. Das passt, wenn in den Einstellungen „Pro Monat“ gewählt ist.</p>
+      </details>
+    </div>
+    <ul id="m-days" class="days"></ul>
+  </section>
+
+  <!-- ============ ERFASSEN ============ -->
+  <section id="v-erfassen" class="view" aria-label="Tag erfassen" hidden>
+    <div class="eddate">
+      <button type="button" class="iconbtn" id="e-prev" aria-label="Vorheriger Tag"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="when"><strong id="e-title"></strong><span id="e-tags"></span></div>
+      <button type="button" class="iconbtn" id="e-next" aria-label="Nächster Tag"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+
+    <form id="e-form" class="card" autocomplete="off" novalidate>
+      <div class="grid2">
+        <div class="field"><label for="e-date">Datum</label><input type="date" id="e-date"></div>
+        <div class="field"><label for="e-status">Art des Tages</label><select id="e-status"></select></div>
+      </div>
+
+      <div id="e-work" class="view" style="gap:14px">
+        <div class="grid2">
+          <div class="field"><label for="e-von">Beginn</label><input type="time" id="e-von"></div>
+          <div class="field"><label for="e-bis">Ende</label><input type="time" id="e-bis"></div>
+        </div>
+        <button type="button" class="linkbtn" id="e-copy" style="align-self:flex-start">Zeiten wie am letzten Arbeitstag übernehmen</button>
+
+        <div class="field">
+          <span class="lbl">Pausen</span>
+          <div id="e-pausen" class="pausen"></div>
+          <button type="button" class="btn" id="e-addpause">+ Pause hinzufügen</button>
+        </div>
+
+        <div class="field">
+          <label for="e-diaeten">Diätenstunden</label>
+          <input type="number" id="e-diaeten" inputmode="decimal" step="0.25" min="0">
+          <small>Leer lassen übernimmt den Vorschlag. Trage eine Zahl ein, wenn deine Firma anders zählt.</small>
+        </div>
+
+        <div class="field" id="e-swgroup" hidden>
+          <label for="e-sw">Schlechtwetterstunden</label>
+          <input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0">
+          <small>Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
+        </div>
+
+        <div class="field"><label for="e-notiz">Kunde / Baustelle (optional)</label><input type="text" id="e-notiz" maxlength="120"></div>
+        <label class="check" for="e-spaeter"><input type="checkbox" id="e-spaeter"><span>Dieser Tag wird erst später abgerechnet (zum Beispiel erster Arbeitstag vor der Anmeldung)</span></label>
+      </div>
+
+      <div id="e-preview" class="result" aria-live="polite"></div>
+      <div id="e-warn"></div>
+
+      <div class="btns">
+        <button type="button" class="btn primary" id="e-save">Speichern</button>
+        <button type="button" class="btn danger" id="e-delete">Tag löschen</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ KONTEN ============ -->
+  <section id="v-konten" class="view" aria-label="Konten" hidden>
+    <div class="card">
+      <h3>Mein Profil</h3>
+      <p class="hint">Aus dem Eintrittsdatum rechnet die App deinen Urlaubsanspruch aus und prüft ihn gegen den Lohnzettel.</p>
+      <div class="grid2">
+        <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"></div>
+        <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="k-urlaubstart">Urlaub beim Eintritt (Tage)</label><input type="number" id="k-urlaubstart" inputmode="decimal" step="0.01" placeholder="0"><small>Nur wenn du Urlaub mitgenommen hast.</small></div>
+        <div class="field"><label for="k-zastart">Zeitausgleich beim Start (Std)</label><input type="number" id="k-zastart" inputmode="decimal" step="0.25" placeholder="0"><small>Stand des Zeitausgleich-Kontos vor deinem ersten Eintrag.</small></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Urlaubskartei</h3>
+      <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, Endsaldo). Dann siehst du sofort, ob es passt.</p>
+      <div id="k-urlaub"></div>
+    </div>
+    <div class="card">
+      <h3>Zeitausgleich-Konto</h3>
+      <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Die Veränderung trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“).</p>
+      <div id="k-za"></div>
+    </div>
+    <div class="card">
+      <h3>Überstunden im Überblick</h3>
+      <p class="hint">Was du aufgeschrieben hast, was ausbezahlt wurde und was aufs Zeitausgleich-Konto ging.</p>
+      <div id="k-ueber"></div>
+    </div>
+  </section>
+
+  <!-- ============ EINSTELLUNGEN ============ -->
+  <section id="v-einstellungen" class="view" aria-label="Einstellungen" hidden>
+    <div class="card">
+      <h3>Meine Werte</h3>
+      <p class="hint">Jeder Wertesatz gilt ab einem Datum. So rechnet die App alte Monate immer mit den alten Werten, zum Beispiel nach einer Lohnerhöhung oder einem neuen Diätensatz.</p>
+      <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
+      <div class="grid2" style="align-items:end">
+        <div class="field"><label for="s-newdate">Neue Werte ab</label><input type="date" id="s-newdate"></div>
+        <button type="button" class="btn" id="s-new">Neuen Wertesatz anlegen</button>
+      </div>
+    </div>
+
+    <div class="card" id="s-form" hidden>
+      <h3 id="s-formtitle">Wertesatz</h3>
+
+      <div class="field">
+        <label for="s-ab">Gilt ab</label>
+        <input type="date" id="s-ab" data-path="gueltigAb" data-type="text">
+      </div>
+
+      <div class="field">
+        <label for="s-paket">Regelpaket</label>
+        <select id="s-paket"></select>
+        <div id="s-paketinfo" class="notice"></div>
+        <button type="button" class="btn" id="s-paketload">Werte aus dem Paket laden</button>
+        <small>Das überschreibt die Werte dieses Wertesatzes mit den Vorgaben des Pakets.</small>
+      </div>
+
+      <h3>Diäten</h3>
+      <div class="field">
+        <label for="s-dmodell">Wie werden Diäten berechnet?</label>
+        <select id="s-dmodell" data-path="diaeten.modell" data-type="text">
+          <option value="stunde">Pro Stunde</option>
+          <option value="tag">Pro Tag nach Stufen</option>
+          <option value="aus">Keine Diäten</option>
+        </select>
+        <div id="s-dinfo" class="notice"></div>
+      </div>
+      <div id="s-d-stunde" class="grid2">
+        <div class="field"><label for="s-dsatz">Satz je Stunde (€)</label><input type="number" id="s-dsatz" inputmode="decimal" step="0.01" min="0" data-path="diaeten.satz" data-type="num"></div>
+        <div class="field"><label for="s-dmax">Höchstens Stunden pro Tag</label><input type="number" id="s-dmax" inputmode="decimal" step="0.5" min="0" data-path="diaeten.maxStd" data-type="numnull"></div>
+      </div>
+      <div id="s-d-tag" class="field">
+        <span class="lbl">Stufen (Taggeld, wenn mehr als … Stunden)</span>
+        <div id="s-stufen" class="pausen"></div>
+        <button type="button" class="btn" id="s-addstufe">+ Stufe hinzufügen</button>
+      </div>
+      <div class="field" id="s-d-vorschlag">
+        <label for="s-dvor">Vorschlag für Diätenstunden</label>
+        <select id="s-dvor" data-path="diaeten.vorschlag" data-type="text">
+          <option value="anwesenheit">Anwesenheit (Beginn bis Ende, mit Pausen)</option>
+          <option value="netto">Arbeitsstunden ohne Pausen</option>
+          <option value="leer">Kein Vorschlag, ich trage selbst ein</option>
+        </select>
+      </div>
+
+      <h3>Arbeitszeit und Überstunden</h3>
+      <div class="field">
+        <label for="s-umodell">Wie zählt deine Firma Überstunden?</label>
+        <select id="s-umodell" data-path="ueberstunden.modell" data-type="text">
+          <option value="tag-saldo">Pro Tag: alles über dem Tagessoll</option>
+          <option value="bau">Pro Woche: ab Tagesgrenze und über den Wochenstunden</option>
+          <option value="monat">Pro Monat: alle Stunden des Monats minus Sollstunden</option>
+        </select>
+        <div id="s-uinfo" class="notice"></div>
+        <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
+        <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Wird er höher, lege einen neuen Wertesatz „gültig ab“ an. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small></div>
+        <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
+      </div>
+
+      <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>
+
+      <h3>Zuschläge für Stunden</h3>
+      <p class="hint">Dieser Zuschlag erhöht den Zählwert der Stunden an diesem Tag. Bei 100 % zählt eine Stunde doppelt. Wenn du es nicht weißt, lass 0 stehen und frage in deiner Firma nach.</p>
+      <div class="grid3">
+        <div class="field"><label for="s-zsa">Samstag (%)</label><input type="number" id="s-zsa" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.sa" data-type="num"></div>
+        <div class="field"><label for="s-zso">Sonntag (%)</label><input type="number" id="s-zso" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.so" data-type="num"></div>
+        <div class="field"><label for="s-zft">Feiertag (%)</label><input type="number" id="s-zft" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.ft" data-type="num"></div>
+      </div>
+
+      <h3>Betrieb geschlossen</h3>
+      <div class="field"><label for="s-bf">Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist?</label>
+        <select id="s-bf" data-path="betriebFrei" data-type="text">
+          <option value="urlaub">Als Urlaub oder bezahlter freier Tag (Stunden werden gutgeschrieben)</option>
+          <option value="ueberstunden">Aus meinen Überstunden (Zeitausgleich): der Tag wird bezahlt, aber meine Überstunden werden weniger</option>
+        </select>
+        <small>Das betrifft die Tage mit dem Status „Betrieb geschlossen / Betriebsurlaub“. Schau auf deinen Lohnzettel: Wenn der Tag unter „Lohn“ steht und deine Überstunden um 8 Stunden weniger sind, wird er aus den Überstunden bezahlt.</small></div>
+
+      <h3>Schlechtwetter</h3>
+      <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span>Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
+
+      <button type="button" class="btn danger" id="s-delete">Diesen Wertesatz löschen</button>
+    </div>
+
+    <div class="card">
+      <h3>Sicherung</h3>
+      <p class="hint">Deine Daten liegen nur in diesem Browser. Kopiere den Sicherungstext und bewahre ihn auf, zum Beispiel in einer Notiz oder per E-Mail an dich selbst. Zum Wiederherstellen fügst du ihn hier ein.</p>
+      <div class="field"><label for="b-text">Sicherungstext</label><textarea id="b-text" spellcheck="false"></textarea></div>
+      <div class="btns">
+        <button type="button" class="btn" id="b-copy">Kopieren</button>
+        <button type="button" class="btn" id="b-restore">Aus Text wiederherstellen</button>
+      </div>
+      <div class="field"><label for="b-file">Oder aus einer Sicherungsdatei wiederherstellen</label><input type="file" id="b-file" accept=".json,application/json,text/plain"></div>
+      <button type="button" class="btn danger" id="b-wipe">Alle Daten löschen</button>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabs" aria-label="Hauptmenü">
+  <div class="wrap">
+    <button type="button" class="tab" data-view="monat"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Monat</button>
+    <button type="button" class="tab" data-view="erfassen"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Erfassen</button>
+    <button type="button" class="tab" data-view="konten"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Konten</button>
+    <button type="button" class="tab" data-view="einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Einstellungen</button>
+  </div>
+</nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
