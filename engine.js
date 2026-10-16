@@ -334,7 +334,7 @@
         if (wq >= 1 && wq <= 5 && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(tagesSoll(wertAt(settings, dq).ueberstunden) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
       s.ueberMin = s.lohnMin + s.swMin - sollMin;
-      s.sollMin = sollMin;
+      s.sollMin = sollMin; s.sollAb = ab;
     }
 
     // Modell "bau": Überstunden je Woche (Montag bis Sonntag), die Woche zählt in dem Monat, in dem ihr Sonntag liegt.
@@ -369,7 +369,7 @@
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin),
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
-        feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0),
+        feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
       },
       schlechtwetter: { verbrauchtStd: h2(sw.min), kontingentStd: sw.kontingentStd, von: sw.vonDatum, bis: sw.bisDatum }

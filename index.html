@@ -55,6 +55,7 @@
 
     <div id="m-summary"></div>
     <p id="m-counts" class="counts"></p>
+    <p id="m-ab" class="hint" hidden></p>
     <div id="m-abgleich" class="card">
       <h3>Stimmt mein Lohnzettel?</h3>
       <p class="hint">Schau auf deinen Lohnzettel und tippe die Stunden ab, so wie sie dort stehen. Jede Zeile hier heißt wie auf dem Lohnzettel. Du musst nicht alle Zeilen ausfüllen.</p>
@@ -108,7 +109,7 @@
           <small>Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
         </div>
 
-        <div class="field"><label for="e-notiz">Kunde / Baustelle (optional)</label><input type="text" id="e-notiz" maxlength="120"></div>
+        <div class="field"><label for="e-notiz">Kunde / Baustelle (optional)</label><input type="text" id="e-notiz" maxlength="120" list="e-notiz-list" autocomplete="off"><datalist id="e-notiz-list"></datalist></div>
       </div>
 
       <div id="e-preview" class="result" aria-live="polite"></div>

@@ -97,11 +97,12 @@
     if (s.zuschlagStd !== 0) sub = fh(s.istStd) + ' h gearbeitet, dazu ' + fh(s.zuschlagStd) + ' h Zuschlag';
     else if (s.lohnStd !== s.istStd) sub = fh(s.istStd) + ' h gearbeitet, dazu bezahlte Abwesenheit';
     else sub = 'tatsächlich gearbeitet';
+    var jetzt = new Date(), laufend = ui.y > jetzt.getFullYear() || (ui.y === jetzt.getFullYear() && ui.m >= jetzt.getMonth() + 1); // Überstunden gibt es erst, wenn der Monat vorbei ist
     var diaetenBetrag = w.diaeten.modell === 'aus' ? '–' : eur.format(s.diaetenBetrag);
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      '<div><dt>Überstunden</dt><dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd></div>' +
+      '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
       '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>' +
       '</dl>';
@@ -122,6 +123,7 @@
     if (s.za) parts.push(s.za + ' Zeitausgleich');
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
+    $('#m-ab').hidden = true;
     renderAbgleich(cm.spaeter.length ? E.calcMonth(data, ui.y, ui.m, todayISO(), { ohneSpaeter: true }).summe : s, cm.spaeter);
 
     var today = todayISO();
@@ -318,6 +320,10 @@
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
     $('#e-notiz').value = d.notiz || '';
+    var seen = {}, opts = '';
+    Object.keys(data.days).forEach(function (k) { var n = (data.days[k].notiz || '').trim(); if (n) seen[n] = (seen[n] || 0) + 1; });
+    Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
+    $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
