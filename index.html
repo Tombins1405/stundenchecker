@@ -64,7 +64,7 @@
       <button type="button" class="linkbtn" id="ab-more" style="align-self:flex-start">Mein Lohnzettel hat noch andere Zeilen (Feiertag, Urlaub, Krankenstand)</button>
       <div id="ab-result" aria-live="polite"></div>
       <details class="how"><summary>Wie kommt die App auf diese Zahlen?</summary>
-        <p>Die App zählt alle Stunden des Monats zusammen, auch bezahlten Urlaub, Krankenstand und Feiertage. Davon zieht sie die Sollstunden ab: alle Tage von Montag bis Freitag mal Tagessoll. Was darüber liegt, sind die Überstunden. Den Rest teilt sie auf die Zeilen „Lohn“, „Feiertagslohn“, „Urlaub“ und „Krankenstand“ auf, so wie es auch dein Lohnzettel macht. Das passt, wenn in den Einstellungen „Pro Monat“ gewählt ist.</p>
+        <p>Die App zählt alle Stunden des Monats zusammen, auch bezahlten Urlaub, Krankenstand und Feiertage. Davon zieht sie die Sollstunden ab: alle deine Arbeitstage (Standard Montag bis Freitag) mal Tagessoll. Was darüber liegt, sind die Überstunden. Den Rest teilt sie auf die Zeilen „Lohn“, „Feiertagslohn“, „Urlaub“ und „Krankenstand“ auf, so wie es auch dein Lohnzettel macht. Das passt, wenn in den Einstellungen „Pro Monat“ gewählt ist.</p>
       </details>
     </div>
     <ul id="m-days" class="days"></ul>
@@ -223,7 +223,22 @@
       <div class="grid2">
         <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
         <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Wird er höher, lege einen neuen Wertesatz „gültig ab“ an. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small></div>
+        <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
         <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
+      </div>
+
+      <div class="field" id="s-wdaysfield">
+        <label>Welche Tage zählen zum Soll des Monats?</label>
+        <div class="wdays" id="s-wdays">
+          <label class="check"><input type="checkbox" id="s-wd-1"><span>Mo</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-2"><span>Di</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-3"><span>Mi</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-4"><span>Do</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-5"><span>Fr</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-6"><span>Sa</span></label>
+          <label class="check"><input type="checkbox" id="s-wd-0"><span>So</span></label>
+        </div>
+        <small>Nur bei „Pro Monat“. Vorbelegt: Montag bis Freitag, so rechnet deine Firma. Wer feste andere Tage hat, ändert das hier. Stunden an anderen Tagen sind dann Überstunden.</small>
       </div>
 
       <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>

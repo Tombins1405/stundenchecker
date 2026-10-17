@@ -129,7 +129,11 @@
   // Wochenstunden (Normalarbeitszeit) und daraus das Tagessoll: Wochenstunden geteilt durch 5 Arbeitstage.
   // Ältere gespeicherte Werte kennen "wochenNormal"; sie werden weiter verstanden.
   function wochenStd(u) { return u.wochenStd != null ? +u.wochenStd : (u.wochenNormal != null ? +u.wochenNormal : 40); }
-  function tagesSoll(u) { return wochenStd(u) / 5; }
+  // Arbeitstage der Woche (0 = Sonntag ... 6 = Samstag). Ohne Angabe: Montag bis Freitag.
+  function sollTage(u) { return (u && Array.isArray(u.sollTage)) ? u.sollTage.slice() : [1, 2, 3, 4, 5]; }
+  function istSollTag(u, wd) { return sollTage(u).indexOf(wd) >= 0; }
+  // Tagessoll: eigener Wert, sonst Wochenstunden geteilt durch die Zahl der Arbeitstage.
+  function tagesSoll(u) { return (u && +u.tagesSollStd > 0) ? +u.tagesSollStd : wochenStd(u) / Math.max(1, sollTage(u).length); }
 
   /* ---------------------------------------------------------------- Werte "Gültig ab" */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -176,7 +180,7 @@
       diaetenStd: 0, diaetenBetrag: 0, saldoMin: null, warn: [] };
 
     if (!day) {
-      if (typ === 'feiertag' && wd >= 1 && wd <= 5) { // Feiertag unter der Woche ohne Eintrag: bezahlt
+      if (typ === 'feiertag' && istSollTag(w.ueberstunden, wd)) { // Feiertag an einem Arbeitstag ohne Eintrag: bezahlt
         day = { status: 'feiertag' };
         res.auto = true;
       } else { res.leer = true; return res; }
@@ -323,7 +327,7 @@
     }
 
     // Modell "monat": alle Stunden des Monats (mit bezahlter Abwesenheit) minus Sollstunden des Monats.
-    // Soll = Montag bis Freitag (Feiertage eingeschlossen) mal Tagessoll. Im laufenden Monat nur bis heute.
+    // Soll = deine Arbeitstage (Standard Montag bis Freitag, Feiertage eingeschlossen) mal Tagessoll. Im laufenden Monat nur bis heute.
     if (monatModell && anyEntry) {
       var bis = n;
       if (heute) { var hp = parseISO(heute); if (hp.y === y && hp.m === m) bis = hp.d; else if (hp.y < y || (hp.y === y && hp.m < m)) bis = 0; }
@@ -331,7 +335,7 @@
       var ab = 1; if (live && firstKey) { var fp = parseISO(firstKey); if (fp.y === y && fp.m === m) ab = fp.d; else if (fp.y > y || (fp.y === y && fp.m > m)) ab = n + 1; }
       for (var q = ab; q <= bis; q++) {
         var dq = iso(y, m, q), wq = weekday(dq);
-        if (wq >= 1 && wq <= 5 && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(tagesSoll(wertAt(settings, dq).ueberstunden) * 60); // unbezahlter freier Tag zählt nicht zum Soll
+        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(tagesSoll(wertAt(settings, dq).ueberstunden) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
       s.ueberMin = s.lohnMin + s.swMin - sollMin;
       s.sollMin = sollMin; s.sollAb = ab;
@@ -434,6 +438,6 @@
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, calcDay: calcDay,
-    wochenStd: wochenStd, tagesSoll: tagesSoll, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
+    wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
