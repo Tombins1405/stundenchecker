@@ -91,6 +91,22 @@
     window.scrollTo(0, 0);
   }
 
+  /* Diese Woche (Montag bis Sonntag): Stunden gegen die Wochenstunden. Eine einfache Orientierung, kein Lohnzettel-Wert. */
+  function weekBox() {
+    var heute = todayISO(), wd = E.weekday(heute), mo = E.addDays(heute, -((wd + 6) % 7)), sum = 0, any = false;
+    for (var i = 0; i < 7; i++) {
+      var ds = E.addDays(mo, i), r = E.calcDay(data.days[ds], ds, wAt(ds));
+      if (r.leer) continue;
+      any = true; sum += (r.wertMin + r.creditMin) / 60;
+    }
+    if (!any) return '';
+    var wo = E.wochenStd(wAt(heute).ueberstunden), pct = Math.min(100, wo > 0 ? sum / wo * 100 : 100);
+    var text = sum >= wo ? 'Wochenstunden erreicht, ' + fh(sum - wo) + ' h darüber' : 'Noch ' + fh(wo - sum) + ' h bis ' + fh(wo) + ' h';
+    return '<div class="sw"><div class="row"><span>Diese Woche</span><strong class="num">' + fh(sum) + ' von ' + fh(wo) + ' h</strong></div>' +
+      '<div class="bar" aria-hidden="true"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
+      '<div class="row"><span>' + esc(text) + '</span></div></div>';
+  }
+
   /* ============================================================ MONAT */
   function renderMonat() {
     $('#storage-warn').hidden = speicherOk;
@@ -107,7 +123,7 @@
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      '<div><dt>Überstunden</dt>' + (laufend ? (s.ueberStd > 0 ? '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small><small class="later">bisher</small></dd>' : '<dd class="hl">–<small class="later">noch keine</small></dd>') : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
+      '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
       '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>' +
       '</dl>';
@@ -117,6 +133,8 @@
         '<div class="bar" aria-hidden="true"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
         '<div class="row"><span>Zeitraum ' + fmtDate(sw.von) + ' bis ' + fmtDate(sw.bis) + '</span><span class="num">' + fh(sw.verbrauchtStd) + ' von ' + sw.kontingentStd + ' h</span></div></div>';
     }
+    var jetzt2 = new Date();
+    if (ui.y === jetzt2.getFullYear() && ui.m === jetzt2.getMonth() + 1) html += weekBox();
     html += '</div>';
     $('#m-summary').innerHTML = html;
 
@@ -441,8 +459,7 @@
       if (inp.type === 'checkbox') inp.checked = !!v;
       else inp.value = (v === null || v === undefined) ? '' : v;
     });
-    E.sollTage(en.ueberstunden).concat([]);
-    [0, 1, 2, 3, 4, 5, 6].forEach(function (wd) { $('#s-wd-' + wd).checked = E.istSollTag(en.ueberstunden, wd); });
+    
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
     paketInfo(en);
     renderStufen(en);
@@ -459,7 +476,6 @@
     $('#s-d-tag').hidden = dm !== 'tag';
     $('#s-d-vorschlag').hidden = dm === 'aus';
     $('#s-grenzefield').hidden = um !== 'bau';
-    $('#s-wdaysfield').hidden = um !== 'monat'; // die Soll-Tage braucht nur die Zählweise "Pro Monat"
     var sat = en.diaeten.satz || 0, wo = E.wochenStd(en.ueberstunden), soll = E.tagesSoll(en.ueberstunden), gr = en.ueberstunden.tagesGrenze || 9;
     var nT = E.sollTage(en.ueberstunden).length;
     $('#s-sollinfo').textContent = 'Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).';
