@@ -75,7 +75,12 @@
   function wAt(d) { return E.wertAt(data.settings, d); }
 
   /* ------------------------------------------------------------ Ansichten */
-  function show(view) {
+  function isDirty() { return !!ui.edDraft && ui.edBase != null && JSON.stringify(ui.edDraft) !== ui.edBase; }
+  function askLeave(go) {
+    ui.leaveGo = go; $('#leave').hidden = false;
+  }
+  function show(view, force) {
+    if (!force && ui.view === 'erfassen' && view !== 'erfassen' && isDirty()) { askLeave(function () { show(view, true); }); return; }
     ui.view = view;
     ['monat', 'erfassen', 'konten', 'einstellungen'].forEach(function (v) { $('#v-' + v).hidden = v !== view; });
     $$('.tab').forEach(function (b) { if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -292,15 +297,17 @@
 
   /* ============================================================ ERFASSEN */
   function blankDay() { return { status: 'arbeit', von: '', bis: '', pausen: [], diaeten: null, sw: 0, notiz: '' }; }
-  function openEditor(date, from) {
+  function openEditor(date, from, force) {
+    if (!force && ui.edDraft && date !== ui.edDate && isDirty()) { askLeave(function () { openEditor(date, from, true); }); return; }
     ui.edDate = date; ui.edFrom = from || 'erfassen';
     ui.edDraft = data.days[date] ? E.clone(data.days[date]) : blankDay();
     if (!ui.edDraft.pausen) ui.edDraft.pausen = [];
-    show('erfassen');
+    ui.edBase = JSON.stringify(ui.edDraft);
+    show('erfassen', true);
   }
 
   function renderEditor() {
-    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); }
+    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); ui.edBase = JSON.stringify(ui.edDraft); }
     var d = ui.edDraft, w = wAt(ui.edDate);
     $('#e-title').textContent = fmtLong(ui.edDate);
     var tags = '', typ = E.dayTyp(ui.edDate), ft = E.feiertagName(ui.edDate);
@@ -380,8 +387,8 @@
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
-      if ((d.von && !d.bis) || (!d.von && d.bis)) { toast('Bitte Beginn und Ende ausfüllen.'); return; }
-      if (!d.von && !(+d.sw > 0)) { toast('Es fehlen Beginn und Ende.'); return; }
+      if ((d.von && !d.bis) || (!d.von && d.bis)) { toast('Bitte Beginn und Ende ausfüllen.'); return false; }
+      if (!d.von && !(+d.sw > 0)) { toast('Es fehlen Beginn und Ende.'); return false; }
     }
     var out = E.clone(d);
     out.sw = +out.sw || 0;
@@ -391,11 +398,13 @@
     if (!out.spaeter) delete out.spaeter;
     delete out.test;
     data.days[ui.edDate] = out;
+    ui.edBase = JSON.stringify(ui.edDraft);
     save();
     var saved = ui.edDate;
     toast('Gespeichert: ' + fmtShort(saved));
     if (ui.edFrom === 'monat') { var p = E.parseISO(saved); ui.y = p.y; ui.m = p.m; show('monat'); }
     else openEditor(E.addDays(saved, 1), 'erfassen'); // nach dem Speichern automatisch zum nächsten Tag
+    return true;
   }
 
   function copyLast() {
@@ -567,6 +576,14 @@
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
       case 'e-save': saveDay(); return;
+      case 'l-save': {
+        var go = ui.leaveGo;
+        if (saveDay()) { $('#leave').hidden = true; ui.leaveGo = null; if (go) go(); }
+        else $('#leave').hidden = true;
+        return;
+      }
+      case 'l-discard': { var g2 = ui.leaveGo; ui.leaveGo = null; $('#leave').hidden = true; ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); if (!ui.edDraft.pausen) ui.edDraft.pausen = []; ui.edBase = JSON.stringify(ui.edDraft); if (g2) g2(); return; }
+      case 'l-back': ui.leaveGo = null; $('#leave').hidden = true; if ($('#e-date')) $('#e-date').value = ui.edDate; return;
       case 'e-delete': arm(t, 'Wirklich löschen?', function () {
         delete data.days[ui.edDate]; save(); toast('Tag gelöscht.');
         if (ui.edFrom === 'monat') { var p = E.parseISO(ui.edDate); ui.y = p.y; ui.m = p.m; show('monat'); } else openEditor(ui.edDate, 'erfassen');
@@ -644,5 +661,6 @@
   $('#e-form').addEventListener('submit', function (ev) { ev.preventDefault(); saveDay(); });
 
   /* ============================================================ Start */
+  window.addEventListener('beforeunload', function (ev) { if (isDirty()) { ev.preventDefault(); ev.returnValue = ''; } });
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 })();

@@ -212,3 +212,10 @@ details.how p { margin-top: 6px; }
 /* Konten */
 input[type="number"].kin { width: 4.6em; font-size: .9rem; min-height: 42px; padding: 6px 6px; text-align: right; font-variant-numeric: tabular-nums; }
 #v-konten .cmp td, #v-konten .cmp th { padding: 6px 3px; }
+
+/* Frage bei ungespeicherter Eingabe */
+.overlay { position: fixed; inset: 0; z-index: 20; background: rgba(15, 23, 42, .55); display: grid; place-items: end center; padding: 16px; }
+.overlay[hidden] { display: none; }
+.overlay .sheet { background: var(--surface); border-radius: 16px; padding: 18px; width: min(460px, 100%); display: flex; flex-direction: column; gap: 12px; }
+.overlay .sheet h3 { margin: 0; }
+.overlay .sheet p { margin: 0; }
