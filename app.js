@@ -107,7 +107,7 @@
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
+      '<div><dt>Überstunden</dt>' + (laufend ? (s.ueberStd > 0 ? '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small><small class="later">bisher</small></dd>' : '<dd class="hl">–<small class="later">noch keine</small></dd>') : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
       '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>' +
       '</dl>';
