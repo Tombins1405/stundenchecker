@@ -207,6 +207,7 @@
     <div class="card" id="a-account" hidden>
       <h3>Konto</h3>
       <p>Angemeldet als <strong id="a-user"></strong></p>
+      <p id="a-sync" class="a-sync"></p>
       <button type="button" class="btn" id="a-logout">Abmelden</button>
     </div>
     <div class="card">
@@ -338,8 +339,10 @@
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="app.js"></script>
 <script src="auth.js"></script>
+<script src="sync.js"></script>
 </body>
 </html>

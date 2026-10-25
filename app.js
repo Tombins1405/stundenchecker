@@ -50,7 +50,7 @@
     return { version: 1, settings: [], days: {}, abgleich: {}, profil: {} };
   }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(data)); speicherOk = true; }
+    try { localStorage.setItem(KEY, JSON.stringify(data)); speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
   }
   var data = load();

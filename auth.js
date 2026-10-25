@@ -77,7 +77,10 @@
       busy(true);
       auth.sendPasswordResetEmail(mail).then(function () { say('Wir haben dir eine E-Mail geschickt. Schau auch im Spam-Ordner nach.', true); }, function (e) { say(msg(e)); }).then(function () { busy(false); });
     }
-    else if (id === 'a-logout') { auth.signOut(); }
+    else if (id === 'a-logout') {
+      var sy = window.StundenSync; ev.target.disabled = true;
+      (sy ? sy.beforeLogout() : Promise.resolve(false)).then(function (cleared) { return auth.signOut().then(function () { if (cleared) location.reload(); }); });
+    }
   });
   $('#a-form').addEventListener('submit', function (ev) { ev.preventDefault(); go(); });
 
