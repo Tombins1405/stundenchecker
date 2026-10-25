@@ -28,9 +28,10 @@
     'auth/cancelled-popup-request': 'Die Anmeldung mit Google wurde abgebrochen.',
     'auth/popup-blocked': 'Dein Browser hat das Google-Fenster blockiert. Bitte Pop-ups für diese Seite erlauben.',
     'auth/unauthorized-domain': 'Diese Webseite ist für die Anmeldung nicht freigegeben.',
+    'auth/admin-restricted-operation': 'Neue Konten sind im Moment nicht erlaubt.',
     'auth/operation-not-allowed': 'Diese Anmeldeart ist noch nicht eingeschaltet.'
   };
-  function msg(e) { return FEHLER[e && e.code] || 'Das hat leider nicht geklappt. Bitte noch einmal probieren.'; }
+  function msg(e) { return FEHLER[e && e.code] || ('Das hat leider nicht geklappt. Bitte noch einmal probieren. (Fehlercode: ' + ((e && e.code) || (e && e.message) || 'unbekannt') + ')'); }
   function say(t, ok) { var m = $('#a-msg'); m.textContent = t || ''; m.className = 'a-msg' + (ok ? ' ok' : ''); m.hidden = !t; }
   function busy(on) { ['a-go', 'a-google', 'a-forgot'].forEach(function (i) { var b = document.getElementById(i); if (b) b.disabled = on; }); }
 
