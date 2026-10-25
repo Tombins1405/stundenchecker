@@ -74,6 +74,37 @@
   function sortedSettings() { return data.settings.slice().sort(function (a, b) { return a.gueltigAb < b.gueltigAb ? -1 : 1; }); }
   function wAt(d) { return E.wertAt(data.settings, d); }
 
+  /* Offener Dienst (Beginn da, Ende fehlt): Erinnerung beim Öffnen */
+  function openDayKey() {
+    var heute = todayISO(), best = null;
+    Object.keys(data.days).forEach(function (k) {
+      var d = data.days[k];
+      if (k <= heute && d.status === 'arbeit' && d.von && !d.bis && (!best || k > best) && k >= E.addDays(heute, -7)) best = k;
+    });
+    return best;
+  }
+  function renderOpenDay() {
+    var k = openDayKey(), box = $('#open-day');
+    if (!k || (ui.view === 'erfassen' && ui.edDate === k) || (ui.view !== 'monat' && ui.view !== 'erfassen')) { box.hidden = true; return; }
+    box.hidden = false; ui.openDay = k;
+    $('#open-day-text').textContent = (k === todayISO() ? 'Dein Dienst von heute' : 'Dein Dienst vom ' + fmtShort(k)) + ' (ab ' + data.days[k].von + ') hat noch kein Ende.';
+  }
+  /* Übliches Ende: Median der letzten 10 Diensttage, auf 5 Minuten gerundet (mindestens 3 Tage nötig) */
+  function typischesEnde(vor) {
+    var ends = [];
+    Object.keys(data.days).sort().reverse().forEach(function (k) {
+      var d = data.days[k];
+      if (k < vor && d.status === 'arbeit' && d.von && d.bis && ends.length < 10) {
+        var vm = E.toMin(d.von), bm = E.toMin(d.bis);
+        if (vm !== null && bm !== null && bm > vm) ends.push(bm);
+      }
+    });
+    if (ends.length < 3) return null;
+    ends.sort(function (x, y) { return x - y; });
+    var r = Math.round(ends[Math.floor(ends.length / 2)] / 5) * 5;
+    return String(Math.floor(r / 60)).padStart(2, '0') + ':' + String(r % 60).padStart(2, '0');
+  }
+
   /* ------------------------------------------------------------ Ansichten */
   function isDirty() { return !!ui.edDraft && ui.edBase != null && JSON.stringify(ui.edDraft) !== ui.edBase; }
   function askLeave(go) {
@@ -88,6 +119,7 @@
     if (view === 'erfassen') renderEditor();
     if (view === 'konten') renderKonten();
     if (view === 'einstellungen') { renderSettings(); fillBackup(); renderCheck(); }
+    renderOpenDay();
     window.scrollTo(0, 0);
   }
 
@@ -162,6 +194,7 @@
       if (r.leer) { main = '<strong>–</strong>'; }
       else if (r.status === 'arbeit') {
         if (d.von && d.bis) main = '<strong>' + esc(d.von) + '–' + esc(d.bis) + '</strong>';
+        else if (d.von && !d.bis) { main = '<strong>ab ' + esc(d.von) + '</strong>'; chips += '<span class="chip warn">Ende fehlt</span>'; }
         else main = '<strong>' + (r.swMin ? 'Schlechtwetter' : 'Ohne Zeiten') + '</strong>';
         if (r.pausenMin) small.push('Pause ' + hm(r.pausenMin));
         if (r.diaetenStd) small.push('Diäten ' + fh(r.diaetenStd) + ' h');
@@ -314,18 +347,33 @@
   }
 
   /* ============================================================ ERFASSEN */
-  function blankDay() { return { status: 'arbeit', von: '', bis: '', pausen: [], diaeten: null, sw: 0, notiz: '' }; }
+  function blankDay() { return { status: 'arbeit', von: '', bis: '', pausen: [], kunden: [], diaeten: null, sw: 0, notiz: '' }; }
+  function normKunden(d) {
+    if (!d.pausen) d.pausen = [];
+    if (!d.kunden) d.kunden = d.notiz ? [{ name: d.notiz, von: '', bis: '' }] : []; // alte Einträge mit einem Kundentext
+  }
+  function kundenNamen(d) { return (d.kunden || []).map(function (k) { return (k.name || '').trim(); }).filter(Boolean); }
+  function renderKunden() {
+    $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
+      return '<div class="kunde">' +
+        '<div class="field kn"><label for="k-n' + i + '">Kunde / Baustelle ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
+        '<div class="field kn"><label for="k-t' + i + '">Tätigkeit</label><input type="text" id="k-t' + i + '" data-k="' + i + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(k.tat || '') + '"></div>' +
+        '<div class="field"><label for="k-v' + i + '">von</label><input type="time" id="k-v' + i + '" data-k="' + i + '" data-f="von" value="' + esc(k.von || '') + '"></div>' +
+        '<div class="field"><label for="k-b' + i + '">bis</label><input type="time" id="k-b' + i + '" data-k="' + i + '" data-f="bis" value="' + esc(k.bis || '') + '"></div>' +
+        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="Kunde ' + (i + 1) + ' entfernen">×</button></div>';
+    }).join('');
+  }
   function openEditor(date, from, force) {
     if (!force && ui.edDraft && date !== ui.edDate && isDirty()) { askLeave(function () { openEditor(date, from, true); }); return; }
     ui.edDate = date; ui.edFrom = from || 'erfassen';
     ui.edDraft = data.days[date] ? E.clone(data.days[date]) : blankDay();
-    if (!ui.edDraft.pausen) ui.edDraft.pausen = [];
+    normKunden(ui.edDraft);
     ui.edBase = JSON.stringify(ui.edDraft);
     show('erfassen', true);
   }
 
   function renderEditor() {
-    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); ui.edBase = JSON.stringify(ui.edDraft); }
+    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); normKunden(ui.edDraft); ui.edBase = JSON.stringify(ui.edDraft); }
     var d = ui.edDraft, w = wAt(ui.edDate);
     $('#e-title').textContent = fmtLong(ui.edDate);
     var tags = '', typ = E.dayTyp(ui.edDate), ft = E.feiertagName(ui.edDate);
@@ -344,10 +392,18 @@
     $('#e-bis').value = d.bis || '';
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
-    $('#e-notiz').value = d.notiz || '';
     var seen = {}, opts = '';
-    Object.keys(data.days).forEach(function (k) { var n = (data.days[k].notiz || '').trim(); if (n) seen[n] = (seen[n] || 0) + 1; });
+    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
+    var ts = {}, ks = {}, topt = '', kopt = '';
+    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { if (x.tat) ts[x.tat] = (ts[x.tat] || 0) + 1; }); if (dd.fz && dd.fz.kfz) ks[dd.fz.kfz] = (ks[dd.fz.kfz] || 0) + 1; });
+    Object.keys(ts).sort(function (x, y) { return ts[y] - ts[x]; }).slice(0, 30).forEach(function (n) { topt += '<option value="' + esc(n) + '">'; });
+    Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
+    if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
+    $('#e-tat-list').innerHTML = topt; $('#f-kfz-list').innerHTML = kopt;
+    var fz = d.fz || {};
+    ['kfz', 'kmVon', 'kmBis', 'diesel', 'adblue', 'oel'].forEach(function (f) { var el = document.querySelector('[data-fz="' + f + '"]'); if (el) el.value = (fz[f] === undefined || fz[f] === null) ? '' : fz[f]; });
+    $('#e-fz-box').open = Object.keys(fz).length > 0;
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
@@ -356,6 +412,7 @@
     $('#e-delete').hidden = !data.days[ui.edDate];
     disarm($('#e-delete'));
     renderPausen();
+    renderKunden();
     updatePreview();
   }
 
@@ -372,12 +429,16 @@
   function updatePreview() {
     var d = ui.edDraft, w = wAt(ui.edDate), r = E.calcDay(d, ui.edDate, w), html = '', warn = '';
     $('#e-diaeten').placeholder = 'Vorschlag';
+    var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
+    sg.hidden = !te; if (te) { sg.textContent = 'Meistens bis ' + te + ' (übernehmen)'; sg.dataset.t = te; }
     if (d.status !== 'arbeit') {
       if (r.creditMin) html = line('Gutgeschrieben', fh(r.creditMin / 60) + ' h', true) + '<p class="hint">Bezahlte Abwesenheit. Sie erzeugt keine Überstunden.</p>';
       else if (d.status === 'za') html = '<p class="hint">Zeitausgleichstag: keine Arbeitsstunden. Das Zeitausgleichskonto kommt mit der Vollversion.</p>';
       else html = '<p class="hint">Dieser Tag zählt keine Stunden.</p>';
+    } else if (d.von && !d.bis && !r.swMin) {
+      html = '<p class="hint"><strong>Dein Dienst läuft.</strong> Beginn ' + esc(d.von) + '. Speichere jetzt, und trage das Ende später ein. Der Tag zählt erst, wenn das Ende da ist.</p>';
     } else if (!r.bruttoMin && !r.swMin) {
-      html = '<p class="hint">Trage Beginn und Ende ein, dann siehst du hier das Ergebnis des Tages.</p>';
+      html = '<p class="hint">Trage den Beginn ein. Das Ende kannst du später nachtragen.</p>';
     } else {
       if (r.bruttoMin) {
         html += line('Anwesenheit', hm(r.bruttoMin) + ' h');
@@ -405,23 +466,32 @@
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
-      if ((d.von && !d.bis) || (!d.von && d.bis)) { toast('Bitte Beginn und Ende ausfüllen.'); return false; }
-      if (!d.von && !(+d.sw > 0)) { toast('Es fehlen Beginn und Ende.'); return false; }
+      if (!d.von && d.bis) { toast('Es fehlt der Beginn.'); return false; }
+      if (!d.von && !(+d.sw > 0)) { toast('Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
     }
     var out = E.clone(d);
     out.sw = +out.sw || 0;
     out.diaeten = (out.diaeten === null || out.diaeten === '' || isNaN(+out.diaeten)) ? null : +out.diaeten;
     out.pausen = (out.pausen || []).filter(function (p) { return p.von && p.bis; });
-    if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
+    if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
+    out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), tat: (k.tat || '').trim(), von: k.von || '', bis: k.bis || '' }; }).filter(function (k) { return k.name || k.tat || k.von || k.bis; });
+    out.notiz = kundenNamen(out).join(', ');
+    var fzo = {}, fzi = out.fz || {};
+    ['kfz', 'kmVon', 'kmBis', 'diesel', 'adblue', 'oel'].forEach(function (f) {
+      var v = fzi[f]; if (v === undefined || v === null || v === '') return;
+      if (f === 'kfz') { v = String(v).trim().toUpperCase(); if (v) fzo.kfz = v; } else if (!isNaN(+v)) fzo[f] = +v;
+    });
+    if (st !== 'arbeit' || !Object.keys(fzo).length) delete out.fz; else out.fz = fzo;
+    if (!out.kunden.length) delete out.kunden;
     if (!out.spaeter) delete out.spaeter;
     delete out.test;
     data.days[ui.edDate] = out;
     ui.edBase = JSON.stringify(ui.edDraft);
     save();
     var saved = ui.edDate;
-    toast('Gespeichert: ' + fmtShort(saved));
+    toast(out.von && !out.bis ? 'Gespeichert. Das Ende trägst du später nach.' : 'Gespeichert: ' + fmtShort(saved));
     if (ui.edFrom === 'monat') { var p = E.parseISO(saved); ui.y = p.y; ui.m = p.m; show('monat'); }
-    else openEditor(E.addDays(saved, 1), 'erfassen'); // nach dem Speichern automatisch zum nächsten Tag
+    else openEditor(out.von && !out.bis ? saved : E.addDays(saved, 1), 'erfassen'); // nach dem Speichern zum nächsten Tag, außer der Dienst läuft noch (Ende fehlt)
     return true;
   }
 
@@ -594,8 +664,15 @@
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
+      case 'e-addkunde': ui.edDraft.kunden.push({ name: '', tat: '', von: '', bis: '' }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
+      case 'od-go': if (ui.openDay) openEditor(ui.openDay, 'erfassen'); return;
+      case 'e-bis-sugg': ui.edDraft.bis = t.dataset.t; $('#e-bis').value = t.dataset.t; updatePreview(); return;
+      case 'e-von-now': case 'e-bis-now': {
+        var nw = new Date(), hhmm = String(nw.getHours()).padStart(2, '0') + ':' + String(nw.getMinutes()).padStart(2, '0'), fld = t.id === 'e-von-now' ? 'von' : 'bis';
+        ui.edDraft[fld] = hhmm; $('#e-' + fld).value = hhmm; updatePreview(); return;
+      }
       case 'e-save': saveDay(); return;
       case 'l-save': {
         var go = ui.leaveGo;
@@ -637,6 +714,7 @@
       case 't-remove': removeTest(); return;
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
+    if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); return; }
     if (t.dataset.rm !== undefined) { ui.edDraft.pausen.splice(+t.dataset.rm, 1); renderPausen(); updatePreview(); return; }
     if (t.dataset.srm !== undefined) { var e3 = curEntry(); e3.diaeten.stufen.splice(+t.dataset.srm, 1); save(); renderStufen(e3); return; }
   });
@@ -644,6 +722,8 @@
   function onInput(ev) {
     var t = ev.target, id = t.id;
     if (id && id.charAt(0) === 'k' && id.charAt(1) === '-' || id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) { if (id === 'k-eintritt' && ev.type !== 'change') return; if (konInput(t)) return; }
+    if (t.dataset && t.dataset.fz) { if (!ui.edDraft.fz) ui.edDraft.fz = {}; ui.edDraft.fz[t.dataset.fz] = t.value; return; }
+    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { ui.edDraft.kunden[+t.dataset.k][t.dataset.f] = t.value; return; }
     if (t.dataset && t.dataset.i !== undefined && t.closest('#e-pausen')) { ui.edDraft.pausen[+t.dataset.i][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.si !== undefined) { var en = curEntry(); var v = parseFloat(String(t.value).replace(',', '.')); en.diaeten.stufen[+t.dataset.si][t.dataset.sf] = isNaN(v) ? 0 : v; delete en.test; save(); return; }
     if (id && id.indexOf('s-wd-') === 0) { var ew = curEntry(); if (ew) { var set = E.sollTage(ew.ueberstunden), wdn = +id.slice(5), ix = set.indexOf(wdn); if (t.checked && ix < 0) set.push(wdn); if (!t.checked && ix >= 0) set.splice(ix, 1); ew.ueberstunden.sollTage = set.sort(function (x, y) { return x - y; }); delete ew.test; save(); settingsVisibility(ew); } return; }
@@ -656,7 +736,6 @@
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
       case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; updatePreview(); return;
-      case 'e-notiz': ui.edDraft.notiz = t.value; return;
       case 'e-spaeter': ui.edDraft.spaeter = t.checked; return;
     }
     if (t.tagName === 'INPUT' && id && id.indexOf('ab-') === 0) {

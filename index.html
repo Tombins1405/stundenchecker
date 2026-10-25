@@ -33,6 +33,11 @@
 
 <main class="wrap">
 
+  <div id="open-day" class="notice warn" hidden>
+    <span id="open-day-text"></span>
+    <button type="button" class="btn primary" id="od-go">Ende eintragen</button>
+  </div>
+
   <!-- ============ MONAT ============ -->
   <section id="v-monat" class="view" aria-label="Monatsübersicht">
     <div id="storage-warn" class="notice bad" hidden>Dieser Browser erlaubt kein Speichern. Deine Eingaben gehen beim Schließen der Seite verloren. Bitte erlaube Website-Daten oder öffne die Seite in einem normalen (nicht privaten) Fenster.</div>
@@ -86,8 +91,8 @@
 
       <div id="e-work" class="view" style="gap:14px">
         <div class="grid2">
-          <div class="field"><label for="e-von">Beginn</label><input type="time" id="e-von"></div>
-          <div class="field"><label for="e-bis">Ende</label><input type="time" id="e-bis"></div>
+          <div class="field"><label for="e-von">Beginn</label><input type="time" id="e-von"><button type="button" class="linkbtn" id="e-von-now" style="align-self:flex-start">Jetzt</button></div>
+          <div class="field"><label for="e-bis">Ende</label><input type="time" id="e-bis"><button type="button" class="linkbtn" id="e-bis-now" style="align-self:flex-start">Jetzt</button><button type="button" class="linkbtn" id="e-bis-sugg" style="align-self:flex-start" hidden></button></div>
         </div>
         <button type="button" class="linkbtn" id="e-copy" style="align-self:flex-start">Zeiten wie am letzten Arbeitstag übernehmen</button>
 
@@ -109,7 +114,24 @@
           <small>Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
         </div>
 
-        <div class="field"><label for="e-notiz">Kunde / Baustelle (optional)</label><input type="text" id="e-notiz" maxlength="120" list="e-notiz-list" autocomplete="off"><datalist id="e-notiz-list"></datalist></div>
+        <div class="field">
+          <span class="lbl">Kunde / Baustelle (optional)</span>
+          <div id="e-kunden" class="pausen"></div>
+          <datalist id="e-notiz-list"></datalist>
+          <button type="button" class="btn" id="e-addkunde">+ Kunde / Baustelle hinzufügen</button>
+        </div>
+
+        <details class="field" id="e-fz-box">
+          <summary class="lbl" style="cursor:pointer">Fahrzeug &amp; Betriebsstoffe (optional)</summary>
+          <div class="grid2" style="margin-top:10px">
+            <div class="field"><label for="f-kfz">Kennzeichen</label><input type="text" id="f-kfz" data-fz="kfz" maxlength="15" autocapitalize="characters" autocomplete="off" list="f-kfz-list"><datalist id="f-kfz-list"></datalist></div>
+            <div class="field"><label for="f-kmvon">km-Stand Anfang</label><input type="number" id="f-kmvon" data-fz="kmVon" inputmode="numeric" min="0" step="1"></div>
+            <div class="field"><label for="f-kmbis">km-Stand Ende</label><input type="number" id="f-kmbis" data-fz="kmBis" inputmode="numeric" min="0" step="1"></div>
+            <div class="field"><label for="f-diesel">Diesel (Liter)</label><input type="number" id="f-diesel" data-fz="diesel" inputmode="decimal" min="0" step="0.1"></div>
+            <div class="field"><label for="f-adblue">AdBlue (Liter)</label><input type="number" id="f-adblue" data-fz="adblue" inputmode="decimal" min="0" step="0.1"></div>
+            <div class="field"><label for="f-oel">Motoröl (Liter)</label><input type="number" id="f-oel" data-fz="oel" inputmode="decimal" min="0" step="0.1"></div>
+          </div>
+        </details>
       </div>
 
       <div id="e-preview" class="result" aria-live="polite"></div>
