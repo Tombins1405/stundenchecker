@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f2937">
+<meta name="referrer" content="origin">
 <title>Stunden-Checker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -25,8 +26,11 @@
     <form id="a-form" novalidate>
       <div class="field"><label for="a-mail">E-Mail-Adresse</label><input type="email" id="a-mail" autocomplete="username" inputmode="email" autocapitalize="off"></div>
       <div class="field"><label for="a-pw">Passwort</label>
-        <div class="a-pwrow"><input type="password" id="a-pw" autocomplete="current-password"><button type="button" class="linkbtn" id="a-show">Anzeigen</button></div>
+        <div class="a-pwrow"><input type="password" id="a-pw" autocomplete="current-password"><button type="button" class="eyebtn" data-eye="a-pw" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
         <small id="a-pwhint" hidden>Mindestens 6 Zeichen. Schreib dir das Passwort auf, damit du es nicht vergisst.</small>
+      </div>
+      <div class="field" id="a-pw2box" hidden><label for="a-pw2">Passwort wiederholen</label>
+        <div class="a-pwrow"><input type="password" id="a-pw2" autocomplete="new-password"><button type="button" class="eyebtn" data-eye="a-pw2" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div>
       </div>
       <p id="a-msg" class="a-msg" hidden></p>
       <button type="submit" class="btn primary" id="a-go">Anmelden</button>

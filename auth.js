@@ -43,6 +43,8 @@
     $('#a-pw').autocomplete = reg ? 'new-password' : 'current-password';
     $('#a-forgot').hidden = reg;
     $('#a-pwhint').hidden = !reg;
+    $('#a-pw2box').hidden = !reg;
+    if (!reg) $('#a-pw2').value = '';
     say('');
   }
 
@@ -50,6 +52,7 @@
     var mail = $('#a-mail').value.trim(), pw = $('#a-pw').value;
     if (!mail) { say('Bitte die E-Mail-Adresse eintragen.'); return; }
     if (!pw) { say('Bitte das Passwort eintragen.'); return; }
+    if (mode === 'register' && pw !== $('#a-pw2').value) { say('Die beiden Passwörter sind nicht gleich. Bitte noch einmal eintippen.'); return; }
     say(''); busy(true);
     var p = mode === 'register'
       ? auth.createUserWithEmailAndPassword(mail, pw).then(function (c) { return c.user.sendEmailVerification().catch(function () {}); })
@@ -58,11 +61,12 @@
   }
 
   document.addEventListener('click', function (ev) {
+    var eb = ev.target && ev.target.closest && ev.target.closest('[data-eye]');
+    if (eb) { var f0 = document.getElementById(eb.dataset.eye), show = f0.type === 'password'; f0.type = show ? 'text' : 'password'; eb.classList.toggle('on', show); eb.setAttribute('aria-pressed', show ? 'true' : 'false'); eb.setAttribute('aria-label', show ? 'Passwort verbergen' : 'Passwort anzeigen'); return; }
     var id = ev.target && ev.target.id;
     if (id === 'a-tab-login') { mode = 'login'; paintMode(); }
     else if (id === 'a-tab-reg') { mode = 'register'; paintMode(); }
     else if (id === 'a-go') { ev.preventDefault(); go(); }
-    else if (id === 'a-show') { var f = $('#a-pw'); f.type = f.type === 'password' ? 'text' : 'password'; ev.target.textContent = f.type === 'password' ? 'Anzeigen' : 'Verbergen'; }
     else if (id === 'a-google') {
       say(''); busy(true);
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (e) { say(msg(e)); }).then(function () { busy(false); });
@@ -82,7 +86,7 @@
     document.body.classList.toggle('auth-open', !u);
     var card = $('#a-account');
     if (card) { card.hidden = !u; $('#a-user').textContent = u ? (u.email || u.displayName || '') : ''; }
-    if (u) { $('#a-pw').value = ''; say(''); }
+    if (u) { $('#a-pw').value = ''; $('#a-pw2').value = ''; say(''); }
   });
   paintMode();
 })();
