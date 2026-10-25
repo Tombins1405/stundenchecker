@@ -141,7 +141,7 @@ main { padding-block: 16px 0; display: flex; flex-direction: column; gap: 16px; 
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field > label, .lbl { font-weight: 600; font-size: .92rem; }
 .field small { color: var(--ink-2); font-size: .82rem; }
-input[type="text"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
   width: 100%; min-height: 50px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); min-width: 0; }
 textarea { min-height: 110px; font-family: ui-monospace, Consolas, monospace; font-size: .82rem; resize: vertical; }
 input:disabled, select:disabled { opacity: .55; }
@@ -226,3 +226,16 @@ input[type="number"].kin { width: 4.6em; font-size: .9rem; min-height: 42px; pad
 .kunde{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;padding:10px 0;border-top:1px solid var(--line,#d8dee6)}
 .kunde .kn{grid-column:1 / -1}
 .kunde .rm{align-self:end}
+
+.auth{position:fixed;inset:0;z-index:100;background:var(--bg,#eef2f7);overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:24px 16px}
+.auth[hidden]{display:none}
+.auth-box{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
+.a-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.a-tabs button{padding:14px;border:2px solid #cbd5e1;border-radius:12px;background:#fff;font:inherit;font-weight:600;font-size:17px}
+.a-tabs button.on{border-color:#1565c0;color:#1565c0}
+.a-pwrow{display:flex;gap:8px;align-items:center}.a-pwrow input{flex:1}
+.a-msg{margin:0;padding:12px;border-radius:10px;background:#fde8e8;color:#8a1c1c}
+.a-msg.ok{background:#e3f4e6;color:#1d5c2a}
+.a-or{text-align:center;color:#64748b}
+.auth .btn{min-height:50px;font-size:17px}
+body.auth-open{overflow:hidden}

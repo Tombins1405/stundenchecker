@@ -14,6 +14,29 @@
 </head>
 <body>
 
+<div id="auth" class="auth" hidden>
+  <div class="auth-box">
+    <div class="brand">Stunden<b>-</b>Checker</div>
+    <div class="slogan">Jede Stunde. Jeder Euro. Im Blick.</div>
+    <div class="a-tabs">
+      <button type="button" id="a-tab-login" class="on">Anmelden</button>
+      <button type="button" id="a-tab-reg">Neu hier</button>
+    </div>
+    <form id="a-form" novalidate>
+      <div class="field"><label for="a-mail">E-Mail-Adresse</label><input type="email" id="a-mail" autocomplete="username" inputmode="email" autocapitalize="off"></div>
+      <div class="field"><label for="a-pw">Passwort</label>
+        <div class="a-pwrow"><input type="password" id="a-pw" autocomplete="current-password"><button type="button" class="linkbtn" id="a-show">Anzeigen</button></div>
+        <small id="a-pwhint" hidden>Mindestens 6 Zeichen. Schreib dir das Passwort auf, damit du es nicht vergisst.</small>
+      </div>
+      <p id="a-msg" class="a-msg" hidden></p>
+      <button type="submit" class="btn primary" id="a-go">Anmelden</button>
+      <button type="button" class="linkbtn" id="a-forgot">Passwort vergessen?</button>
+    </form>
+    <div class="a-or"><span>oder</span></div>
+    <button type="button" class="btn" id="a-google">Mit Google anmelden</button>
+  </div>
+</div>
+
 <header class="top">
   <div class="wrap">
     <div class="brand">Stunden<b>-</b>Checker</div>
@@ -273,6 +296,11 @@
       <button type="button" class="btn danger" id="s-delete">Diesen Wertesatz löschen</button>
     </div>
 
+    <div class="card" id="a-account" hidden>
+      <h3>Konto</h3>
+      <p>Angemeldet als <strong id="a-user"></strong></p>
+      <button type="button" class="btn" id="a-logout">Abmelden</button>
+    </div>
     <div class="card">
       <h3>Sicherung</h3>
       <p class="hint">Deine Daten liegen nur in diesem Browser. Kopiere den Sicherungstext und bewahre ihn auf, zum Beispiel in einer Notiz oder per E-Mail an dich selbst. Zum Wiederherstellen fügst du ihn hier ein.</p>
@@ -304,6 +332,10 @@
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="engine.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="app.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>
