@@ -343,14 +343,15 @@
 
     <div class="card" id="b-card">
       <details><summary><strong>Sicherung</strong> (Daten sichern oder wiederherstellen)</summary>
-      <p class="hint">Deine Daten liegen nur in diesem Browser. Kopiere den Sicherungstext und bewahre ihn auf, zum Beispiel in einer Notiz oder per E-Mail an dich selbst. Zum Wiederherstellen fügst du ihn hier ein.</p>
-      <div class="field"><label for="b-text">Sicherungstext</label><textarea id="b-text" spellcheck="false"></textarea></div>
+      <p class="hint">Deine Daten liegen nur auf diesem Gerät. Speichere die Sicherung als Datei, zum Beispiel in deinem Google Drive oder per WhatsApp an dich selbst.</p>
       <div class="btns">
-        <button type="button" class="btn" id="b-save">Als Datei speichern</button>
-        <button type="button" class="btn" id="b-copy">Kopieren</button>
-        <button type="button" class="btn" id="b-restore">Aus Text wiederherstellen</button>
+        <button type="button" class="btn" id="b-save">Sicherung speichern oder teilen</button>
       </div>
       <div class="field"><label for="b-file">Oder aus einer Sicherungsdatei wiederherstellen</label><input type="file" id="b-file" accept=".json,application/json,text/plain"></div>
+      <details class="how"><summary>Für Fortgeschrittene: Sicherungstext</summary>
+        <div class="field"><label for="b-text">Sicherungstext</label><textarea id="b-text" spellcheck="false"></textarea></div>
+        <div class="btns"><button type="button" class="btn" id="b-copy">Kopieren</button><button type="button" class="btn" id="b-restore">Aus Text wiederherstellen</button></div>
+      </details>
       <button type="button" class="btn danger" id="b-wipe">Alle Daten löschen</button>
       </details>
     </div>
