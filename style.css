@@ -325,3 +325,6 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .ipicks { display: flex; gap: 8px; flex-wrap: wrap; }
 .ipicks .ipk.on, #icon-pick2 .ipk.on { border-color: var(--accent, #1e6fd9); }
 .ipk img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; display: block; }
+
+#updatebar { background: #14532d; }
+#updatebar #update-go { background: #86efac; color: #052e16; border-color: #86efac; font-weight: 700; white-space: nowrap; flex: 0 0 auto; }

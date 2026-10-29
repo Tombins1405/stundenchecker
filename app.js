@@ -1050,6 +1050,20 @@
     });
   })();
 
+
+  /* ---- Update-Meldung ---- */
+  (function () {
+    var cur = window.APP_VERSION; if (!cur || location.protocol.indexOf('http') !== 0) return;
+    var bar = $('#updatebar'), last = 0;
+    function check() {
+      if (Date.now() - last < 60000) return; last = Date.now();
+      fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { if (j && j.v && j.v !== cur) bar.hidden = false; }).catch(function () { });
+    }
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+    setTimeout(check, 4000);
+    $('#update-go').addEventListener('click', function () { try { if (isDirty()) { toast('Bitte zuerst den Tag speichern.'); return; } } catch (e) { } location.reload(); });
+  })();
+
   /* ---- Als App installieren ---- */
   (function () {
     var deferred = null, bar = $('#installbar');
