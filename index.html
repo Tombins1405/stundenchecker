@@ -235,13 +235,6 @@
       </details>
     </div>
 
-    <div class="card" id="s-praemien">
-      <h3>Meine Prämien</h3>
-      <p class="hint">Alles, was deine Firma zusätzlich zahlt: zum Beispiel pro Mulde, pro Tour oder pro Stunde. Die Beträge gelten für alle Monate gleich.</p>
-      <div id="pr-list"></div>
-      <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
-    </div>
-
     <div class="card" id="s-form" hidden>
       <h3 id="s-formtitle">Wertesatz</h3>
 
@@ -260,6 +253,45 @@
         </div>
       </details>
 
+      <h3>Stunden</h3>
+      <div class="field">
+        <label for="s-umodell">Wie zählt deine Firma Überstunden?</label>
+        <select id="s-umodell" data-path="ueberstunden.modell" data-type="text">
+          <option value="tag-saldo">Pro Tag: alles über dem Tagessoll</option>
+          <option value="bau">Pro Woche: ab Tagesgrenze und über den Wochenstunden</option>
+          <option value="monat">Pro Monat: alle Stunden des Monats minus Sollstunden</option>
+        </select>
+        <div id="s-uinfo" class="notice"></div>
+        <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small>
+      </div>
+      <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
+      <div class="grid2">
+        <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
+        <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
+        <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
+      </div>
+
+      <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>
+
+      <div class="field"><label for="s-pauseauto">Automatischer Pausenabzug (Minuten pro Tag)</label><input type="number" id="s-pauseauto" inputmode="numeric" step="5" min="0" data-path="pauseAutoMin" data-type="numnull"><small>Viele Firmen ziehen jeden Tag automatisch eine Pause ab, zum Beispiel 60 Minuten. Das gilt nur für Tage ohne eingetragene Pause und nur für die Stunden. Die Diäten zählen weiter von Beginn bis Ende. Leer lassen, wenn bei dir nichts abgezogen wird.</small></div>
+
+      <h3>Zuschläge für Stunden</h3>
+      <p class="hint">Dieser Zuschlag erhöht den Zählwert der Stunden an diesem Tag. Bei 100 % zählt eine Stunde doppelt. Wenn du es nicht weißt, lass 0 stehen und frage in deiner Firma nach.</p>
+      <div class="grid3">
+        <div class="field"><label for="s-zsa">Samstag (%)</label><input type="number" id="s-zsa" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.sa" data-type="num"></div>
+        <div class="field"><label for="s-zso">Sonntag (%)</label><input type="number" id="s-zso" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.so" data-type="num"></div>
+        <div class="field"><label for="s-zft">Feiertag (%)</label><input type="number" id="s-zft" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.ft" data-type="num"></div>
+      </div>
+    </div>
+
+    <div class="card" id="s-praemien">
+      <h3>Meine Prämien</h3>
+      <p class="hint">Alles, was deine Firma zusätzlich zahlt: zum Beispiel pro Mulde, pro Tour oder pro Stunde. Die Beträge gelten für alle Monate gleich.</p>
+      <div id="pr-list"></div>
+      <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
+    </div>
+
+    <div class="card" id="s-form2" hidden>
       <h3>Diäten</h3>
       <div class="field">
         <label for="s-dmodell">Wie werden Diäten berechnet?</label>
@@ -289,36 +321,6 @@
         </select>
       </div>
 
-      <h3>Arbeitszeit und Überstunden</h3>
-      <div class="field">
-        <label for="s-umodell">Wie zählt deine Firma Überstunden?</label>
-        <select id="s-umodell" data-path="ueberstunden.modell" data-type="text">
-          <option value="tag-saldo">Pro Tag: alles über dem Tagessoll</option>
-          <option value="bau">Pro Woche: ab Tagesgrenze und über den Wochenstunden</option>
-          <option value="monat">Pro Monat: alle Stunden des Monats minus Sollstunden</option>
-        </select>
-        <div id="s-uinfo" class="notice"></div>
-        <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small>
-      </div>
-      <div class="grid2">
-        <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
-        <div class="field" style="grid-column:1/-1"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
-        <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
-        <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
-      </div>
-
-      <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>
-
-      <div class="field"><label for="s-pauseauto">Automatischer Pausenabzug (Minuten pro Tag)</label><input type="number" id="s-pauseauto" inputmode="numeric" step="5" min="0" data-path="pauseAutoMin" data-type="numnull"><small>Viele Firmen ziehen jeden Tag automatisch eine Pause ab, zum Beispiel 60 Minuten. Das gilt nur für Tage ohne eingetragene Pause und nur für die Stunden. Die Diäten zählen weiter von Beginn bis Ende. Leer lassen, wenn bei dir nichts abgezogen wird.</small></div>
-
-      <h3>Zuschläge für Stunden</h3>
-      <p class="hint">Dieser Zuschlag erhöht den Zählwert der Stunden an diesem Tag. Bei 100 % zählt eine Stunde doppelt. Wenn du es nicht weißt, lass 0 stehen und frage in deiner Firma nach.</p>
-      <div class="grid3">
-        <div class="field"><label for="s-zsa">Samstag (%)</label><input type="number" id="s-zsa" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.sa" data-type="num"></div>
-        <div class="field"><label for="s-zso">Sonntag (%)</label><input type="number" id="s-zso" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.so" data-type="num"></div>
-        <div class="field"><label for="s-zft">Feiertag (%)</label><input type="number" id="s-zft" inputmode="numeric" step="5" min="0" max="300" data-path="zuschlag.ft" data-type="num"></div>
-      </div>
-
       <h3>Betrieb geschlossen</h3>
       <div class="field"><label for="s-bf">Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist?</label>
         <select id="s-bf" data-path="betriebFrei" data-type="text">
@@ -332,6 +334,7 @@
 
       <button type="button" class="btn danger" id="s-delete">Diesen Wertesatz löschen</button>
     </div>
+
 
     <div class="card" id="b-card" hidden>
       <h3>Sicherung</h3>

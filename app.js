@@ -618,10 +618,10 @@
     $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Ersten Wertesatz anlegen';
 
     var en = curEntry();
-    $('#s-form').hidden = !en;
+    $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
     if (!en) return;
     $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);
-    $$('[data-path]', $('#s-form')).forEach(function (inp) {
+    $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
       if (inp.type === 'checkbox') inp.checked = !!v;
       else inp.value = (v === null || v === undefined) ? '' : v;
