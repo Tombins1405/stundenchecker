@@ -426,9 +426,9 @@
   function renderPraemienTag() {
     var list = praemienListe().filter(function (p) { return p.name && (p.einheit === 'tag' || p.einheit === 'stueck' || p.einheit === 'tour'); }), d = ui.edDraft;
     $('#e-praemiengroup').hidden = !list.length || d.status !== 'arbeit';
-    if (!d.praemien) d.praemien = {};
+    var pm = d.praemien || {};
     $('#e-praemien').innerHTML = list.map(function (p) {
-      var v = d.praemien[p.id], lab = esc(p.name) + ' (' + eur.format(+p.betrag || 0) + (p.einheit === 'tag' ? ' pro Tag' : p.einheit === 'tour' ? ' je Tour' : ' je Stück') + ')';
+      var v = pm[p.id], lab = esc(p.name) + ' (' + eur.format(+p.betrag || 0) + (p.einheit === 'tag' ? ' pro Tag' : p.einheit === 'tour' ? ' je Tour' : ' je Stück') + ')';
       if (p.einheit === 'tag') return '<label class="check"><input type="checkbox" data-pd="' + esc(p.id) + '"' + (v > 0 ? ' checked' : '') + '> ' + lab + '</label>';
       return '<div class="field"><label for="pd-' + esc(p.id) + '">' + lab + '</label><input type="number" id="pd-' + esc(p.id) + '" data-pd="' + esc(p.id) + '" inputmode="numeric" min="0" step="1" value="' + (v > 0 ? esc(v) : '') + '"></div>';
     }).join('');
