@@ -328,3 +328,9 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 
 #updatebar { background: #14532d; }
 #updatebar #update-go { background: #86efac; color: #052e16; border-color: #86efac; font-weight: 700; white-space: nowrap; flex: 0 0 auto; }
+
+.cropov { position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.cropov[hidden] { display: none; }
+.cropbox { background: var(--card, #fff); color: var(--ink, #111); border-radius: 16px; padding: 16px; width: min(100%, 340px); text-align: center; }
+.cropbox canvas { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 22%; background: #1f2937; display: block; margin: 8px auto; }
+.cropbox input[type=range] { width: 100%; }

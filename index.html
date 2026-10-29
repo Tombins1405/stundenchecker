@@ -59,6 +59,7 @@
     <button type="button" class="tab" data-view="einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Einstellungen</button>
   </div>
 </nav>
+<div id="crop" class="cropov" hidden><div class="cropbox"><p><strong>Bild verschieben und mit dem Regler vergrößern</strong></p><canvas id="crop-c" width="280" height="280"></canvas><input type="range" id="crop-z" min="100" max="400" value="100" aria-label="Zoom"><div class="btns"><button type="button" class="btn" id="crop-ok">Übernehmen</button><button type="button" class="btn" id="crop-x">Abbrechen</button></div></div></div>
 <div class="installbar" id="updatebar" hidden><div class="ib-top"><span>Es gibt eine neue Version vom Stunden-Checker.</span><button type="button" class="btn" id="update-go">Jetzt aktualisieren</button></div></div>
 <div class="installbar" id="installbar" hidden><div class="ib-top"><span>Stunden-Checker als App auf dein Handy legen?</span><button type="button" class="btn" id="install-go">Installieren</button><button type="button" class="iconbtn" id="install-x" aria-label="Schließen">×</button></div><div class="ib-pick"><span>Dein Symbol:</span><div id="icon-pick"></div></div></div>
 
@@ -375,7 +376,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261029151057";</script>
+<script>window.APP_VERSION="20261029151622";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

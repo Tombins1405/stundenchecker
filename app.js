@@ -1032,21 +1032,44 @@
     }
     $('#icon-pick').addEventListener('click', pickClick);
     $('#icon-pick2').addEventListener('click', pickClick);
+    var cr = { img: null, s: 1, min: 1, x: 0, y: 0 }, cv = $('#crop-c'), cx = cv.getContext('2d');
+    function crClamp() {
+      var w = cr.img.width * cr.s, hh = cr.img.height * cr.s;
+      cr.x = Math.min(0, Math.max(280 - w, cr.x)); cr.y = Math.min(0, Math.max(280 - hh, cr.y));
+    }
+    function crDraw() { cx.fillStyle = '#1f2937'; cx.fillRect(0, 0, 280, 280); cx.drawImage(cr.img, cr.x, cr.y, cr.img.width * cr.s, cr.img.height * cr.s); }
     $('#icon-file').addEventListener('change', function () {
       var f = this.files && this.files[0]; if (!f) return;
       var rd = new FileReader();
       rd.onload = function () {
         var im = new Image();
         im.onload = function () {
-          var s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 256;
-          c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 256, 256);
-          try { localStorage.setItem('stundenchecker.iconimg', c.toDataURL('image/jpeg', 0.88)); localStorage.setItem('stundenchecker.icon', 'foto'); } catch (e) { toast('Das Bild konnte nicht gespeichert werden.'); return; }
-          renderIconPick(); applyAppIcon('foto'); toast('Dein Foto ist jetzt das App-Symbol.');
+          cr.img = im; cr.min = Math.max(280 / im.width, 280 / im.height); cr.s = cr.min;
+          cr.x = (280 - im.width * cr.s) / 2; cr.y = (280 - im.height * cr.s) / 2;
+          $('#crop-z').value = 100; $('#crop').hidden = false; crDraw();
         };
         im.src = rd.result;
       };
       rd.readAsDataURL(f);
       this.value = '';
+    });
+    $('#crop-z').addEventListener('input', function () {
+      var old = cr.s, ns = cr.min * (+this.value / 100), px = 140, py = 140;
+      cr.x = px - (px - cr.x) * ns / old; cr.y = py - (py - cr.y) * ns / old; cr.s = ns; crClamp(); crDraw();
+    });
+    var drag = null;
+    cv.style.touchAction = 'none';
+    cv.addEventListener('pointerdown', function (ev) { drag = { x: ev.clientX, y: ev.clientY, ox: cr.x, oy: cr.y }; try { cv.setPointerCapture(ev.pointerId); } catch (e) { } });
+    cv.addEventListener('pointermove', function (ev) { if (!drag || !cr.img) return; cr.x = drag.ox + (ev.clientX - drag.x) * 280 / cv.clientWidth; cr.y = drag.oy + (ev.clientY - drag.y) * 280 / cv.clientHeight; crClamp(); crDraw(); });
+    cv.addEventListener('pointerup', function () { drag = null; });
+    cv.addEventListener('pointercancel', function () { drag = null; });
+    $('#crop-x').addEventListener('click', function () { $('#crop').hidden = true; cr.img = null; });
+    $('#crop-ok').addEventListener('click', function () {
+      if (!cr.img) return;
+      var c = document.createElement('canvas'); c.width = c.height = 256; var k = 256 / 280, g = c.getContext('2d');
+      g.fillStyle = '#1f2937'; g.fillRect(0, 0, 256, 256); g.drawImage(cr.img, cr.x * k, cr.y * k, cr.img.width * cr.s * k, cr.img.height * cr.s * k);
+      try { localStorage.setItem('stundenchecker.iconimg', c.toDataURL('image/jpeg', 0.88)); localStorage.setItem('stundenchecker.icon', 'foto'); } catch (e) { toast('Das Bild konnte nicht gespeichert werden.'); return; }
+      $('#crop').hidden = true; cr.img = null; renderIconPick(); applyAppIcon('foto'); toast('Dein Foto ist jetzt das App-Symbol.');
     });
   })();
 
