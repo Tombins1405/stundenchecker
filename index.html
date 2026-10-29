@@ -148,6 +148,11 @@
           <small>Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
         </div>
 
+        <div class="field" id="e-praemiengroup" hidden>
+          <span class="lbl">Prämien</span>
+          <div id="e-praemien"></div>
+        </div>
+
         <div class="field">
           <span class="lbl">Fahrzeug (optional)</span>
           <div id="e-fahrzeuge" class="pausen"></div>
@@ -226,6 +231,13 @@
       </details>
     </div>
 
+    <div class="card" id="s-praemien">
+      <h3>Meine Prämien</h3>
+      <p class="hint">Alles, was deine Firma zusätzlich zahlt: zum Beispiel pro Mulde, pro Tour oder pro Stunde. Die Beträge gelten für alle Monate gleich.</p>
+      <div id="pr-list"></div>
+      <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
+    </div>
+
     <div class="card" id="s-form" hidden>
       <h3 id="s-formtitle">Wertesatz</h3>
 
@@ -292,6 +304,8 @@
       </div>
 
       <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>
+
+      <div class="field"><label for="s-pauseauto">Automatischer Pausenabzug (Minuten pro Tag)</label><input type="number" id="s-pauseauto" inputmode="numeric" step="5" min="0" data-path="pauseAutoMin" data-type="numnull"><small>Viele Firmen ziehen jeden Tag automatisch eine Pause ab, zum Beispiel 60 Minuten. Das gilt nur für Tage ohne eingetragene Pause und nur für die Stunden. Die Diäten zählen weiter von Beginn bis Ende. Leer lassen, wenn bei dir nichts abgezogen wird.</small></div>
 
       <h3>Zuschläge für Stunden</h3>
       <p class="hint">Dieser Zuschlag erhöht den Zählwert der Stunden an diesem Tag. Bei 100 % zählt eine Stunde doppelt. Wenn du es nicht weißt, lass 0 stehen und frage in deiner Firma nach.</p>

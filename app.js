@@ -118,7 +118,7 @@
     if (view === 'monat') renderMonat();
     if (view === 'erfassen') renderEditor();
     if (view === 'konten') renderKonten();
-    if (view === 'einstellungen') { renderSettings(); fillBackup(); renderCheck(); }
+    if (view === 'einstellungen') { renderPraemienSettings(); renderSettings(); fillBackup(); renderCheck(); }
     renderOpenDay();
     window.scrollTo(0, 0);
   }
@@ -158,6 +158,7 @@
       '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
       '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>' +
+      (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
       '</dl>';
     if (w.schlechtwetter || s.swStd > 0) {
       var sw = cm.schlechtwetter, pct = Math.min(100, sw.verbrauchtStd / sw.kontingentStd * 100);
@@ -406,6 +407,32 @@
       return o;
     }).filter(function (o) { return Object.keys(o).length; });
   }
+
+  /* ---- Prämien ---- */
+  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['tag', 'je Tag (Haken)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
+  function praemienListe() { if (!data.profil) data.profil = {}; if (!data.profil.praemien) data.profil.praemien = []; return data.profil.praemien; }
+  function renderPraemienSettings() {
+    var list = praemienListe();
+    $('#pr-list').innerHTML = list.length ? list.map(function (p, i) {
+      return '<div class="prblock">' +
+        '<div class="field pn"><label for="pr-n' + i + '">Name der Prämie</label><input type="text" id="pr-n' + i + '" data-pr="' + i + '" data-pf="name" maxlength="60" autocomplete="off" value="' + esc(p.name || '') + '"></div>' +
+        '<button type="button" class="rm" data-rmpr="' + i + '" aria-label="Prämie ' + (i + 1) + ' entfernen">×</button>' +
+        '<div class="field"><label for="pr-b' + i + '">Betrag (€)</label><input type="number" id="pr-b' + i + '" data-pr="' + i + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0" value="' + esc(p.betrag == null ? '' : p.betrag) + '"></div>' +
+        '<div class="field"><label for="pr-e' + i + '">Wofür</label><select id="pr-e' + i + '" data-pr="' + i + '" data-pf="einheit">' + PR_EINHEIT.map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field pn"><label for="pr-r' + i + '">Wann zählt sie? (nur für dich zur Erinnerung)</label><input type="text" id="pr-r' + i + '" data-pr="' + i + '" data-pf="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
+        '</div>';
+    }).join('') : '<p class="hint">Noch keine Prämie angelegt.</p>';
+  }
+  function renderPraemienTag() {
+    var list = praemienListe().filter(function (p) { return p.name && (p.einheit === 'tag' || p.einheit === 'stueck' || p.einheit === 'tour'); }), d = ui.edDraft;
+    $('#e-praemiengroup').hidden = !list.length || d.status !== 'arbeit';
+    if (!d.praemien) d.praemien = {};
+    $('#e-praemien').innerHTML = list.map(function (p) {
+      var v = d.praemien[p.id], lab = esc(p.name) + ' (' + eur.format(+p.betrag || 0) + (p.einheit === 'tag' ? ' pro Tag' : p.einheit === 'tour' ? ' je Tour' : ' je Stück') + ')';
+      if (p.einheit === 'tag') return '<label class="check"><input type="checkbox" data-pd="' + esc(p.id) + '"' + (v > 0 ? ' checked' : '') + '> ' + lab + '</label>';
+      return '<div class="field"><label for="pd-' + esc(p.id) + '">' + lab + '</label><input type="number" id="pd-' + esc(p.id) + '" data-pd="' + esc(p.id) + '" inputmode="numeric" min="0" step="1" value="' + (v > 0 ? esc(v) : '') + '"></div>';
+    }).join('');
+  }
   function renderKunden() {
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
       var rows = (k.taet || []).map(function (t, j) {
@@ -462,7 +489,7 @@
     Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
     if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
     $('#e-tat-list').innerHTML = topt; $('#f-kfz-list').innerHTML = kopt;
-    renderFahrzeuge();
+    renderFahrzeuge(); renderPraemienTag();
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
@@ -514,7 +541,9 @@
           $('#e-diaeten').placeholder = 'Vorschlag ' + fh(auto);
         }
       }
-      var kz = E.kundenZeiten(d);
+      var prl = E.praemienDay(d, r, praemienListe());
+      if (prl.length) { html += '<div class="kz-title">Prämien</div>'; prl.forEach(function (x) { html += line(esc(x.name) + (x.einheit === 'stunde' ? ' · ' + fh(x.menge) + ' h' : x.menge !== 1 ? ' · ' + nfp.format(x.menge) + 'x' : ''), eur.format(x.euro)); }); }
+      var kz = E.kundenZeiten(d, w);
       if (kz.rows.some(function (x) { return x.min !== null; })) {
         html += '<div class="kz-title">Zeit pro Kunde</div>';
         kz.rows.forEach(function (x) {
@@ -545,6 +574,8 @@
     if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
     out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), taet: (k.taet || []).map(function (t) { return { tat: (t.tat || '').trim(), von: t.von || '', bis: t.bis || '' }; }).filter(function (t) { return t.tat || t.von || t.bis; }) }; }).filter(function (k) { return k.name || k.taet.length; });
     out.notiz = kundenNamen(out).join(', ');
+    var prx = {}; Object.keys(out.praemien || {}).forEach(function (k) { if (+out.praemien[k] > 0) prx[k] = +out.praemien[k]; });
+    if (st !== 'arbeit' || !Object.keys(prx).length) delete out.praemien; else out.praemien = prx;
     var fzl = fahrzeugeSpeichern(out.fahrzeuge); delete out.fz;
     if (st !== 'arbeit' || !fzl.length) delete out.fahrzeuge; else out.fahrzeuge = fzl;
     if (!out.kunden.length) delete out.kunden;
@@ -794,6 +825,7 @@
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
+      case 'pr-add': praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: '', betrag: 0, einheit: 'stueck', regel: '' }); save(); renderPraemienSettings(); var pn = $('#pr-n' + (praemienListe().length - 1)); if (pn) pn.focus(); return;
       case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
       case 'e-addkunde': ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
@@ -845,6 +877,7 @@
       case 't-remove': removeTest(); return;
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
+    if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
     if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
     if (t.dataset.rmt !== undefined) { var pr = t.dataset.rmt.split('-'); ui.edDraft.kunden[+pr[0]].taet.splice(+pr[1], 1); renderKunden(); updatePreview(); return; }
@@ -856,6 +889,17 @@
   function onInput(ev) {
     var t = ev.target, id = t.id;
     if (id && id.charAt(0) === 'k' && id.charAt(1) === '-' || id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) { if (id === 'k-eintritt' && ev.type !== 'change') return; if (konInput(t)) return; }
+    if (t.dataset && t.dataset.pr !== undefined && t.closest('#pr-list')) {
+      var po = praemienListe()[+t.dataset.pr]; if (!po) return;
+      if (t.dataset.pf === 'betrag') { var bv = parseFloat(String(t.value).replace(',', '.')); po.betrag = isNaN(bv) ? 0 : bv; } else po[t.dataset.pf] = t.value;
+      save(); return;
+    }
+    if (t.dataset && t.dataset.pd !== undefined && t.closest('#e-praemien')) {
+      if (!ui.edDraft.praemien) ui.edDraft.praemien = {};
+      var pv = t.type === 'checkbox' ? (t.checked ? 1 : 0) : parseFloat(String(t.value).replace(',', '.'));
+      if (pv > 0) ui.edDraft.praemien[t.dataset.pd] = pv; else delete ui.edDraft.praemien[t.dataset.pd];
+      updatePreview(); return;
+    }
     if (t.dataset && t.dataset.fi !== undefined && t.closest('#e-fahrzeuge')) {
       var fo = ui.edDraft.fahrzeuge[+t.dataset.fi]; if (!fo) return;
       fo[t.dataset.ff] = t.value;
@@ -876,7 +920,7 @@
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
       case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
-      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; updatePreview(); return;
+      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; renderPraemienTag(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;

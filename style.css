@@ -302,3 +302,9 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .kunde2 .taet .kn { grid-column: 1 / -1; }
 .kunde2 .linkbtn { align-self: flex-start; margin-left: 12px; }
 .kz-sub { padding-left: 14px; color: var(--ink-2); }
+
+/* Prämien */
+.prblock { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; padding: 10px 0; border-top: 1px solid var(--line); }
+.prblock .pn { grid-column: 1 / -1; }
+.prblock .pn:first-child { grid-column: 1 / 2; }
+.prblock .rm { justify-self: end; }

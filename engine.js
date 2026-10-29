@@ -153,7 +153,7 @@
 
   /* ---------------------------------------------------------------- Arbeitszeit eines Tages */
   // Nachtdienste über Mitternacht: die Stunden gehören zum Tag, an dem der Dienst beginnt (kein Doppelzählen).
-  function dayMinutes(day) {
+  function dayMinutes(day, w) {
     var von = toMin(day && day.von), bis = toMin(day && day.bis), warn = [];
     if (von === null || bis === null) return { brutto: 0, pausen: 0, netto: 0, warn: warn };
     var brutto = bis - von;
@@ -167,6 +167,8 @@
       if (e < s) e += 1440;
       pausen += e - s;
     });
+    // Automatischer Pausenabzug (zum Beispiel 60 Minuten), wenn der Tag keine eigene Pause hat. Die Diäten zählen weiter ab Beginn bis Ende.
+    if (pausen === 0 && w && +w.pauseAutoMin > 0 && brutto > 0) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
     var netto = brutto - pausen;
     if (netto < 0) { warn.push('Die Pausen sind länger als die Arbeitszeit.'); netto = 0; }
     return { brutto: brutto, pausen: pausen, netto: netto, warn: warn };
@@ -195,7 +197,7 @@
     if (credit) { res.creditMin = sollMin; return res; }
     if (status !== 'arbeit') return res;
 
-    var m = dayMinutes(day);
+    var m = dayMinutes(day, w);
     res.bruttoMin = m.brutto; res.pausenMin = m.pausen; res.nettoMin = m.netto; res.warn = m.warn;
 
     var z = w.zuschlag, pct = 0;
@@ -236,7 +238,7 @@
   /* ---------------------------------------------------------------- Zeit pro Kunde */
   // Jeder Eintrag mit von und bis zählt seine Zeit abzüglich der Pausen, die darin liegen.
   // Gibt es an dem Tag nur einen Kunden und keine Zeiten dazu, zählt die Arbeitszeit des Tages (netto).
-  function kundenZeiten(day) {
+  function kundenZeiten(day, w) {
     var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis)]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
     function dauer(von, bis) {
       var a = toMin(von), b = toMin(bis); if (a === null || b === null) return null;
@@ -260,10 +262,27 @@
     });
     // Nur ein Kunde und keine Zeiten: es zählt die Arbeitszeit des Tages.
     if (rows.length === 1 && rows[0].min === null) {
-      var dm = dayMinutes(day); if (dm.netto > 0) { rows[0].min = dm.netto; rows[0].quelle = 'tag'; }
+      var dm = dayMinutes(day, w); if (dm.netto > 0) { rows[0].min = dm.netto; rows[0].quelle = 'tag'; }
     }
     var total = 0; rows.forEach(function (r) { if (r.min !== null) total += r.min; });
     return { rows: rows, totalMin: total };
+  }
+
+
+  /* ---------------------------------------------------------------- Prämien */
+  // Eine Prämie hat Name, Betrag und Einheit: stunde (zählt die Arbeitsstunden des Tages), tag (Haken am Tag), stueck oder tour (Anzahl am Tag),
+  // monat (einmal pro Monat, wenn du in dem Monat gearbeitet hast). Die Prämien stehen in profil.praemien.
+  function praemienDay(day, r, list) {
+    var out = [];
+    if (!day || !r || r.status !== 'arbeit') return out;
+    (list || []).forEach(function (p) {
+      var menge = 0, e = p.einheit;
+      if (e === 'monat') return;
+      if (e === 'stunde') menge = r.nettoMin / 60;
+      else { var v = day.praemien && day.praemien[p.id]; menge = +v > 0 ? +v : 0; }
+      if (menge > 0) out.push({ id: p.id, name: p.name, einheit: e, menge: menge, euro: menge * (+p.betrag || 0) });
+    });
+    return out;
   }
 
   /* ---------------------------------------------------------------- BUAK-Zeitraum */
@@ -334,6 +353,7 @@
       arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, za: 0, feiertageBezahlt: 0, zuschlagMin: 0,
       feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
     var bauWochen = false, monatModell = false, anyEntry = false;
+    var prList = (data.profil && data.profil.praemien) || [], prSum = {};
 
     for (var d = 1; d <= n; d++) {
       var ds = iso(y, m, d), w = wertAt(settings, ds), r = calcDay(days[ds], ds, w);
@@ -358,10 +378,15 @@
       if (r.status === 'krank') s.krMin += r.creditMin;
       if (r.status === 'pflege') s.pfMin += r.creditMin;
       if (r.saldoMin !== null) s.ueberMin += r.saldoMin;
+      praemienDay(days[ds], r, prList).forEach(function (x) { var a = prSum[x.id] || (prSum[x.id] = { id: x.id, name: x.name, einheit: x.einheit, menge: 0, euro: 0 }); a.menge += x.menge; a.euro += x.euro; });
       anyEntry = true;
       if (w.ueberstunden.modell === 'bau') bauWochen = true;
       if (w.ueberstunden.modell === 'monat') monatModell = true;
     }
+
+    prList.forEach(function (p) { if (p.einheit === 'monat' && s.arbeitstage > 0) prSum[p.id] = { id: p.id, name: p.name, einheit: 'monat', menge: 1, euro: +p.betrag || 0 }; });
+    var prArr = prList.filter(function (p) { return prSum[p.id]; }).map(function (p) { var a = prSum[p.id]; return { id: a.id, name: a.name, einheit: a.einheit, menge: Math.round(a.menge * 100) / 100, euro: Math.round(a.euro * 100) / 100 }; });
+    var prEuro = 0; prArr.forEach(function (a) { prEuro += a.euro; });
 
     // Modell "monat": alle Stunden des Monats (mit bezahlter Abwesenheit) minus Sollstunden des Monats.
     // Soll = deine Arbeitstage (Standard Montag bis Freitag, Feiertage eingeschlossen) mal Tagessoll. Im laufenden Monat nur bis heute.
@@ -408,7 +433,7 @@
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin),
-        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin),
+        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), praemien: prArr, praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
@@ -474,7 +499,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
