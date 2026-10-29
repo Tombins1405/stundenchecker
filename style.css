@@ -294,3 +294,11 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .fzblock .fzmore { grid-column: 1 / -1; }
 .fzblock .fzmore summary { cursor: pointer; color: var(--ink-2); font-size: .95rem; padding: 4px 0 8px; }
 .kz-title { margin-top: 10px; font-weight: 600; color: var(--ink-2); font-size: .95rem; }
+
+/* Kunde mit mehreren Tätigkeiten */
+.kunde2 { padding: 10px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.kunde2 .khead { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+.kunde2 .taet { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
+.kunde2 .taet .kn { grid-column: 1 / -1; }
+.kunde2 .linkbtn { align-self: flex-start; margin-left: 12px; }
+.kz-sub { padding-left: 14px; color: var(--ink-2); }

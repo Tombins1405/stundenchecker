@@ -356,6 +356,10 @@
     if (!d.fahrzeuge) d.fahrzeuge = d.fz ? [E.clone(d.fz)] : []; // alte Einträge mit einem Fahrzeug
     delete d.fz;
     if (!d.kunden) d.kunden = d.notiz ? [{ name: d.notiz, von: '', bis: '' }] : []; // alte Einträge mit einem Kundentext
+    d.kunden = d.kunden.map(function (k) { // alte Form (ein Kunde mit einer Tätigkeit) in die neue Form mit mehreren Tätigkeiten umwandeln
+      if (k.taet) return k;
+      return { name: k.name || '', taet: (k.tat || k.von || k.bis) ? [{ tat: k.tat || '', von: k.von || '', bis: k.bis || '' }] : [{ tat: '', von: '', bis: '' }] };
+    });
   }
   function kundenNamen(d) { return (d.kunden || []).map(function (k) { return (k.name || '').trim(); }).filter(Boolean); }
 
@@ -404,12 +408,18 @@
   }
   function renderKunden() {
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
-      return '<div class="kunde">' +
-        '<div class="field kn"><label for="k-n' + i + '">Kunde / Baustelle ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
-        '<div class="field kn"><label for="k-t' + i + '">Tätigkeit</label><input type="text" id="k-t' + i + '" data-k="' + i + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(k.tat || '') + '"></div>' +
-        '<div class="field"><label for="k-v' + i + '">von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-v' + i + '" data-k="' + i + '" data-f="von" value="' + esc(k.von || '') + '"></div>' +
-        '<div class="field"><label for="k-b' + i + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-b' + i + '" data-k="' + i + '" data-f="bis" value="' + esc(k.bis || '') + '"></div>' +
-        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="Kunde ' + (i + 1) + ' entfernen">×</button></div>';
+      var rows = (k.taet || []).map(function (t, j) {
+        var sfx = i + '-' + j;
+        return '<div class="taet">' +
+          '<div class="field kn"><label for="k-t' + sfx + '">Tätigkeit' + (k.taet.length > 1 ? ' ' + (j + 1) : '') + '</label><input type="text" id="k-t' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(t.tat || '') + '"></div>' +
+          '<div class="field"><label for="k-v' + sfx + '">von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-v' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="von" value="' + esc(t.von || '') + '"></div>' +
+          '<div class="field"><label for="k-b' + sfx + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-b' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="bis" value="' + esc(t.bis || '') + '"></div>' +
+          (k.taet.length > 1 ? '<button type="button" class="rm" data-rmt="' + i + '-' + j + '" aria-label="Tätigkeit ' + (j + 1) + ' entfernen">×</button>' : '<span></span>') + '</div>';
+      }).join('');
+      return '<div class="kunde2">' +
+        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">Kunde / Baustelle ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
+        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="Kunde ' + (i + 1) + ' entfernen">×</button></div>' +
+        rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></div>';
     }).join('');
   }
   function openEditor(date, from, force) {
@@ -447,7 +457,7 @@
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
     var ts = {}, ks = {}, topt = '', kopt = '';
-    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { if (x.tat) ts[x.tat] = (ts[x.tat] || 0) + 1; }); fahrzeugeVon(dd).forEach(function (f) { if (f.kfz) ks[f.kfz] = (ks[f.kfz] || 0) + 1; }); });
+    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { (x.taet || [x]).forEach(function (y) { if (y.tat) ts[y.tat] = (ts[y.tat] || 0) + 1; }); }); fahrzeugeVon(dd).forEach(function (f) { if (f.kfz) ks[f.kfz] = (ks[f.kfz] || 0) + 1; }); });
     Object.keys(ts).sort(function (x, y) { return ts[y] - ts[x]; }).slice(0, 30).forEach(function (n) { topt += '<option value="' + esc(n) + '">'; });
     Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
     if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
@@ -507,7 +517,10 @@
       var kz = E.kundenZeiten(d);
       if (kz.rows.some(function (x) { return x.min !== null; })) {
         html += '<div class="kz-title">Zeit pro Kunde</div>';
-        kz.rows.forEach(function (x) { html += line(esc(x.name || x.tat || 'Ohne Namen') + (x.name && x.tat ? ' · ' + esc(x.tat) : ''), x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h'); });
+        kz.rows.forEach(function (x) {
+          html += line('<strong>' + esc(x.name || 'Ohne Kunde') + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
+          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) html += line('<span class="kz-sub">' + esc(y.tat || 'Tätigkeit') + '</span>', y.min === null ? '–' : hm(y.min) + ' h'); });
+        });
         if (kz.rows.length > 1) html += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
       if (r.swMin) html += line('Schlechtwetter', fh(r.swMin / 60) + ' h');
@@ -530,7 +543,7 @@
     out.diaeten = (out.diaeten === null || out.diaeten === '' || isNaN(+out.diaeten)) ? null : +out.diaeten;
     out.pausen = (out.pausen || []).filter(function (p) { return p.von && p.bis; });
     if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
-    out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), tat: (k.tat || '').trim(), von: k.von || '', bis: k.bis || '' }; }).filter(function (k) { return k.name || k.tat || k.von || k.bis; });
+    out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), taet: (k.taet || []).map(function (t) { return { tat: (t.tat || '').trim(), von: t.von || '', bis: t.bis || '' }; }).filter(function (t) { return t.tat || t.von || t.bis; }) }; }).filter(function (k) { return k.name || k.taet.length; });
     out.notiz = kundenNamen(out).join(', ');
     var fzl = fahrzeugeSpeichern(out.fahrzeuge); delete out.fz;
     if (st !== 'arbeit' || !fzl.length) delete out.fahrzeuge; else out.fahrzeuge = fzl;
@@ -782,7 +795,7 @@
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
       case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
-      case 'e-addkunde': ui.edDraft.kunden.push({ name: '', tat: '', von: '', bis: '' }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
+      case 'e-addkunde': ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
       case 'od-go': if (ui.openDay) openEditor(ui.openDay, 'erfassen'); return;
@@ -833,6 +846,8 @@
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
+    if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
+    if (t.dataset.rmt !== undefined) { var pr = t.dataset.rmt.split('-'); ui.edDraft.kunden[+pr[0]].taet.splice(+pr[1], 1); renderKunden(); updatePreview(); return; }
     if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); updatePreview(); return; }
     if (t.dataset.rm !== undefined) { ui.edDraft.pausen.splice(+t.dataset.rm, 1); renderPausen(); updatePreview(); return; }
     if (t.dataset.srm !== undefined) { var e3 = curEntry(); e3.diaeten.stufen.splice(+t.dataset.srm, 1); save(); renderStufen(e3); return; }
@@ -853,7 +868,7 @@
       }
       return;
     }
-    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { ui.edDraft.kunden[+t.dataset.k][t.dataset.f] = t.value; updatePreview(); return; }
+    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { var ko = ui.edDraft.kunden[+t.dataset.k]; if (t.dataset.j !== undefined) ko.taet[+t.dataset.j][t.dataset.f] = t.value; else ko[t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.i !== undefined && t.closest('#e-pausen')) { ui.edDraft.pausen[+t.dataset.i][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.si !== undefined) { var en = curEntry(); var v = parseFloat(String(t.value).replace(',', '.')); en.diaeten.stufen[+t.dataset.si][t.dataset.sf] = isNaN(v) ? 0 : v; delete en.test; save(); return; }
     if (id && id.indexOf('s-wd-') === 0) { var ew = curEntry(); if (ew) { var set = E.sollTage(ew.ueberstunden), wdn = +id.slice(5), ix = set.indexOf(wdn); if (t.checked && ix < 0) set.push(wdn); if (!t.checked && ix >= 0) set.splice(ix, 1); ew.ueberstunden.sollTage = set.sort(function (x, y) { return x - y; }); delete ew.test; save(); settingsVisibility(ew); } return; }
