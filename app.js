@@ -121,6 +121,7 @@
     if (view === 'einstellungen') { renderPraemienSettings(); renderSettings(); fillBackup(); renderCheck(); }
     renderOpenDay();
     window.scrollTo(0, 0);
+    if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01');
   }
 
   /* Diese Woche (Montag bis Sonntag): Stunden gegen die Wochenstunden. Eine einfache Orientierung, kein Lohnzettel-Wert. */
@@ -426,7 +427,7 @@
   }
   function renderPraemienTag() {
     var list = praemienListe().filter(function (p) { return p.name && (p.einheit === 'tag' || p.einheit === 'stueck' || p.einheit === 'tour'); }), d = ui.edDraft;
-    $('#e-praemiengroup').hidden = !list.length || d.status !== 'arbeit';
+    $('#e-praemiengroup').hidden = !list.length || d.status !== 'arbeit' || !E.bausteine(wAt(ui.edDate)).praemien;
     var pm = d.praemien || {};
     $('#e-praemien').innerHTML = list.map(function (p) {
       var v = pm[p.id], lab = esc(p.name) + ' (' + eur.format(+p.betrag || 0) + (p.einheit === 'tag' ? ' pro Tag' : p.einheit === 'tour' ? ' je Tour' : ' je Stück') + ')';
@@ -494,6 +495,7 @@
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
+    var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
     $('#e-work').hidden = d.status !== 'arbeit';
     $('#e-delete').hidden = !data.days[ui.edDate];
@@ -603,6 +605,99 @@
     toast('Kein früherer Arbeitstag gefunden.');
   }
 
+
+  /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
+  var WZ_ORDER = ['beruf', 'art', 'bausteine', 'kv', 'lohn'];
+  function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
+  function wzOpen(mode, ab) {
+    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
+    if (cur) {
+      w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
+      w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter';
+      w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
+    }
+    ui.wiz = w; wzRender(); $('#wiz').hidden = false;
+  }
+  function wzSetBeruf(k) {
+    var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
+    w.diaeten = b.diaeten; w.sw = b.sw; w.paket = b.paket;
+    var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : '';
+  }
+  function wzNext() {
+    var w = ui.wiz, i = WZ_ORDER.indexOf(w.step); w.hist.push(w.step);
+    var n = WZ_ORDER[i + 1];
+    if (n === 'art' && !(E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten)) n = 'bausteine';
+    if (!n) { wzFinish(); return; }
+    w.step = n; wzRender();
+  }
+  function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
+  function wzClose(dismiss) { $('#wiz').hidden = true; if (dismiss && ui.wiz && ui.wiz.mode === 'start') ui.wizDismissed = true; ui.wiz = null; }
+  function wzFinish() {
+    var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
+    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; } }
+    set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
+    set.schlechtwetter = !!w.sw;
+    if (!w.diaeten) set.diaeten.modell = 'aus';
+    else if (set.diaeten.modell === 'aus') set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell;
+    var lo = parseFloat(String(w.lohn).replace(',', '.')); set.stundenlohn = isNaN(lo) ? null : lo;
+    var wo = parseFloat(String(w.wochen).replace(',', '.')); if (wo > 0) set.ueberstunden.wochenStd = wo;
+    var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
+    data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ab; }); data.settings.push(set);
+    if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
+    save(); ui.setKey = ab; var start = w.mode === 'start';
+    wzClose(false);
+    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
+    else { toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.'); renderSettings(); }
+  }
+  function wzRender() {
+    var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
+    var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
+    var num = w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4;
+    html += '<p class="wzstep">Schritt ' + num + ' von ' + nSteps + (w.mode === 'change' ? ' · gilt ab ' + esc(fmtDate(w.ab)) : '') + '</p>';
+    if (w.step === 'beruf') {
+      html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>';
+    } else if (w.step === 'art') {
+      var ar = E.BERUFE[w.beruf].arten;
+      html += '<h3>Was beschreibt deine Arbeit am besten?</h3><div class="wzlist">' + Object.keys(ar).map(function (k) { return '<button type="button" class="btn wzopt' + (w.art === k ? ' on' : '') + '" data-wa="' + k + '">' + esc(ar[k].name) + '</button>'; }).join('') + '</div>';
+    } else if (w.step === 'bausteine') {
+      html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
+        '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>Kunden, Baustellen und Tätigkeiten</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>Schlechtwetter (Bau)</span></label>';
+    } else if (w.step === 'kv') {
+      html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
+        [['gueter', 'Güterbeförderung (Lkw)'], ['bau', 'Bau (Bagger, Maschinist)'], ['eigen', 'Weiß ich nicht / eigene Werte']].map(function (x) { return '<button type="button" class="btn wzopt' + (w.paket === x[0] ? ' on' : '') + '" data-wk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
+    } else {
+      var pw = E.PAKETE[w.paket].werte;
+      html += '<h3>Dein Lohn</h3>' +
+        '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
+        '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
+        (w.diaeten && pw.diaeten.modell === 'stunde' ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
+        '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
+    }
+    var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn';
+    html += '<div class="btns">' + '<button type="button" class="btn primary" id="wz-next"' + (canNext ? '' : ' disabled') + '>' + (w.step === 'lohn' ? 'Fertig' : 'Weiter') + '</button>' +
+      '<button type="button" class="btn" id="wz-back">' + (w.hist.length ? 'Zurück' : (w.mode === 'start' ? 'Später' : 'Abbrechen')) + '</button></div>';
+    el.innerHTML = html;
+  }
+  (function () {
+    var ov = $('#wiz');
+    ov.addEventListener('click', function (ev) {
+      var t = ev.target.closest('button'); if (!t || !ui.wiz) return; var w = ui.wiz;
+      if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
+      if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; wzNext(); return; }
+      if (t.dataset.wk) { w.paket = t.dataset.wk; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
+      if (t.id === 'wz-next') { wzNext(); return; }
+      if (t.id === 'wz-back') { wzBack(); return; }
+    });
+    ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
+    ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.dataset.wf) ui.wiz[t.dataset.wf] = t.value; });
+    $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
+  })();
+
   /* ============================================================ EINSTELLUNGEN */
   function getPath(o, p) { return p.split('.').reduce(function (a, k) { return a == null ? a : a[k]; }, o); }
   function setPath(o, p, v) { var ks = p.split('.'), last = ks.pop(); var t = ks.reduce(function (a, k) { return a[k]; }, o); t[last] = v; }
@@ -612,12 +707,17 @@
     var list = sortedSettings(), cur = list.length ? E.wertAt(list, todayISO()) : null;
     if (!curEntry() && list.length) ui.setKey = (cur || list[0]).gueltigAb;
     $('#s-list').innerHTML = list.length ? list.map(function (e) {
-      return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc(PAKET_KURZ[e.paket] || '') + (e === cur ? ' · aktuell' : '') + '</button>';
+      return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc((E.BERUFE[e.beruf] && E.BERUFE[e.beruf].name) || PAKET_KURZ[e.paket] || '') + (e === cur ? ' · aktuell' : '') + '</button>';
     }).join('') : '<p class="hint">Du hast noch keine eigenen Werte. Bis dahin rechnet die App mit den Werten für Güterbeförderung.</p>';
     if (!$('#s-newdate').value) { var n = new Date(); $('#s-newdate').value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
     $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Ersten Wertesatz anlegen';
 
+    var cwb = cur ? E.berufName(cur) : null;
+    $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
+    if (!$('#s-beruf-ab').value) { var nb = new Date(); $('#s-beruf-ab').value = E.iso(nb.getFullYear(), nb.getMonth() + 1, 1); }
     var en = curEntry();
+    if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
+    $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
     if (!en) return;
     $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);

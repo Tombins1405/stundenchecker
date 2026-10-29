@@ -334,3 +334,11 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .cropbox { background: var(--card, #fff); color: var(--ink, #111); border-radius: 16px; padding: 16px; width: min(100%, 340px); text-align: center; }
 .cropbox canvas { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 22%; background: #1f2937; display: block; margin: 8px auto; }
 .cropbox input[type=range] { width: 100%; }
+
+.wizbox { max-height: 92vh; overflow: auto; text-align: left; }
+.wizbox h3 { margin: 4px 0 10px; }
+.wzstep { font-size: 0.85rem; opacity: .7; margin: 0 0 4px; }
+.wzlist { display: grid; gap: 8px; margin-bottom: 12px; }
+.wzopt { text-align: left; padding: 14px; }
+.wzopt.on { border-color: var(--accent, #1e6fd9); }
+.wizbox .btns { margin-top: 12px; }

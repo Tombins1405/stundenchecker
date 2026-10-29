@@ -135,6 +135,34 @@
   // Tagessoll: eigener Wert, sonst Wochenstunden geteilt durch die Zahl der Arbeitstage.
   function tagesSoll(u) { return (u && +u.tagesSollStd > 0) ? +u.tagesSollStd : wochenStd(u) / Math.max(1, sollTage(u).length); }
 
+
+  /* ---------------------------------------------------------------- Berufe und Bausteine */
+  // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
+  var BERUFE = {
+    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+      arten: {
+        baustelle: { name: 'Baustelle / Kurzstrecke', b: { fahrzeug: true, kunden: true, praemien: true } },
+        tour: { name: 'Zustellung / Tour / Filiale', b: { fahrzeug: true, kunden: false, praemien: true } },
+        fern: { name: 'Fernverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
+        muell: { name: 'Müllabfuhr', b: { fahrzeug: true, kunden: false, praemien: true } }
+      } },
+    bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
+    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    handel: { name: 'Handel / Verkauf', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    anderes: { name: 'Etwas anderes', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
+  };
+  function berufName(w) {
+    var b = w && BERUFE[w.beruf]; if (!b) return null;
+    var a = b.arten && w.art && b.arten[w.art];
+    return b.name + (a ? ' (' + a.name + ')' : '');
+  }
+  // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
+  function bausteine(w) {
+    var s = (w && w.bausteine) || {};
+    return { fahrzeug: s.fahrzeug !== false, kunden: s.kunden !== false, praemien: s.praemien !== false };
+  }
+
   /* ---------------------------------------------------------------- Werte "Gültig ab" */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
   function neuerWertesatz(paketKey, gueltigAb) {
@@ -504,7 +532,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
