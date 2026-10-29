@@ -48,9 +48,7 @@
   <div class="wrap">
     <div class="brand">Stunden<b>-</b>Checker</div>
     <div class="slogan">Jede Stunde. Jeder Euro. Im Blick.</div>
-    <button type="button" class="miabtn" id="mia-btn" aria-label="Frag mich"></button>
   </div>
-  <div class="miabubble" id="mia-bubble" hidden><span id="mia-text"></span> <button type="button" class="linkbtn" id="mia-ok">OK</button></div>
 </header>
 
 <nav class="tabs" aria-label="Hauptmenü">
@@ -61,6 +59,14 @@
     <button type="button" class="tab" data-view="einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Einstellungen</button>
   </div>
 </nav>
+<div id="mia-float" class="miafloat" hidden>
+  <div class="miabubble2" id="mia-bubble" hidden>
+    <p id="mia-text"></p>
+    <div class="btns"><button type="button" class="btn primary" id="mia-go">Zeig mir</button><button type="button" class="btn" id="mia-later">Später</button></div>
+    <button type="button" class="linkbtn" id="mia-quiet">Mia ruhig stellen</button>
+  </div>
+  <button type="button" class="miabtn2" id="mia-btn" aria-label="Mia"></button>
+</div>
 <div id="wiz" class="cropov" hidden><div class="cropbox wizbox" id="wiz-body"></div></div>
 <div id="crop" class="cropov" hidden><div class="cropbox"><p><strong>Bild verschieben und mit dem Regler vergrößern</strong></p><canvas id="crop-c" width="280" height="280"></canvas><input type="range" id="crop-z" min="100" max="400" value="100" aria-label="Zoom"><div class="btns"><button type="button" class="btn" id="crop-ok">Übernehmen</button><button type="button" class="btn" id="crop-x">Abbrechen</button></div></div></div>
 <div class="installbar" id="updatebar" hidden><div class="ib-top"><span>Es gibt eine neue Version vom Stunden-Checker.</span><button type="button" class="btn" id="update-go">Jetzt aktualisieren</button></div></div>
@@ -205,6 +211,7 @@
         <div class="miachoose" id="mia-choose"></div>
         <label for="mia-name" style="margin-top:8px">Name</label>
         <input type="text" id="mia-name" maxlength="20" autocomplete="off" placeholder="Mia">
+        <label class="check" for="mia-aktiv" style="margin-top:8px"><input type="checkbox" id="mia-aktiv"><span>Mia meldet sich von selbst, wenn etwas zu tun ist</span></label>
       </div>
       <div class="field"><span class="lbl">Mein App-Symbol</span>
         <div id="icon-pick2" class="ipicks"></div>
@@ -398,7 +405,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261029210218";</script>
+<script>window.APP_VERSION="20261029214251";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

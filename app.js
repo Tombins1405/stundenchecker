@@ -20,7 +20,7 @@
   var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', eigen: 'Eigene Werte' };
+  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', eigen: 'Eigene Werte' };
   function todayISO() { var d = new Date(); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
   function fmtDate(s) { var p = E.parseISO(s); return p.d + '.' + p.m + '.' + p.y; }
   function fmtShort(s) { var p = E.parseISO(s); return WD[E.weekday(s)] + ' ' + p.d + '.' + p.m + '.'; }
@@ -610,54 +610,103 @@
 
 
 
-  /* ============================================================ MIA (Begleiter, weiblich oder männlich, eigener Name) */
-  function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia') }; }
-  function miaSvg(f) {
-    var w = f !== 'm', shirt = w ? '#e8708a' : '#2f8f9d', fur = '#8d5b3a', face = '#f1d3b0';
-    return '<svg class="miasvg" viewBox="0 0 120 130" aria-hidden="true">' +
-      '<g class="mia-bob">' +
-      '<g class="mia-arm"><rect x="82" y="78" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(-50 86 84)"/></g>' +
+  /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
+  var MIA_OUT = { 'lkw:baustelle': ['helm', 'weste'], 'lkw:tour': ['kappe', 'paket'], 'lkw:fern': ['kappe'], 'lkw:muell': ['kappe', 'weste'], lkw: ['kappe'],
+    bagger: ['helm', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte'],
+    'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'] };
+  function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
+  function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, skip: m.skip || {} }; }
+  function miaSvg(f, outfit, pose) {
+    outfit = outfit || []; var w = f !== 'm', has = function (x) { return outfit.indexOf(x) >= 0; };
+    var shirt = w ? '#e8708a' : '#2f8f9d', fur = '#8d5b3a', face = '#f1d3b0', hat = has('helm') || has('kappe') || has('kochhaube');
+    var item = has('paket') || has('tablett') || has('schluessel') || has('klemmbrett');
+    var arm = '';
+    if (has('paket')) arm += '<rect x="94" y="46" width="22" height="18" rx="2" fill="#c68642"/><path d="M94 55h22M105 46v18" stroke="#8b5a2b" stroke-width="2"/>';
+    if (has('tablett')) arm += '<ellipse cx="104" cy="52" rx="15" ry="3.5" fill="#9ca3af"/><rect x="101" y="38" width="6" height="13" rx="2" fill="#bfdbfe"/>';
+    if (has('schluessel')) arm += '<rect x="100" y="38" width="5" height="26" rx="2.5" fill="#9ca3af" transform="rotate(20 102 52)"/><circle cx="107" cy="38" r="6" fill="none" stroke="#9ca3af" stroke-width="4"/>';
+    if (has('klemmbrett')) arm += '<rect x="96" y="42" width="18" height="24" rx="2" fill="#a16207"/><rect x="99" y="46" width="12" height="17" fill="#f8fafc"/>';
+    var s = '<svg class="miasvg' + (pose ? ' p-' + pose : '') + (item ? ' hasitem' : '') + '" viewBox="0 0 120 130" aria-hidden="true"><g class="mia-bob">' +
+      '<g class="mia-arm"><rect x="82" y="78" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(-50 86 84)"/>' + arm + '</g>' +
       '<rect x="34" y="82" width="52" height="40" rx="18" fill="' + shirt + '"/>' +
-      '<rect x="8" y="80" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(25 36 86)"/>' +
-      '<circle cx="24" cy="48" r="13" fill="' + fur + '"/><circle cx="96" cy="48" r="13" fill="' + fur + '"/>' +
-      '<circle cx="24" cy="48" r="7" fill="' + face + '"/><circle cx="96" cy="48" r="7" fill="' + face + '"/>' +
-      '<circle cx="60" cy="52" r="38" fill="' + fur + '"/>' +
-      '<ellipse cx="60" cy="62" rx="27" ry="24" fill="' + face + '"/>' +
+      '<rect x="8" y="80" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(25 36 86)"/>';
+    if (has('weste')) s += '<rect x="34" y="82" width="52" height="40" rx="18" fill="#f97316"/><rect x="40" y="97" width="40" height="5" fill="#e5e7eb"/><rect x="40" y="108" width="40" height="5" fill="#e5e7eb"/>';
+    if (has('krawatte')) s += '<path d="M60 84l-6 6 6 5 6-5z" fill="#1e3a8a"/><path d="M60 95l-5 20h10z" fill="#1e3a8a"/>';
+    if (has('overall')) s += '<rect x="34" y="82" width="52" height="40" rx="18" fill="#2563eb"/><rect x="50" y="98" width="20" height="12" rx="2" fill="#3b82f6"/>';
+    if (has('schuerze')) s += '<path d="M44 88h32v32h-32z" fill="#f8fafc"/><rect x="54" y="92" width="12" height="6" rx="1" fill="#93c5fd"/>';
+    s += '<circle cx="24" cy="48" r="13" fill="' + fur + '"/><circle cx="96" cy="48" r="13" fill="' + fur + '"/><circle cx="24" cy="48" r="7" fill="' + face + '"/><circle cx="96" cy="48" r="7" fill="' + face + '"/>' +
+      '<circle cx="60" cy="52" r="38" fill="' + fur + '"/><ellipse cx="60" cy="62" rx="27" ry="24" fill="' + face + '"/>' +
       '<g class="mia-eyes"><ellipse cx="48" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><ellipse cx="72" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/></g>' +
       (w ? '<path d="M42 46l-4-3M46 44l-2-4M78 46l4-3M74 44l2-4" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/><circle cx="40" cy="64" r="5" fill="#f4a3b5" opacity=".7"/><circle cx="80" cy="64" r="5" fill="#f4a3b5" opacity=".7"/>' : '') +
-      '<ellipse cx="60" cy="62" rx="4" ry="3" fill="#6b4226"/>' +
-      '<path d="M50 70q10 9 20 0" fill="none" stroke="#6b4226" stroke-width="3" stroke-linecap="round"/>' +
-      (w ? '<path d="M52 22q-8-12 -20-6q4 12 20 6z M68 22q8-12 20-6q-4 12 -20 6z" fill="#f06292"/><circle cx="60" cy="22" r="5" fill="#ec407a"/>'
-         : '<path d="M24 36q36-34 72 0z" fill="#2563eb"/><rect x="58" y="32" width="46" height="8" rx="4" fill="#1d4ed8"/>') +
-      '</g></svg>';
+      '<ellipse cx="60" cy="62" rx="4" ry="3" fill="#6b4226"/><path d="M50 70q10 9 20 0" fill="none" stroke="#6b4226" stroke-width="3" stroke-linecap="round"/>';
+    if (has('helm')) s += '<path d="M23 44q4-36 37-36t37 36z" fill="#facc15"/><rect x="20" y="40" width="80" height="8" rx="4" fill="#eab308"/>';
+    else if (has('kappe')) s += '<path d="M24 38q36-34 72 0z" fill="#dc2626"/><rect x="58" y="34" width="46" height="8" rx="4" fill="#b91c1c"/>';
+    else if (has('kochhaube')) s += '<path d="M30 32q-10-18 8-22q6-10 22-6q16-4 22 6q18 4 8 22z" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/><rect x="32" y="28" width="56" height="10" rx="3" fill="#f3f4f6"/>';
+    else if (w) s += '<path d="M52 22q-8-12 -20-6q4 12 20 6z M68 22q8-12 20-6q-4 12 -20 6z" fill="#f06292"/><circle cx="60" cy="22" r="5" fill="#ec407a"/>';
+    else s += '<path d="M24 36q36-34 72 0z" fill="#2563eb"/><rect x="58" y="32" width="46" height="8" rx="4" fill="#1d4ed8"/>';
+    if (has('ohren')) s += '<path d="M20 48q40-52 80 0" stroke="#374151" stroke-width="5" fill="none"/><circle cx="22" cy="50" r="10" fill="#374151"/><circle cx="98" cy="50" r="10" fill="#374151"/>';
+    s += '<g class="hand h-eyes"><circle cx="46" cy="52" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/><circle cx="74" cy="52" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/></g>' +
+      '<g class="hand h-ears"><circle cx="20" cy="52" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/><circle cx="100" cy="52" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/></g>' +
+      '<g class="hand h-mouth"><circle cx="54" cy="72" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/><circle cx="66" cy="72" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/></g>';
+    return s + '</g></svg>';
   }
-  function renderMia() {
-    var c = miaCfg(), b = $('#mia-btn'); if (b) b.innerHTML = miaSvg(c.figur);
-    var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (c.figur === f ? ' on' : '') + '" data-mia="' + f + '" aria-label="' + (f === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
-    var n = $('#mia-name'); if (n && document.activeElement !== n) n.value = (data.profil && data.profil.mia && data.profil.mia.name) || ''; if (n) n.placeholder = c.figur === 'm' ? 'Milo' : 'Mia';
-  }
+  function miaFor(date) { var w = wAt(date || todayISO()); return miaOutfit(w.beruf, w.art); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
-  function miaTip() {
-    var c = miaCfg(), w = wAt(todayISO()), bs = E.bausteine(w);
-    var t = 'Ich bin ' + c.name + '. Trag deine Stunden ein, und ich rechne mit, ob dein Lohnzettel stimmt.';
-    if (!data.settings.length) t = 'Hallo, ich bin ' + c.name + '. Beantworte mir kurz ein paar Fragen, dann richte ich alles für dich ein.';
-    else if (w.stundenlohn == null) t = 'Trage in den Einstellungen deinen Stundenlohn ein, dann sage ich dir, was ein Unterschied in Euro wert ist.';
-    else if (bs.praemien && !((data.profil && data.profil.praemien) || []).length) t = 'Hast du Prämien auf dem Lohnzettel? Lege sie in den Einstellungen an, dann prüfe ich sie auch.';
-    else if (!Object.keys(data.abgleich || {}).length && Object.keys(data.days).length > 5) t = 'Wenn dein Lohnzettel da ist: Übersicht, dann „Stimmt mein Lohnzettel?“. Ich vergleiche mit deiner Aufzeichnung.';
-    return t;
+  function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
+  function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
+  function miaNext() {
+    if (!data.settings.length) return null;
+    var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
+    if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
+    if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
+    if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
+    var cnt = Object.keys(data.days).filter(function (k) { return k.slice(0, 7) === pk.key; }).length;
+    if (cnt >= 5 && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
+    return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
+  }
+  function miaGo(k) {
+    if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
+    else if (k === 'tag') { show('erfassen'); }
+    else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
+    else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('monat'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
+  }
+  function miaPose(p) { var b = $('#mia-btn'); if (b) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
+  function renderMia() {
+    var c = miaCfg(), f = $('#mia-float'); if (f) f.hidden = !data.settings.length || !!ui.wiz;
+    var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (x) { return '<button type="button" class="miaopt' + (c.figur === x ? ' on' : '') + '" data-mia="' + x + '" aria-label="' + (x === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(x, miaFor(), '') + '<span>' + (x === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
+    var n = $('#mia-name'); if (n && document.activeElement !== n) n.value = (data.profil && data.profil.mia && data.profil.mia.name) || ''; if (n) n.placeholder = c.figur === 'm' ? 'Milo' : 'Mia';
+    var ak = $('#mia-aktiv'); if (ak) ak.checked = !c.ruhig;
+    if (!ui.miaPose) miaPose(c.ruhig || !miaNext() ? 'mouth' : '');
+  }
+  function miaOpen(auto) {
+    var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
+    $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
+    bb.hidden = false;
+  }
+  function miaClose(pose) {
+    $('#mia-bubble').hidden = true; ui.miaPose = pose || null; miaPose(pose || 'mouth');
+    if (pose === 'ears') setTimeout(function () { ui.miaPose = null; miaPose('mouth'); }, 2200);
+  }
+  function miaAuto() {
+    if (ui.wiz || ui.miaAuto) return; var c = miaCfg(); if (c.ruhig || !miaNext()) return;
+    ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !miaCfg().ruhig) miaOpen(true); }, 1200);
   }
   (function () {
-    $('#mia-btn').addEventListener('click', function () { var bb = $('#mia-bubble'); if (!bb.hidden) { bb.hidden = true; return; } $('#mia-text').textContent = miaTip(); bb.hidden = false; });
-    $('#mia-ok').addEventListener('click', function () { $('#mia-bubble').hidden = true; });
+    $('#mia-btn').addEventListener('click', function () { if (!$('#mia-bubble').hidden) { miaClose('mouth'); return; } miaOpen(false); });
+    $('#mia-go').addEventListener('click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
+    $('#mia-later').addEventListener('click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
+    $('#mia-quiet').addEventListener('click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
     $('#mia-choose').addEventListener('click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
     $('#mia-name').addEventListener('input', function () { miaSet('name', this.value.slice(0, 20)); });
+    $('#mia-aktiv').addEventListener('change', function () { miaSet('ruhig', !this.checked); });
   })();
 
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
-  var WZ_ORDER = ['beruf', 'art', 'bausteine', 'kv', 'lohn', 'mia'];
+  var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
-    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
+    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: mode === 'start' ? 'mia' : 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter';
@@ -674,7 +723,6 @@
     var w = ui.wiz, i = WZ_ORDER.indexOf(w.step); w.hist.push(w.step);
     var n = WZ_ORDER[i + 1];
     if (n === 'art' && !(E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten)) n = 'bausteine';
-    if (n === 'mia' && w.mode !== 'start') n = null;
     if (!n) { wzFinish(); return; }
     w.step = n; wzRender();
   }
@@ -694,7 +742,7 @@
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
-    wzClose(false);
+    wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
     if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
     else { toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.'); renderSettings(); }
   }
@@ -702,8 +750,11 @@
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
     var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
-    var num = w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : w.step === 'lohn' ? 4 : 5;
+    var off = w.mode === 'start' ? 1 : 0, num = w.step === 'mia' ? 1 : (w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4) + off;
     if (w.mode === 'start') nSteps = 5;
+    var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
+    var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
+    html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep">Schritt ' + num + ' von ' + nSteps + (w.mode === 'change' ? ' · gilt ab ' + esc(fmtDate(w.ab)) : '') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>';
@@ -725,7 +776,7 @@
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
     } else if (w.step === 'mia') {
       var mc = miaCfg();
-      html += '<h3>Wer soll dich begleiten?</h3><p class="hint">Du kannst Figur und Namen jederzeit im Konto ändern.</p><div class="miachoose">' +
+      html += '<h3>Wer soll dich begleiten?</h3><div class="miachoose">' +
         ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (w.mia === f ? ' on' : '') + '" data-wm="' + f + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('') + '</div>' +
         '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>';
     } else {
@@ -737,7 +788,7 @@
         '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
     }
     var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn' || w.step === 'mia';
-    html += '<div class="btns">' + '<button type="button" class="btn primary" id="wz-next"' + (canNext ? '' : ' disabled') + '>' + (w.step === 'lohn' && w.mode !== 'start' || w.step === 'mia' ? 'Fertig' : 'Weiter') + '</button>' +
+    html += '<div class="btns">' + '<button type="button" class="btn primary" id="wz-next"' + (canNext ? '' : ' disabled') + '>' + (w.step === 'lohn' ? 'Fertig' : 'Weiter') + '</button>' +
       '<button type="button" class="btn" id="wz-back">' + (w.hist.length ? 'Zurück' : (w.mode === 'start' ? 'Später' : 'Abbrechen')) + '</button></div>';
     el.innerHTML = html;
   }

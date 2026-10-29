@@ -68,6 +68,19 @@
         schlechtwetter: false
       }
     },
+    buero: {
+      name: 'Büro (Angestellte)',
+      hinweis: 'Für Büroangestellte gibt es keinen einzigen Kollektivvertrag: Er hängt von der Branche deines Betriebs ab (zum Beispiel Handel, Gewerbe, Industrie, IT oder Transport). Die Vorgaben hier sind nur ein Vorschlag nach dem Angestellten-KV Handel 2026 (38,5 Stunden/Woche, Überstunden 50 %, Sonn- und Feiertag 100 %). Den KV deiner Firma findest du auf dem Lohnzettel oder Dienstzettel. Passe die Werte dann an.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     metall: {
       name: 'Metallgewerbe / Mechaniker',
       hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden mit 50 % oder 100 % Zuschlag, Zeitausgleich 1:1,5 bei 50 % und 1:2 bei 100 %. Welche Zuschläge nachts, am Samstag und am Sonntag gelten, konnte ich nicht belegen. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt), steht auf deinem Lohnzettel.',
@@ -201,8 +214,10 @@
     bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
     klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+      arten: { service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: false } }, kueche: { name: 'Küche', b: { fahrzeug: false, kunden: false, praemien: false } } } },
     anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
   function berufName(w) {
