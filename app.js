@@ -20,7 +20,7 @@
   var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  var PAKET_KURZ = { gueter: 'Güterbeförderung', bau: 'Bau', eigen: 'Eigene Werte' };
+  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', eigen: 'Eigene Werte' };
   function todayISO() { var d = new Date(); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
   function fmtDate(s) { var p = E.parseISO(s); return p.d + '.' + p.m + '.' + p.y; }
   function fmtShort(s) { var p = E.parseISO(s); return WD[E.weekday(s)] + ' ' + p.d + '.' + p.m + '.'; }
@@ -638,7 +638,7 @@
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
     set.schlechtwetter = !!w.sw;
     if (!w.diaeten) set.diaeten.modell = 'aus';
-    else if (set.diaeten.modell === 'aus') set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell;
+    else if (set.diaeten.modell === 'aus') { set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell; if (set.diaeten.modell === 'aus') { set.diaeten.modell = 'stunde'; set.diaeten.maxStd = 12; } }
     var lo = parseFloat(String(w.lohn).replace(',', '.')); set.stundenlohn = isNaN(lo) ? null : lo;
     var wo = parseFloat(String(w.wochen).replace(',', '.')); if (wo > 0) set.ueberstunden.wochenStd = wo;
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
@@ -652,6 +652,7 @@
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
+    var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
     var num = w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4;
     html += '<p class="wzstep">Schritt ' + num + ' von ' + nSteps + (w.mode === 'change' ? ' · gilt ab ' + esc(fmtDate(w.ab)) : '') + '</p>';
     if (w.step === 'beruf') {
@@ -661,21 +662,23 @@
       html += '<h3>Was beschreibt deine Arbeit am besten?</h3><div class="wzlist">' + Object.keys(ar).map(function (k) { return '<button type="button" class="btn wzopt' + (w.art === k ? ' on' : '') + '" data-wa="' + k + '">' + esc(ar[k].name) + '</button>'; }).join('') + '</div>';
     } else if (w.step === 'bausteine') {
       html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
-        '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>Kunden, Baustellen und Tätigkeiten</span></label>' +
+        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>Kunden, Baustellen und Tätigkeiten</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>Schlechtwetter (Bau)</span></label>';
+        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>Schlechtwetter (Bau)</span></label>');
     } else if (w.step === 'kv') {
+      var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen'], cp = E.PAKETE[w.paket];
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
-        [['gueter', 'Güterbeförderung (Lkw)'], ['bau', 'Bau (Bagger, Maschinist)'], ['eigen', 'Weiß ich nicht / eigene Werte']].map(function (x) { return '<button type="button" class="btn wzopt' + (w.paket === x[0] ? ' on' : '') + '" data-wk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+        kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
+        (cp && cp.pruefen && w.paket !== 'eigen' ? '<p class="hint"><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte vergleiche die Werte später mit deinem Lohnzettel.</p>' : '') +
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
     } else {
       var pw = E.PAKETE[w.paket].werte;
       html += '<h3>Dein Lohn</h3>' +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
-        (w.diaeten && pw.diaeten.modell === 'stunde' ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
+        (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
         '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
     }
     var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn';

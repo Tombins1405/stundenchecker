@@ -42,6 +42,58 @@
         schlechtwetter: true
       }
     },
+    klein: {
+      name: 'Kleintransportgewerbe (bis 3,5 t)',
+      hinweis: 'KV Kleintransportgewerbe, Arbeiter, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, 50 % Überstundenzuschlag ab der 41. Wochenstunde, Tagesgeld 27,12 € je Kalendertag, bei mehr als 3 Stunden Abwesenheit 1/12 je angefangene Stunde (2,26 € je Stunde). Samstagnachmittag-Zustellung: 50 % (13 bis 18 Uhr), 75 % (18 bis 22 Uhr), das stellst du bei Bedarf selbst ein.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'stunde', satz: 2.26, maxStd: 12, minStd: 3, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    handel: {
+      name: 'Handel (Angestellte und Arbeiter)',
+      hinweis: 'KV Handel, ab 1.1.2026 (Quellen: gpa.at und wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden 50 %, nachts (20 bis 6 Uhr) sowie an Sonn- und Feiertagen 100 %, Überstunden bei erweiterten Öffnungszeiten 70 %. Zeitausgleich für Überstunden 1:1,5 bei 50 %, 1:2 bei 100 %. Bei Monatsgehalt ist die Grundstunde 1/158 (Angestellte) bzw. 1/167 (Arbeiter). Weil die Überstunden von der Einteilung der Firma abhängen, gilt hier die Monatsrechnung als Vorschlag.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    metall: {
+      name: 'Metallgewerbe / Mechaniker',
+      hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden mit 50 % oder 100 % Zuschlag, Zeitausgleich 1:1,5 bei 50 % und 1:2 bei 100 %. Welche Zuschläge nachts, am Samstag und am Sonntag gelten, konnte ich nicht belegen. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt), steht auf deinem Lohnzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    gastro: {
+      name: 'Hotel- und Gastgewerbe',
+      hinweis: 'KV Hotel- und Gastgewerbe (Quelle: vida.at, Stand 2024, bitte auf neuere Fassung prüfen): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Nachtarbeit (0 bis 6 Uhr) hat einen Zuschlag, dessen Höhe im Lohnabkommen steht, das ich nicht geöffnet habe. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     eigen: {
       name: 'Eigene Werte',
       hinweis: 'Alle Werte stellst du selbst ein (zum Beispiel nach deinem Kollektivvertrag oder deiner Vereinbarung).',
@@ -139,18 +191,19 @@
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   var BERUFE = {
-    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
         baustelle: { name: 'Baustelle / Kurzstrecke', b: { fahrzeug: true, kunden: true, praemien: true } },
         tour: { name: 'Zustellung / Tour / Filiale', b: { fahrzeug: true, kunden: false, praemien: true } },
         fern: { name: 'Fernverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
         muell: { name: 'Müllabfuhr', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
-    bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
-    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
-    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    handel: { name: 'Handel / Verkauf', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    anderes: { name: 'Etwas anderes', paket: 'eigen', diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
+    bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
+    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
   function berufName(w) {
     var b = w && BERUFE[w.beruf]; if (!b) return null;
