@@ -519,7 +519,7 @@
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin),
-        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), praemien: prArr, praemienEuro: r2(prEuro),
+        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
@@ -561,6 +561,15 @@
       rows.push({ key: z.key, label: z.label, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
         status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
     });
+    // Prämien: Betrag in Euro gegen die Zeile auf dem Lohnzettel (Toleranz 50 Cent wegen Rundung)
+    ((summe && summe.praemienDef) || []).forEach(function (p) {
+      var key = 'pr_' + p.id, v = lz && lz[key], has = hasNum(v), hit = ((summe.praemien) || []).filter(function (x) { return x.id === p.id; })[0];
+      var app = r2(hit ? hit.euro : 0);
+      if (!alle && app === 0 && !(has && +v > 0)) return;
+      if (!has) { rows.push({ key: key, label: p.name, unit: '€', app: app, lz: null, diff: null, status: 'offen', faktor: 'euro' }); return; }
+      var diff = r2(+v - app), a = Math.abs(diff);
+      rows.push({ key: key, label: p.name, unit: '€', app: app, lz: +v, lzGesamt: +v, diff: diff, faktor: 'euro', status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
+    });
     return rows;
   }
   // Wert der Unterschiede in Euro (brutto, grobe Schätzung). Positiv = dir fehlt Geld, negativ = zu viel bezahlt.
@@ -572,7 +581,8 @@
     rows.forEach(function (r) {
       if (r.status === 'info' || r.status === 'offen' || r.status === 'gleich' || r.diff === null) return;
       var f = r.faktor, eur = null;
-      if (f === 'diaeten') { if (w && w.diaeten && w.diaeten.modell === 'stunde' && w.diaeten.satz) eur = -r.diff * w.diaeten.satz; }
+      if (f === 'euro') eur = -r.diff;
+      else if (f === 'diaeten') { if (w && w.diaeten && w.diaeten.modell === 'stunde' && w.diaeten.satz) eur = -r.diff * w.diaeten.satz; }
       else if (lohn === null) { out.fehltStundenlohn = true; return; }
       else eur = -r.diff * lohn * (f === 'ueber' ? 1 + zus / 100 : f);
       if (eur === null) return;

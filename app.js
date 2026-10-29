@@ -245,11 +245,12 @@
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
         '<small class="abhint">' + esc(AB_HINT[r.key]) + '</small>' +
         '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="0.25" value="' + (v == null ? '' : esc(v)) + '" placeholder="Zuwachs"><span>h</span></div></div></div>';
+      var isE = r.unit === '€';
       return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(AB_HINT[r.key]) + '</small>' +
-        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="0.25" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>h</span></div>' +
-        '<div class="abapp">Deine Aufzeichnung<br><b>' + fh(r.app) + ' h</b></div>' +
+        '<small class="abhint">' + esc(isE ? 'Prämie in Euro, so wie auf dem Lohnzettel.' : AB_HINT[r.key]) + '</small>' +
+        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="' + (isE ? '0.01' : '0.25') + '" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>' + (isE ? '€' : 'h') + '</span></div>' +
+        '<div class="abapp">Deine Aufzeichnung<br><b>' + (isE ? eur.format(r.app) : fh(r.app) + ' h') + '</b></div>' +
         '<span class="chip" data-chip="' + r.key + '"></span></div></div>';
     }).join('');
     paintAbgleich();
@@ -264,8 +265,8 @@
       if (r.status !== 'offen') {
         given++;
         if (r.status === 'gleich') { txt = 'Passt'; cls += ' good'; }
-        else if (r.status === 'klein') { txt = 'Fast gleich (' + fh(Math.abs(r.diff)) + ' h)'; cls += ' warn'; }
-        else { txt = 'Lohnzettel hat ' + fh(Math.abs(r.diff)) + ' h ' + (r.diff < 0 ? 'weniger' : 'mehr'); cls += ' bad'; bad.push(r); }
+        else if (r.status === 'klein') { txt = 'Fast gleich (' + (r.unit === '€' ? eur.format(Math.abs(r.diff)) : fh(Math.abs(r.diff)) + ' h') + ')'; cls += ' warn'; }
+        else { txt = 'Lohnzettel hat ' + (r.unit === '€' ? eur.format(Math.abs(r.diff)) : fh(Math.abs(r.diff)) + ' h') + ' ' + (r.diff < 0 ? 'weniger' : 'mehr'); cls += ' bad'; bad.push(r); }
       }
       chip.className = cls; chip.textContent = txt;
     });
@@ -274,7 +275,7 @@
     else if (!bad.length) html = '<div class="notice">Alle eingetragenen Zeilen stimmen mit deiner Aufzeichnung überein.</div>';
     else {
       html = '<div class="notice warn"><strong>Es gibt einen Unterschied.</strong><ul style="margin:6px 0 0;padding-left:20px">' +
-        bad.map(function (r) { return '<li><strong>' + esc(r.label) + ':</strong> Auf dem Lohnzettel stehen ' + fh(Math.abs(r.diff)) + ' Stunden ' + (r.diff < 0 ? 'weniger' : 'mehr') + ' als bei dir' + (r.app === 0 ? ' (in deiner Aufzeichnung gibt es diese Zeile nicht)' : '') + (eu.zeilen[r.key] != null ? ', ungefähr ' + eur.format(Math.abs(eu.zeilen[r.key])) + ' brutto' : '') + '.</li>'; }).join('') + '</ul>';
+        bad.map(function (r) { return '<li><strong>' + esc(r.label) + ':</strong> Auf dem Lohnzettel stehen ' + (r.unit === '€' ? eur.format(Math.abs(r.diff)) : fh(Math.abs(r.diff)) + ' Stunden') + ' ' + (r.diff < 0 ? 'weniger' : 'mehr') + ' als bei dir' + (r.app === 0 ? ' (in deiner Aufzeichnung gibt es diese Zeile nicht)' : '') + (eu.zeilen[r.key] != null ? ', ungefähr ' + eur.format(Math.abs(eu.zeilen[r.key])) + ' brutto' : '') + '.</li>'; }).join('') + '</ul>';
       if (eu.summe !== 0) html += '<p style="margin-top:8px"><strong>' + (eu.summe > 0 ? 'Mögliche Differenz zu deinen Gunsten: ungefähr ' : 'Auf dem Lohnzettel ist mehr bezahlt als bei dir: ungefähr ') + eur.format(Math.abs(eu.summe)) + ' brutto.</strong> Grobe Schätzung mit deinem Stundenlohn (' + eur.format(+wm.stundenlohn) + ') aus den Einstellungen.</p>';
       else if (eu.fehltStundenlohn) html += '<p style="margin-top:8px">Trage in den Einstellungen deinen Stundenlohn ein, dann zeigt die App hier auch, was der Unterschied in Euro wert ist.</p>';
       var keys = ['lohn', 'ueber', 'feiertag', 'urlaub', 'krank', 'pflege'], sumApp = 0, sumLz = 0, ok = lz.lohn != null && lz.ueber != null;
@@ -1052,7 +1053,7 @@
       var key = monthKey(), f = id.slice(3), o = data.abgleich[key] || (data.abgleich[key] = {});
       var num = parseFloat(String(t.value).replace(',', '.'));
       o[f] = (t.value === '' || isNaN(num)) ? null : num; delete o.test;
-      var any = ['lohn', 'ueber', 'feiertag', 'urlaub', 'krank', 'pflege', 'dStd', 'zaKonto', 'sonder'].some(function (k) { return o[k] != null; });
+      var any = Object.keys(o).some(function (k) { return k !== 'test' && o[k] != null; });
       if (!any) delete data.abgleich[key];
       save(); paintAbgleich(); return;
     }
