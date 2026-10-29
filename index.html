@@ -149,23 +149,18 @@
         </div>
 
         <div class="field">
+          <span class="lbl">Fahrzeug (optional)</span>
+          <div id="e-fahrzeuge" class="pausen"></div>
+          <datalist id="f-kfz-list"></datalist>
+          <button type="button" class="btn" id="e-addfz">+ Fahrzeug hinzufügen</button>
+        </div>
+
+        <div class="field">
           <span class="lbl">Kunde / Baustelle (optional)</span>
           <div id="e-kunden" class="pausen"></div>
           <datalist id="e-notiz-list"></datalist>
           <button type="button" class="btn" id="e-addkunde">+ Kunde / Baustelle hinzufügen</button>
         </div>
-
-        <details class="field" id="e-fz-box">
-          <summary class="lbl" style="cursor:pointer">Fahrzeug &amp; Betriebsstoffe (optional)</summary>
-          <div class="grid2" style="margin-top:10px">
-            <div class="field"><label for="f-kfz">Kennzeichen</label><input type="text" id="f-kfz" data-fz="kfz" maxlength="15" autocapitalize="characters" autocomplete="off" list="f-kfz-list"><datalist id="f-kfz-list"></datalist></div>
-            <div class="field"><label for="f-kmvon">km-Stand Anfang</label><input type="number" id="f-kmvon" data-fz="kmVon" inputmode="numeric" min="0" step="1"></div>
-            <div class="field"><label for="f-kmbis">km-Stand Ende</label><input type="number" id="f-kmbis" data-fz="kmBis" inputmode="numeric" min="0" step="1"></div>
-            <div class="field"><label for="f-diesel">Diesel (Liter)</label><input type="number" id="f-diesel" data-fz="diesel" inputmode="decimal" min="0" step="0.1"></div>
-            <div class="field"><label for="f-adblue">AdBlue (Liter)</label><input type="number" id="f-adblue" data-fz="adblue" inputmode="decimal" min="0" step="0.1"></div>
-            <div class="field"><label for="f-oel">Motoröl (Liter)</label><input type="number" id="f-oel" data-fz="oel" inputmode="decimal" min="0" step="0.1"></div>
-          </div>
-        </details>
       </div>
 
       <div id="e-preview" class="result" aria-live="polite"></div>
@@ -191,6 +186,7 @@
         <div class="field"><label for="k-urlaubstart">Urlaub beim Eintritt (Tage)</label><input type="number" id="k-urlaubstart" inputmode="decimal" step="0.01" placeholder="0"><small>Nur wenn du Urlaub mitgenommen hast.</small></div>
         <div class="field"><label for="k-zastart">Zeitausgleich beim Start (Std)</label><input type="number" id="k-zastart" inputmode="decimal" step="0.25" placeholder="0"><small>Stand des Zeitausgleich-Kontos vor deinem ersten Eintrag.</small></div>
       </div>
+      <label class="check"><input type="checkbox" id="k-kmvortag"> km-Stand vom letzten Mal beim Fahrzeug automatisch eintragen</label>
     </div>
     <div class="card">
       <h3>Urlaubskartei</h3>

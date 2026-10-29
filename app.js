@@ -298,6 +298,7 @@
     $('#k-urlaubjahr').value = p.urlaubJahr == null ? '' : p.urlaubJahr;
     $('#k-urlaubstart').value = p.urlaubStart == null ? '' : p.urlaubStart;
     $('#k-zastart').value = p.zaStart == null ? '' : p.zaStart;
+    $('#k-kmvortag').checked = p.kmVortag !== false;
     var lk = lastMonthKey(), ly = +lk.slice(0, 4), lm = +lk.slice(5, 7);
     // Urlaubskartei
     var uk = E.urlaubKartei(data, p, ly, lm);
@@ -339,6 +340,7 @@
     if (id === 'k-eintritt') { if (t.value === '' || validISO(t.value)) { data.profil.eintritt = t.value || null; delete data.profil.test; save(); renderKonten(); } return true; }
     if (id === 'k-urlaubjahr') { data.profil.urlaubJahr = val; delete data.profil.test; save(); return true; }
     if (id === 'k-urlaubstart') { data.profil.urlaubStart = val; delete data.profil.test; save(); return true; }
+    if (id === 'k-kmvortag') { data.profil.kmVortag = !!t.checked; delete data.profil.test; save(); return true; }
     if (id === 'k-zastart') { data.profil.zaStart = val; delete data.profil.test; save(); return true; }
     if (id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) {
       var key = id.slice(3), o = data.abgleich[key] || (data.abgleich[key] = {});
@@ -351,9 +353,55 @@
   function blankDay() { return { status: 'arbeit', von: '', bis: '', pausen: [], kunden: [], diaeten: null, sw: 0, notiz: '' }; }
   function normKunden(d) {
     if (!d.pausen) d.pausen = [];
+    if (!d.fahrzeuge) d.fahrzeuge = d.fz ? [E.clone(d.fz)] : []; // alte Einträge mit einem Fahrzeug
+    delete d.fz;
     if (!d.kunden) d.kunden = d.notiz ? [{ name: d.notiz, von: '', bis: '' }] : []; // alte Einträge mit einem Kundentext
   }
   function kundenNamen(d) { return (d.kunden || []).map(function (k) { return (k.name || '').trim(); }).filter(Boolean); }
+
+  /* ---- Fahrzeuge: beliebig viele pro Tag, km-Stand vom letzten Mal vorbelegen ---- */
+  function fahrzeugeVon(dd) { return dd.fahrzeuge || (dd.fz ? [dd.fz] : []); }
+  function lastKm(kfz, date) {
+    var best = null, bk = '';
+    Object.keys(data.days).forEach(function (k) {
+      if (k >= date || k <= bk) return;
+      fahrzeugeVon(data.days[k]).forEach(function (f) { if (f.kfz === kfz && f.kmBis !== undefined && f.kmBis !== null && f.kmBis !== '') { best = +f.kmBis; bk = k; } });
+    });
+    return best;
+  }
+  function prefillFahrzeuge(draft, date) {
+    if (!data.profil || data.profil.kmVortag === false) return;
+    var prev = '';
+    Object.keys(data.days).forEach(function (k) { if (k < date && k > prev && data.days[k].status === 'arbeit' && fahrzeugeVon(data.days[k]).length) prev = k; });
+    if (!prev) return;
+    draft.fahrzeuge = fahrzeugeVon(data.days[prev]).filter(function (f) { return f.kfz; }).map(function (f) {
+      var km = lastKm(f.kfz, date); return { kfz: f.kfz, kmVon: km === null ? '' : km };
+    });
+  }
+  function renderFahrzeuge() {
+    $('#e-fahrzeuge').innerHTML = ui.edDraft.fahrzeuge.map(function (f, i) {
+      function v(x) { return (f[x] === undefined || f[x] === null) ? '' : esc(f[x]); }
+      function num(x, lab, step) { return '<div class="field"><label for="fz-' + x + i + '">' + lab + '</label><input type="number" id="fz-' + x + i + '" data-fi="' + i + '" data-ff="' + x + '" inputmode="' + (step === '1' ? 'numeric' : 'decimal') + '" min="0" step="' + step + '" value="' + v(x) + '"></div>'; }
+      return '<div class="fzblock">' +
+        '<div class="field fk"><label for="fz-kfz' + i + '">Kennzeichen ' + (i + 1) + '</label><input type="text" id="fz-kfz' + i + '" data-fi="' + i + '" data-ff="kfz" maxlength="15" autocapitalize="characters" autocomplete="off" list="f-kfz-list" value="' + v('kfz') + '"></div>' +
+        '<button type="button" class="rm" data-rmfz="' + i + '" aria-label="Fahrzeug ' + (i + 1) + ' entfernen">×</button>' +
+        num('kmVon', 'km-Stand Anfang', '1') + num('kmBis', 'km-Stand Ende', '1') +
+        '<details class="fzmore"' + ((f.von || f.bis || f.diesel || f.adblue || f.oel) ? ' open' : '') + '><summary>Uhrzeiten und Betriebsflüssigkeiten (optional)</summary><div class="grid2">' +
+        '<div class="field"><label for="fz-von' + i + '">Uhrzeit von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="fz-von' + i + '" data-fi="' + i + '" data-ff="von" value="' + v('von') + '"></div>' +
+        '<div class="field"><label for="fz-bis' + i + '">Uhrzeit bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="fz-bis' + i + '" data-fi="' + i + '" data-ff="bis" value="' + v('bis') + '"></div>' +
+        num('diesel', 'Diesel (Liter)', '0.1') + num('adblue', 'AdBlue (Liter)', '0.1') + num('oel', 'Motoröl (Liter)', '0.1') +
+        '</div></details></div>';
+    }).join('');
+  }
+  function fahrzeugeSpeichern(list) {
+    return (list || []).map(function (f) {
+      var o = {};
+      var kfz = String(f.kfz || '').trim().toUpperCase(); if (kfz) o.kfz = kfz;
+      ['kmVon', 'kmBis', 'diesel', 'adblue', 'oel'].forEach(function (x) { if (f[x] !== undefined && f[x] !== null && f[x] !== '' && !isNaN(+f[x])) o[x] = +f[x]; });
+      if (f.von) o.von = f.von; if (f.bis) o.bis = f.bis;
+      return o;
+    }).filter(function (o) { return Object.keys(o).length; });
+  }
   function renderKunden() {
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
       return '<div class="kunde">' +
@@ -369,12 +417,13 @@
     ui.edDate = date; ui.edFrom = from || 'erfassen';
     ui.edDraft = data.days[date] ? E.clone(data.days[date]) : blankDay();
     normKunden(ui.edDraft);
+    if (!data.days[date]) prefillFahrzeuge(ui.edDraft, date);
     ui.edBase = JSON.stringify(ui.edDraft);
     show('erfassen', true);
   }
 
   function renderEditor() {
-    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); normKunden(ui.edDraft); ui.edBase = JSON.stringify(ui.edDraft); }
+    if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); normKunden(ui.edDraft); if (!data.days[ui.edDate]) prefillFahrzeuge(ui.edDraft, ui.edDate); ui.edBase = JSON.stringify(ui.edDraft); }
     var d = ui.edDraft, w = wAt(ui.edDate);
     $('#e-title').textContent = fmtLong(ui.edDate);
     var tags = '', typ = E.dayTyp(ui.edDate), ft = E.feiertagName(ui.edDate);
@@ -398,14 +447,12 @@
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
     var ts = {}, ks = {}, topt = '', kopt = '';
-    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { if (x.tat) ts[x.tat] = (ts[x.tat] || 0) + 1; }); if (dd.fz && dd.fz.kfz) ks[dd.fz.kfz] = (ks[dd.fz.kfz] || 0) + 1; });
+    Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { if (x.tat) ts[x.tat] = (ts[x.tat] || 0) + 1; }); fahrzeugeVon(dd).forEach(function (f) { if (f.kfz) ks[f.kfz] = (ks[f.kfz] || 0) + 1; }); });
     Object.keys(ts).sort(function (x, y) { return ts[y] - ts[x]; }).slice(0, 30).forEach(function (n) { topt += '<option value="' + esc(n) + '">'; });
     Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
     if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
     $('#e-tat-list').innerHTML = topt; $('#f-kfz-list').innerHTML = kopt;
-    var fz = d.fz || {};
-    ['kfz', 'kmVon', 'kmBis', 'diesel', 'adblue', 'oel'].forEach(function (f) { var el = document.querySelector('[data-fz="' + f + '"]'); if (el) el.value = (fz[f] === undefined || fz[f] === null) ? '' : fz[f]; });
-    $('#e-fz-box').open = Object.keys(fz).length > 0;
+    renderFahrzeuge();
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
@@ -479,12 +526,8 @@
     if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
     out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), tat: (k.tat || '').trim(), von: k.von || '', bis: k.bis || '' }; }).filter(function (k) { return k.name || k.tat || k.von || k.bis; });
     out.notiz = kundenNamen(out).join(', ');
-    var fzo = {}, fzi = out.fz || {};
-    ['kfz', 'kmVon', 'kmBis', 'diesel', 'adblue', 'oel'].forEach(function (f) {
-      var v = fzi[f]; if (v === undefined || v === null || v === '') return;
-      if (f === 'kfz') { v = String(v).trim().toUpperCase(); if (v) fzo.kfz = v; } else if (!isNaN(+v)) fzo[f] = +v;
-    });
-    if (st !== 'arbeit' || !Object.keys(fzo).length) delete out.fz; else out.fz = fzo;
+    var fzl = fahrzeugeSpeichern(out.fahrzeuge); delete out.fz;
+    if (st !== 'arbeit' || !fzl.length) delete out.fahrzeuge; else out.fahrzeuge = fzl;
     if (!out.kunden.length) delete out.kunden;
     if (!out.spaeter) delete out.spaeter;
     delete out.test;
@@ -732,6 +775,7 @@
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
+      case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
       case 'e-addkunde': ui.edDraft.kunden.push({ name: '', tat: '', von: '', bis: '' }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
@@ -782,6 +826,7 @@
       case 't-remove': removeTest(); return;
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
+    if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
     if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); return; }
     if (t.dataset.rm !== undefined) { ui.edDraft.pausen.splice(+t.dataset.rm, 1); renderPausen(); updatePreview(); return; }
     if (t.dataset.srm !== undefined) { var e3 = curEntry(); e3.diaeten.stufen.splice(+t.dataset.srm, 1); save(); renderStufen(e3); return; }
@@ -790,7 +835,18 @@
   function onInput(ev) {
     var t = ev.target, id = t.id;
     if (id && id.charAt(0) === 'k' && id.charAt(1) === '-' || id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) { if (id === 'k-eintritt' && ev.type !== 'change') return; if (konInput(t)) return; }
-    if (t.dataset && t.dataset.fz) { if (!ui.edDraft.fz) ui.edDraft.fz = {}; ui.edDraft.fz[t.dataset.fz] = t.value; return; }
+    if (t.dataset && t.dataset.fi !== undefined && t.closest('#e-fahrzeuge')) {
+      var fo = ui.edDraft.fahrzeuge[+t.dataset.fi]; if (!fo) return;
+      fo[t.dataset.ff] = t.value;
+      if (t.dataset.ff === 'kfz' && ev.type === 'change') {
+        fo.kfz = String(t.value).trim().toUpperCase(); t.value = fo.kfz;
+        if ((fo.kmVon === undefined || fo.kmVon === '' || fo.kmVon === null) && fo.kfz && data.profil && data.profil.kmVortag !== false) {
+          var km = lastKm(fo.kfz, ui.edDate), ki = $('#fz-kmVon' + t.dataset.fi);
+          if (km !== null && ki && ki !== document.activeElement) { fo.kmVon = km; ki.value = km; }
+        }
+      }
+      return;
+    }
     if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { ui.edDraft.kunden[+t.dataset.k][t.dataset.f] = t.value; return; }
     if (t.dataset && t.dataset.i !== undefined && t.closest('#e-pausen')) { ui.edDraft.pausen[+t.dataset.i][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.si !== undefined) { var en = curEntry(); var v = parseFloat(String(t.value).replace(',', '.')); en.diaeten.stufen[+t.dataset.si][t.dataset.sf] = isNaN(v) ? 0 : v; delete en.test; save(); return; }

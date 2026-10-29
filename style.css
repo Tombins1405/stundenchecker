@@ -286,3 +286,10 @@ details#e-extra-box > summary { cursor: pointer; color: var(--ink-2); font-size:
 .vl-x.armed { background: var(--bad); color: #fff; font-size: .85rem; }
 details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .vl li > span { flex: 1; }
+
+/* Fahrzeuge */
+.fzblock { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; padding: 10px 0; border-top: 1px solid var(--line); }
+.fzblock .fk { grid-column: 1 / 2; }
+.fzblock .rm { justify-self: end; }
+.fzblock .fzmore { grid-column: 1 / -1; }
+.fzblock .fzmore summary { cursor: pointer; color: var(--ink-2); font-size: .95rem; padding: 4px 0 8px; }
