@@ -272,13 +272,18 @@
   /* ---------------------------------------------------------------- Prämien */
   // Eine Prämie hat Name, Betrag und Einheit: stunde (zählt die Arbeitsstunden des Tages), tag (Haken am Tag), stueck oder tour (Anzahl am Tag),
   // monat (einmal pro Monat, wenn du in dem Monat gearbeitet hast). Die Prämien stehen in profil.praemien.
-  function praemienDay(day, r, list) {
+  function praemienDay(day, r, list, w) {
     var out = [];
     if (!day || !r || r.status !== 'arbeit') return out;
     (list || []).forEach(function (p) {
       var menge = 0, e = p.einheit;
       if (e === 'monat') return;
       if (e === 'stunde') menge = r.nettoMin / 60;
+      else if (e === 'taet') {
+        var kw = (p.taet || '').trim().toLowerCase(), mm = 0;
+        if (kw) kundenZeiten(day, w).rows.forEach(function (k) { k.taet.forEach(function (t) { if (t.min && t.tat.toLowerCase().indexOf(kw) >= 0) mm += t.min; }); });
+        menge = mm / 60;
+      }
       else { var v = day.praemien && day.praemien[p.id]; menge = +v > 0 ? +v : 0; }
       if (menge > 0) out.push({ id: p.id, name: p.name, einheit: e, menge: menge, euro: menge * (+p.betrag || 0) });
     });
@@ -378,7 +383,7 @@
       if (r.status === 'krank') s.krMin += r.creditMin;
       if (r.status === 'pflege') s.pfMin += r.creditMin;
       if (r.saldoMin !== null) s.ueberMin += r.saldoMin;
-      praemienDay(days[ds], r, prList).forEach(function (x) { var a = prSum[x.id] || (prSum[x.id] = { id: x.id, name: x.name, einheit: x.einheit, menge: 0, euro: 0 }); a.menge += x.menge; a.euro += x.euro; });
+      praemienDay(days[ds], r, prList, w).forEach(function (x) { var a = prSum[x.id] || (prSum[x.id] = { id: x.id, name: x.name, einheit: x.einheit, menge: 0, euro: 0 }); a.menge += x.menge; a.euro += x.euro; });
       anyEntry = true;
       if (w.ueberstunden.modell === 'bau') bauWochen = true;
       if (w.ueberstunden.modell === 'monat') monatModell = true;

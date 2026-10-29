@@ -409,7 +409,7 @@
   }
 
   /* ---- Prämien ---- */
-  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['tag', 'je Tag (Haken)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
+  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['taet', 'je Stunde einer Tätigkeit (z. B. Kran)'], ['tag', 'je Tag (Haken)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
   function praemienListe() { if (!data.profil) data.profil = {}; if (!data.profil.praemien) data.profil.praemien = []; return data.profil.praemien; }
   function renderPraemienSettings() {
     var list = praemienListe();
@@ -419,6 +419,7 @@
         '<button type="button" class="rm" data-rmpr="' + i + '" aria-label="Prämie ' + (i + 1) + ' entfernen">×</button>' +
         '<div class="field"><label for="pr-b' + i + '">Betrag (€)</label><input type="number" id="pr-b' + i + '" data-pr="' + i + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0" value="' + esc(p.betrag == null ? '' : p.betrag) + '"></div>' +
         '<div class="field"><label for="pr-e' + i + '">Wofür</label><select id="pr-e' + i + '" data-pr="' + i + '" data-pf="einheit">' + PR_EINHEIT.map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
+        (p.einheit === 'taet' ? '<div class="field pn"><label for="pr-t' + i + '">Name der Tätigkeit (so wie du sie beim Kunden einträgst)</label><input type="text" id="pr-t' + i + '" data-pr="' + i + '" data-pf="taet" maxlength="40" autocomplete="off" value="' + esc(p.taet || '') + '"></div>' : '') +
         '<div class="field pn"><label for="pr-r' + i + '">Wann zählt sie? (nur für dich zur Erinnerung)</label><input type="text" id="pr-r' + i + '" data-pr="' + i + '" data-pf="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
         '</div>';
     }).join('') : '<p class="hint">Noch keine Prämie angelegt.</p>';
@@ -541,7 +542,7 @@
           $('#e-diaeten').placeholder = 'Vorschlag ' + fh(auto);
         }
       }
-      var prl = E.praemienDay(d, r, praemienListe());
+      var prl = E.praemienDay(d, r, praemienListe(), w);
       if (prl.length) { html += '<div class="kz-title">Prämien</div>'; prl.forEach(function (x) { html += line(esc(x.name) + (x.einheit === 'stunde' ? ' · ' + fh(x.menge) + ' h' : x.menge !== 1 ? ' · ' + nfp.format(x.menge) + 'x' : ''), eur.format(x.euro)); }); }
       var kz = E.kundenZeiten(d, w);
       if (kz.rows.some(function (x) { return x.min !== null; })) {
@@ -891,6 +892,7 @@
     if (id && id.charAt(0) === 'k' && id.charAt(1) === '-' || id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) { if (id === 'k-eintritt' && ev.type !== 'change') return; if (konInput(t)) return; }
     if (t.dataset && t.dataset.pr !== undefined && t.closest('#pr-list')) {
       var po = praemienListe()[+t.dataset.pr]; if (!po) return;
+      if (t.dataset.pf === 'einheit') { po.einheit = t.value; save(); renderPraemienSettings(); return; }
       if (t.dataset.pf === 'betrag') { var bv = parseFloat(String(t.value).replace(',', '.')); po.betrag = isNaN(bv) ? 0 : bv; } else po[t.dataset.pf] = t.value;
       save(); return;
     }
