@@ -866,6 +866,14 @@
       case 's-delete': arm(t, 'Wirklich löschen?', function () {
         data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ui.setKey; }); ui.setKey = null; save(); renderSettings(); toast('Wertesatz gelöscht.');
       }); return;
+      case 'b-save': {
+        try {
+          var bl = new Blob([JSON.stringify(data)], { type: 'application/json' }), ur = URL.createObjectURL(bl), an = document.createElement('a'), dd = new Date();
+          an.href = ur; an.download = 'stunden-checker-sicherung-' + E.iso(dd.getFullYear(), dd.getMonth() + 1, dd.getDate()) + '.json'; document.body.appendChild(an); an.click(); document.body.removeChild(an);
+          setTimeout(function () { URL.revokeObjectURL(ur); }, 2000); toast('Sicherung gespeichert (Ordner Downloads).');
+        } catch (e) { toast('Speichern ging nicht. Nimm „Kopieren“.'); }
+        return;
+      }
       case 'b-copy': {
         var ta = $('#b-text'); ta.select();
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(function () { toast('Sicherungstext kopiert.'); }, function () { toast('Text markiert. Bitte jetzt „Kopieren“ im Menü wählen.'); });

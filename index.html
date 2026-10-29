@@ -341,16 +341,18 @@
     </div>
 
 
-    <div class="card" id="b-card" hidden>
-      <h3>Sicherung</h3>
+    <div class="card" id="b-card">
+      <details><summary><strong>Sicherung</strong> (Daten sichern oder wiederherstellen)</summary>
       <p class="hint">Deine Daten liegen nur in diesem Browser. Kopiere den Sicherungstext und bewahre ihn auf, zum Beispiel in einer Notiz oder per E-Mail an dich selbst. Zum Wiederherstellen fügst du ihn hier ein.</p>
       <div class="field"><label for="b-text">Sicherungstext</label><textarea id="b-text" spellcheck="false"></textarea></div>
       <div class="btns">
+        <button type="button" class="btn" id="b-save">Als Datei speichern</button>
         <button type="button" class="btn" id="b-copy">Kopieren</button>
         <button type="button" class="btn" id="b-restore">Aus Text wiederherstellen</button>
       </div>
       <div class="field"><label for="b-file">Oder aus einer Sicherungsdatei wiederherstellen</label><input type="file" id="b-file" accept=".json,application/json,text/plain"></div>
       <button type="button" class="btn danger" id="b-wipe">Alle Daten löschen</button>
+      </details>
     </div>
   </section>
 
@@ -382,10 +384,7 @@
 <script src="sync.js"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
-(function () {
-  function z() { var c = document.getElementById('b-card'); if (c) c.hidden = location.hash !== '#sicherung'; }
-  z(); window.addEventListener('hashchange', z);
-})();
+
 </script>
 </body>
 </html>
