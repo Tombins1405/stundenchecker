@@ -8,6 +8,9 @@
 <title>Stunden-Checker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
@@ -56,6 +59,7 @@
     <button type="button" class="tab" data-view="einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Einstellungen</button>
   </div>
 </nav>
+<div class="installbar" id="installbar" hidden><span>Stunden-Checker als App auf dein Handy legen?</span><button type="button" class="btn" id="install-go">Installieren</button><button type="button" class="iconbtn" id="install-x" aria-label="Schließen">×</button></div>
 
 
 <main class="wrap">

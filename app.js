@@ -954,4 +954,18 @@
   /* ============================================================ Start */
   window.addEventListener('beforeunload', function (ev) { if (isDirty()) { ev.preventDefault(); ev.returnValue = ''; } });
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
+
+  /* ---- Als App installieren ---- */
+  (function () {
+    var deferred = null, bar = $('#installbar');
+    function gone() { try { return localStorage.getItem('stundenchecker.noinstall') === '1'; } catch (e) { return false; } }
+    function standalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone; }
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+    window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); deferred = ev; if (!gone() && !standalone()) bar.hidden = false; });
+    window.addEventListener('appinstalled', function () { bar.hidden = true; });
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone();
+    if (ios && !gone()) { bar.hidden = false; bar.querySelector('span').textContent = 'Zum Installieren unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“.'; $('#install-go').hidden = true; }
+    $('#install-go').addEventListener('click', function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; bar.hidden = true; }); });
+    $('#install-x').addEventListener('click', function () { bar.hidden = true; try { localStorage.setItem('stundenchecker.noinstall', '1'); } catch (e) { } });
+  })();
 })();
