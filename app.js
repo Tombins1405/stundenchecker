@@ -669,7 +669,7 @@
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('monat'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
   }
-  function miaPose(p) { var b = $('#mia-btn'); if (b) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
+  function miaPose(p) { var b = $('#mia-btn'); if (b && $('#mia-float')) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
   function renderMia() {
     var c = miaCfg(), f = $('#mia-float'); if (f) f.hidden = !data.settings.length || !!ui.wiz;
     var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (x) { return '<button type="button" class="miaopt' + (c.figur === x ? ' on' : '') + '" data-mia="' + x + '" aria-label="' + (x === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(x, miaFor(), '') + '<span>' + (x === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
@@ -677,7 +677,7 @@
     var ak = $('#mia-aktiv'); if (ak) ak.checked = !c.ruhig;
     if (!ui.miaPose) miaPose(c.ruhig || !miaNext() ? 'mouth' : '');
   }
-  function miaOpen(auto) {
+  function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
     if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
@@ -693,13 +693,14 @@
     ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !miaCfg().ruhig) miaOpen(true); }, 1200);
   }
   (function () {
-    $('#mia-btn').addEventListener('click', function () { if (!$('#mia-bubble').hidden) { miaClose('mouth'); return; } miaOpen(false); });
-    $('#mia-go').addEventListener('click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
-    $('#mia-later').addEventListener('click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
-    $('#mia-quiet').addEventListener('click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
-    $('#mia-choose').addEventListener('click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
-    $('#mia-name').addEventListener('input', function () { miaSet('name', this.value.slice(0, 20)); });
-    $('#mia-aktiv').addEventListener('change', function () { miaSet('ruhig', !this.checked); });
+    function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
+    on('#mia-btn', 'click', function () { if (!$('#mia-bubble').hidden) { miaClose('mouth'); return; } miaOpen(false); });
+    on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
+    on('#mia-later', 'click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
+    on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
+    on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
+    on('#mia-name', 'input', function () { miaSet('name', this.value.slice(0, 20)); });
+    on('#mia-aktiv', 'change', function () { miaSet('ruhig', !this.checked); });
   })();
 
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
