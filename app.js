@@ -976,6 +976,12 @@
     var img = new Image();
     img.onload = function () { var c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(img, 0, 0, size, size); cb(c.toDataURL('image/png')); };
     img.onerror = function () { cb(null); };
+    if (key === 'foto') {
+      var st = null; try { st = localStorage.getItem('stundenchecker.iconimg'); } catch (e) { }
+      if (!st) { cb(null); return; }
+      img.onload = function () { var c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(img, 0, 0, size, size); cb(c.toDataURL('image/png')); };
+      img.src = st; return;
+    }
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(key));
   }
   function applyAppIcon(key) {
@@ -994,18 +1000,38 @@
   }
   function renderIconPick() {
     var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
-    $('#icon-pick').innerHTML = APPICONS.map(function (x) {
+    var fotoOn = ''; try { fotoOn = localStorage.getItem('stundenchecker.iconimg') || ''; } catch (e) { }
+    var html = APPICONS.map(function (x) {
       return '<button type="button" class="ipk' + (x[0] === cur ? ' on' : '') + '" data-icon="' + x[0] + '" aria-label="' + x[1] + '" title="' + x[1] + '"><svg viewBox="0 0 96 96"><rect width="96" height="96" rx="20" fill="#1f2937"/>' + x[2] + '</svg></button>';
-    }).join('');
+    }).join('') + (fotoOn ? '<button type="button" class="ipk' + (cur === 'foto' ? ' on' : '') + '" data-icon="foto" aria-label="Eigenes Foto" title="Eigenes Foto"><img src="' + fotoOn + '" alt=""></button>' : '');
+    ['#icon-pick', '#icon-pick2'].forEach(function (s) { var el = $(s); if (el) el.innerHTML = html; });
   }
   (function () {
     var cur = null; try { cur = localStorage.getItem('stundenchecker.icon'); } catch (e) { }
     renderIconPick();
     if (cur && cur !== 'uhr') applyAppIcon(cur);
-    $('#icon-pick').addEventListener('click', function (ev) {
+    function pickClick(ev) {
       var b = ev.target.closest('[data-icon]'); if (!b) return;
       try { localStorage.setItem('stundenchecker.icon', b.dataset.icon); } catch (e) { }
       renderIconPick(); applyAppIcon(b.dataset.icon);
+    }
+    $('#icon-pick').addEventListener('click', pickClick);
+    $('#icon-pick2').addEventListener('click', pickClick);
+    $('#icon-file').addEventListener('change', function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+          var s = Math.min(im.width, im.height), c = document.createElement('canvas'); c.width = c.height = 256;
+          c.getContext('2d').drawImage(im, (im.width - s) / 2, (im.height - s) / 2, s, s, 0, 0, 256, 256);
+          try { localStorage.setItem('stundenchecker.iconimg', c.toDataURL('image/jpeg', 0.88)); localStorage.setItem('stundenchecker.icon', 'foto'); } catch (e) { toast('Das Bild konnte nicht gespeichert werden.'); return; }
+          renderIconPick(); applyAppIcon('foto'); toast('Dein Foto ist jetzt das App-Symbol.');
+        };
+        im.src = rd.result;
+      };
+      rd.readAsDataURL(f);
+      this.value = '';
     });
   })();
 

@@ -196,6 +196,11 @@
         <div class="field"><label for="k-zastart">Zeitausgleich beim Start (Std)</label><input type="number" id="k-zastart" inputmode="decimal" step="0.25" placeholder="0"><small>Stand des Zeitausgleich-Kontos vor deinem ersten Eintrag.</small></div>
       </div>
       <label class="check"><input type="checkbox" id="k-kmvortag"> km-Stand vom letzten Mal beim Fahrzeug automatisch eintragen</label>
+      <div class="field"><span class="lbl">Mein App-Symbol</span>
+        <div id="icon-pick2" class="ipicks"></div>
+        <label class="btn" for="icon-file" style="margin-top:8px;text-align:center">Eigenes Foto verwenden</label>
+        <input type="file" id="icon-file" accept="image/*" hidden>
+      </div>
     </div>
     <div class="card">
       <h3>Urlaubskartei</h3>
@@ -261,8 +266,8 @@
           <option value="bau">Pro Woche: ab Tagesgrenze und über den Wochenstunden</option>
           <option value="monat">Pro Monat: alle Stunden des Monats minus Sollstunden</option>
         </select>
-        <div id="s-uinfo" class="notice"></div>
-        <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small>
+        <details class="how"><summary>Wie wird das gerechnet?</summary><div id="s-uinfo" class="notice"></div>
+        <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small></details>
       </div>
       <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
       <div class="grid2">
