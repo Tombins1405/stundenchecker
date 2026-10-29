@@ -281,3 +281,8 @@ body.tp-open { overflow: hidden; }
 .vl-new .btn { grid-column: 1 / -1; }
 details#s-all > summary { cursor: pointer; padding: 4px 0; }
 details#e-extra-box > summary { cursor: pointer; color: var(--ink-2); font-size: .95rem; }
+.vl li { align-items: center; }
+.vl-x { flex: none; min-width: 36px; min-height: 36px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--bad); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 8px; }
+.vl-x.armed { background: var(--bad); color: #fff; font-size: .85rem; }
+details#s-adv > summary { cursor: pointer; font-weight: 600; }
+.vl li > span { flex: 1; }

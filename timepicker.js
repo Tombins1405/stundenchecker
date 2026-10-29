@@ -85,6 +85,11 @@
       wh.set(t.h, true); wm.set(Math.min(11, Math.round(t.m / 5)), true); typ.value = pad(t.h) + ':' + pad(t.m); overlay.pending = t; return true;
     }
     ['touchstart', 'mousedown', 'wheel'].forEach(function (n) { wh.box.addEventListener(n, function () { if (overlay) overlay.pending = null; }, { passive: true }); wm.box.addEventListener(n, function () { if (overlay) overlay.pending = null; }, { passive: true }); });
+    typ.addEventListener('input', function () { // Doppelpunkt automatisch einfügen: 1200 wird 12:00
+      var d = typ.value.replace(/\D/g, '').slice(0, 4);
+      typ.value = d.length > 2 ? d.slice(0, d.length - 2) + ':' + d.slice(-2) : d;
+      overlay.pending = null;
+    });
     typ.addEventListener('change', applyTyped);
     typ.addEventListener('focus', function () { setTimeout(function () { typ.select(); }, 0); });
     typ.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); if (applyTyped()) commit(); } });

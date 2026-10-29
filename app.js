@@ -559,7 +559,7 @@
       var today = todayISO(), html = '<div class="vl-title">So hat es bisher gegolten</div>';
       html += row.length ? '<ul class="vl">' + row.map(function (r, i) {
         var next = row[i + 1], bis = next ? E.addDays(next.ab, -1) : null, cur = (!next && r.ab <= today) || (next && r.ab <= today && next.ab > today);
-        return '<li' + (cur ? ' class="cur"' : '') + '><span>' + (next ? fmtDate(r.ab) + ' bis ' + fmtDate(bis) : 'ab ' + fmtDate(r.ab)) + '</span><strong>' + eur.format(r.v) + (cur ? ' · aktuell' : '') + '</strong></li>';
+        return '<li' + (cur ? ' class="cur"' : '') + '><span>' + (next ? fmtDate(r.ab) + ' bis ' + fmtDate(bis) : 'ab ' + fmtDate(r.ab)) + '</span><strong>' + eur.format(r.v) + (cur ? ' · aktuell' : '') + '</strong>' + (i > 0 ? '<button type="button" class="vl-x" data-act="v-del" data-ab="' + esc(r.ab) + '" aria-label="Diese Änderung ab ' + fmtDate(r.ab) + ' entfernen">×</button>' : '') + '</li>';
       }).join('') + '</ul>' : '<p class="hint">Noch kein Wert eingetragen.</p>';
       html += '<div class="vl-new"><div class="field"><label>' + esc(box.dataset.label) + ' (€)</label><input type="number" inputmode="decimal" step="0.01" min="0" class="vl-val"></div>' +
         '<div class="field"><label>gilt ab</label><input type="date" class="vl-date" value="' + esc(box.dataset.date || '') + '"></div>' +
@@ -567,6 +567,23 @@
       box.innerHTML = html;
       var di = box.querySelector('.vl-date'); if (!di.value) { var n = new Date(); di.value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
     });
+  }
+
+  // Eine Änderung im Verlauf rückgängig machen: der Wert ab diesem Datum wird wieder der vorherige Wert.
+  function verlaufDel(btn) {
+    var box = btn.closest('.verlauf'), path = box.dataset.vf, ab = btn.dataset.ab, row = verlaufListe(path), i = -1;
+    row.forEach(function (r, k) { if (r.ab === ab) i = k; });
+    if (i < 1) return;
+    var prev = row[i - 1].v, bis = row[i + 1] ? row[i + 1].ab : null, sorted = sortedSettings();
+    sorted.forEach(function (e) { if (e.gueltigAb >= ab && (!bis || e.gueltigAb < bis)) { setPath(e, path, prev); delete e.test; } });
+    // Wertesätze, die jetzt genau dem vorherigen gleichen, überflüssig geworden sind: entfernen
+    var again = sortedSettings(), keep = [];
+    again.forEach(function (e, k) {
+      var before = keep[keep.length - 1];
+      if (before && k > 0 && JSON.stringify(Object.assign({}, e, { gueltigAb: '', test: 0 })) === JSON.stringify(Object.assign({}, before, { gueltigAb: '', test: 0 }))) return;
+      keep.push(e);
+    });
+    data.settings = keep; ui.setKey = null; save(); renderSettings(); toast('Änderung ab ' + fmtDate(ab) + ' entfernt.');
   }
   function verlaufAdd(btn) {
     var box = btn.closest('.verlauf'), path = box.dataset.vf, val = parseFloat(String(box.querySelector('.vl-val').value).replace(',', '.')), date = box.querySelector('.vl-date').value;
@@ -706,6 +723,7 @@
     if (t.dataset.start) { data.settings = [E.neuerWertesatz(t.dataset.start, '2026-01-01')]; save(); ui.setKey = null; toast('Regeln geladen: ' + E.PAKETE[t.dataset.start].name); renderMonat(); return; }
     if (t.id === 'start-demo') { loadTest(); return; }
     if (t.dataset.act === 'v-add') { verlaufAdd(t); return; }
+    if (t.dataset.act === 'v-del') { arm(t, 'Sicher?', function () { verlaufDel(t); }); return; }
     if (t.dataset.date) { openEditor(t.dataset.date, 'monat'); return; }
     switch (t.id) {
       case 'm-prev': ui.abAlle = false; ui.m--; if (ui.m < 1) { ui.m = 12; ui.y--; } renderMonat(); return;
@@ -743,11 +761,11 @@
         var base = curEntry(), ne = base ? E.clone(base) : E.neuerWertesatz('gueter', date);
         ne.gueltigAb = date; delete ne.test; data.settings.push(ne); ui.setKey = date; save(); renderSettings(); toast('Neue Werte ab ' + fmtDate(date) + ' angelegt. Ändere jetzt, was sich geändert hat.'); var fm = $('#s-form'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
       }
-      case 's-paketload': {
+      case 's-paketload': arm(t, 'Wirklich alle Werte ersetzen?', function () {
         var en = curEntry(); if (!en) return;
         var pk = $('#s-paket').value, nw = E.neuerWertesatz(pk, en.gueltigAb);
-        Object.keys(en).forEach(function (k) { delete en[k]; }); Object.assign(en, nw); save(); renderSettings(); toast('Werte aus dem Paket geladen.'); return;
-      }
+        Object.keys(en).forEach(function (k) { delete en[k]; }); Object.assign(en, nw); save(); renderSettings(); toast('Werte aus dem Paket geladen.');
+      }); return;
       case 's-addstufe': { var e2 = curEntry(); if (!e2) return; e2.diaeten.stufen.push({ ab: 0, satz: 0 }); save(); renderStufen(e2); return; }
       case 's-delete': arm(t, 'Wirklich löschen?', function () {
         data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ui.setKey; }); ui.setKey = null; save(); renderSettings(); toast('Wertesatz gelöscht.');

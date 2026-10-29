@@ -233,18 +233,20 @@
     <div class="card" id="s-form" hidden>
       <h3 id="s-formtitle">Wertesatz</h3>
 
-      <div class="field">
-        <label for="s-ab">Gilt ab</label>
-        <input type="date" id="s-ab" data-path="gueltigAb" data-type="text">
-      </div>
-
-      <div class="field">
-        <label for="s-paket">Regelpaket</label>
-        <select id="s-paket"></select>
-        <div id="s-paketinfo" class="notice"></div>
-        <button type="button" class="btn" id="s-paketload">Werte aus dem Paket laden</button>
-        <small>Das überschreibt die Werte dieses Wertesatzes mit den Vorgaben des Pakets.</small>
-      </div>
+      <details class="field" id="s-adv">
+        <summary>Erweitert: Regelpaket und Startdatum dieses Wertesatzes</summary>
+        <div class="field">
+          <label for="s-ab">Dieser Wertesatz gilt ab</label>
+          <input type="date" id="s-ab" data-path="gueltigAb" data-type="text">
+        </div>
+        <div class="field">
+          <label for="s-paket">Regelpaket</label>
+          <select id="s-paket"></select>
+          <div id="s-paketinfo" class="notice"></div>
+          <button type="button" class="btn" id="s-paketload">Alle Werte durch die Vorgaben des Pakets ersetzen</button>
+          <small>Nur für den Start oder wenn du die Firma wechselst. Das ersetzt alle Werte dieses Wertesatzes, auch Stundenlohn und Diäten. Für eine Lohnerhöhung brauchst du das nicht, die trägst du bei „Stundenlohn“ ein.</small>
+        </div>
+      </details>
 
       <h3>Diäten</h3>
       <div class="field">
