@@ -269,3 +269,15 @@ body.tp-open { overflow: hidden; }
 .tp-btns #tp-clear[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .tp-wheel { scroll-behavior: auto; } }
 .tp-btns.noclear #tp-cancel { grid-column: 1 / -1; }
+
+/* Verlauf von Stundenlohn und Diätensatz */
+.verlauf { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; }
+.verlauf[hidden] { display: none; }
+.vl-title { font-weight: 600; font-size: .95rem; color: var(--ink-2); }
+.vl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.vl li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 8px; border-radius: 8px; background: var(--surface); }
+.vl li.cur { background: var(--accent-soft); }
+.vl-new { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+.vl-new .btn { grid-column: 1 / -1; }
+details#s-all > summary { cursor: pointer; padding: 4px 0; }
+details#e-extra-box > summary { cursor: pointer; color: var(--ink-2); font-size: .95rem; }

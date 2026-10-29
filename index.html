@@ -135,11 +135,12 @@
           <small>Leer lassen übernimmt den Vorschlag. Trage eine Zahl ein, wenn deine Firma anders zählt.</small>
         </div>
 
-        <div class="field">
-          <label for="e-extra">Zusätzlich bezahlte Stunden (optional)</label>
+        <details class="field" id="e-extra-box">
+          <summary>Besonderheit: zusätzlich bezahlte Stunden</summary>
+          <label for="e-extra">Stunden</label>
           <input type="number" id="e-extra" inputmode="decimal" step="0.25" min="0">
-          <small>Zum Beispiel Sonderurlaub, wenn du am selben Tag trotzdem gearbeitet hast. Die Stunden werden zu deiner Arbeitszeit dazugezählt.</small>
-        </div>
+          <small>Sehr selten, zum Beispiel Sonderurlaub, wenn du am selben Tag trotzdem gearbeitet hast. Die Stunden werden zur Arbeitszeit dazugezählt.</small>
+        </details>
 
         <div class="field" id="e-swgroup" hidden>
           <label for="e-sw">Schlechtwetterstunden</label>
@@ -217,14 +218,16 @@
       <button type="button" class="btn" id="a-logout">Abmelden</button>
     </div>
     <div class="card">
-      <h3>Meine Werte</h3>
-      <p class="hint">Hat sich dein Stundenlohn oder dein Diätensatz geändert (zum Beispiel durch eine Lohnerhöhung)? Dann lege hier neue Werte an. Sie gelten ab dem Datum, das du wählst. Alte Monate rechnet die App weiter mit den alten Werten.</p>
-      <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
-      <div class="grid2" style="align-items:end">
-        <div class="field"><label for="s-newdate">Neue Werte gelten ab</label><input type="date" id="s-newdate"></div>
-        <button type="button" class="btn" id="s-new">Neue Werte ab diesem Datum anlegen</button>
-      </div>
-      <small>Danach öffnet sich der neue Wertesatz. Du änderst dort nur, was sich geändert hat (zum Beispiel den Stundenlohn). Alles andere wird vom bisherigen Satz übernommen.</small>
+      <details id="s-all">
+        <summary><strong>Alle meine Wertesätze</strong> (für Fortgeschrittene)</summary>
+        <p class="hint">Jeder Wertesatz gilt ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.</p>
+        <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
+        <div class="grid2" style="align-items:end">
+          <div class="field"><label for="s-newdate">Neue Werte gelten ab</label><input type="date" id="s-newdate"></div>
+          <button type="button" class="btn" id="s-new">Neue Werte ab diesem Datum anlegen</button>
+        </div>
+        <small>Der neue Wertesatz übernimmt alles vom bisherigen. Du änderst nur, was sich geändert hat.</small>
+      </details>
     </div>
 
     <div class="card" id="s-form" hidden>
@@ -257,6 +260,7 @@
         <div class="field"><label for="s-dsatz">Satz je Stunde (€)</label><input type="number" id="s-dsatz" inputmode="decimal" step="0.01" min="0" data-path="diaeten.satz" data-type="num"></div>
         <div class="field"><label for="s-dmax">Höchstens Stunden pro Tag</label><input type="number" id="s-dmax" inputmode="decimal" step="0.5" min="0" data-path="diaeten.maxStd" data-type="numnull"></div>
       </div>
+      <div class="verlauf" id="s-dsatz-verlauf" data-vf="diaeten.satz" data-label="Neuer Diätensatz je Stunde"></div>
       <div id="s-d-tag" class="field">
         <span class="lbl">Stufen (Taggeld, wenn mehr als … Stunden)</span>
         <div id="s-stufen" class="pausen"></div>
@@ -284,7 +288,7 @@
       </div>
       <div class="grid2">
         <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
-        <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Wird er höher, lege einen neuen Wertesatz „gültig ab“ an. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small></div>
+        <div class="field" style="grid-column:1/-1"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
         <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
         <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
       </div>

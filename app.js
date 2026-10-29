@@ -393,7 +393,7 @@
     $('#e-bis').value = d.bis || '';
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
-    $('#e-extra').value = d.extra ? d.extra : '';
+    $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra;
     var seen = {}, opts = '';
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
@@ -536,8 +536,54 @@
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
     paketInfo(en);
     renderStufen(en);
+    renderVerlauf();
     settingsVisibility(en);
   }
+
+  /* Verlauf eines Wertes (Stundenlohn, Diätensatz): von wann bis wann welcher Satz gegolten hat, plus "ab Datum ändern". */
+  function verlaufListe(path) {
+    var list = sortedSettings(), out = [];
+    list.forEach(function (e) {
+      var v = getPath(e, path); if (v === null || v === undefined || v === '') return;
+      var last = out[out.length - 1];
+      if (last && last.v === +v) return;
+      out.push({ ab: e.gueltigAb, v: +v });
+    });
+    return out;
+  }
+  function renderVerlauf() {
+    $$('.verlauf').forEach(function (box) {
+      var path = box.dataset.vf, en = curEntry(), row = verlaufListe(path);
+      var vis = !!en && !(path === 'diaeten.satz' && en.diaeten && en.diaeten.modell !== 'stunde');
+      box.hidden = !vis; if (!vis) return;
+      var today = todayISO(), html = '<div class="vl-title">So hat es bisher gegolten</div>';
+      html += row.length ? '<ul class="vl">' + row.map(function (r, i) {
+        var next = row[i + 1], bis = next ? E.addDays(next.ab, -1) : null, cur = (!next && r.ab <= today) || (next && r.ab <= today && next.ab > today);
+        return '<li' + (cur ? ' class="cur"' : '') + '><span>' + (next ? fmtDate(r.ab) + ' bis ' + fmtDate(bis) : 'ab ' + fmtDate(r.ab)) + '</span><strong>' + eur.format(r.v) + (cur ? ' · aktuell' : '') + '</strong></li>';
+      }).join('') + '</ul>' : '<p class="hint">Noch kein Wert eingetragen.</p>';
+      html += '<div class="vl-new"><div class="field"><label>' + esc(box.dataset.label) + ' (€)</label><input type="number" inputmode="decimal" step="0.01" min="0" class="vl-val"></div>' +
+        '<div class="field"><label>gilt ab</label><input type="date" class="vl-date" value="' + esc(box.dataset.date || '') + '"></div>' +
+        '<button type="button" class="btn" data-act="v-add">Ab diesem Datum ändern</button></div>';
+      box.innerHTML = html;
+      var di = box.querySelector('.vl-date'); if (!di.value) { var n = new Date(); di.value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
+    });
+  }
+  function verlaufAdd(btn) {
+    var box = btn.closest('.verlauf'), path = box.dataset.vf, val = parseFloat(String(box.querySelector('.vl-val').value).replace(',', '.')), date = box.querySelector('.vl-date').value;
+    if (isNaN(val) || val < 0) { toast('Bitte den neuen Betrag eintragen.'); return; }
+    if (!validISO(date)) { toast('Bitte ein Datum wählen.'); return; }
+    var list = sortedSettings(), target = data.settings.filter(function (e) { return e.gueltigAb === date; })[0];
+    if (!target) {
+      var base = list.length ? (E.wertAt(list, date) || list[0]) : null;
+      target = base ? E.clone(base) : E.neuerWertesatz('gueter', date);
+      target.gueltigAb = date; delete target.test; data.settings.push(target);
+    }
+    setPath(target, path, val); delete target.test;
+    // spätere Wertesätze mit dem alten Wert übernehmen den neuen Betrag gleich mit
+    sortedSettings().forEach(function (e) { if (e.gueltigAb > date && getPath(e, path) === getPath(E.wertAt(sortedSettings(), E.addDays(date, -1)) || {}, path)) setPath(e, path, val); });
+    ui.setKey = date; save(); renderSettings(); toast('Gespeichert: ab ' + fmtDate(date) + ' gilt ' + eur.format(val) + '.');
+  }
+
   function paketInfo(en) {
     var p = E.PAKETE[en.paket] || E.PAKETE.gueter;
     $('#s-paketinfo').innerHTML = esc(p.hinweis) + (p.pruefen ? '<br><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte kontrolliere die Werte mit deinem Lohnzettel.' : '');
@@ -659,6 +705,7 @@
     }
     if (t.dataset.start) { data.settings = [E.neuerWertesatz(t.dataset.start, '2026-01-01')]; save(); ui.setKey = null; toast('Regeln geladen: ' + E.PAKETE[t.dataset.start].name); renderMonat(); return; }
     if (t.id === 'start-demo') { loadTest(); return; }
+    if (t.dataset.act === 'v-add') { verlaufAdd(t); return; }
     if (t.dataset.date) { openEditor(t.dataset.date, 'monat'); return; }
     switch (t.id) {
       case 'm-prev': ui.abAlle = false; ui.m--; if (ui.m < 1) { ui.m = 12; ui.y--; } renderMonat(); return;
