@@ -517,7 +517,7 @@
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
       if (!d.von && d.bis) { toast('Es fehlt der Beginn.'); return false; }
-      if (!d.von && !(+d.sw > 0)) { toast('Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
+      if (!d.von && !(+d.sw > 0)) { toast(data.days[ui.edDate] ? 'Beginn fehlt. Soll der Tag leer sein? Dann tippe unten auf „Tag löschen“.' : 'Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
     }
     var out = E.clone(d);
     out.sw = +out.sw || 0;
