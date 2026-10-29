@@ -293,3 +293,4 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .fzblock .rm { justify-self: end; }
 .fzblock .fzmore { grid-column: 1 / -1; }
 .fzblock .fzmore summary { cursor: pointer; color: var(--ink-2); font-size: .95rem; padding: 4px 0 8px; }
+.kz-title { margin-top: 10px; font-weight: 600; color: var(--ink-2); font-size: .95rem; }

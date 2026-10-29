@@ -232,6 +232,35 @@
     return res;
   }
 
+
+  /* ---------------------------------------------------------------- Zeit pro Kunde */
+  // Jeder Eintrag mit von und bis zählt seine Zeit abzüglich der Pausen, die darin liegen.
+  // Gibt es an dem Tag nur einen Kunden und keine Zeiten dazu, zählt die Arbeitszeit des Tages (netto).
+  function kundenZeiten(day) {
+    var list = ((day && day.kunden) || []).filter(function (k) { return k && ((k.name || '').trim() || (k.tat || '').trim()); });
+    var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis)]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
+    var rows = list.map(function (k) {
+      var a = toMin(k.von), b = toMin(k.bis), min = null, quelle = null;
+      if (a !== null && b !== null) {
+        if (b < a) b += 1440;
+        min = b - a;
+        pausen.forEach(function (p) {
+          var s = p[0], e = p[1]; if (e < s) e += 1440;
+          [0, 1440].forEach(function (off) { var o = Math.min(b, e + off) - Math.max(a, s + off); if (o > 0) min -= o; });
+        });
+        if (min < 0) min = 0;
+        quelle = 'zeit';
+      }
+      return { name: (k.name || '').trim(), tat: (k.tat || '').trim(), min: min, quelle: quelle };
+    });
+    if (rows.length === 1 && rows[0].min === null) {
+      var dm = dayMinutes(day);
+      if (dm.netto > 0) { rows[0].min = dm.netto; rows[0].quelle = 'tag'; }
+    }
+    var total = 0; rows.forEach(function (r) { if (r.min !== null) total += r.min; });
+    return { rows: rows, totalMin: total };
+  }
+
   /* ---------------------------------------------------------------- BUAK-Zeitraum */
   function buakStart(dateStr) { var p = parseISO(dateStr); return (p.m >= 11 ? p.y : p.y - 1) + '-11-01'; }
   function buakEnde(dateStr) { var s = parseISO(buakStart(dateStr)); return (s.y + 1) + '-10-31'; }
@@ -440,7 +469,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });

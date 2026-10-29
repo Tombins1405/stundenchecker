@@ -504,6 +504,12 @@
           $('#e-diaeten').placeholder = 'Vorschlag ' + fh(auto);
         }
       }
+      var kz = E.kundenZeiten(d);
+      if (kz.rows.some(function (x) { return x.min !== null; })) {
+        html += '<div class="kz-title">Zeit pro Kunde</div>';
+        kz.rows.forEach(function (x) { html += line(esc(x.name || x.tat || 'Ohne Namen') + (x.name && x.tat ? ' · ' + esc(x.tat) : ''), x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h'); });
+        if (kz.rows.length > 1) html += line('Zusammen', hm(kz.totalMin) + ' h', true);
+      }
       if (r.swMin) html += line('Schlechtwetter', fh(r.swMin / 60) + ' h');
       if (r.extraMin) html += line('Zusätzlich bezahlt', '+ ' + fh(r.extraMin / 60) + ' h');
       if (r.nettoMin / 60 > 12) warn += '<div class="notice warn">Mehr als 12 Arbeitsstunden an einem Tag. Bitte prüfe die Zeiten.</div>';
@@ -827,7 +833,7 @@
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
-    if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); return; }
+    if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); updatePreview(); return; }
     if (t.dataset.rm !== undefined) { ui.edDraft.pausen.splice(+t.dataset.rm, 1); renderPausen(); updatePreview(); return; }
     if (t.dataset.srm !== undefined) { var e3 = curEntry(); e3.diaeten.stufen.splice(+t.dataset.srm, 1); save(); renderStufen(e3); return; }
   });
@@ -847,7 +853,7 @@
       }
       return;
     }
-    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { ui.edDraft.kunden[+t.dataset.k][t.dataset.f] = t.value; return; }
+    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { ui.edDraft.kunden[+t.dataset.k][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.i !== undefined && t.closest('#e-pausen')) { ui.edDraft.pausen[+t.dataset.i][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.si !== undefined) { var en = curEntry(); var v = parseFloat(String(t.value).replace(',', '.')); en.diaeten.stufen[+t.dataset.si][t.dataset.sf] = isNaN(v) ? 0 : v; delete en.test; save(); return; }
     if (id && id.indexOf('s-wd-') === 0) { var ew = curEntry(); if (ew) { var set = E.sollTage(ew.ueberstunden), wdn = +id.slice(5), ix = set.indexOf(wdn); if (t.checked && ix < 0) set.push(wdn); if (!t.checked && ix >= 0) set.splice(ix, 1); ew.ueberstunden.sollTage = set.sort(function (x, y) { return x - y; }); delete ew.test; save(); settingsVisibility(ew); } return; }
