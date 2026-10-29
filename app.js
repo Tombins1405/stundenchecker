@@ -199,6 +199,7 @@
         if (r.pausenMin) small.push('Pause ' + hm(r.pausenMin));
         if (r.diaetenStd) small.push('Diäten ' + fh(r.diaetenStd) + ' h');
         if (r.swMin) small.push('Schlechtwetter ' + fh(r.swMin / 60) + ' h');
+        if (r.extraMin) small.push('+ ' + fh(r.extraMin / 60) + ' h zusätzlich bezahlt');
         if (d.notiz) small.push(esc(d.notiz));
         if (r.nettoMin > 0) {
           val = fh(r.nettoMin / 60) + ' h';
@@ -358,8 +359,8 @@
       return '<div class="kunde">' +
         '<div class="field kn"><label for="k-n' + i + '">Kunde / Baustelle ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
         '<div class="field kn"><label for="k-t' + i + '">Tätigkeit</label><input type="text" id="k-t' + i + '" data-k="' + i + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(k.tat || '') + '"></div>' +
-        '<div class="field"><label for="k-v' + i + '">von</label><input type="time" id="k-v' + i + '" data-k="' + i + '" data-f="von" value="' + esc(k.von || '') + '"></div>' +
-        '<div class="field"><label for="k-b' + i + '">bis</label><input type="time" id="k-b' + i + '" data-k="' + i + '" data-f="bis" value="' + esc(k.bis || '') + '"></div>' +
+        '<div class="field"><label for="k-v' + i + '">von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-v' + i + '" data-k="' + i + '" data-f="von" value="' + esc(k.von || '') + '"></div>' +
+        '<div class="field"><label for="k-b' + i + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-b' + i + '" data-k="' + i + '" data-f="bis" value="' + esc(k.bis || '') + '"></div>' +
         '<button type="button" class="rm" data-rmk="' + i + '" aria-label="Kunde ' + (i + 1) + ' entfernen">×</button></div>';
     }).join('');
   }
@@ -392,6 +393,7 @@
     $('#e-bis').value = d.bis || '';
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
+    $('#e-extra').value = d.extra ? d.extra : '';
     var seen = {}, opts = '';
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
@@ -419,8 +421,8 @@
   function renderPausen() {
     $('#e-pausen').innerHTML = ui.edDraft.pausen.map(function (p, i) {
       return '<div class="pause">' +
-        '<div class="field"><label for="p-v' + i + '">Pause ' + (i + 1) + ' von</label><input type="time" id="p-v' + i + '" data-i="' + i + '" data-f="von" value="' + esc(p.von) + '"></div>' +
-        '<div class="field"><label for="p-b' + i + '">bis</label><input type="time" id="p-b' + i + '" data-i="' + i + '" data-f="bis" value="' + esc(p.bis) + '"></div>' +
+        '<div class="field"><label for="p-v' + i + '">Pause ' + (i + 1) + ' von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="p-v' + i + '" data-i="' + i + '" data-f="von" value="' + esc(p.von) + '"></div>' +
+        '<div class="field"><label for="p-b' + i + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="p-b' + i + '" data-i="' + i + '" data-f="bis" value="' + esc(p.bis) + '"></div>' +
         '<button type="button" class="rm" data-rm="' + i + '" aria-label="Pause ' + (i + 1) + ' entfernen">×</button></div>';
     }).join('');
   }
@@ -456,6 +458,7 @@
         }
       }
       if (r.swMin) html += line('Schlechtwetter', fh(r.swMin / 60) + ' h');
+      if (r.extraMin) html += line('Zusätzlich bezahlt', '+ ' + fh(r.extraMin / 60) + ' h');
       if (r.nettoMin / 60 > 12) warn += '<div class="notice warn">Mehr als 12 Arbeitsstunden an einem Tag. Bitte prüfe die Zeiten.</div>';
       r.warn.forEach(function (m) { warn += '<div class="notice warn">' + esc(m) + '</div>'; });
     }
@@ -518,7 +521,7 @@
       return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc(PAKET_KURZ[e.paket] || '') + (e === cur ? ' · aktuell' : '') + '</button>';
     }).join('') : '<p class="hint">Du hast noch keine eigenen Werte. Bis dahin rechnet die App mit den Werten für Güterbeförderung.</p>';
     if (!$('#s-newdate').value) { var n = new Date(); $('#s-newdate').value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
-    $('#s-new').textContent = list.length ? 'Neuen Wertesatz anlegen' : 'Ersten Wertesatz anlegen';
+    $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Ersten Wertesatz anlegen';
 
     var en = curEntry();
     $('#s-form').hidden = !en;
@@ -613,7 +616,7 @@
     if (!real.some(function (e) { return e.gueltigAb <= '2026-03-01'; })) {
       var t1 = E.neuerWertesatz('gueter', '2026-03-01'); t1.test = true; // Standard Lkw: pro Monat, kein Sonn-/Feiertagszuschlag auf die Stunden
       t1.zuschlag.ft = 0; t1.betriebFrei = 'ueberstunden'; t1.stundenlohn = 14;            // Lohnzettel März: 14,00 € pro Stunde
-      var t2 = E.clone(t1); t2.gueltigAb = '2026-04-01'; t2.stundenlohn = 14.38; // ab April 14,38 € (April und Mai wurden im Juni nachverrechnet, Aufrollung)
+      var t2 = E.clone(t1); t2.gueltigAb = '2026-06-01'; t2.stundenlohn = 14.38; // ab Juni 14,38 € (April und Mai wurden im Juni als Aufrollung nachverrechnet)
       data.settings = data.settings.filter(function (e) { return !e.test; });
       data.settings.push(t1, t2);
     }
@@ -691,7 +694,7 @@
         if (!validISO(date)) { toast('Bitte ein Datum wählen.'); return; }
         if (data.settings.some(function (e) { return e.gueltigAb === date; })) { toast('Für dieses Datum gibt es schon einen Wertesatz.'); return; }
         var base = curEntry(), ne = base ? E.clone(base) : E.neuerWertesatz('gueter', date);
-        ne.gueltigAb = date; delete ne.test; data.settings.push(ne); ui.setKey = date; save(); renderSettings(); toast('Wertesatz ab ' + fmtDate(date) + ' angelegt.'); return;
+        ne.gueltigAb = date; delete ne.test; data.settings.push(ne); ui.setKey = date; save(); renderSettings(); toast('Neue Werte ab ' + fmtDate(date) + ' angelegt. Ändere jetzt, was sich geändert hat.'); var fm = $('#s-form'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
       }
       case 's-paketload': {
         var en = curEntry(); if (!en) return;
@@ -735,6 +738,7 @@
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
+      case 'e-extra': { var xv = parseFloat(String(t.value).replace(',', '.')); if (xv > 0) ui.edDraft.extra = xv; else delete ui.edDraft.extra; updatePreview(); return; }
       case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; updatePreview(); return;
       case 'e-spaeter': ui.edDraft.spaeter = t.checked; return;
     }

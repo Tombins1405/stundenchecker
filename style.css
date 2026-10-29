@@ -245,3 +245,27 @@ body.auth-open{overflow:hidden}
 .eyebtn .eye-off{display:none}.eyebtn.on .eye-on{display:none}.eyebtn.on .eye-off{display:block}
 
 .a-sync{margin:0 0 10px;font-size:.95rem;color:#64748b}.a-sync.ok{color:#1d5c2a}.a-sync.bad{color:#8a1c1c}
+
+/* Eigene Uhr */
+input[data-time] { cursor: pointer; font-variant-numeric: tabular-nums; }
+body.tp-open { overflow: hidden; }
+.tp-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, .6); display: grid; place-items: end center; padding: 12px; }
+.tp-overlay[hidden] { display: none; }
+.tp-sheet { background: var(--surface); color: var(--ink); border-radius: 20px; padding: 16px; width: min(380px, 100%); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 18px 50px rgba(0, 0, 0, .35); }
+.tp-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; text-align: center; color: var(--ink-2); }
+.tp-type { font: 700 2.2rem/1.1 var(--font-display); text-align: center; border: 2px solid var(--line); border-radius: 14px; padding: 6px; background: var(--surface-2); color: var(--ink); width: 100%; letter-spacing: .04em; }
+.tp-type.bad { border-color: var(--bad); }
+.tp-wheels { position: relative; display: flex; justify-content: center; align-items: center; gap: 6px; height: 220px; perspective: 600px; }
+.tp-col { width: 96px; height: 220px; }
+.tp-colon { font: 700 2rem var(--font-display); color: var(--ink-2); }
+.tp-wheel { height: 220px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; outline: none; }
+.tp-wheel::-webkit-scrollbar { display: none; }
+.tp-item { height: 44px; line-height: 44px; text-align: center; font: 600 1.7rem/44px var(--font-display); scroll-snap-align: center; user-select: none; cursor: pointer; will-change: transform; transform-origin: center center; }
+.tp-item.sel { color: var(--accent); font-weight: 700; }
+.tp-band { position: absolute; left: 8px; right: 8px; top: 88px; height: 44px; border-radius: 12px; background: var(--accent-soft); opacity: .55; pointer-events: none; z-index: -1; }
+.tp-btns { display: grid; grid-template-columns: 1.3fr 1fr; gap: 8px; }
+.tp-btns .btn { min-height: 52px; font-size: 1.05rem; }
+.tp-btns #tp-ok { grid-column: 1 / -1; }
+.tp-btns #tp-clear[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .tp-wheel { scroll-behavior: auto; } }
+.tp-btns.noclear #tp-cancel { grid-column: 1 / -1; }

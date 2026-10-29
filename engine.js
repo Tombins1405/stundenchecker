@@ -176,7 +176,7 @@
   function calcDay(day, dateStr, w) {
     var typ = dayTyp(dateStr), wd = weekday(dateStr);
     var res = { datum: dateStr, typ: typ, feiertag: feiertagName(dateStr), status: 'arbeit', auto: false, leer: false,
-      bruttoMin: 0, pausenMin: 0, nettoMin: 0, faktor: 1, wertMin: 0, creditMin: 0, swMin: 0,
+      bruttoMin: 0, pausenMin: 0, nettoMin: 0, faktor: 1, wertMin: 0, creditMin: 0, extraMin: 0, swMin: 0,
       diaetenStd: 0, diaetenBetrag: 0, saldoMin: null, warn: [] };
 
     if (!day) {
@@ -202,10 +202,13 @@
     if (typ === 'sonntag') pct = z.so; else if (typ === 'feiertag') pct = z.ft; else if (typ === 'samstag') pct = z.sa;
     res.faktor = 1 + (pct || 0) / 100;
     res.wertMin = m.netto * res.faktor;
+    // Zusätzlich bezahlte Stunden am selben Tag (zum Beispiel Sonderurlaub plus Arbeit): werden einfach dazugezählt.
+    var ex = +day.extra; if (isNaN(ex) || ex < 0) ex = 0;
+    res.extraMin = Math.round(ex * 60); res.creditMin = res.extraMin;
 
     // Überstunden-Beitrag des Tages (Modell "tag-saldo": Arbeitsstunden minus Tagessoll, kürzere Tage gleichen aus)
-    if (w.ueberstunden.modell === 'tag-saldo' && (res.wertMin > 0 || res.swMin > 0)) {
-      res.saldoMin = res.wertMin - Math.max(0, sollMin - res.swMin);
+    if (w.ueberstunden.modell === 'tag-saldo' && (res.wertMin > 0 || res.swMin > 0 || res.extraMin > 0)) {
+      res.saldoMin = res.wertMin + res.extraMin - Math.max(0, sollMin - res.swMin);
     }
 
     // Diäten
