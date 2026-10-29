@@ -122,6 +122,7 @@
     renderOpenDay();
     window.scrollTo(0, 0);
     if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01');
+    renderMia();
   }
 
   /* Diese Woche (Montag bis Sonntag): Stunden gegen die Wochenstunden. Eine einfache Orientierung, kein Lohnzettel-Wert. */
@@ -296,6 +297,7 @@
   function monKurz(y, m) { return MON[m - 1].slice(0, 3) + ' ' + String(y).slice(2); }
   function numIn(id, val, ph) { return '<input type="number" class="kin" id="' + id + '" inputmode="decimal" step="0.01" value="' + (val == null ? '' : esc(val)) + '" placeholder="' + (ph || '') + '" aria-label="' + esc(ph || 'Wert') + '">'; }
   function renderKonten() {
+    renderMia();
     var p = data.profil || {};
     $('#k-eintritt').value = p.eintritt || '';
     $('#k-urlaubjahr').value = p.urlaubJahr == null ? '' : p.urlaubJahr;
@@ -607,8 +609,52 @@
   }
 
 
+
+  /* ============================================================ MIA (Begleiter, weiblich oder männlich, eigener Name) */
+  function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia') }; }
+  function miaSvg(f) {
+    var w = f !== 'm', shirt = w ? '#e8708a' : '#2f8f9d', fur = '#8d5b3a', face = '#f1d3b0';
+    return '<svg class="miasvg" viewBox="0 0 120 130" aria-hidden="true">' +
+      '<g class="mia-bob">' +
+      '<g class="mia-arm"><rect x="82" y="78" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(-50 86 84)"/></g>' +
+      '<rect x="34" y="82" width="52" height="40" rx="18" fill="' + shirt + '"/>' +
+      '<rect x="8" y="80" width="30" height="12" rx="6" fill="' + fur + '" transform="rotate(25 36 86)"/>' +
+      '<circle cx="24" cy="48" r="13" fill="' + fur + '"/><circle cx="96" cy="48" r="13" fill="' + fur + '"/>' +
+      '<circle cx="24" cy="48" r="7" fill="' + face + '"/><circle cx="96" cy="48" r="7" fill="' + face + '"/>' +
+      '<circle cx="60" cy="52" r="38" fill="' + fur + '"/>' +
+      '<ellipse cx="60" cy="62" rx="27" ry="24" fill="' + face + '"/>' +
+      '<g class="mia-eyes"><ellipse cx="48" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/><ellipse cx="72" cy="52" rx="4.5" ry="5.5" fill="#1f2937"/></g>' +
+      (w ? '<path d="M42 46l-4-3M46 44l-2-4M78 46l4-3M74 44l2-4" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/><circle cx="40" cy="64" r="5" fill="#f4a3b5" opacity=".7"/><circle cx="80" cy="64" r="5" fill="#f4a3b5" opacity=".7"/>' : '') +
+      '<ellipse cx="60" cy="62" rx="4" ry="3" fill="#6b4226"/>' +
+      '<path d="M50 70q10 9 20 0" fill="none" stroke="#6b4226" stroke-width="3" stroke-linecap="round"/>' +
+      (w ? '<path d="M52 22q-8-12 -20-6q4 12 20 6z M68 22q8-12 20-6q-4 12 -20 6z" fill="#f06292"/><circle cx="60" cy="22" r="5" fill="#ec407a"/>'
+         : '<path d="M24 36q36-34 72 0z" fill="#2563eb"/><rect x="58" y="32" width="46" height="8" rx="4" fill="#1d4ed8"/>') +
+      '</g></svg>';
+  }
+  function renderMia() {
+    var c = miaCfg(), b = $('#mia-btn'); if (b) b.innerHTML = miaSvg(c.figur);
+    var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (c.figur === f ? ' on' : '') + '" data-mia="' + f + '" aria-label="' + (f === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
+    var n = $('#mia-name'); if (n && document.activeElement !== n) n.value = (data.profil && data.profil.mia && data.profil.mia.name) || ''; if (n) n.placeholder = c.figur === 'm' ? 'Milo' : 'Mia';
+  }
+  function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
+  function miaTip() {
+    var c = miaCfg(), w = wAt(todayISO()), bs = E.bausteine(w);
+    var t = 'Ich bin ' + c.name + '. Trag deine Stunden ein, und ich rechne mit, ob dein Lohnzettel stimmt.';
+    if (!data.settings.length) t = 'Hallo, ich bin ' + c.name + '. Beantworte mir kurz ein paar Fragen, dann richte ich alles für dich ein.';
+    else if (w.stundenlohn == null) t = 'Trage in den Einstellungen deinen Stundenlohn ein, dann sage ich dir, was ein Unterschied in Euro wert ist.';
+    else if (bs.praemien && !((data.profil && data.profil.praemien) || []).length) t = 'Hast du Prämien auf dem Lohnzettel? Lege sie in den Einstellungen an, dann prüfe ich sie auch.';
+    else if (!Object.keys(data.abgleich || {}).length && Object.keys(data.days).length > 5) t = 'Wenn dein Lohnzettel da ist: Übersicht, dann „Stimmt mein Lohnzettel?“. Ich vergleiche mit deiner Aufzeichnung.';
+    return t;
+  }
+  (function () {
+    $('#mia-btn').addEventListener('click', function () { var bb = $('#mia-bubble'); if (!bb.hidden) { bb.hidden = true; return; } $('#mia-text').textContent = miaTip(); bb.hidden = false; });
+    $('#mia-ok').addEventListener('click', function () { $('#mia-bubble').hidden = true; });
+    $('#mia-choose').addEventListener('click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
+    $('#mia-name').addEventListener('input', function () { miaSet('name', this.value.slice(0, 20)); });
+  })();
+
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
-  var WZ_ORDER = ['beruf', 'art', 'bausteine', 'kv', 'lohn'];
+  var WZ_ORDER = ['beruf', 'art', 'bausteine', 'kv', 'lohn', 'mia'];
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
@@ -617,7 +663,7 @@
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter';
       w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
     }
-    ui.wiz = w; wzRender(); $('#wiz').hidden = false;
+    w.mia = (miaCfg().figur); ui.wiz = w; wzRender(); $('#wiz').hidden = false;
   }
   function wzSetBeruf(k) {
     var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
@@ -628,6 +674,7 @@
     var w = ui.wiz, i = WZ_ORDER.indexOf(w.step); w.hist.push(w.step);
     var n = WZ_ORDER[i + 1];
     if (n === 'art' && !(E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten)) n = 'bausteine';
+    if (n === 'mia' && w.mode !== 'start') n = null;
     if (!n) { wzFinish(); return; }
     w.step = n; wzRender();
   }
@@ -644,6 +691,7 @@
     var wo = parseFloat(String(w.wochen).replace(',', '.')); if (wo > 0) set.ueberstunden.wochenStd = wo;
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
     data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ab; }); data.settings.push(set);
+    if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false);
@@ -654,7 +702,8 @@
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
     var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
-    var num = w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4;
+    var num = w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : w.step === 'lohn' ? 4 : 5;
+    if (w.mode === 'start') nSteps = 5;
     html += '<p class="wzstep">Schritt ' + num + ' von ' + nSteps + (w.mode === 'change' ? ' · gilt ab ' + esc(fmtDate(w.ab)) : '') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>';
@@ -674,6 +723,11 @@
         kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
         (cp && cp.pruefen && w.paket !== 'eigen' ? '<p class="hint"><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte vergleiche die Werte später mit deinem Lohnzettel.</p>' : '') +
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
+    } else if (w.step === 'mia') {
+      var mc = miaCfg();
+      html += '<h3>Wer soll dich begleiten?</h3><p class="hint">Du kannst Figur und Namen jederzeit im Konto ändern.</p><div class="miachoose">' +
+        ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (w.mia === f ? ' on' : '') + '" data-wm="' + f + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('') + '</div>' +
+        '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>';
     } else {
       var pw = E.PAKETE[w.paket].werte;
       html += '<h3>Dein Lohn</h3>' +
@@ -682,8 +736,8 @@
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
         '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
     }
-    var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn';
-    html += '<div class="btns">' + '<button type="button" class="btn primary" id="wz-next"' + (canNext ? '' : ' disabled') + '>' + (w.step === 'lohn' ? 'Fertig' : 'Weiter') + '</button>' +
+    var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn' || w.step === 'mia';
+    html += '<div class="btns">' + '<button type="button" class="btn primary" id="wz-next"' + (canNext ? '' : ' disabled') + '>' + (w.step === 'lohn' && w.mode !== 'start' || w.step === 'mia' ? 'Fertig' : 'Weiter') + '</button>' +
       '<button type="button" class="btn" id="wz-back">' + (w.hist.length ? 'Zurück' : (w.mode === 'start' ? 'Später' : 'Abbrechen')) + '</button></div>';
     el.innerHTML = html;
   }
@@ -693,6 +747,7 @@
       var t = ev.target.closest('button'); if (!t || !ui.wiz) return; var w = ui.wiz;
       if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
       if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; wzNext(); return; }
+      if (t.dataset.wm) { w.mia = t.dataset.wm; wzRender(); return; }
       if (t.dataset.wk) { w.paket = t.dataset.wk; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
       if (t.id === 'wz-next') { wzNext(); return; }
       if (t.id === 'wz-back') { wzBack(); return; }

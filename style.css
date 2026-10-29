@@ -342,3 +342,20 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .wzopt { text-align: left; padding: 14px; }
 .wzopt.on { border-color: var(--accent, #1e6fd9); }
 .wizbox .btns { margin-top: 12px; }
+
+/* Mia */
+.top .wrap { position: relative; }
+.miabtn { position: absolute; right: 8px; top: 2px; width: 56px; height: 62px; padding: 0; border: 0; background: none; cursor: pointer; }
+.miasvg { width: 100%; height: 100%; display: block; overflow: visible; }
+.miabubble { margin: 4px 16px 0; padding: 10px 14px; border-radius: 14px; background: #e7f1fb; color: #1f2937; font-size: 0.95rem; }
+.miachoose { display: flex; gap: 12px; flex-wrap: wrap; }
+.miaopt { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 120px; padding: 8px; border: 2px solid transparent; border-radius: 14px; background: rgba(127,127,127,.12); cursor: pointer; color: inherit; font: inherit; }
+.miaopt.on { border-color: var(--accent, #1e6fd9); }
+.miaopt .miasvg { width: 90px; height: 96px; }
+.mia-bob { animation: miabob 2.6s ease-in-out infinite; transform-origin: 60px 120px; }
+.mia-eyes { animation: miablink 4.5s infinite; transform-origin: 60px 52px; }
+.mia-arm { animation: miawave 1.6s ease-in-out infinite; transform-origin: 90px 86px; }
+@keyframes miabob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes miablink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes miawave { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-22deg); } }
+@media (prefers-reduced-motion: reduce) { .mia-bob, .mia-eyes, .mia-arm { animation: none; } }

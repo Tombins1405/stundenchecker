@@ -48,7 +48,9 @@
   <div class="wrap">
     <div class="brand">Stunden<b>-</b>Checker</div>
     <div class="slogan">Jede Stunde. Jeder Euro. Im Blick.</div>
+    <button type="button" class="miabtn" id="mia-btn" aria-label="Frag mich"></button>
   </div>
+  <div class="miabubble" id="mia-bubble" hidden><span id="mia-text"></span> <button type="button" class="linkbtn" id="mia-ok">OK</button></div>
 </header>
 
 <nav class="tabs" aria-label="Hauptmenü">
@@ -199,6 +201,11 @@
         <div class="field"><label for="k-zastart">Zeitausgleich beim Start (Std)</label><input type="number" id="k-zastart" inputmode="decimal" step="0.25" placeholder="0"><small>Stand des Zeitausgleich-Kontos vor deinem ersten Eintrag.</small></div>
       </div>
       <label class="check"><input type="checkbox" id="k-kmvortag"> km-Stand vom letzten Mal beim Fahrzeug automatisch eintragen</label>
+      <div class="field"><span class="lbl">Mein Begleiter</span>
+        <div class="miachoose" id="mia-choose"></div>
+        <label for="mia-name" style="margin-top:8px">Name</label>
+        <input type="text" id="mia-name" maxlength="20" autocomplete="off" placeholder="Mia">
+      </div>
       <div class="field"><span class="lbl">Mein App-Symbol</span>
         <div id="icon-pick2" class="ipicks"></div>
         <label class="btn" for="icon-file" style="margin-top:8px;text-align:center">Eigenes Foto verwenden</label>
@@ -391,7 +398,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261029205341";</script>
+<script>window.APP_VERSION="20261029210218";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
