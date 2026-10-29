@@ -309,6 +309,15 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .prblock .pn:first-child { grid-column: 1 / 2; }
 .prblock .rm { justify-self: end; }
 
-.installbar { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #1e3a5f; color: #fff; font-size: 0.95rem; }
+.installbar { padding: 8px 16px; background: #1e3a5f; color: #fff; font-size: 0.95rem; }
 .installbar[hidden] { display: none; }
 .installbar span { flex: 1; }
+.ib-top, .ib-pick { display: flex; align-items: center; gap: 10px; }
+.ib-pick { margin-top: 6px; }
+.ib-pick span { flex: 0 0 auto; font-size: 0.85rem; }
+#icon-pick { display: flex; gap: 8px; flex-wrap: wrap; }
+.ipk { width: 44px; height: 44px; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
+.ipk svg { width: 100%; height: 100%; display: block; }
+.ipk.on { border-color: #fff; }
+.installbar #install-go { background: #64b5f6; color: #0f1b2d; border-color: #64b5f6; font-weight: 700; white-space: nowrap; flex: 0 0 auto; }
+.installbar #install-x { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); width: 36px; height: 36px; flex: 0 0 auto; font-size: 1.3rem; line-height: 1; }

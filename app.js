@@ -955,6 +955,57 @@
   window.addEventListener('beforeunload', function (ev) { if (isDirty()) { ev.preventDefault(); ev.returnValue = ''; } });
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 
+
+  /* ---- Eigenes App-Symbol ---- */
+  var APPICONS = [
+    ['uhr', 'Uhr', '<circle cx="48" cy="48" r="29" fill="none" stroke="#64b5f6" stroke-width="7"/><path d="M48 30v19l12 8" fill="none" stroke="#f3f4f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'],
+    ['lkw', 'Lkw', '<rect x="12" y="30" width="44" height="30" rx="3" fill="#64b5f6"/><path d="M58 40h14l12 12v8H58z" fill="#f3f4f6"/><circle cx="28" cy="64" r="7" fill="#f3f4f6" stroke="#1f2937" stroke-width="3"/><circle cx="70" cy="64" r="7" fill="#f3f4f6" stroke="#1f2937" stroke-width="3"/>'],
+    ['bagger', 'Bagger', '<rect x="14" y="62" width="48" height="12" rx="6" fill="#f3f4f6"/><rect x="22" y="44" width="28" height="18" rx="3" fill="#64b5f6"/><path d="M48 50L66 28l14 12" fill="none" stroke="#f3f4f6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 40l8 10-12 2z" fill="#64b5f6"/>'],
+    ['kran', 'Kran', '<rect x="14" y="62" width="40" height="11" rx="3" fill="#f3f4f6"/><rect x="20" y="48" width="16" height="14" rx="2" fill="#64b5f6"/><path d="M34 52L78 20" stroke="#f3f4f6" stroke-width="6" stroke-linecap="round"/><path d="M78 20v26" stroke="#64b5f6" stroke-width="4"/><rect x="73" y="46" width="10" height="8" rx="2" fill="#64b5f6"/>'],
+    ['euro', 'Euro', '<circle cx="48" cy="48" r="30" fill="#64b5f6"/><text x="48" y="61" font-size="40" font-weight="700" text-anchor="middle" fill="#1f2937" font-family="Arial,sans-serif">€</text>'],
+    ['stern', 'Stern', '<path d="M48 16l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z" fill="#fbbf24"/>']
+  ];
+  function iconSvg(key) {
+    var ic = APPICONS.filter(function (x) { return x[0] === key; })[0] || APPICONS[0];
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="512" height="512"><rect width="96" height="96" rx="20" fill="#1f2937"/>' + ic[2] + '</svg>';
+  }
+  function iconPng(key, size, cb) {
+    var img = new Image();
+    img.onload = function () { var c = document.createElement('canvas'); c.width = c.height = size; c.getContext('2d').drawImage(img, 0, 0, size, size); cb(c.toDataURL('image/png')); };
+    img.onerror = function () { cb(null); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(key));
+  }
+  function applyAppIcon(key) {
+    iconPng(key, 512, function (p512) {
+      if (!p512) return;
+      iconPng(key, 192, function (p192) {
+        var set = function (sel, href) { var el = document.querySelector(sel); if (el) el.setAttribute('href', href); };
+        set('link[rel="apple-touch-icon"]', p192 || p512);
+        set('link[rel="icon"]', p192 || p512);
+        var base = new URL('./', location.href).href;
+        var man = { id: base + 'index.html', name: 'Stunden-Checker', short_name: 'Stunden', start_url: base + 'index.html', scope: base, display: 'standalone', background_color: '#1f2937', theme_color: '#1f2937', lang: 'de',
+          icons: [{ src: p192 || p512, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: p512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: p512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
+        try { set('link[rel="manifest"]', URL.createObjectURL(new Blob([JSON.stringify(man)], { type: 'application/manifest+json' }))); } catch (e) { }
+      });
+    });
+  }
+  function renderIconPick() {
+    var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
+    $('#icon-pick').innerHTML = APPICONS.map(function (x) {
+      return '<button type="button" class="ipk' + (x[0] === cur ? ' on' : '') + '" data-icon="' + x[0] + '" aria-label="' + x[1] + '" title="' + x[1] + '"><svg viewBox="0 0 96 96"><rect width="96" height="96" rx="20" fill="#1f2937"/>' + x[2] + '</svg></button>';
+    }).join('');
+  }
+  (function () {
+    var cur = null; try { cur = localStorage.getItem('stundenchecker.icon'); } catch (e) { }
+    renderIconPick();
+    if (cur && cur !== 'uhr') applyAppIcon(cur);
+    $('#icon-pick').addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-icon]'); if (!b) return;
+      try { localStorage.setItem('stundenchecker.icon', b.dataset.icon); } catch (e) { }
+      renderIconPick(); applyAppIcon(b.dataset.icon);
+    });
+  })();
+
   /* ---- Als App installieren ---- */
   (function () {
     var deferred = null, bar = $('#installbar');
