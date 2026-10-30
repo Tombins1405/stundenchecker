@@ -448,3 +448,15 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 @media (prefers-reduced-motion: reduce) { .sc-links circle, .sc-arm, .sc-stick, .sc-bucket, .sc-bag { animation: none; } }
 
 .p-eyes .mia-arml, .p-ears .mia-arml, .p-mouth .mia-arml { opacity: 0; }
+
+/* Rundgang */
+.tour { position: fixed; inset: 0; z-index: 300; }
+.tour-hl { position: fixed; border-radius: 12px; box-shadow: 0 0 0 100vmax rgba(15, 23, 42, .62); outline: 3px solid #fde047; pointer-events: none; transition: all .25s; }
+.tour-hl[hidden] { display: none; }
+.tour:has(.tour-hl[hidden]) { background: rgba(15, 23, 42, .62); }
+.tour-box { position: fixed; left: 12px; right: 12px; max-width: 440px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-start; background: #fff; color: #1f2937; border: 2px solid #1e6fd9; border-radius: 16px; padding: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+.tour-mia { flex: 0 0 64px; width: 64px; height: 84px; }
+.tour-mia .miasvg { width: 100%; height: 100%; }
+.tour-body { flex: 1; min-width: 0; }
+.tour-body p { margin: 0 0 10px; font-size: .98rem; line-height: 1.4; }
+.tour-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }

@@ -724,8 +724,8 @@
 
 
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
-  var MIA_OUT = { 'lkw:baustelle': ['kappe', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
-    bagger: ['kappe', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'],
+  var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
+    bagger: ['barhaupt', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'],
     'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
   function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, skip: m.skip || {} }; }
@@ -767,7 +767,8 @@
       (w ? '<path d="M40 45l-5-3M44 43l-2-5M80 45l5-3M76 43l2-5" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>' : '<path d="M40 43q7-4 13 0M67 43q7-4 13 0" fill="none" stroke="#5e3a20" stroke-width="2.4" stroke-linecap="round"/>') +
       '<circle cx="38" cy="66" r="5.500" fill="#f4a3b5" opacity=".65"/><circle cx="82" cy="66" r="5.500" fill="#f4a3b5" opacity=".65"/>' +
       '<ellipse cx="60" cy="64" rx="4.500" ry="3.300" fill="#6b4226"/><path d="M49 71q11 11 22 0" fill="#fff" stroke="#6b4226" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>';
-    if (has('helm')) s += '<path d="M21 46q2-40 39-40t39 40z" fill="url(#mgYel)" stroke="#a16207" stroke-width="2"/><rect x="17" y="42" width="86" height="9" rx="4.500" fill="#f5b400" stroke="#a16207" stroke-width="2"/><path d="M60 7v34" stroke="#c98a00" stroke-width="5"/><path d="M34 22q6-9 16-12" fill="none" stroke="#fff6c2" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
+    if (has('barhaupt')) s += '';
+    else if (has('helm')) s += '<path d="M21 46q2-40 39-40t39 40z" fill="url(#mgYel)" stroke="#a16207" stroke-width="2"/><rect x="17" y="42" width="86" height="9" rx="4.500" fill="#f5b400" stroke="#a16207" stroke-width="2"/><path d="M60 7v34" stroke="#c98a00" stroke-width="5"/><path d="M34 22q6-9 16-12" fill="none" stroke="#fff6c2" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
     else if (has('kappe')) s += '<path d="M22 40q38-38 76 0z" fill="url(#mgRed)" stroke="#7f1d1d" stroke-width="2"/><path d="M58 36q20-6 48 4q-10 8-48 2z" fill="#991b1b" stroke="#7f1d1d" stroke-width="1.500"/><circle cx="60" cy="7" r="3.500" fill="#991b1b"/><path d="M36 22q8-8 20-10" fill="none" stroke="#ffb4aa" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
     else if (has('kochhaube')) s += '<path d="M28 36q-12-20 8-24q5-12 24-8q18-4 24 8q20 4 8 24z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><rect x="30" y="30" width="60" height="12" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.500"/>';
     else if (w) s += '<path d="M54 22q-10-16 -24-6q4 14 24 6z M66 22q10-16 24-6q-4 14 -24 6z" fill="#f06292" stroke="#ad1457" stroke-width="1.500"/><circle cx="60" cy="22" r="6" fill="#ec407a" stroke="#ad1457" stroke-width="1.500"/>';
@@ -1049,6 +1050,70 @@
   }
   function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
   function wzClose(dismiss) { $('#wiz').hidden = true; if (dismiss && ui.wiz && ui.wiz.mode === 'start') ui.wizDismissed = true; ui.wiz = null; }
+  /* ---- Rundgang mit Mia: ein heller Rahmen zeigt auf das, was Mia gerade erklärt ---- */
+  var TOUR = null;
+  function tourSteps() {
+    var w = wAt(todayISO()), b = w.beruf || '', gl = w.ueberstunden && w.ueberstunden.modell === 'gleit';
+    var s = [{ t: 'Ich zeige dir in einer Minute, wie alles funktioniert. Du kannst jederzeit beenden.' },
+      { v: 'erfassen', sel: '#e-status', t: 'Hier wählst du die Art des Tages: Arbeit, Urlaub, Krankenstand oder Zeitausgleich. Bei Urlaub und Krankenstand brauchst du keine Uhrzeiten.' },
+      { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
+      { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
+    if (b === 'lkw' || b === 'klein') s.push({ v: 'erfassen', sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Kunden oder Baustellen mit dem, was du dort gemacht hast. Das braucht die App für Prämien und Zulagen.' });
+    if (b === 'bagger') s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Baustellen mit deiner Tätigkeit. Das braucht die App für Prämien und Zulagen.' });
+    s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
+    s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
+    s.push({ v: 'monat', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
+    s.push({ v: 'einstellungen', sel: '[data-view=einstellungen]', t: 'In den Einstellungen findest du Stundenlohn, Zuschläge, Prämien und Diäten.' });
+    s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Konto: deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
+    s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
+    return s;
+  }
+  function tourEl(st) { if (!st.sel) return null; var el = document.querySelector(st.sel); return el && el.offsetParent !== null ? el : null; }
+  function tourRender() {
+    var T = TOUR; if (!T) return;
+    var st = T.s[T.i], ov = $('#tour');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour'; document.body.appendChild(ov); }
+    if (st.v && ui.view !== st.v) show(st.v, true);
+    var el = null;
+    ov.innerHTML = '<div class="tour-hl" id="tour-hl" hidden></div><div class="tour-box" id="tour-box"></div>';
+    var last = T.i === T.s.length - 1, first = T.i === 0;
+    $('#tour-box').innerHTML = '<div class="tour-mia">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div><div class="tour-body"><p></p><div class="tour-btns">' +
+      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : 'Weiter') + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
+    $('#tour-box p').textContent = st.t;
+    setTimeout(function () {
+      if (!TOUR || TOUR.i !== T.i) return;
+      el = tourEl(st);
+      if (st.sel && !el) { tourStep(T.dir || 1); return; }
+      var hl = $('#tour-hl'), box = $('#tour-box');
+      if (el) {
+        el.scrollIntoView({ block: 'center' });
+        var r = el.getBoundingClientRect(), pad = 6;
+        hl.hidden = false; hl.style.left = (r.left - pad) + 'px'; hl.style.top = (r.top - pad) + 'px'; hl.style.width = (r.width + 2 * pad) + 'px'; hl.style.height = (r.height + 2 * pad) + 'px';
+        var below = r.top + r.height / 2 < window.innerHeight / 2;
+        box.style.top = below ? Math.min(window.innerHeight - 190, r.bottom + 16) + 'px' : 'auto';
+        box.style.bottom = below ? 'auto' : Math.max(12, window.innerHeight - r.top + 16) + 'px';
+      } else { box.style.top = '30%'; box.style.bottom = 'auto'; }
+    }, 220);
+  }
+  function tourStep(d) {
+    if (!TOUR) return;
+    TOUR.dir = d; TOUR.i += d;
+    if (TOUR.i < 0) TOUR.i = 0;
+    if (TOUR.i >= TOUR.s.length) { tourEnd(true); return; }
+    tourRender();
+  }
+  function tourEnd(done) {
+    TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
+    if (!data.profil) data.profil = {}; data.profil.tourDone = true; save();
+    ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
+    show('erfassen', true);
+  }
+  function tourStart() {
+    if (ui.wiz || TOUR) return;
+    ins('rundgang');
+    TOUR = { s: tourSteps(), i: 0, dir: 1 }; tourRender();
+  }
+
   function wzFinish() {
     ins('assistent');
     var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
@@ -1066,7 +1131,7 @@
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
-    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
+    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); if (!(data.profil && data.profil.tourDone)) setTimeout(tourStart, 1600); }
     else { toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.'); renderSettings(); }
   }
   function lohnGruppenHtml(w) {
@@ -1405,6 +1470,8 @@
   /* ============================================================ Ereignisse */
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
+    if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else tourEnd(false); return; }
+    if (t.id === 'tour-start') { tourStart(); return; }
     if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }
     if (t.dataset.an) { var cur = (ui.edDraft.an || {}).w; anSet('w', cur === t.dataset.an ? '' : t.dataset.an); anChips(); return; }
     if (t.dataset.prvor != null) {
