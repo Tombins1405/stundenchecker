@@ -464,12 +464,14 @@
     renderPrVor();
   }
   // Häufige Zulagen je Branche zum Anklicken. Betrag bewusst leer: er steht auf dem Lohnzettel und ist je Firma verschieden.
+  // Beträge Güterbeförderung: Kollektivvertrag ab 1.1.2026, Lohn- und Zulagenordnung (wko.at). Wo kein Betrag steht, ist er je Firma verschieden.
   var PR_VOR = {
-    gueter: [['Gefahrgutzulage', 'tag', 'Tage mit Gefahrgut-Einsatz (ADR)'], ['Kranzulage', 'taet', 'Stunden mit Kranarbeit'], ['Schmutzzulage', 'tag', 'Tage mit verschmutzender Arbeit'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
-    bau: [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Kranführerzulage', 'taet', 'Stunden am Kran'], ['Montagezulage', 'tag', 'Tage mit Montagearbeit'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']]
+    gueter: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 15], ['Möbeltransportzulage', 'tag', 'Einsatztage mit händischer Be- und Entladung von Stücken ab 40 kg', 7.33], ['Autotransportzulage (Spezialfahrzeug)', 'tag', 'Einsatztage mit Spezialfahrzeug für Autotransporte', 7.33], ['Abfalleinsammlungszulage', 'tag', 'Einsatztage mit Abfalleinsammlung', 20.01], ['Schwergüterzulage (250 bis 500 kg)', 'stueck', 'Je Stück und Arbeitspartie', 19.71], ['Klavier- oder Kassentransport', 'stueck', 'Je Stück und Arbeitspartie', 23.41], ['Schmutzzulage', 'tag', '10 % des KV-Lohns bei Müll, Fäkalien oder offenen Schüttgütern'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    klein: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    bau: [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']]
   };
   function renderPrVor() {
-    var w = wAt(todayISO()), k = w && (w.paket === 'bau' ? 'bau' : (w.paket === 'gueter' || w.paket === 'klein') ? 'gueter' : null), box = $('#pr-vor'), h = $('#pr-vorh');
+    var w = wAt(todayISO()), k = w && PR_VOR[w.paket] ? w.paket : null, box = $('#pr-vor'), h = $('#pr-vorh');
     if (!box) return;
     var have = praemienListe().map(function (p) { return p.name; }), list = k ? PR_VOR[k].filter(function (x) { return have.indexOf(x[0]) < 0; }) : [];
     h.hidden = !list.length;
@@ -1256,7 +1258,7 @@
     var t = ev.target.closest('button'); if (!t) return;
     if (t.dataset.prvor != null) {
       var bx = $('#pr-vor'), it = bx && bx._list && bx._list[+t.dataset.prvor];
-      if (it) { praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: it[0], betrag: 0, einheit: it[1], regel: it[2], taet: '' }); save(); renderPraemienSettings(); var nn = $('#pr-b' + (praemienListe().length - 1)); if (nn) nn.focus(); }
+      if (it) { praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: it[0], betrag: it[3] || 0, einheit: it[1], regel: it[2], taet: '' }); save(); renderPraemienSettings(); var nn = $('#pr-b' + (praemienListe().length - 1)); if (nn) nn.focus(); }
       return;
     }
     if (t.id === 's-lg-take') {
