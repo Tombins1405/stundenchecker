@@ -541,6 +541,18 @@
   function updatePreview() {
     var d = ui.edDraft, w = wAt(ui.edDate), r = E.calcDay(d, ui.edDate, w), html = '', warn = '';
     $('#e-diaeten').placeholder = 'Vorschlag';
+    (function () {
+      var kh = '', kz = E.kundenZeiten(d, w);
+      if (kz.rows.some(function (x) { return x.min !== null; })) {
+        kh += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
+        kz.rows.forEach(function (x) {
+          kh += line('<strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
+          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) kh += line('<span class="kz-sub">' + esc(y.tat || 'Tätigkeit') + '</span>', y.min === null ? '–' : hm(y.min) + ' h'); });
+        });
+        if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
+      }
+      $('#e-kz').innerHTML = d.status === 'arbeit' ? kh : '';
+    })();
     var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
     sg.hidden = !te; if (te) { sg.textContent = 'Meistens bis ' + te + ' (übernehmen)'; sg.dataset.t = te; }
     if (d.status !== 'arbeit') {
@@ -569,15 +581,6 @@
       }
       var prl = E.praemienDay(d, r, praemienListe(), w);
       if (prl.length) { html += '<div class="kz-title">Prämien</div>'; prl.forEach(function (x) { html += line(esc(x.name) + (x.einheit === 'stunde' ? ' · ' + fh(x.menge) + ' h' : x.menge !== 1 ? ' · ' + nfp.format(x.menge) + 'x' : ''), eur.format(x.euro)); }); }
-      var kz = E.kundenZeiten(d, w);
-      if (kz.rows.some(function (x) { return x.min !== null; })) {
-        html += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
-        kz.rows.forEach(function (x) {
-          html += line('<strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
-          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) html += line('<span class="kz-sub">' + esc(y.tat || 'Tätigkeit') + '</span>', y.min === null ? '–' : hm(y.min) + ' h'); });
-        });
-        if (kz.rows.length > 1) html += line('Zusammen', hm(kz.totalMin) + ' h', true);
-      }
       if (r.swMin) html += line('Schlechtwetter', fh(r.swMin / 60) + ' h');
       if (r.extraMin) html += line('Zusätzlich bezahlt', '+ ' + fh(r.extraMin / 60) + ' h');
       if (r.nettoMin / 60 > 12) warn += '<div class="notice warn">Mehr als 12 Arbeitsstunden an einem Tag. Bitte prüfe die Zeiten.</div>';
