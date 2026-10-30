@@ -185,7 +185,7 @@
         </div>
 
         <div class="field" id="e-kgroup">
-          <span class="lbl">Kunden / Baustellen mit Tätigkeiten (optional)</span>
+          <span class="lbl" id="e-klbl">Kunden / Baustellen mit Tätigkeiten (optional)</span>
           <div id="e-kunden" class="pausen"></div>
           <datalist id="e-notiz-list"></datalist>
           <button type="button" class="btn" id="e-addkunde">+ Kunde / Baustelle hinzufügen</button>
@@ -377,7 +377,7 @@
 
       <h3>Was ich aufzeichne</h3>
       <label class="check" for="s-bfz"><input type="checkbox" id="s-bfz" data-path="bausteine.fahrzeug" data-type="bool"><span>Fahrzeug und Kilometer</span></label>
-      <label class="check" for="s-bku"><input type="checkbox" id="s-bku" data-path="bausteine.kunden" data-type="bool"><span>Kunden, Baustellen und Tätigkeiten</span></label>
+      <label class="check" for="s-bku"><input type="checkbox" id="s-bku" data-path="bausteine.kunden" data-type="bool"><span id="s-bku-t">Kunden, Baustellen und Tätigkeiten</span></label>
       <label class="check" for="s-bpr"><input type="checkbox" id="s-bpr" data-path="bausteine.praemien" data-type="bool"><span>Prämien</span></label>
 
       <h3>Betrieb geschlossen</h3>
@@ -428,7 +428,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030101415";</script>
+<script>window.APP_VERSION="20261030113140";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

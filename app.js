@@ -457,6 +457,7 @@
     }).join('');
   }
   function renderKunden() {
+    var tour = E.istTour(wAt(ui.edDate || todayISO()));
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
       var rows = (k.taet || []).map(function (t, j) {
         var sfx = i + '-' + j;
@@ -467,8 +468,8 @@
           (k.taet.length > 1 ? '<button type="button" class="rm" data-rmt="' + i + '-' + j + '" aria-label="Tätigkeit ' + (j + 1) + ' entfernen">×</button>' : '<span></span>') + '</div>';
       }).join('');
       return '<div class="kunde2">' +
-        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">Kunde / Baustelle ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
-        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="Kunde ' + (i + 1) + ' entfernen">×</button></div>' +
+        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + (tour ? 'Tour' : 'Kunde / Baustelle') + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
+        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="' + (tour ? 'Tour' : 'Kunde') + ' ' + (i + 1) + ' entfernen">×</button></div>' +
         rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></div>';
     }).join('');
   }
@@ -517,6 +518,7 @@
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
     var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
+    var tr1 = E.istTour(w); $('#e-klbl').textContent = tr1 ? 'Touren mit Tätigkeiten (optional)' : 'Kunden / Baustellen mit Tätigkeiten (optional)'; $('#e-addkunde').textContent = tr1 ? '+ Tour hinzufügen' : '+ Kunde / Baustelle hinzufügen';
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
     $('#e-work').hidden = d.status !== 'arbeit';
     $('#e-delete').hidden = !data.days[ui.edDate];
@@ -569,9 +571,9 @@
       if (prl.length) { html += '<div class="kz-title">Prämien</div>'; prl.forEach(function (x) { html += line(esc(x.name) + (x.einheit === 'stunde' ? ' · ' + fh(x.menge) + ' h' : x.menge !== 1 ? ' · ' + nfp.format(x.menge) + 'x' : ''), eur.format(x.euro)); }); }
       var kz = E.kundenZeiten(d, w);
       if (kz.rows.some(function (x) { return x.min !== null; })) {
-        html += '<div class="kz-title">Zeit pro Kunde</div>';
+        html += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
         kz.rows.forEach(function (x) {
-          html += line('<strong>' + esc(x.name || 'Ohne Kunde') + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
+          html += line('<strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
           if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) html += line('<span class="kz-sub">' + esc(y.tat || 'Tätigkeit') + '</span>', y.min === null ? '–' : hm(y.min) + ' h'); });
         });
         if (kz.rows.length > 1) html += line('Zusammen', hm(kz.totalMin) + ' h', true);
@@ -906,7 +908,7 @@
     } else if (w.step === 'bausteine') {
       html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
         (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>Kunden, Baustellen und Tätigkeiten</span></label>') +
+        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + (E.istTour({ beruf: w.beruf, art: w.art }) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten') + '</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
         (einf ? '' : '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>Schlechtwetter (Bau)</span></label>');
@@ -981,6 +983,7 @@
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
     if (!en) return;
+    $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
     $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
