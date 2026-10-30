@@ -264,7 +264,7 @@
       var isE = r.unit === '€';
       return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(isE ? 'Prämie in Euro, so wie auf dem Lohnzettel.' : AB_HINT[r.key]) + '</small>' +
+        '<small class="abhint">' + esc(isE ? (r.key === 'dEuro' ? 'Der Betrag bei Diäten auf dem Lohnzettel, in Euro.' : 'Prämie in Euro, so wie auf dem Lohnzettel.') : AB_HINT[r.key]) + '</small>' +
         '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="' + (isE ? '0.01' : '0.25') + '" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>' + (isE ? '€' : 'h') + '</span></div>' +
         '<div class="abapp">Deine Aufzeichnung<br><b>' + (isE ? eur.format(r.app) : fh(r.app) + ' h') + '</b></div>' +
         '<span class="chip" data-chip="' + r.key + '"></span></div></div>';
@@ -862,7 +862,7 @@
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.bl = (data.profil && data.profil.bl) || '';
-      w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
+      w.einst = cur.einstufung || ''; w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
     }
     w.mia = (miaCfg().figur); ui.wiz = w; wzRender(); $('#wiz').hidden = false;
   }
@@ -884,7 +884,7 @@
     var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
-    set.schlechtwetter = !!w.sw;
+    set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
     else if (set.diaeten.modell === 'aus') { set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell; if (set.diaeten.modell === 'aus') { set.diaeten.modell = 'stunde'; set.diaeten.maxStd = 12; } }
     var lo = parseFloat(String(w.lohn).replace(',', '.')); set.stundenlohn = isNaN(lo) ? null : lo;
@@ -951,6 +951,7 @@
       var pw = E.PAKETE[w.paket].werte;
       html += '<h3>Dein Lohn</h3>' +
         lohnGruppenHtml(w) +
+        '<div class="field"><label for="wz-einst">Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +

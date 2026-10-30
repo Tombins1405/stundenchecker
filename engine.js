@@ -665,6 +665,8 @@
     { key: 'krank',    label: 'Krankenstand',  pflicht: false, faktor: 1, hole: function (s) { return s.krankStd; } },
     { key: 'pflege',   label: 'Pflegefreistellung', pflicht: false, faktor: 1, hole: function (s) { return s.pflegeStd; } },
     { key: 'dStd',     label: 'Diäten',        pflicht: true,  faktor: 'diaeten', hole: function (s) { return s.diaetenStd; } },
+    // Manche Lohnzettel zeigen bei Diäten nur den Betrag in Euro, keine Stunden.
+    { key: 'dEuro',    label: 'Diäten (Betrag in Euro)', unit: '€', pflicht: false, nurAlle: true, faktor: 'euro', hole: function (s) { return s.diaetenBetrag; } },
     // Zeitausgleich-Konto: Überstunden, die nicht ausbezahlt, sondern auf das Konto gebucht wurden. Wird zur Überstundenzeile dazugezählt.
     { key: 'zaKonto',  label: 'Zeitausgleich-Konto (Zuwachs)', pflicht: false, info: true, hole: function () { return null; } },
     // Sonderurlaub: wird von manchen Firmen aus den Überstunden bezahlt und zählt dann zur Zeile "Lohn" dazu.
@@ -682,10 +684,11 @@
       var app = r2(z.hole(summe) || 0);
       var eingetragenOhneApp = has && +v > 0 && app === 0;
       if (!z.pflicht && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
-      if (!has) { rows.push({ key: z.key, label: z.label, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
+      if (z.nurAlle && !alle && !(has && +v > 0)) return; // Euro-Zeile nur auf Wunsch oder wenn eingetragen
+      if (!has) { rows.push({ key: z.key, label: z.label, unit: z.unit, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
       var lzWert = +v + (z.key === 'ueber' ? za : 0) + (z.key === 'lohn' ? so : 0); // Überstunden + Zeitausgleich-Konto, Lohn + Sonderurlaub
       var diff = r2(lzWert - app), a = Math.abs(diff);
-      rows.push({ key: z.key, label: z.label, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
+      rows.push({ key: z.key, label: z.label, unit: z.unit, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
         status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
     });
     // Prämien: Betrag in Euro gegen die Zeile auf dem Lohnzettel (Toleranz 50 Cent wegen Rundung)
