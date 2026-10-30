@@ -227,7 +227,7 @@ input[type="number"].kin { width: 4.6em; font-size: .9rem; min-height: 42px; pad
 .kunde .kn{grid-column:1 / -1}
 .kunde .rm{align-self:end}
 
-.auth{position:fixed;inset:0;z-index:100;background:var(--bg,#eef2f7);overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:24px 16px}
+.auth{position:fixed;inset:0;z-index:200;background:var(--bg,#eef2f7);overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:24px 16px}
 .auth[hidden]{display:none}
 .auth-box{width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px}
 .a-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
