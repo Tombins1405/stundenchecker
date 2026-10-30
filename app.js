@@ -780,6 +780,42 @@
       '<g class="hand h-mouth"><circle cx="54" cy="73" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/><circle cx="66" cy="73" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/></g>';
     return s + '</g></g></svg>';
   }
+  function miaInner(f, outfit) { return miaSvg(f, outfit, '').replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''); }
+  /* Szene: Mia sitzt im Fahrzeug ihres Berufs (eigene Zeichnung, neutral, ohne Marke und Firmenlogo) */
+  function miaScene(kind, f) {
+    if (kind === 'bagger') return miaSceneBagger(f);
+    if (kind !== 'kipper') return '';
+    var mia = '<g transform="translate(211 39) scale(.48)">' + miaInner(f, ['kappe']) + '</g>';
+    var wheel = function (cx) { return '<g transform="translate(' + cx + ' 112)"><circle r="17" fill="#262626"/><circle r="17" fill="none" stroke="#111" stroke-width="2"/><g class="sc-spin"><circle r="10" fill="#d1d5db" stroke="#9ca3af" stroke-width="2"/><path d="M0-9v18M-9 0h18M-6.400-6.400l12.800 12.800M6.400-6.400l-12.800 12.800" stroke="#9ca3af" stroke-width="1.500"/></g><circle r="3" fill="#6b7280"/></g>'; };
+    var ribs = ''; for (var x = 40; x < 180; x += 20) ribs += '<path d="M' + x + ' 56v42" stroke="#7b8494" stroke-width="2"/>';
+    return '<svg class="scenesvg" viewBox="0 0 300 150" role="img" aria-label="Mia im Kipper"><defs><linearGradient id="scSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f7"/><stop offset="1" stop-color="#eaf6fd"/></linearGradient><linearGradient id="scWin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeefb"/><stop offset="1" stop-color="#8ec9e6"/></linearGradient><linearGradient id="scCab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe5ec"/></linearGradient><clipPath id="scClip"><path d="M220 46H244Q248 46 251 50L262 76H220Z"/></clipPath></defs>' +
+      '<rect width="300" height="150" rx="14" fill="url(#scSky)"/><path d="M0 108q40-34 90-10t110-14q50-8 100 14v50H0z" fill="#9bbf8a" opacity=".7"/><rect y="126" width="300" height="24" fill="#cdb998"/><path d="M0 126h300" stroke="#b49f7b" stroke-width="2"/>' +
+      '<ellipse cx="150" cy="130" rx="125" ry="5" fill="rgba(0,0,0,.2)"/>' +
+      '<g class="sc-truck"><rect x="14" y="98" width="272" height="11" rx="3" fill="#374151"/>' +
+      '<g class="sc-tip"><path d="M20 50h162v48H20z" fill="#a7b0bd" stroke="#6b7280" stroke-width="2.500"/><rect x="18" y="46" width="166" height="7" rx="3" fill="#c3cad5" stroke="#6b7280" stroke-width="1.500"/>' + ribs + '<rect x="20" y="92" width="162" height="6" fill="#7b8494"/></g>' +
+      '<path d="M186 98V50Q186 40 196 40H238Q250 40 256 50L286 80V98Z" fill="url(#scCab)" stroke="#9aa3af" stroke-width="2.500"/>' +
+      '<path d="M220 46H244Q248 46 251 50L262 76H220Z" fill="url(#scWin)"/><g clip-path="url(#scClip)">' + mia + '</g><path d="M220 46H244Q248 46 251 50L262 76H220Z" fill="none" stroke="#6b7280" stroke-width="2.500"/>' +
+      '<path d="M217 48V98" stroke="#b6bec9" stroke-width="2"/><rect x="209" y="78" width="7" height="3" rx="1.500" fill="#6b7280"/>' +
+      '<rect x="271" y="80" width="17" height="19" rx="3" fill="#1f2937"/><path d="M273 85h13M273 90h13M273 95h13" stroke="#e5e7eb" stroke-width="1.600"/><circle cx="281" cy="76" r="3.500" fill="#fde047" stroke="#a16207" stroke-width="1"/><rect x="268" y="98" width="22" height="8" rx="2" fill="#111827"/>' +
+      '<rect x="188" y="12" width="6" height="30" rx="2" fill="#1f2937"/><g class="sc-smoke"><circle cx="191" cy="10" r="4" fill="#cbd5e1"/><circle cx="191" cy="10" r="4" fill="#cbd5e1"/><circle cx="191" cy="10" r="4" fill="#cbd5e1"/></g>' +
+      wheel(62) + wheel(92) + wheel(228) + wheel(258) + '</g></svg>';
+  }
+  function miaSceneBagger(f) {
+    var mia = '<g transform="translate(176 46) scale(.46)">' + miaInner(f, ['helm']) + '</g>';
+    var links = '', i; for (i = 0; i < 6; i++) links += '<circle cx="' + (118 + i * 24) + '" cy="124" r="9" fill="#3b4350" stroke="#1f2937" stroke-width="2"/>';
+    return '<svg class="scenesvg" viewBox="0 0 300 150" role="img" aria-label="Mia im Bagger"><defs><linearGradient id="scSky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f7"/><stop offset="1" stop-color="#eaf6fd"/></linearGradient><linearGradient id="scTeal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#31c4c0"/><stop offset="1" stop-color="#0f8f94"/></linearGradient><linearGradient id="scWin2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeefb"/><stop offset="1" stop-color="#8ec9e6"/></linearGradient><clipPath id="scClip2"><path d="M176 52H226Q230 52 232 56V90H176Z"/></clipPath></defs>' +
+      '<rect width="300" height="150" rx="14" fill="url(#scSky2)"/><path d="M0 100q40-30 90-8t110-12q50-8 100 12v58H0z" fill="#9bbf8a" opacity=".7"/><rect y="132" width="300" height="18" fill="#cdb998"/><path d="M0 132h300" stroke="#b49f7b" stroke-width="2"/>' +
+      '<path d="M8 132q14-26 36-26t36 26z" fill="#a98f6b" stroke="#8a7452" stroke-width="2"/>' +
+      '<ellipse cx="190" cy="136" rx="105" ry="5" fill="rgba(0,0,0,.2)"/>' +
+      '<g class="sc-bag"><rect x="106" y="112" width="156" height="24" rx="12" fill="#2d3440" stroke="#1f2937" stroke-width="2"/><g class="sc-links">' + links + '</g>' +
+      '<rect x="128" y="96" width="112" height="18" rx="4" fill="#4b5563"/>' +
+      '<g class="sc-cabbody"><path d="M130 96V66Q130 52 144 52H172V96Z" fill="url(#scTeal)" stroke="#0b6b70" stroke-width="2.500"/><rect x="132" y="84" width="38" height="12" rx="2" fill="#0b7b80"/><path d="M136 90h26M136 94h26" stroke="#7fe0dc" stroke-width="1.500"/>' +
+      '<path d="M172 96V50Q172 40 182 40H226Q238 40 238 52V96Z" fill="url(#scTeal)" stroke="#0b6b70" stroke-width="2.500"/><path d="M176 52H226Q230 52 232 56V90H176Z" fill="url(#scWin2)"/><g clip-path="url(#scClip2)">' + mia + '</g><path d="M176 52H226Q230 52 232 56V90H176Z" fill="none" stroke="#0b6b70" stroke-width="2.500"/><rect x="225" y="32" width="4" height="12" fill="#374151"/></g>' +
+      '<g class="sc-arm"><path d="M178 78L116 40L104 54L168 94Z" fill="url(#scTeal)" stroke="#0b6b70" stroke-width="2.500"/><circle cx="110" cy="46" r="6" fill="#9ca3af" stroke="#4b5563" stroke-width="2"/>' +
+      '<g class="sc-stick"><path d="M110 46L52 62L56 76L114 58Z" fill="url(#scTeal)" stroke="#0b6b70" stroke-width="2.500"/><circle cx="54" cy="69" r="5" fill="#9ca3af" stroke="#4b5563" stroke-width="2"/>' +
+      '<g class="sc-bucket"><path d="M54 69L34 74Q26 92 40 100L62 96Q66 82 54 69Z" fill="#4b5563" stroke="#1f2937" stroke-width="2.500"/><path d="M36 99l-5 4M43 100l-4 5M51 98l-3 5" stroke="#9ca3af" stroke-width="2.500" stroke-linecap="round"/></g></g></g>' +
+      '</g></svg>';
+  }
   var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
   function miaFor(date) { var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
@@ -1039,7 +1075,9 @@
     if (w.mode === 'start') nSteps = 5;
     var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
-    html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
+    var sc = (w.beruf === 'lkw' && w.art === 'baustelle') ? miaScene('kipper', w.mia === 'm' ? 'm' : 'w') : (w.beruf === 'bagger' ? miaScene('bagger', w.mia === 'm' ? 'm' : 'w') : '');
+    if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
+    else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>';

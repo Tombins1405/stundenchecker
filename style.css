@@ -418,3 +418,31 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 @keyframes miashadow { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.9); } }
 @keyframes miaswing { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
 @media (prefers-reduced-motion: reduce) { .mia-tail, .mia-wheel, .mia-shadow, .p-hang .mia-swing { animation: none; } }
+
+/* Szene: Mia im Kipper */
+.wzscene { margin-bottom: 8px; }
+.wzscene .wzsay { margin-top: 6px; }
+.scenesvg { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
+.sc-spin { animation: scspin .7s linear infinite; transform-origin: 0 0; }
+.sc-truck { animation: scbump .45s ease-in-out infinite alternate; }
+.sc-tip { transform-origin: 20px 98px; animation: sctip 9s ease-in-out infinite; }
+.sc-smoke circle { animation: scsmoke 2.4s ease-out infinite; transform-origin: 191px 10px; opacity: 0; }
+.sc-smoke circle:nth-child(2) { animation-delay: .8s; }
+.sc-smoke circle:nth-child(3) { animation-delay: 1.6s; }
+@keyframes scspin { to { transform: rotate(360deg); } }
+@keyframes scbump { from { transform: translateY(0); } to { transform: translateY(.9px); } }
+@keyframes sctip { 0%, 52% { transform: rotate(0); } 64%, 80% { transform: rotate(-17deg); } 92%, 100% { transform: rotate(0); } }
+@keyframes scsmoke { 0% { transform: translate(0, 0) scale(.6); opacity: .7; } 100% { transform: translate(-14px, -26px) scale(1.7); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sc-spin, .sc-truck, .sc-tip, .sc-smoke circle { animation: none; } }
+
+/* Szene: Mia im Bagger */
+.sc-links circle { animation: sclink 1.4s linear infinite; }
+.sc-arm { transform-origin: 178px 78px; animation: scarm 6s ease-in-out infinite; }
+.sc-stick { transform-origin: 110px 46px; animation: scstick 6s ease-in-out infinite; }
+.sc-bucket { transform-origin: 54px 69px; animation: scbucket 6s ease-in-out infinite; }
+.sc-bag { animation: scbump .6s ease-in-out infinite alternate; }
+@keyframes sclink { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+@keyframes scarm { 0%, 100% { transform: rotate(0); } 40%, 60% { transform: rotate(7deg); } }
+@keyframes scstick { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(-18deg); } 60% { transform: rotate(10deg); } }
+@keyframes scbucket { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(28deg); } 60% { transform: rotate(-16deg); } }
+@media (prefers-reduced-motion: reduce) { .sc-links circle, .sc-arm, .sc-stick, .sc-bucket, .sc-bag { animation: none; } }
