@@ -68,6 +68,19 @@
         schlechtwetter: false
       }
     },
+    bund: {
+      name: 'Bundesdienst (Österreich)',
+      hinweis: 'Bundesdienst: 40 Stunden/Woche mit Gleitzeit. Plus- und Minusstunden laufen auf ein Gleitzeitkonto (Durchrechnung meist pro Quartal), Überstunden und Mehrdienstleistungen müssen angeordnet sein (§ 49 BDG, § 16 Gehaltsgesetz: Zuschlag 50 %, nachts 22 bis 6 Uhr 100 %). Sollzeit je Wochentag, Rahmenzeit, Blockzeit und Übertragungsgrenzen sind je Dienststelle verschieden. Bitte trage die Sollzeit je Wochentag nach deiner Dienstzeitregelung ein.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'gleit', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, sollProTag: {} },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 0 },
+        schlechtwetter: false
+      }
+    },
     buero: {
       name: 'Büro (Angestellte)',
       hinweis: 'Für Büroangestellte gibt es keinen einzigen Kollektivvertrag: Er hängt von der Branche deines Betriebs ab (zum Beispiel Handel, Gewerbe, Industrie, IT oder Transport). Die Vorgaben hier sind nur ein Vorschlag nach dem Angestellten-KV Handel 2026 (38,5 Stunden/Woche, Überstunden 50 %, Sonn- und Feiertag 100 %). Den KV deiner Firma findest du auf dem Lohnzettel oder Dienstzettel. Passe die Werte dann an.',
@@ -272,6 +285,8 @@
   function istSollTag(u, wd) { return sollTage(u).indexOf(wd) >= 0; }
   // Tagessoll: eigener Wert, sonst Wochenstunden geteilt durch die Zahl der Arbeitstage.
   function tagesSoll(u) { return (u && +u.tagesSollStd > 0) ? +u.tagesSollStd : wochenStd(u) / Math.max(1, sollTage(u).length); }
+  // Sollzeit je Wochentag (Gleitzeit im Bundesdienst: zum Beispiel Montag bis Donnerstag 8,5 und Freitag 6 Stunden). Leer: Wochenstunden durch Arbeitstage.
+  function sollFuer(u, wd) { var p = u && u.sollProTag, v = p ? p[wd] : null; return (v !== null && v !== undefined && v !== '' && !isNaN(+v) && +v >= 0) ? +v : tagesSoll(u); }
 
 
 
@@ -323,6 +338,7 @@
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    bund: { name: 'Bundesdienst / Ministerium', paket: 'bund', kvs: ['bund', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
@@ -397,7 +413,7 @@
     }
     var status = STATUS[day.status] ? day.status : 'arbeit';
     res.status = status;
-    var sollMin = Math.round(tagesSoll(w.ueberstunden) * 60);
+    var sollMin = Math.round(sollFuer(w.ueberstunden, wd) * 60);
     res.swMin = w.schlechtwetter ? Math.round((+day.sw || 0) * 60) : 0;
 
     // Betrieb geschlossen: je nach Firma als Urlaub bezahlt oder aus den Überstunden (dann keine Gutschrift in den Stunden).
@@ -540,6 +556,15 @@
   function h2(min) { return Math.round(min / 60 * 100) / 100; }
   function r2(x) { return Math.round(x * 100) / 100; }
 
+  // Gleitzeitsaldo des laufenden Quartals bis einschließlich dieses Monats (Durchrechnung pro Quartal).
+  function gleitQuartal(data, y, m, heute, opts) {
+    var q0 = 3 * Math.floor((m - 1) / 3) + 1, sum = 0;
+    for (var mm = q0; mm <= m; mm++) {
+      var o = { noQ: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
+      sum += calcMonth(data, y, mm, heute, o).summe.ueberStd;
+    }
+    return Math.round(sum * 100) / 100;
+  }
   function calcMonth(data, y, m, heute, opts) {
     var settings = data.settings || [], days = data.days || {};
     // Tage, die erst später abgerechnet werden (zum Beispiel erster Arbeitstag vor der Anmeldung), auf Wunsch weglassen.
@@ -565,7 +590,7 @@
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
       arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, za: 0, feiertageBezahlt: 0, zuschlagMin: 0,
       feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
-    var bauWochen = false, monatModell = false, anyEntry = false;
+    var bauWochen = false, monatModell = false, gleitModell = false, anyEntry = false;
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
 
     for (var d = 1; d <= n; d++) {
@@ -573,7 +598,7 @@
       tage.push(r);
       if (r.leer) continue;
       // Automatischer Feiertag ohne Eintrag: vor dem ersten Eintrag und in der Zukunft noch nicht mitzählen (nur Modell "monat").
-      if (!days[ds] && w.ueberstunden.modell === 'monat' && ((heute && ds > heute) || (live && firstKey && ds < firstKey))) continue;
+      if (!days[ds] && (w.ueberstunden.modell === 'monat' || w.ueberstunden.modell === 'gleit') && ((heute && ds > heute) || (live && firstKey && ds < firstKey))) continue;
       s.istMin += r.nettoMin;
       s.lohnMin += r.wertMin + r.creditMin;
       s.zuschlagMin += r.wertMin - r.nettoMin;
@@ -594,7 +619,8 @@
       praemienDay(days[ds], r, prList, w).forEach(function (x) { var a = prSum[x.id] || (prSum[x.id] = { id: x.id, name: x.name, einheit: x.einheit, menge: 0, euro: 0 }); a.menge += x.menge; a.euro += x.euro; });
       anyEntry = true;
       if (w.ueberstunden.modell === 'bau') bauWochen = true;
-      if (w.ueberstunden.modell === 'monat') monatModell = true;
+      if (w.ueberstunden.modell === 'monat' || w.ueberstunden.modell === 'gleit') monatModell = true;
+      if (w.ueberstunden.modell === 'gleit') gleitModell = true;
     }
 
     prList.forEach(function (p) { if (p.einheit === 'monat' && s.arbeitstage > 0) prSum[p.id] = { id: p.id, name: p.name, einheit: 'monat', menge: 1, euro: +p.betrag || 0 }; });
@@ -610,7 +636,7 @@
       var ab = 1; if (live && firstKey) { var fp = parseISO(firstKey); if (fp.y === y && fp.m === m) ab = fp.d; else if (fp.y > y || (fp.y === y && fp.m > m)) ab = n + 1; }
       for (var q = ab; q <= bis; q++) {
         var dq = iso(y, m, q), wq = weekday(dq);
-        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(tagesSoll(wertAt(settings, dq).ueberstunden) * 60); // unbezahlter freier Tag zählt nicht zum Soll
+        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(sollFuer(wertAt(settings, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
       s.ueberMin = s.lohnMin + s.swMin - sollMin;
       s.sollMin = sollMin; s.sollAb = ab;
@@ -645,7 +671,7 @@
     return {
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
-        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin),
+        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
@@ -674,6 +700,12 @@
   ];
   function hasNum(v) { return !(v === null || v === undefined || v === '' || isNaN(+v)); }
   function abgleich(summe, lz, alle) {
+    if (summe && summe.gleit) { // Gleitzeit (Bundesdienst): ein Saldo statt Lohn und Überstunden
+      var gv = lz && lz.gleit, gh = hasNum(gv), ga = r2(summe.ueberStd || 0), grow;
+      if (!gh) grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: null, diff: null, status: 'offen', faktor: 0 };
+      else { var gd = r2(+gv - ga), gb = Math.abs(gd); grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: +gv, lzGesamt: +gv, diff: gd, faktor: 0, status: gb < 0.005 ? 'gleich' : gb <= 0.5 ? 'klein' : gd < 0 ? 'weniger' : 'mehr' }; }
+      return [grow];
+    }
     var rows = [], za = lz && hasNum(lz.zaKonto) ? +lz.zaKonto : 0, so = lz && hasNum(lz.sonder) ? +lz.sonder : 0;
     AB_ZEILEN.forEach(function (z) {
       var v = lz && lz[z.key], has = hasNum(v);
@@ -709,7 +741,7 @@
     var zus = w && w.ueberstunden && w.ueberstunden.zuschlagPct != null ? +w.ueberstunden.zuschlagPct : 50;
     var out = { ok: true, fehltStundenlohn: false, summe: 0, zeilen: {} };
     rows.forEach(function (r) {
-      if (r.status === 'info' || r.status === 'offen' || r.status === 'gleich' || r.diff === null) return;
+      if (r.key === 'gleit' || r.status === 'info' || r.status === 'offen' || r.status === 'gleich' || r.diff === null) return;
       var f = r.faktor, eur = null;
       if (f === 'euro') eur = -r.diff;
       else if (f === 'diaeten') { if (w && w.diaeten && w.diaeten.modell === 'stunde' && w.diaeten.satz) eur = -r.diff * w.diaeten.satz; }
@@ -726,6 +758,6 @@
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
-    wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
+    wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });

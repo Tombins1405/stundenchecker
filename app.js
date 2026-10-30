@@ -171,9 +171,9 @@
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>' +
-      '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
-      '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>' +
+      (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>') +
+      (s.gleit && w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
+      '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>') +
       (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
       '</dl>';
     if (w.schlechtwetter || s.swStd > 0) {
@@ -239,6 +239,7 @@
 
   function monthKey() { return ui.y + '-' + pad(ui.m); }
   var AB_HINT = {
+    gleit: 'Dein Gleitzeitsaldo für diesen Monat, so wie ihn deine Zeiterfassung oder dein Zeitnachweis zeigt (Plus oder Minus in Stunden).',
     lohn: 'Zeile „Lohn“, Spalte „Menge“. Das sind die normalen Stunden, ohne Überstunden und ohne Feiertag.',
     ueber: 'Zeile „Überstunden Grundlohn“. Nicht die Zeile „Zuschlag“.',
     feiertag: 'Zeile „Feiertagslohn“.',
@@ -605,6 +606,7 @@
         if (r.saldoMin !== null) html += line('Überstunden-Beitrag', (r.saldoMin > 0 ? '+' : '') + fh(r.saldoMin / 60) + ' h');
         if (w.ueberstunden.modell === 'bau') html += line('Überstunden', 'werden je Woche berechnet');
         if (w.ueberstunden.modell === 'monat') html += line('Überstunden', 'werden je Monat berechnet');
+        if (w.ueberstunden.modell === 'gleit') html += line('Gleitzeitsaldo', 'wird je Monat berechnet');
         if (w.diaeten.modell !== 'aus') {
           var auto = E.calcDay(Object.assign({}, d, { diaeten: null }), ui.edDate, w).diaetenStd;
           html += line('Diätenstunden', fh(r.diaetenStd) + ' h');
@@ -1037,6 +1039,7 @@
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
     if (!en) return;
+    if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
     $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
     $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);
@@ -1126,6 +1129,8 @@
     $('#s-d-tag').hidden = dm !== 'tag';
     $('#s-d-vorschlag').hidden = dm === 'aus';
     $('#s-grenzefield').hidden = um !== 'bau';
+    $('#s-gleitbox').hidden = um !== 'gleit';
+    if (!en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var sat = en.diaeten.satz || 0, wo = E.wochenStd(en.ueberstunden), soll = E.tagesSoll(en.ueberstunden), gr = en.ueberstunden.tagesGrenze || 9;
     var nT = E.sollTage(en.ueberstunden).length;
     $('#s-sollinfo').textContent = 'Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).';
@@ -1136,7 +1141,9 @@
         ? 'Pro Tag gibt es einen festen Betrag, je nachdem wie lange du unterwegs bist. Beispiel mit den Stufen unten: Wer länger als eine Stufe arbeitet, bekommt den Betrag dieser Stufe, nicht mehrere zusammen.'
         : 'Es werden keine Diäten berechnet.';
     var tage22 = 22;
-    $('#s-uinfo').textContent = um === 'tag-saldo'
+    $('#s-uinfo').textContent = um === 'gleit'
+      ? 'Jeder Tag zählt Arbeitsstunden minus Sollzeit des Wochentags. Der Saldo aus Plus und Minus ist dein Gleitzeitkonto. Überstunden und Mehrdienstleistungen musst du dir anordnen lassen, sie zählen nicht automatisch.'
+      : um === 'tag-saldo'
       ? 'Jeder Tag wird einzeln gerechnet: Arbeitsstunden minus Tagessoll (' + fh(soll) + ' Stunden). Beispiel: ein Tag mit ' + fh(soll + 2) + ' Stunden ergibt +2,0 Überstunden, ein kürzerer Tag mit ' + fh(soll - 1.5) + ' Stunden ergibt −1,5. Die Monatssumme ist die Summe aller Tage. So rechnet deine Excel.'
       : um === 'monat'
         ? 'Alle Stunden des Monats werden zusammengezählt, auch bezahlter Urlaub, Krankenstand und Feiertage. Davon werden die Sollstunden des Monats abgezogen: alle deine Arbeitstage (' + E.sollTage(en.ueberstunden).slice().sort(function (x, y) { return ((x + 6) % 7) - ((y + 6) % 7); }).map(function (d) { return WD[d]; }).join(', ') + '; Feiertage eingeschlossen) mal ' + fh(soll) + ' Stunden. Beispiel: ' + tage22 + ' Werktage ergeben ' + fh(tage22 * soll) + ' Sollstunden. Bei ' + fh(tage22 * soll + 11) + ' Stunden sind es 11,0 Überstunden. Im laufenden Monat wird nur bis heute gerechnet. Ein Tag ohne Eintrag, an dem du frei hattest, zieht Sollstunden ab. Trage ihn deshalb als Urlaub, Zeitausgleich oder Frei ein.'
