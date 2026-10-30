@@ -12,10 +12,11 @@ input,button{font:inherit;padding:9px 10px;border-radius:6px;border:1px solid va
 button{background:var(--ac);color:#fff;border:0;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .mut{color:var(--mut)}.fb{border-bottom:1px solid var(--line);padding:8px 0}.fb img{max-width:100%;max-height:260px;border-radius:6px;margin-top:6px}
-.scroll{overflow-x:auto}
+.scroll{overflow-x:auto}[hidden]{display:none!important}
 </style></head><body><main>
 <div class="card"><h1>Verwaltung</h1><p class="mut" id="who">Nicht angemeldet.</p>
 <form id="lf" style="display:grid;gap:8px;max-width:340px"><input type="email" id="m" placeholder="E-Mail" autocomplete="username"><input type="password" id="p" placeholder="Passwort" autocomplete="current-password"><button>Anmelden</button><small class="mut" id="msg"></small></form>
+<button id="gl" style="margin-top:8px">Mit Google anmelden</button>
 <p id="ver" class="mut"></p><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="vs" hidden>Bestätigungsmail senden</button><button id="vr" hidden>Neu prüfen</button><button id="out" hidden>Abmelden</button></div></div>
 <div id="dash" hidden>
 <div class="card"><h2>Überblick</h2><div id="ov"></div></div>
@@ -49,7 +50,7 @@ function run(){
 }
 auth.onAuthStateChanged(function(u){
  $('#who').textContent=u?('Angemeldet als '+u.email):'Nicht angemeldet.';
- $('#lf').hidden=!!u;$('#out').hidden=!u;
+ $('#lf').hidden=!!u;$('#gl').hidden=!!u;$('#out').hidden=!u;
  var ok=!!(u&&u.emailVerified);
  $('#ver').textContent=u?(ok?'E-Mail-Adresse ist bestätigt.':'E-Mail-Adresse ist noch NICHT bestätigt. Tippe auf „Bestätigungsmail senden“, öffne die Mail, tippe den Link an und dann hier auf „Neu prüfen“.'):'';
  $('#vs').hidden=!u||ok;$('#vr').hidden=!u||ok;
@@ -57,6 +58,7 @@ auth.onAuthStateChanged(function(u){
  if(ok)run();
 });
 $('#lf').addEventListener('submit',function(e){e.preventDefault();$('#msg').textContent='';auth.signInWithEmailAndPassword($('#m').value.trim(),$('#p').value).catch(function(){$('#msg').textContent='E-Mail oder Passwort stimmt nicht.'})});
+$('#gl').addEventListener('click',function(){$('#msg').textContent='';auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(){$('#msg').textContent='Die Anmeldung mit Google hat nicht geklappt.'})});
 $('#out').addEventListener('click',function(){auth.signOut()});
 $('#vs').addEventListener('click',function(){auth.currentUser.sendEmailVerification().then(function(){$('#ver').textContent='Mail ist unterwegs. Schau auch im Spam-Ordner.'},function(){$('#ver').textContent='Das hat nicht geklappt. Bitte in ein paar Minuten noch einmal probieren.'})});
 $('#vr').addEventListener('click',function(){auth.currentUser.reload().then(function(){return auth.currentUser.getIdToken(true)}).then(function(){location.reload()})});
