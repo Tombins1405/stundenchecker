@@ -249,9 +249,21 @@
     sonder: 'Nur wenn dein Lohnzettel eine Zeile „Sonderurlaub“ hat und die Firma diesen Tag aus deinen Überstunden bezahlt hat. Trage hier die Stunden ein. Sie werden zur Zeile „Lohn“ dazugezählt.',
     zaKonto: 'Nur wenn dein Lohnzettel ein Zeitausgleich-Konto zeigt: der Zuwachs in diesem Monat. Diese Stunden wurden nicht ausbezahlt, sondern aufs Konto gebucht. Sie werden zu den Überstunden dazugezählt.'
   };
+  // Firmen, die Diäten und Überstunden erst im Folgemonat abrechnen: der Lohnzettel von Monat N zeigt die Aufzeichnung von Monat N-1.
+  function abSumme(summe, y, m) {
+    var wm = wAt(y + '-' + (m < 10 ? '0' : '') + m + '-01');
+    if (!wm || !wm.folgemonat) return summe;
+    var py = m === 1 ? y - 1 : y, pm = m === 1 ? 12 : m - 1;
+    var pv = E.calcMonth(data, py, pm, todayISO(), { ohneSpaeter: true }).summe, o = {};
+    Object.keys(summe).forEach(function (k) { o[k] = summe[k]; });
+    o.ueberStd = pv.ueberStd; o.diaetenStd = pv.diaetenStd; o.diaetenBetrag = pv.diaetenBetrag; o.folge = true;
+    return o;
+  }
   function renderAbgleich(summe, spaeter) {
+    summe = abSumme(summe, ui.y, ui.m);
     ui.summe = summe;
     $('#ab-spaeter').innerHTML = (spaeter && spaeter.length) ? '<div class="notice warn"><strong>Nicht mitgerechnet, weil später abgerechnet:</strong> ' + spaeter.map(function (x) { return esc(fmtShort(x.datum)) + ' (' + fh(x.std) + ' h)'; }).join(', ') + '. Merke dir diesen Tag. Er sollte auf einem späteren Lohnzettel auftauchen. Wenn nicht, reklamiere ihn.</div>' : '';
+    if (summe.folge) $('#ab-spaeter').innerHTML += '<div class="notice">Diäten und Überstunden vergleicht die App mit deiner Aufzeichnung vom Vormonat.</div>';
     var lz = data.abgleich[monthKey()] || {};
     var rows = E.abgleich(summe, lz, ui.abAlle);
     $('#ab-more').hidden = !!ui.abAlle;
@@ -350,7 +362,7 @@
     // Überstunden im Überblick
     var orows = Object.keys(data.abgleich).sort().filter(function (k) { return data.abgleich[k].ueber != null; }).map(function (k) {
       var y = +k.slice(0, 4), m = +k.slice(5, 7), lz = data.abgleich[k];
-      var s = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, app = Math.max(0, s.ueberStd), paid = +lz.ueber, konto = +lz.zaKonto || 0;
+      var s = abSumme(E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, y, m), app = Math.max(0, s.ueberStd), paid = +lz.ueber, konto = +lz.zaKonto || 0;
       return { y: y, m: m, app: app, paid: paid, konto: konto, diff: Math.round((paid + konto - app) * 100) / 100 };
     });
     $('#k-ueber').innerHTML = orows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Von dir</th><th>Bezahlt</th><th>Konto</th><th>Unterschied</th></tr></thead><tbody>' +
@@ -1131,6 +1143,10 @@
     else if (t === 'numnull') { v = String(inp.value).trim() === '' ? null : parseFloat(String(inp.value).replace(',', '.')); if (v !== null && isNaN(v)) v = null; }
     else v = inp.value;
     setPath(en, inp.dataset.path, v);
+    if (inp.dataset.path === 'monatslohn' || inp.dataset.path === 'monatsStd') {
+      var ms = en.monatsStd > 0 ? en.monatsStd : 173;
+      if (en.monatslohn > 0) { en.stundenlohn = Math.round(en.monatslohn / ms * 100) / 100; var sl = $('#s-lohn'); if (sl) sl.value = en.stundenlohn; }
+    }
     delete en.test;
     save();
     settingsVisibility(en);

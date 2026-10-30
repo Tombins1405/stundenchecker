@@ -321,6 +321,8 @@
         <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small></details>
       </div>
       <div class="field"><label for="s-einst">Einstufung auf deinem Lohnzettel</label><input type="text" id="s-einst" maxlength="60" data-path="einstufung" data-type="text" placeholder="zum Beispiel Kraftfahrer 3a oder LG 1/A"></div>
+      <div class="field"><label for="s-monat" id="s-monat-l">Fixer Monatslohn (€ brutto, freiwillig)</label><input type="number" id="s-monat" inputmode="decimal" step="0.01" min="0" data-path="monatslohn" data-type="numnull" placeholder="zum Beispiel 2134,82"><small id="s-monat-h">Wenn dein Lohnzettel einen festen Monatslohn zeigt. Die App rechnet daraus den Stundenlohn (Monatslohn geteilt durch Monatsstunden).</small></div>
+      <div class="field"><label for="s-monatstd" id="s-monatstd-l">Monatsstunden für den Fixlohn</label><input type="number" id="s-monatstd" inputmode="decimal" step="0.01" min="1" data-path="monatsStd" data-type="numnull" placeholder="173"></div>
       <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
       <div class="grid2">
         <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
@@ -391,6 +393,8 @@
         </select>
         <small>Das betrifft die Tage mit dem Status „Betrieb geschlossen / Betriebsurlaub“. Schau auf deinen Lohnzettel: Wenn der Tag unter „Lohn“ steht und deine Überstunden um 8 Stunden weniger sind, wird er aus den Überstunden bezahlt.</small></div>
 
+      <label class="check" for="s-folge"><input type="checkbox" id="s-folge" data-path="folgemonat" data-type="bool"><span id="s-folge-t">Diäten und Überstunden werden erst im Folgemonat abgerechnet</span></label>
+
       <h3 id="s-sw-h">Schlechtwetter</h3>
       <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span id="s-sw-t">Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
 
@@ -431,7 +435,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030155321";</script>
+<script>window.APP_VERSION="20261030163631";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
