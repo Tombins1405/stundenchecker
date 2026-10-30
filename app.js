@@ -538,7 +538,7 @@
     $('#e-bis').value = d.bis || '';
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
-    $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra;
+    $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra; $('#e-extra-box').hidden = !d.extra;
     renderAn();
     var seen = {}, opts = '';
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
@@ -589,6 +589,13 @@
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
       $('#e-kz').innerHTML = d.status === 'arbeit' ? kh : '';
+    })();
+    (function () {
+      var b = $('#e-sw-sugg'), rest = 0;
+      if (b && w.schlechtwetter && d.status === 'arbeit' && d.von && d.bis && !(+d.sw > 0) && r.nettoMin > 0) {
+        rest = Math.floor((Math.round(E.sollFuer(w.ueberstunden, E.weekday(ui.edDate)) * 60) - r.nettoMin) / 30) / 2;
+      }
+      b.hidden = !(rest >= 0.5); if (rest >= 0.5) { b.textContent = 'Rest des Arbeitstags: ' + String(rest).replace('.', ',') + ' h (übernehmen)'; b.dataset.v = rest; }
     })();
     var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
     sg.hidden = !te; if (te) { sg.textContent = 'Meistens bis ' + te + ' (übernehmen)'; sg.dataset.t = te; }
@@ -1506,6 +1513,7 @@
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
       case 'od-go': if (ui.openDay) openEditor(ui.openDay, 'erfassen'); return;
+      case 'e-sw-sugg': ui.edDraft.sw = parseFloat(t.dataset.v) || 0; $('#e-sw').value = ui.edDraft.sw; anChips(); updatePreview(); return;
       case 'e-bis-sugg': ui.edDraft.bis = t.dataset.t; $('#e-bis').value = t.dataset.t; updatePreview(); return;
       case 'e-von-now': case 'e-bis-now': {
         var nw = new Date(), hhmm = String(nw.getHours()).padStart(2, '0') + ':' + String(nw.getMinutes()).padStart(2, '0'), fld = t.id === 'e-von-now' ? 'von' : 'bis';
