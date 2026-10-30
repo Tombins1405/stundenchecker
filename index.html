@@ -379,6 +379,7 @@
           <option value="leer">Kein Vorschlag, ich trage selbst ein</option>
         </select>
       </div>
+      <label class="check" for="s-folge"><input type="checkbox" id="s-folge" data-path="folgemonat" data-type="bool"><span id="s-folge-t">Diäten und Überstunden werden erst im Folgemonat abgerechnet</span></label>
 
       <h3>Was ich aufzeichne</h3>
       <label class="check" for="s-bfz"><input type="checkbox" id="s-bfz" data-path="bausteine.fahrzeug" data-type="bool"><span>Fahrzeug und Kilometer</span></label>
@@ -392,8 +393,6 @@
           <option value="ueberstunden">Aus meinen Überstunden (Zeitausgleich): der Tag wird bezahlt, aber meine Überstunden werden weniger</option>
         </select>
         <small>Das betrifft die Tage mit dem Status „Betrieb geschlossen / Betriebsurlaub“. Schau auf deinen Lohnzettel: Wenn der Tag unter „Lohn“ steht und deine Überstunden um 8 Stunden weniger sind, wird er aus den Überstunden bezahlt.</small></div>
-
-      <label class="check" for="s-folge"><input type="checkbox" id="s-folge" data-path="folgemonat" data-type="bool"><span id="s-folge-t">Diäten und Überstunden werden erst im Folgemonat abgerechnet</span></label>
 
       <h3 id="s-sw-h">Schlechtwetter</h3>
       <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span id="s-sw-t">Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
@@ -435,7 +434,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030163631";</script>
+<script>window.APP_VERSION="20261030165041";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
