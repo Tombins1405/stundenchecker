@@ -385,3 +385,5 @@ body { padding-bottom: 100px; }
 #mia-mic.rec { background: #fecaca; }
 .miabubble2 { max-height: 80vh; overflow-y: auto; }
 .askchips .chip { font-size: .9rem; font-weight: 600; letter-spacing: 0; text-transform: none; padding: 7px 12px; border: 1px solid var(--line, #cbd5e1); background: #fff; color: #1f2937; cursor: pointer; margin: 0; }
+
+.langsel { display: block; margin: 0 0 8px auto; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #1f2937; font-size: .9rem; }

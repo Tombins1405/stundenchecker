@@ -51,6 +51,7 @@
   </div>
 </header>
 
+<select id="ui-lang" class="langsel" aria-label="Sprache / Język / Nyelv / Dil"></select>
 <nav class="tabs" aria-label="Hauptmenü">
   <div class="wrap">
     <button type="button" class="tab" data-view="erfassen"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Erfassen</button>
@@ -65,6 +66,7 @@
     <div class="btns"><button type="button" class="btn primary" id="mia-go">Zeig mir</button><button type="button" class="btn" id="mia-later">Später</button></div>
     <button type="button" class="linkbtn" id="mia-askbtn">Frag mich etwas</button>
     <div id="mia-ask" hidden>
+      <select id="mia-lang" aria-label="Sprache"></select>
       <div class="askrow"><input type="text" id="mia-q" maxlength="120" autocomplete="off" placeholder="Deine Frage"><button type="button" class="btn" id="mia-mic" aria-label="Sprechen" hidden>🎤</button><button type="button" class="btn primary" id="mia-send">Los</button></div>
       <div id="mia-ans" class="askans" hidden></div>
       <button type="button" class="linkbtn" id="mia-read" hidden>Vorlesen</button>
@@ -412,7 +414,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030071912";</script>
+<script>window.APP_VERSION="20261030072435";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
