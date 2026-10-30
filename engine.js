@@ -274,6 +274,37 @@
   function tagesSoll(u) { return (u && +u.tagesSollStd > 0) ? +u.tagesSollStd : wochenStd(u) / Math.max(1, sollTage(u).length); }
 
 
+
+  // Lohngruppen laut Kollektivvertrag als Vorschlag für den Stundenlohn (Arbeiter, 2026). Quelle: wko.at Lohnordnungen.
+  var STUFEN_AT = ['bis 5 Jahre im Betrieb', 'über 5 bis 10 Jahre', 'über 10 bis 15 Jahre', 'über 15 bis 20 Jahre', 'über 20 Jahre'];
+  var LOHNGRUPPEN = {
+    gueter: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, gruppen: [
+      { id: '1', name: 'Gruppe 1: Hilfsarbeiter, Garage, Mitfahrer, Lkw bis 3,5 t, Stapler', l: [12.34, 12.63, 12.96, 13.27, 13.60] },
+      { id: '2', name: 'Gruppe 2: Lkw über 3,5 t, bis 3 Achsen', l: [12.59, 12.92, 13.23, 13.63, 13.94] },
+      { id: '3', name: 'Gruppe 3: Lkw über 3,5 t, mehr als 3 Achsen', l: [12.78, 13.07, 13.44, 13.79, 14.12] },
+      { id: '4', name: 'Gruppe 4: Zug, Sattelzug, selbstfahrende Arbeitsmaschine, Partieführer', l: [12.92, 13.23, 13.63, 13.94, 14.27] },
+      { id: '5a', name: 'Gruppe 5a: Gefahrgut-Einsatztage oder Kran ab 10 Metertonnen', l: [13.23, 13.63, 13.94, 14.27, 14.58] },
+      { id: '6.1', name: 'Gruppe 6.1: Berufskraftfahrer (Lehre), Lkw bis 3 Achsen', l: [12.92, 13.23, 13.63, 13.94, 14.27] },
+      { id: '6.2', name: 'Gruppe 6.2: Berufskraftfahrer (Lehre), Lkw mehr als 3 Achsen', l: [13.29, 13.56, 13.94, 14.29, 14.58] },
+      { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', l: [13.63, 13.94, 14.27, 14.59, 14.92] },
+      { id: '7', name: 'Gruppe 7: Tankstellenbelieferung (Treibstoff, Heizöl)', l: [13.94, 14.27, 14.60, 14.92, 15.22] }
+    ] },
+    klein: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, gruppen: [
+      { id: '1', name: 'Kraftfahrer bis 3,5 t und sonstige Arbeiter (Kleintransportgewerbe)', l: [11.20, 11.56, 11.80, 12.27, 12.87] }
+    ] },
+    bau: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'I', name: 'I Vizepolier', l: [22.57] },
+      { id: 'IIa', name: 'II a Facharbeiter', l: [21.96] },
+      { id: 'IIb', name: 'II b Facharbeiter', l: [19.99] },
+      { id: 'IIIa', name: 'III a Angelernte Bauarbeiter', l: [19.98] },
+      { id: 'IIIb', name: 'III b Angelernte Bauarbeiter', l: [19.53] },
+      { id: 'IIIc', name: 'III c Angelernte Bauarbeiter', l: [19.08] },
+      { id: 'IIId', name: 'III d Angelernte Bauarbeiter', l: [18.59] },
+      { id: 'IIIe', name: 'III e Angelernte Bauarbeiter', l: [17.91] },
+      { id: 'IV', name: 'IV Bauhilfsarbeiter', l: [17.03] }
+    ] }
+  };
+
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   var BERUFE = {
@@ -691,7 +722,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
