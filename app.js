@@ -79,6 +79,14 @@
 
   function sortedSettings() { return data.settings.slice().sort(function (a, b) { return a.gueltigAb < b.gueltigAb ? -1 : 1; }); }
   function wAt(d) { return E.wertAt(data.settings, d); }
+  window.StundenApp = {
+    profil: function () { return data.profil || {}; },
+    info: function () {
+      var w = wAt(todayISO()), pk = E.PAKETE[w.paket];
+      return { beruf: w.beruf || null, paket: w.paket || null, land: pk && pk.land === 'DE' ? 'DE' : 'AT', lang: (window.localStorage && localStorage.getItem('stundenchecker.lang')) || (navigator.language || '').slice(0, 2), tage: Object.keys(data.days).length, view: ui.view };
+    }
+  };
+  function ins(name) { try { if (window.StundenInsights) window.StundenInsights.count(name); } catch (e) {} }
 
   /* Offener Dienst (Beginn da, Ende fehlt): Erinnerung beim Öffnen */
   function openDayKey() {
@@ -118,7 +126,7 @@
   }
   function show(view, force) {
     if (!force && ui.view === 'erfassen' && view !== 'erfassen' && isDirty()) { askLeave(function () { show(view, true); }); return; }
-    ui.view = view;
+    ui.view = view; ins('ansicht_' + view);
     ['monat', 'erfassen', 'konten', 'einstellungen'].forEach(function (v) { $('#v-' + v).hidden = v !== view; });
     $$('.tab').forEach(function (b) { if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (view === 'monat') renderMonat();
@@ -291,6 +299,7 @@
       html += '<p style="margin-top:8px">Prüfe zuerst: Sind alle Tage und Pausen richtig eingetragen? Gibt es Zeitausgleich, oder rechnet deine Firma manche Stunden erst im Folgemonat ab? Passen Zuschläge und die Zählweise der Überstunden in den Einstellungen? Bleibt der Unterschied, frage mit deiner Aufzeichnung im Büro nach. Die App ersetzt keine Rechtsberatung.</p></div>';
     }
     $('#ab-result').innerHTML = html;
+    if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; })); } catch (e) {} }
   }
 
 
@@ -766,7 +775,7 @@
       ['Harcırah (Diäten)', 'Diäten günlük harcırahtır, yani ek günlük ödeme. Einstellungen, Diäten bölümünde saat başına mı yoksa gün başına kademeli mi ödendiğini ayarlarsın. Tutarı bordronda bulursun.', 'harcirah diaet gunluk yemek'],
       ['Ücret veya meslek değiştirmek', 'Einstellungen bölümünde ücreti veya mesleği bir tarihten itibaren değiştirebilirsin. Eski günler eski değerlerle hesaplanmış kalır.', 'ucret meslek degistir zam saatlik'],
       ['İzin veya hastalık', 'Erfassen içinde "Art des Tages" alanında örneğin Urlaub (izin), Krankenstand (hastalık izni) veya Zeitausgleich (mesai karşılığı izin) seç. O zaman saat girmen gerekmez.', 'izin hasta rapor tatil'],
-      ['Verilerim', 'Kayıtların telefonunda durur. Hesabınla ayrıca Frankfurt'taki güvenli bir sunucuya da kaydedilir, hiçbir şey kaybolmasın diye. Teknik olarak uygulamanın işletmecisi bunları görebilir. Bunu engelleyen bir şifreleme üzerinde çalışılıyor. Bordrodaki sayıları kendin yazarsın.', 'veri gizlilik guvenlik hesap kisisel'],
+      ['Verilerim', 'Kayıtların telefonunda durur. Hesabınla ayrıca Frankfurt’taki güvenli bir sunucuya da kaydedilir, hiçbir şey kaybolmasın diye. Teknik olarak uygulamanın işletmecisi bunları görebilir. Bunu engelleyen bir şifreleme üzerinde çalışılıyor. Bordrodaki sayıları kendin yazarsın.', 'veri gizlilik guvenlik hesap kisisel'],
       ['Yedekleme', 'Konto bölümünde "Sicherung speichern oder teilen" vardır. Tüm verilerini bir dosyaya kaydeder. Yeni telefonda her şeyi bununla geri yükleyebilirsin.', 'yedek yedekleme backup geri yukle kayboldu'],
       ['Uygulamayı kurmak', 'Siteyi tarayıcıda aç ve "App installieren" düğmesine dokun (sağ üstte menü). Android uyarırsa "Trotzdem installieren" (yine de kur) düğmesine dokun. Uygulama güvenlidir, sadece bu web sitesidir.', 'kur yukle ikon ana ekran uygulama'],
       ['Konuşma ve sesli okuma', 'Soru alanında mikrofona dokun ve konuş. Sesli okuma düğmesiyle cevabı yüksek sesle okurum. Mikrofon için internet ve tarayıcıda izin gerekir.', 'konus mikrofon ses oku dil'],
@@ -796,6 +805,7 @@
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
     MIA_FAQ.forEach(function (e, i) { var sc = 0, ks = e.k.concat(tr ? tr[i][2].split(' ') : []); ks.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = i; } });
+    if (best == null) { try { if (window.StundenInsights) window.StundenInsights.miaOffen(q, L); } catch (e) {} }
     return best != null ? miaFaqText(best, 'a') : (MIA_UI[L] || MIA_UI.de).unk;
   }
   function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
@@ -946,7 +956,15 @@
   function setPath(o, p, v) { var ks = p.split('.'), last = ks.pop(); var t = ks.reduce(function (a, k) { return a[k]; }, o); t[last] = v; }
   function curEntry() { return data.settings.filter(function (e) { return e.gueltigAb === ui.setKey; })[0] || null; }
 
+  function renderFeedback() {
+    var c = $('#fb-card'); if (!c) return;
+    c.hidden = !(window.StundenInsights && window.StundenInsights.on);
+    var co = (data.profil && data.profil.consent) || {};
+    if ($('#c-stat')) $('#c-stat').checked = !!co.statistik;
+    if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
+  }
   function renderSettings() {
+    renderFeedback();
     var list = sortedSettings(), cur = list.length ? E.wertAt(list, todayISO()) : null;
     if (!curEntry() && list.length) ui.setKey = (cur || list[0]).gueltigAb;
     $('#s-list').innerHTML = list.length ? list.map(function (e) {
@@ -1313,6 +1331,25 @@
 
   /* ============================================================ Start */
   window.addEventListener('beforeunload', function (ev) { if (isDirty()) { ev.preventDefault(); ev.returnValue = ''; } });
+  (function feedbackInit() {
+    var img = null;
+    function msg(t, bad) { var m = $('#fb-msg'); if (!m) return; m.textContent = t; m.hidden = !t; m.style.color = bad ? 'var(--bad, #b3261e)' : ''; }
+    function on2(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
+    on2('#fb-img', 'change', function () {
+      var f = this.files && this.files[0]; img = null; $('#fb-prev').hidden = true; if (!f) return;
+      window.StundenInsights.verkleinern(f).then(function (d) { img = d; $('#fb-prev').src = d; $('#fb-prev').hidden = false; msg(''); }, function () { msg('Das Bild konnte nicht verwendet werden.', true); });
+    });
+    on2('#fb-send', 'click', function () {
+      var tx = ($('#fb-text').value || '').trim(); if (!tx && !img) { msg('Bitte schreib etwas oder hänge ein Bild an.', true); return; }
+      var b = this; b.disabled = true;
+      window.StundenInsights.feedback($('#fb-art').value, tx, img).then(function () {
+        $('#fb-text').value = ''; $('#fb-img').value = ''; $('#fb-prev').hidden = true; img = null; msg('Danke! Deine Rückmeldung ist angekommen.'); b.disabled = false;
+      }, function () { msg('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
+    });
+    function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
+    on2('#c-stat', 'change', cons('statistik'));
+    on2('#c-mia', 'change', cons('miaFragen'));
+  })();
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 
 

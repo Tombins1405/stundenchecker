@@ -5,5 +5,6 @@ window.FIREBASE_CONFIG = {
   projectId: "stunden-checker-app",
   storageBucket: "stunden-checker-app.firebasestorage.app",
   messagingSenderId: "887555646428",
+  insights: false,
   appId: "1:887555646428:web:d01b08c4ed94c0fdb26519"
 };
