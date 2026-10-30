@@ -446,3 +446,6 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 @keyframes scstick { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(-18deg); } 60% { transform: rotate(10deg); } }
 @keyframes scbucket { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(28deg); } 60% { transform: rotate(-16deg); } }
 @media (prefers-reduced-motion: reduce) { .sc-links circle, .sc-arm, .sc-stick, .sc-bucket, .sc-bag { animation: none; } }
+
+.mia-armr { opacity: 0; }
+.p-eyes:not(.hasitem) .mia-armr, .p-ears:not(.hasitem) .mia-armr, .p-mouth:not(.hasitem) .mia-armr { opacity: 1; }

@@ -748,7 +748,8 @@
     s += '<g class="mia-tail"><path d="M84 114C114 120 122 90 106 82C98 78 92 86 99 92" fill="none" stroke="#5e3a20" stroke-width="9" stroke-linecap="round"/><path d="M84 114C114 120 122 90 106 82C98 78 92 86 99 92" fill="none" stroke="url(#mgFur)" stroke-width="5.5" stroke-linecap="round"/></g>';
     // Körper
     s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgSh' + f + ')"/><ellipse cx="46" cy="92" rx="8" ry="12" fill="rgba(255,255,255,.22)"/>' +
-      '<rect x="6" y="80" width="32" height="13" rx="6.5" fill="url(#mgFur)" transform="rotate(25 36 86)"/>';
+      '<g><rect x="21" y="84" width="14" height="32" rx="7" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(10 28 88)"/><circle cx="23" cy="116" r="7.500" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500"/></g>' +
+      '<g class="mia-armr"><rect x="85" y="84" width="14" height="32" rx="7" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-10 92 88)"/><circle cx="97" cy="116" r="7.500" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500"/></g>';
     var arm = '';
     if (has('paket')) arm += '<rect x="90" y="44" width="28" height="24" rx="3" fill="#d9954a" stroke="#8b5a2b" stroke-width="2"/><path d="M90 56h28M104 44v24" stroke="#8b5a2b" stroke-width="3"/><rect x="95" y="49" width="8" height="5" fill="#fff" opacity=".8"/>';
     if (has('tablett')) arm += '<ellipse cx="104" cy="54" rx="19" ry="4.5" fill="#b8c0cc" stroke="#6b7280" stroke-width="1.5"/><rect x="99" y="36" width="9" height="17" rx="3" fill="#cfe8ff" stroke="#60a5fa" stroke-width="1.5"/>';
@@ -882,7 +883,7 @@
     setInterval(function () { // ab und zu hängt Mia am Schwanz
       try {
         var sv = document.querySelector('#mia-btn .miasvg'), bb2 = $('#mia-bubble');
-        if (!sv || (bb2 && !bb2.hidden) || miaCfg().ruhig || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        if (!sv || ($('#mia-ask') && !$('#mia-ask').hidden) || miaCfg().ruhig || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
         sv.classList.add('p-hang'); setTimeout(function () { var s2 = document.querySelector('#mia-btn .miasvg'); if (s2) s2.classList.remove('p-hang'); }, 6500);
       } catch (e) {}
     }, 26000);
