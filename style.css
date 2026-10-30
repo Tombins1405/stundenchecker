@@ -351,7 +351,7 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .miachoose { display: flex; gap: 12px; flex-wrap: wrap; }
 .miaopt { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 120px; padding: 8px; border: 2px solid transparent; border-radius: 14px; background: rgba(127,127,127,.12); cursor: pointer; color: inherit; font: inherit; }
 .miaopt.on { border-color: var(--accent, #1e6fd9); }
-.miaopt .miasvg { width: 90px; height: 96px; }
+.miaopt .miasvg { width: 96px; height: 125px; }
 .mia-bob { animation: miabob 2.6s ease-in-out infinite; transform-origin: 60px 120px; }
 .mia-eyes { animation: miablink 4.5s infinite; transform-origin: 60px 52px; }
 .mia-arm { animation: miawave 1.6s ease-in-out infinite; transform-origin: 90px 86px; }
@@ -362,7 +362,7 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 
 .miafloat { position: fixed; right: 10px; bottom: 10px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; max-width: min(92vw, 320px); }
 .miafloat[hidden] { display: none; }
-.miabtn2 { width: 70px; height: 76px; padding: 0; border: 0; background: none; cursor: pointer; }
+.miabtn2 { width: 92px; height: 120px; padding: 0; border: 0; background: none; cursor: pointer; }
 .miabubble2 { background: #fff; color: #1f2937; border: 2px solid #1e6fd9; border-radius: 16px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
 .miabubble2 p { margin: 0 0 10px; }
 .miabubble2 .btns { display: flex; gap: 8px; }
@@ -375,7 +375,7 @@ body { padding-bottom: 100px; }
 .hasitem.p-eyes .mia-arm, .hasitem.p-ears .mia-arm, .hasitem.p-mouth .mia-arm { opacity: 1; animation: none; }
 .p-mouth .mia-bob { animation-duration: 5s; }
 .wzmia { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.wzmia .miasvg { width: 64px; height: 70px; flex: 0 0 auto; }
+.wzmia .miasvg { width: 72px; height: 94px; flex: 0 0 auto; }
 .wzsay { background: #e7f1fb; color: #1f2937; border-radius: 14px; padding: 8px 12px; font-size: 0.95rem; }
 
 .askrow { display: flex; gap: 6px; margin-top: 8px; }
@@ -401,3 +401,20 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 
 .askrow textarea { flex: 1; min-width: 0; resize: none; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
 .askasked { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 6px; font-size: .92rem; overflow-wrap: anywhere; }
+
+/* Mia: Schwanz wedelt, Lenkrad dreht, Schatten, und ab und zu hängt sie am Schwanz */
+.mia-tail { animation: miatail 2.4s ease-in-out infinite; transform-origin: 84px 114px; }
+.mia-wheel { animation: miawheel 3.4s ease-in-out infinite; transform-origin: 60px 108px; }
+.mia-hang { opacity: 0; transition: opacity .3s; }
+.mia-swing { transform-origin: 70px -14px; }
+.mia-shadow { animation: miashadow 2.6s ease-in-out infinite; transform-origin: 60px 127px; }
+.p-hang .mia-hang { opacity: 1; }
+.p-hang .mia-tail { opacity: 0; }
+.p-hang .mia-bob { animation: none; }
+.p-hang .mia-swing { animation: miaswing 1.7s ease-in-out infinite alternate; }
+.p-hang .mia-shadow { opacity: .35; }
+@keyframes miatail { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
+@keyframes miawheel { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(18deg); } }
+@keyframes miashadow { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.9); } }
+@keyframes miaswing { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@media (prefers-reduced-motion: reduce) { .mia-tail, .mia-wheel, .mia-shadow, .p-hang .mia-swing { animation: none; } }
