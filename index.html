@@ -270,19 +270,8 @@
         <div class="btns"><button type="button" class="btn" id="an-share">Aufstellung teilen oder kopieren</button></div>
       </details>
     </div>
-  </section>
-
-  <!-- ============ EINSTELLUNGEN ============ -->
-  <section id="v-einstellungen" class="view" aria-label="Einstellungen" hidden>
-    <div class="card" id="a-account" hidden>
-      <h3>Konto</h3>
-      <p>Angemeldet als <strong id="a-user"></strong></p>
-      <p id="a-sync" class="a-sync"></p>
-      <button type="button" class="btn" id="a-logout">Abmelden</button>
-      <p class="legal-links"><a href="impressum.html" target="_blank" rel="noopener">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a> · <a href="agb.html" target="_blank" rel="noopener">Nutzungsbedingungen</a></p>
-    </div>
-    <div class="card" id="fb-card" hidden>
-      <h3>Rückmeldung an den Entwickler</h3>
+      <div class="card" id="fb-card" hidden>
+      <details id="fb-det"><summary><strong>Rückmeldung an den Entwickler</strong></summary>
       <div class="field"><label for="fb-art">Worum geht es?</label>
         <select id="fb-art"><option value="fehler">Etwas stimmt nicht</option><option value="wunsch">Das fehlt mir</option><option value="frage">Ich habe eine Frage</option><option value="lob">Das gefällt mir</option></select></div>
       <div class="field"><label for="fb-text">Deine Nachricht</label><textarea id="fb-text" rows="4" maxlength="4000"></textarea></div>
@@ -293,6 +282,18 @@
       <h4>Mithelfen (freiwillig)</h4>
       <label class="check"><input type="checkbox" id="c-stat"><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label>
       <label class="check"><input type="checkbox" id="c-mia"><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ EINSTELLUNGEN ============ -->
+  <section id="v-einstellungen" class="view" aria-label="Einstellungen" hidden>
+    <div class="card" id="a-account" hidden>
+      <h3>Konto</h3>
+      <p>Angemeldet als <strong id="a-user"></strong></p>
+      <p id="a-sync" class="a-sync"></p>
+      <button type="button" class="btn" id="a-logout">Abmelden</button>
+      <p class="legal-links"><a href="impressum.html" target="_blank" rel="noopener">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a> · <a href="agb.html" target="_blank" rel="noopener">Nutzungsbedingungen</a></p>
     </div>
     <div class="card" id="s-beruf">
       <h3>Mein Beruf</h3>
@@ -473,7 +474,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030210707";</script>
+<script>window.APP_VERSION="20261030211744";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
