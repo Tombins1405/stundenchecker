@@ -724,8 +724,8 @@
 
 
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
-  var MIA_OUT = { 'lkw:baustelle': ['helm', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
-    bagger: ['helm', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'],
+  var MIA_OUT = { 'lkw:baustelle': ['kappe', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
+    bagger: ['kappe', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'],
     'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
   function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, skip: m.skip || {} }; }
@@ -739,7 +739,7 @@
       '<linearGradient id="mgSh' + f + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + sh0 + '"/><stop offset="1" stop-color="' + sh1 + '"/></linearGradient>' +
       '<linearGradient id="mgYel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset="1" stop-color="#e5a800"/></linearGradient>' +
       '<linearGradient id="mgRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff6b5e"/><stop offset="1" stop-color="#b91c1c"/></linearGradient>' +
-      '<linearGradient id="mgOra" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa63d"/><stop offset="1" stop-color="#e06a00"/></linearGradient>' +
+      '<linearGradient id="mgOra" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ff4a"/><stop offset="1" stop-color="#c9dc00"/></linearGradient>' +
       '<linearGradient id="mgBlu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f8ff7"/><stop offset="1" stop-color="#1b4fb0"/></linearGradient>' +
       '</defs><ellipse cx="60" cy="127" rx="30" ry="4.5" fill="rgba(0,0,0,.18)" class="mia-shadow"/>' +
       '<g class="mia-bob"><g class="mia-swing">';
@@ -756,7 +756,7 @@
     if (has('klemmbrett')) arm += '<rect x="94" y="38" width="24" height="32" rx="3" fill="#b4730f" stroke="#7a4d09" stroke-width="2"/><rect x="98" y="44" width="16" height="22" fill="#fff"/><path d="M101 50h10M101 55h10M101 60h7" stroke="#94a3b8" stroke-width="1.6"/><rect x="101" y="36" width="10" height="6" rx="2" fill="#94a3b8"/>';
     if (has('mappe')) arm += '<rect x="92" y="42" width="28" height="26" rx="3" fill="#2f5fa8" stroke="#1e3a6e" stroke-width="2"/><rect x="92" y="42" width="12" height="5" rx="2" fill="#4a7fd6"/><rect x="100" y="52" width="12" height="3" rx="1.5" fill="#cfe0ff"/>';
     var armG = '<g transform="translate(9 5)"><g class="mia-arm"><rect x="82" y="78" width="32" height="13" rx="6.5" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-50 86 84)"/>' + arm + '</g></g>';
-    if (has('weste')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgOra)"/><path d="M60 82v42" stroke="#c2410c" stroke-width="2"/><rect x="34" y="97" width="52" height="6" fill="#f3f4f6"/><rect x="36" y="109" width="48" height="6" fill="#f3f4f6"/><path d="M34 97h52M36 109h48" stroke="rgba(0,0,0,.12)" stroke-width="1"/>';
+    if (has('weste')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgOra)"/><path d="M60 82v42" stroke="#8a9a00" stroke-width="2"/><rect x="34" y="97" width="52" height="6" fill="#f3f4f6"/><rect x="36" y="109" width="48" height="6" fill="#f3f4f6"/><path d="M34 97h52M36 109h48" stroke="rgba(0,0,0,.12)" stroke-width="1"/>';
     if (has('overall')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgBlu)"/><rect x="38" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="75" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="48" y="100" width="24" height="14" rx="3" fill="#6ea4ff" stroke="#1b4fb0" stroke-width="1.5"/><circle cx="41.500" cy="103" r="2.2" fill="#facc15"/><circle cx="78.500" cy="103" r="2.2" fill="#facc15"/>';
     if (has('schuerze')) s += '<path d="M42 90h36l4 34H38z" fill="#fafafa" stroke="#d1d5db" stroke-width="1.5"/><path d="M42 90q18-6 36 0" fill="none" stroke="#d1d5db" stroke-width="2"/><rect x="50" y="102" width="20" height="10" rx="2" fill="#bfdbfe" stroke="#93c5fd" stroke-width="1.2"/>';
     if (has('krawatte')) s += '<path d="M48 82l12 14l12-14z" fill="#fff" stroke="#d1d5db" stroke-width="1.2"/><path d="M60 88l-7 7l7 6l7-6z" fill="#1e3a8a"/><path d="M60 100l-6 22h12z" fill="#1e40af" stroke="#172554" stroke-width="1"/>';
@@ -802,7 +802,7 @@
       wheel(62) + wheel(92) + wheel(228) + wheel(258) + '</g></svg>';
   }
   function miaSceneBagger(f) {
-    var mia = '<g transform="translate(176 46) scale(.46)">' + miaInner(f, ['helm']) + '</g>';
+    var mia = '<g transform="translate(176 46) scale(.46)">' + miaInner(f, ['kappe']) + '</g>';
     var links = '', i; for (i = 0; i < 6; i++) links += '<circle cx="' + (118 + i * 24) + '" cy="124" r="9" fill="#3b4350" stroke="#1f2937" stroke-width="2"/>';
     return '<svg class="scenesvg" viewBox="0 0 300 150" role="img" aria-label="Mia im Bagger"><defs><linearGradient id="scSky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f7"/><stop offset="1" stop-color="#eaf6fd"/></linearGradient><linearGradient id="scTeal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#31c4c0"/><stop offset="1" stop-color="#0f8f94"/></linearGradient><linearGradient id="scWin2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeefb"/><stop offset="1" stop-color="#8ec9e6"/></linearGradient><clipPath id="scClip2"><path d="M176 52H226Q230 52 232 56V90H176Z"/></clipPath></defs>' +
       '<rect width="300" height="150" rx="14" fill="url(#scSky2)"/><path d="M0 100q40-30 90-8t110-12q50-8 100 12v58H0z" fill="#9bbf8a" opacity=".7"/><rect y="132" width="300" height="18" fill="#cdb998"/><path d="M0 132h300" stroke="#b49f7b" stroke-width="2"/>' +
@@ -882,7 +882,7 @@
     setInterval(function () { // ab und zu hängt Mia am Schwanz
       try {
         var sv = document.querySelector('#mia-btn .miasvg'), bb2 = $('#mia-bubble');
-        if (!sv || ($('#mia-ask') && !$('#mia-ask').hidden) || miaCfg().ruhig || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+        if (!sv || ($('#mia-ask') && !$('#mia-ask').hidden) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
         sv.classList.add('p-hang'); setTimeout(function () { var s2 = document.querySelector('#mia-btn .miasvg'); if (s2) s2.classList.remove('p-hang'); }, 6500);
       } catch (e) {}
     }, 26000);
