@@ -461,6 +461,20 @@
         '<div class="field pn"><label for="pr-r' + i + '">Wann zählt sie? (nur für dich zur Erinnerung)</label><input type="text" id="pr-r' + i + '" data-pr="' + i + '" data-pf="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
         '</div>';
     }).join('') : '<p class="hint">Noch keine Prämie angelegt.</p>';
+    renderPrVor();
+  }
+  // Häufige Zulagen je Branche zum Anklicken. Betrag bewusst leer: er steht auf dem Lohnzettel und ist je Firma verschieden.
+  var PR_VOR = {
+    gueter: [['Gefahrgutzulage', 'tag', 'Tage mit Gefahrgut-Einsatz (ADR)'], ['Kranzulage', 'taet', 'Stunden mit Kranarbeit'], ['Schmutzzulage', 'tag', 'Tage mit verschmutzender Arbeit'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    bau: [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Kranführerzulage', 'taet', 'Stunden am Kran'], ['Montagezulage', 'tag', 'Tage mit Montagearbeit'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']]
+  };
+  function renderPrVor() {
+    var w = wAt(todayISO()), k = w && (w.paket === 'bau' ? 'bau' : (w.paket === 'gueter' || w.paket === 'klein') ? 'gueter' : null), box = $('#pr-vor'), h = $('#pr-vorh');
+    if (!box) return;
+    var have = praemienListe().map(function (p) { return p.name; }), list = k ? PR_VOR[k].filter(function (x) { return have.indexOf(x[0]) < 0; }) : [];
+    h.hidden = !list.length;
+    box.innerHTML = list.map(function (x, i) { return '<button type="button" class="chip" data-prvor="' + i + '">' + esc(x[0]) + '</button>'; }).join('');
+    box._list = list;
   }
   function renderPraemienTag() {
     var list = praemienListe().filter(function (p) { return p.name && (p.einheit === 'tag' || p.einheit === 'stueck' || p.einheit === 'tour'); }), d = ui.edDraft;
@@ -1240,6 +1254,11 @@
   /* ============================================================ Ereignisse */
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
+    if (t.dataset.prvor != null) {
+      var bx = $('#pr-vor'), it = bx && bx._list && bx._list[+t.dataset.prvor];
+      if (it) { praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: it[0], betrag: 0, einheit: it[1], regel: it[2], taet: '' }); save(); renderPraemienSettings(); var nn = $('#pr-b' + (praemienListe().length - 1)); if (nn) nn.focus(); }
+      return;
+    }
     if (t.id === 's-lg-take') {
       var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
       if (enx && !isNaN(vx)) { enx.stundenlohn = vx; delete enx.test; save(); renderSettings(); toast('Stundenlohn übernommen.'); }
