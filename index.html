@@ -195,6 +195,20 @@
         </div>
       </div>
 
+      <details class="field" id="e-an-box">
+        <summary>Notiz zum Tag</summary>
+        <div id="e-an-art" hidden>
+          <span class="lbl">Wie kam es zu diesem Tag?</span>
+          <div class="chips">
+            <button type="button" class="chip pick" data-an="wunsch" aria-pressed="false">Ich habe es gewünscht</button>
+            <button type="button" class="chip pick" data-an="verein" aria-pressed="false">Mit der Firma vereinbart</button>
+            <button type="button" class="chip pick" data-an="firma" aria-pressed="false">Die Firma hat es angeordnet</button>
+          </div>
+        </div>
+        <textarea id="e-an" rows="3" maxlength="500" placeholder="Zum Beispiel: Grund, wer was gesagt hat, wann du gefragt hast"></textarea>
+        <small id="e-an-ts"></small>
+      </details>
+
       <div id="e-preview" class="result" aria-live="polite"></div>
       <div id="e-warn"></div>
 
@@ -247,6 +261,13 @@
       <h3>Überstunden im Überblick</h3>
       <p class="hint">Was du aufgeschrieben hast, was ausbezahlt wurde und was aufs Zeitausgleich-Konto ging.</p>
       <div id="k-ueber"></div>
+    </div>
+      <div class="card">
+      <details id="an-card"><summary><strong>Notizen zu den Tagen</strong> (Aufstellung für ein Beratungsgespräch)</summary>
+        <p class="hint">Alle Tage, zu denen du eine Notiz geschrieben hast, mit Datum und Uhrzeit der Eintragung. Das hilft dir, wenn du später etwas klären willst.</p>
+        <div id="an-list"></div>
+        <div class="btns"><button type="button" class="btn" id="an-share">Aufstellung teilen oder kopieren</button></div>
+      </details>
     </div>
   </section>
 
@@ -417,6 +438,7 @@
     </div>
 
 
+
     <div class="card" id="b-card">
       <details><summary><strong>Sicherung</strong> (Daten sichern oder wiederherstellen)</summary>
       <p class="hint">Deine Daten liegen nur auf diesem Gerät. Speichere die Sicherung als Datei, zum Beispiel in deinem Google Drive oder per WhatsApp an dich selbst.</p>
@@ -450,7 +472,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030191321";</script>
+<script>window.APP_VERSION="20261030194548";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

@@ -219,6 +219,7 @@
         if (r.swMin) small.push((E.istBau(wAt(r.datum)) ? 'Schlechtwetter ' : 'Ausfall ') + fh(r.swMin / 60) + ' h');
         if (r.extraMin) small.push('+ ' + fh(r.extraMin / 60) + ' h zusätzlich bezahlt');
         if (d.notiz) small.push(esc(d.notiz));
+        if (d.an && (d.an.t || d.an.w)) chips += '<span class="chip">Notiz</span>';
         if (r.nettoMin > 0) {
           val = fh(r.nettoMin / 60) + ' h';
           if (r.faktor !== 1) val += '<small>zählt ' + fh(r.wertMin / 60) + ' h</small>';
@@ -327,6 +328,7 @@
   function monKurz(y, m) { return MON[m - 1].slice(0, 3) + ' ' + String(y).slice(2); }
   function numIn(id, val, ph) { return '<input type="number" class="kin" id="' + id + '" inputmode="decimal" step="0.01" value="' + (val == null ? '' : esc(val)) + '" placeholder="' + (ph || '') + '" aria-label="' + esc(ph || 'Wert') + '">'; }
   function renderKonten() {
+    anRender();
     renderMia();
     var p = data.profil || {};
     var kbl = $('#k-bl'), pkc = E.PAKETE[wAt(todayISO()).paket];
@@ -537,6 +539,7 @@
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     $('#e-sw').value = d.sw ? d.sw : '';
     $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra;
+    renderAn();
     var seen = {}, opts = '';
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden ? kundenNamen(dd) : (dd.notiz ? [dd.notiz.trim()] : [])).forEach(function (n) { seen[n] = (seen[n] || 0) + 1; }); });
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
@@ -625,6 +628,56 @@
     $('#e-warn').innerHTML = warn;
   }
 
+  /* ---- Notiz zum Tag: Text, wie es zu dem Tag kam, und Zeitstempel (damit man Monate später noch weiß, was war) ---- */
+  function anBraucht(d) { return ['urlaub', 'za', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
+  function fmtStamp(iso) { var x = new Date(iso); if (isNaN(x)) return ''; return x.toLocaleDateString('de-AT') + ' um ' + x.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }); }
+  function renderAn() {
+    var d = ui.edDraft, an = d.an || {};
+    $('#e-an').value = an.t || '';
+    $('#e-an-box').open = !!(an.t || an.w);
+    anChips();
+    $('#e-an-ts').textContent = an.ts ? ('Eingetragen am ' + fmtStamp(an.ts) + (an.tm ? ', zuletzt geändert am ' + fmtStamp(an.tm) : '')) : '';
+  }
+  function anChips() {
+    var d = ui.edDraft, an = d.an || {};
+    $('#e-an-art').hidden = !anBraucht(d);
+    $$('#e-an-art [data-an]').forEach(function (b) { b.setAttribute('aria-pressed', an.w === b.dataset.an ? 'true' : 'false'); });
+  }
+  function anSet(k, v) {
+    var d = ui.edDraft; if (!d.an) d.an = {};
+    if (v) d.an[k] = v; else delete d.an[k];
+  }
+  function anFinal(out, alt) { // Zeitstempel setzen: beim ersten Eintrag "ts", bei späterer Änderung "tm"
+    var an = out.an || {}, t = (an.t || '').trim(), w = an.w || '';
+    if (!t && !w) { delete out.an; return; }
+    var n = { w: w || undefined, t: t || undefined }, now = new Date().toISOString();
+    var oa = (alt && alt.an) || null;
+    if (!oa || (!oa.t && !oa.w)) n.ts = now;
+    else { n.ts = oa.ts || now; if ((oa.t || '') !== t || (oa.w || '') !== w) n.tm = now; else if (oa.tm) n.tm = oa.tm; }
+    if (!n.w) delete n.w; if (!n.t) delete n.t;
+    out.an = n;
+  }
+
+  var AN_ART = { wunsch: 'Ich habe es gewünscht', verein: 'Mit der Firma vereinbart', firma: 'Die Firma hat es angeordnet' };
+  function anListe() {
+    return Object.keys(data.days).sort().filter(function (k) { var x = data.days[k].an; return x && (x.t || x.w); }).map(function (k) {
+      var d = data.days[k], x = d.an;
+      return { datum: k, art: E.STATUS[d.status] ? E.STATUS[d.status].name : '', w: x.w ? AN_ART[x.w] : '', t: x.t || '', ts: x.ts ? fmtStamp(x.ts) : '', tm: x.tm ? fmtStamp(x.tm) : '' };
+    });
+  }
+  function anRender() {
+    var box = $('#an-list'); if (!box) return;
+    var l = anListe();
+    box.innerHTML = l.length ? l.map(function (x) {
+      return '<div class="anrow"><strong>' + esc(fmtShort(x.datum)) + ' · ' + esc(x.art) + '</strong>' + (x.w ? '<div>' + esc(x.w) + '</div>' : '') + (x.t ? '<div>' + esc(x.t) + '</div>' : '') + '<small>Eingetragen am ' + esc(x.ts) + (x.tm ? ', geändert am ' + esc(x.tm) : '') + '</small></div>';
+    }).join('') : '<p class="hint">Noch keine Notizen. Du findest das Notizfeld in Erfassen bei jedem Tag.</p>';
+  }
+  function anText() {
+    return 'Notizen zu meinen Arbeitstagen (aus dem Stunden-Checker)\n\n' + anListe().map(function (x) {
+      return fmtShort(x.datum) + ' · ' + x.art + (x.w ? '\n' + x.w : '') + (x.t ? '\n' + x.t : '') + '\nEingetragen am ' + x.ts + (x.tm ? ', geändert am ' + x.tm : '');
+    }).join('\n\n');
+  }
+
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
@@ -638,6 +691,7 @@
     if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
     out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), taet: (k.taet || []).map(function (t) { return { tat: (t.tat || '').trim(), von: t.von || '', bis: t.bis || '' }; }).filter(function (t) { return t.tat || t.von || t.bis; }) }; }).filter(function (k) { return k.name || k.taet.length; });
     out.notiz = kundenNamen(out).join(', ');
+    anFinal(out, data.days[ui.edDate]);
     var prx = {}; Object.keys(out.praemien || {}).forEach(function (k) { if (+out.praemien[k] > 0) prx[k] = +out.praemien[k]; });
     if (st !== 'arbeit' || !Object.keys(prx).length) delete out.praemien; else out.praemien = prx;
     var fzl = fahrzeugeSpeichern(out.fahrzeuge); delete out.fz;
@@ -1263,6 +1317,8 @@
   /* ============================================================ Ereignisse */
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
+    if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }
+    if (t.dataset.an) { var cur = (ui.edDraft.an || {}).w; anSet('w', cur === t.dataset.an ? '' : t.dataset.an); anChips(); return; }
     if (t.dataset.prvor != null) {
       var bx = $('#pr-vor'), it = bx && bx._list && bx._list[+t.dataset.prvor];
       if (it) { praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: it[0], betrag: it[3] || 0, einheit: it[1], regel: it[2], taet: '' }); save(); renderPraemienSettings(); var nn = $('#pr-b' + (praemienListe().length - 1)); if (nn) nn.focus(); }
@@ -1400,12 +1456,13 @@
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
       case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
-      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; renderPraemienTag(); updatePreview(); return;
+      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; renderPraemienTag(); anChips(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
       case 'e-extra': { var xv = parseFloat(String(t.value).replace(',', '.')); if (xv > 0) ui.edDraft.extra = xv; else delete ui.edDraft.extra; updatePreview(); return; }
-      case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; updatePreview(); return;
+      case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; anChips(); updatePreview(); return;
+      case 'e-an': anSet('t', t.value); return;
       case 'e-spaeter': ui.edDraft.spaeter = t.checked; return;
     }
     if (t.tagName === 'INPUT' && id && id.indexOf('ab-') === 0) {
