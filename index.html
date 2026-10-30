@@ -208,6 +208,7 @@
       <h3>Mein Profil</h3>
       <p class="hint">Aus dem Eintrittsdatum rechnet die App deinen Urlaubsanspruch aus und prüft ihn gegen den Lohnzettel.</p>
       <div class="grid2">
+        <div class="field" id="k-blwrap" hidden><label for="k-bl">Bundesland (für die Feiertage)</label><select id="k-bl"></select></div>
         <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"></div>
         <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"></div>
       </div>
@@ -414,7 +415,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030075011";</script>
+<script>window.APP_VERSION="20261030085223";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

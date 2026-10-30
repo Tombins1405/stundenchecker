@@ -49,7 +49,12 @@
     } catch (e) { speicherOk = false; }
     return { version: 1, settings: [], days: {}, abgleich: {}, profil: {} };
   }
+  function applyRegion() {
+    var p = data.profil || {}, cur = E.wertAt(data.settings, todayISO()), pk = cur && E.PAKETE[cur.paket];
+    E.setRegion(pk && pk.land === 'DE' ? 'DE' : 'AT', p.bl || '');
+  }
   function save() {
+    applyRegion();
     try { localStorage.setItem(KEY, JSON.stringify(data)); speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
   }
@@ -65,6 +70,7 @@
     if (e.stundenlohn === undefined) e.stundenlohn = null;
     if (!e.betriebFrei) e.betriebFrei = 'urlaub';
   });
+  applyRegion();
   try { localStorage.setItem(KEY + '.probe', '1'); localStorage.removeItem(KEY + '.probe'); } catch (e) { speicherOk = false; }
 
   /* ------------------------------------------------------------ Zustand */
@@ -299,6 +305,8 @@
   function renderKonten() {
     renderMia();
     var p = data.profil || {};
+    var kbl = $('#k-bl'), pkc = E.PAKETE[wAt(todayISO()).paket];
+    if (kbl) { $('#k-blwrap').hidden = !(pkc && pkc.land === 'DE'); kbl.innerHTML = '<option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (p.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join(''); }
     $('#k-eintritt').value = p.eintritt || '';
     $('#k-urlaubjahr').value = p.urlaubJahr == null ? '' : p.urlaubJahr;
     $('#k-urlaubstart').value = p.urlaubStart == null ? '' : p.urlaubStart;
@@ -343,6 +351,7 @@
     var id = t.id, num = parseFloat(String(t.value).replace(',', '.')), val = (t.value === '' || isNaN(num)) ? null : num;
     if (!data.profil) data.profil = {};
     if (id === 'k-eintritt') { if (t.value === '' || validISO(t.value)) { data.profil.eintritt = t.value || null; delete data.profil.test; save(); renderKonten(); } return true; }
+    if (id === 'k-bl') { data.profil.bl = t.value || ''; save(); renderKonten(); return true; }
     if (id === 'k-urlaubjahr') { data.profil.urlaubJahr = val; delete data.profil.test; save(); return true; }
     if (id === 'k-urlaubstart') { data.profil.urlaubStart = val; delete data.profil.test; save(); return true; }
     if (id === 'k-kmvortag') { data.profil.kmVortag = !!t.checked; delete data.profil.test; save(); return true; }
@@ -650,7 +659,7 @@
     return s + '</g></svg>';
   }
   var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
-  function miaFor(date) { var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[w.paket] || []); }
+  function miaFor(date) { var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
@@ -831,7 +840,7 @@
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: mode === 'start' ? 'mia' : 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
-      w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter';
+      w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.bl = (data.profil && data.profil.bl) || '';
       w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
     }
     w.mia = (miaCfg().figur); ui.wiz = w; wzRender(); $('#wiz').hidden = false;
@@ -862,6 +871,7 @@
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
     data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ab; }); data.settings.push(set);
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; }
+    if (String(w.paket).indexOf('de_') === 0 && w.bl) { if (!data.profil) data.profil = {}; data.profil.bl = w.bl; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
@@ -877,7 +887,7 @@
     var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
     html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
-    html += '<p class="wzstep">Schritt ' + num + ' von ' + nSteps + (w.mode === 'change' ? ' · gilt ab ' + esc(fmtDate(w.ab)) : '') + '</p>';
+    html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>';
     } else if (w.step === 'art') {
@@ -895,6 +905,7 @@
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
         kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
         (cp && cp.pruefen && w.paket !== 'eigen' ? '<p class="hint"><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte vergleiche die Werte später mit deinem Lohnzettel.</p>' : '') +
+        (String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-bl">Bundesland (für die Feiertage)</label><select id="wz-bl" data-wf="bl"><option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (w.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join('') + '</select></div>' : '') +
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
     } else if (w.step === 'mia') {
       var mc = miaCfg();
@@ -939,13 +950,13 @@
     var list = sortedSettings(), cur = list.length ? E.wertAt(list, todayISO()) : null;
     if (!curEntry() && list.length) ui.setKey = (cur || list[0]).gueltigAb;
     $('#s-list').innerHTML = list.length ? list.map(function (e) {
-      return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc((E.BERUFE[e.beruf] && E.BERUFE[e.beruf].name) || PAKET_KURZ[e.paket] || '') + (e === cur ? ' · aktuell' : '') + '</button>';
+      return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc((E.BERUFE[e.beruf] && E.BERUFE[e.beruf].name) || (PAKET_KURZ[e.paket] || (E.PAKETE[e.paket] && E.PAKETE[e.paket].name) || '')) + (e === cur ? ' · aktuell' : '') + '</button>';
     }).join('') : '<p class="hint">Du hast noch keine eigenen Werte. Bis dahin rechnet die App mit den Werten für Güterbeförderung.</p>';
     if (!$('#s-newdate').value) { var n = new Date(); $('#s-newdate').value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
     $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Ersten Wertesatz anlegen';
 
     var cwb = cur ? E.berufName(cur) : null;
-    $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
+    $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (!$('#s-beruf-ab').value) { var nb = new Date(); $('#s-beruf-ab').value = E.iso(nb.getFullYear(), nb.getMonth() + 1, 1); }
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };

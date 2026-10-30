@@ -122,6 +122,50 @@
     }
   };
 
+  /* ---------------------------------------------------------------- Deutschland (Richtwerte, regional verschieden) */
+  // In Deutschland gibt es keinen einheitlichen Kollektivvertrag: Tarifverträge gelten je Bundesland und nur, wenn der Betrieb tarifgebunden ist.
+  // Die Vorgaben sind deshalb Richtwerte. Verpflegungspauschale: 14 € bei mehr als 8 Stunden Abwesenheit, 28 € bei 24 Stunden (steuerfrei, 2026).
+  function deWerte(o) {
+    var w = {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 },
+      stundenlohn: null, betriebFrei: 'urlaub', zuschlag: { sa: 0, so: 0, ft: 0 }, schlechtwetter: false
+    };
+    for (var k in o) w[k] = o[k];
+    return w;
+  }
+  var DE_VERPFL = { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 8, satz: 14 }, { ab: 23.99, satz: 28 }] };
+  PAKETE.de_spedition = {
+    name: 'Deutschland: Spedition und Logistik (Kraftfahrer)', land: 'DE', pruefen: true,
+    hinweis: 'Richtwerte aus der Tarifbroschüre Berlin-Brandenburg (ab 2.2026): 38 Stunden/Woche, Überstunden 25 % (nachts 60 %), Sonntag 70 %, Feiertag 120 %, Entgelt zum Beispiel 2.710 bis 3.008 € im Monat je nach Gruppe. Die Tarifverträge unterscheiden sich je Bundesland und gelten nur, wenn dein Betrieb tarifgebunden ist. Für Fahrer im Güterfernverkehr gibt es eigene Regeln. Mindestlohn 2026: 13,90 € je Stunde. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden, am An- und Abreisetag mehrtägiger Fahrten 14 € ohne Mindestdauer (das musst du selbst eintragen), dazu 9 € je Nacht im Lkw. Bitte vergleiche alles mit deiner Abrechnung.',
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 70, ft: 120 } })
+  };
+  PAKETE.de_bau = {
+    name: 'Deutschland: Bauhauptgewerbe (Baumaschinenführer, Bau)', land: 'DE', pruefen: true,
+    hinweis: 'Bundesweiter Tarif für das Bauhauptgewerbe, Löhne ab 1.4.2026 (Gesamttarifstundenlohn): Lohngruppe 2 (Maschinenführer) 18,73 €, Lohngruppe 4 (Baumaschinenführer) 26,05 € je Stunde. Zuschläge laut einer Auskunft zum Tarif: Überstunden 25 %, Nacht 20 %, Sonntag 75 %, Feiertag 200 %. Wochenarbeitszeit 40 Stunden angenommen, bitte prüfen. Schlechtwetter läuft in Deutschland nicht über die BUAK, sondern über Saison-Kurzarbeitergeld; das ist hier nicht abgebildet. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden.',
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 200 } })
+  };
+  PAKETE.de_handel = {
+    name: 'Deutschland: Einzelhandel (zum Beispiel Edeka)', land: 'DE', pruefen: true,
+    hinweis: 'Richtwerte für den Einzelhandel in Nordrhein-Westfalen, Tabelle ab 1.8.2026: 37,5 Stunden/Woche. Der Tarif wird je Bundesland verhandelt und gilt nur, wenn dein Betrieb tarifgebunden ist (bei Edeka entscheidet die Regionalgesellschaft). Beispiele Gehaltsgruppe IV a: 4.014 bis 4.488 € im Monat, je nach Tätigkeitsjahr. Welche Zuschläge für Überstunden, Spätdienst und Sonntag gelten, konnte ich nicht belegen: Sie stehen bei 0, bitte trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Bei Monatsgehalt sind Überstunden oft schon im Gehalt oder auf einem Arbeitszeitkonto.',
+    werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 37.5, tagesGrenze: null, zuschlagPct: 0 } })
+  };
+  PAKETE.de_buero = {
+    name: 'Deutschland: Büro (Angestellte)', land: 'DE', pruefen: true,
+    hinweis: 'Für diesen Bereich gibt es in Deutschland keinen einheitlichen Tarifvertrag: Er hängt von Branche und Bundesland ab, und viele Betriebe sind nicht tarifgebunden. Die Werte hier sind nur ein Vorschlag (40 Stunden/Woche, keine Zuschläge). Mindestlohn 2026: 13,90 € je Stunde. Trage Wochenstunden und Zuschläge nach deinem Arbeitsvertrag ein.',
+    werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 0 } })
+  };
+  PAKETE.de_metall = {
+    name: 'Deutschland: Metall und Kfz-Handwerk', land: 'DE', pruefen: true,
+    hinweis: 'Für diesen Bereich gibt es in Deutschland keinen einheitlichen Tarifvertrag: Er hängt von Branche und Bundesland ab, und viele Betriebe sind nicht tarifgebunden. Die Werte hier sind nur ein Vorschlag (40 Stunden/Woche, keine Zuschläge). Mindestlohn 2026: 13,90 € je Stunde. Trage Wochenstunden und Zuschläge nach deinem Arbeitsvertrag ein.',
+    werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 0 } })
+  };
+  PAKETE.de_gastro = {
+    name: 'Deutschland: Hotel und Gastronomie', land: 'DE', pruefen: true,
+    hinweis: 'Für diesen Bereich gibt es in Deutschland keinen einheitlichen Tarifvertrag: Er hängt von Branche und Bundesland ab, und viele Betriebe sind nicht tarifgebunden. Die Werte hier sind nur ein Vorschlag (40 Stunden/Woche, keine Zuschläge). Mindestlohn 2026: 13,90 € je Stunde. Trage Wochenstunden und Zuschläge nach deinem Arbeitsvertrag ein.',
+    werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 0 } })
+  };
+
   // Status eines Tages. credit = Tag wird mit den Sollstunden gutgeschrieben (bezahlte Abwesenheit).
   var STATUS = {
     arbeit:        { name: 'Arbeit',                  credit: false },
@@ -163,23 +207,52 @@
     return iso(y, month, day);
   }
   var feiertagCache = {};
-  function feiertage(y) { // gesetzliche Feiertage Österreich (Karfreitag ist kein allgemeiner Feiertag)
-    if (feiertagCache[y]) return feiertagCache[y];
+  var region = { land: 'AT', bl: '' };
+  var BUNDESLAENDER = { BW: 'Baden-Württemberg', BY: 'Bayern', BE: 'Berlin', BB: 'Brandenburg', HB: 'Bremen', HH: 'Hamburg', HE: 'Hessen', MV: 'Mecklenburg-Vorpommern', NI: 'Niedersachsen', NW: 'Nordrhein-Westfalen', RP: 'Rheinland-Pfalz', SL: 'Saarland', SN: 'Sachsen', ST: 'Sachsen-Anhalt', SH: 'Schleswig-Holstein', TH: 'Thüringen' };
+  function setRegion(land, bl) { region = { land: land === 'DE' ? 'DE' : 'AT', bl: BUNDESLAENDER[bl] ? bl : '' }; }
+  function inList(l, bl) { return !!bl && l.indexOf(bl) >= 0; }
+  function feiertage(y) { // gesetzliche Feiertage: Österreich oder Deutschland (je Bundesland)
+    var key = y + region.land + region.bl;
+    if (feiertagCache[key]) return feiertagCache[key];
     var o = easter(y), map = {};
-    map[iso(y, 1, 1)] = 'Neujahr';
-    map[iso(y, 1, 6)] = 'Heilige Drei Könige';
-    map[addDays(o, 1)] = 'Ostermontag';
-    map[iso(y, 5, 1)] = 'Staatsfeiertag';
-    map[addDays(o, 39)] = 'Christi Himmelfahrt';
-    map[addDays(o, 50)] = 'Pfingstmontag';
-    map[addDays(o, 60)] = 'Fronleichnam';
-    map[iso(y, 8, 15)] = 'Mariä Himmelfahrt';
-    map[iso(y, 10, 26)] = 'Nationalfeiertag';
-    map[iso(y, 11, 1)] = 'Allerheiligen';
-    map[iso(y, 12, 8)] = 'Mariä Empfängnis';
-    map[iso(y, 12, 25)] = 'Christtag';
-    map[iso(y, 12, 26)] = 'Stefanitag';
-    feiertagCache[y] = map;
+    if (region.land === 'DE') {
+      var b = region.bl;
+      map[iso(y, 1, 1)] = 'Neujahr';
+      map[addDays(o, -2)] = 'Karfreitag';
+      map[addDays(o, 1)] = 'Ostermontag';
+      map[iso(y, 5, 1)] = 'Tag der Arbeit';
+      map[addDays(o, 39)] = 'Christi Himmelfahrt';
+      map[addDays(o, 50)] = 'Pfingstmontag';
+      map[iso(y, 10, 3)] = 'Tag der Deutschen Einheit';
+      map[iso(y, 12, 25)] = '1. Weihnachtstag';
+      map[iso(y, 12, 26)] = '2. Weihnachtstag';
+      if (inList(['BW', 'BY', 'ST'], b)) map[iso(y, 1, 6)] = 'Heilige Drei Könige';
+      if (inList(['BW', 'BY', 'HE', 'NW', 'RP', 'SL'], b)) map[addDays(o, 60)] = 'Fronleichnam';
+      if (inList(['BW', 'BY', 'NW', 'RP', 'SL'], b)) map[iso(y, 11, 1)] = 'Allerheiligen';
+      if (inList(['SL'], b)) map[iso(y, 8, 15)] = 'Mariä Himmelfahrt';
+      if (inList(['BB', 'MV', 'SN', 'ST', 'TH', 'HB', 'HH', 'NI', 'SH'], b)) map[iso(y, 10, 31)] = 'Reformationstag';
+      if (inList(['BE', 'MV'], b) && y >= 2019) map[iso(y, 3, 8)] = 'Internationaler Frauentag';
+      if (inList(['TH'], b) && y >= 2019) map[iso(y, 9, 20)] = 'Weltkindertag';
+      if (inList(['SN'], b)) { // Buß- und Bettag: Mittwoch vor dem 23. November
+        var d = new Date(Date.UTC(y, 10, 22)); while (d.getUTCDay() !== 3) d.setUTCDate(d.getUTCDate() - 1);
+        map[iso(y, 11, d.getUTCDate())] = 'Buß- und Bettag';
+      }
+    } else {
+      map[iso(y, 1, 1)] = 'Neujahr';
+      map[iso(y, 1, 6)] = 'Heilige Drei Könige';
+      map[addDays(o, 1)] = 'Ostermontag';
+      map[iso(y, 5, 1)] = 'Staatsfeiertag';
+      map[addDays(o, 39)] = 'Christi Himmelfahrt';
+      map[addDays(o, 50)] = 'Pfingstmontag';
+      map[addDays(o, 60)] = 'Fronleichnam';
+      map[iso(y, 8, 15)] = 'Mariä Himmelfahrt';
+      map[iso(y, 10, 26)] = 'Nationalfeiertag';
+      map[iso(y, 11, 1)] = 'Allerheiligen';
+      map[iso(y, 12, 8)] = 'Mariä Empfängnis';
+      map[iso(y, 12, 25)] = 'Christtag';
+      map[iso(y, 12, 26)] = 'Stefanitag';
+    }
+    feiertagCache[key] = map;
     return map;
   }
   function feiertagName(s) { return feiertage(parseISO(s).y)[s] || null; }
@@ -204,19 +277,19 @@
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   var BERUFE = {
-    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
         baustelle: { name: 'Baustelle / Kurzstrecke', b: { fahrzeug: true, kunden: true, praemien: true } },
         tour: { name: 'Zustellung / Tour / Filiale', b: { fahrzeug: true, kunden: false, praemien: true } },
         fern: { name: 'Fernverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
         muell: { name: 'Müllabfuhr', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
-    bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
-    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
-    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'de_bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: false } },
+    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: { service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: false } }, kueche: { name: 'Küche', b: { fahrzeug: false, kunden: false, praemien: false } } } },
     anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
@@ -609,7 +682,7 @@
   return {
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
-    easter: easter, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
+    easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
