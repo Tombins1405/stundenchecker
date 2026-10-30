@@ -178,6 +178,7 @@
       '</dl>';
     if (w.schlechtwetter || s.swStd > 0) {
       var sw = cm.schlechtwetter, pct = Math.min(100, sw.verbrauchtStd / sw.kontingentStd * 100);
+      if (!E.istBau(w)) html += '<div class="sw"><div class="row"><span>Ausfallstunden im Monat</span><strong class="num">' + fh(s.swStd) + ' h</strong></div></div>'; else
       html += '<div class="sw"><div class="row"><span>Schlechtwetter im Monat</span><strong class="num">' + fh(s.swStd) + ' h</strong></div>' +
         '<div class="bar" aria-hidden="true"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
         '<div class="row"><span>Zeitraum ' + fmtDate(sw.von) + ' bis ' + fmtDate(sw.bis) + '</span><span class="num">' + fh(sw.verbrauchtStd) + ' von ' + sw.kontingentStd + ' h</span></div></div>';
@@ -212,10 +213,10 @@
       else if (r.status === 'arbeit') {
         if (d.von && d.bis) main = '<strong>' + esc(d.von) + '–' + esc(d.bis) + '</strong>';
         else if (d.von && !d.bis) { main = '<strong>ab ' + esc(d.von) + '</strong>'; chips += '<span class="chip warn">Ende fehlt</span>'; }
-        else main = '<strong>' + (r.swMin ? 'Schlechtwetter' : 'Ohne Zeiten') + '</strong>';
+        else main = '<strong>' + (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Ohne Zeiten') + '</strong>';
         if (r.pausenMin) small.push('Pause ' + hm(r.pausenMin));
         if (r.diaetenStd) small.push('Diäten ' + fh(r.diaetenStd) + ' h');
-        if (r.swMin) small.push('Schlechtwetter ' + fh(r.swMin / 60) + ' h');
+        if (r.swMin) small.push((E.istBau(wAt(r.datum)) ? 'Schlechtwetter ' : 'Ausfall ') + fh(r.swMin / 60) + ' h');
         if (r.extraMin) small.push('+ ' + fh(r.extraMin / 60) + ' h zusätzlich bezahlt');
         if (d.notiz) small.push(esc(d.notiz));
         if (r.nettoMin > 0) {
@@ -298,6 +299,7 @@
       if (ok && Math.abs(sumApp - sumLz) < 0.005) html += '<p style="margin-top:8px">Die Gesamtstunden passen. Nur die Aufteilung auf die Zeilen ist anders.</p>';
       html += '<p style="margin-top:8px">Prüfe zuerst: Sind alle Tage und Pausen richtig eingetragen? Gibt es Zeitausgleich, oder rechnet deine Firma manche Stunden erst im Folgemonat ab? Passen Zuschläge und die Zählweise der Überstunden in den Einstellungen? Bleibt der Unterschied, frage mit deiner Aufzeichnung im Büro nach. Die App ersetzt keine Rechtsberatung.</p></div>';
     }
+    if (given && !E.istBau(wm) && ui.summe && ui.summe.swStd > 0 && lz.zaKonto != null && +lz.zaKonto < 0) html += '<div class="notice warn"><strong>Ausfallstunden und Zeitausgleich.</strong> In diesem Monat hast du ' + fh(ui.summe.swStd) + ' Ausfallstunden aufgeschrieben, und dein Zeitausgleich-Konto ist gesunken. Wenn dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, trägt sie nach § 1155 ABGB grundsätzlich das Risiko, und Zeitausgleich muss in der Regel vereinbart sein. Das hängt vom Einzelfall und vom Kollektivvertrag ab, deshalb ist das ein Hinweis und keine Rechtsberatung. Frag bei Betriebsrat, Gewerkschaft (vida) oder Arbeiterkammer nach.</div>';
     $('#ab-result').innerHTML = html;
     if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; })); } catch (e) {} }
   }
@@ -519,6 +521,7 @@
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
+    var bau = E.istBau(w); $('#e-swlbl').textContent = bau ? 'Schlechtwetterstunden' : 'Ausfallstunden'; $('#e-swhint').textContent = bau ? 'Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.' : 'Stunden, die ausgefallen sind, weil dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, in halben Stunden. Die Uhrzeit, wann du heimgeschickt wurdest, schreibst du am besten dazu.';
     var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
     var tr1 = E.istTour(w); $('#e-klbl').textContent = tr1 ? 'Touren mit Tätigkeiten (optional)' : 'Kunden / Baustellen mit Tätigkeiten (optional)'; $('#e-addkunde').textContent = tr1 ? '+ Tour hinzufügen' : '+ Kunde / Baustelle hinzufügen';
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
@@ -583,7 +586,7 @@
       }
       var prl = E.praemienDay(d, r, praemienListe(), w);
       if (prl.length) { html += '<div class="kz-title">Prämien</div>'; prl.forEach(function (x) { html += line(esc(x.name) + (x.einheit === 'stunde' ? ' · ' + fh(x.menge) + ' h' : x.menge !== 1 ? ' · ' + nfp.format(x.menge) + 'x' : ''), eur.format(x.euro)); }); }
-      if (r.swMin) html += line('Schlechtwetter', fh(r.swMin / 60) + ' h');
+      if (r.swMin) html += line(E.istBau(w) ? 'Schlechtwetter' : 'Ausfallstunden', fh(r.swMin / 60) + ' h');
       if (r.extraMin) html += line('Zusätzlich bezahlt', '+ ' + fh(r.extraMin / 60) + ' h');
       if (r.nettoMin / 60 > 12) warn += '<div class="notice warn">Mehr als 12 Arbeitsstunden an einem Tag. Bitte prüfe die Zeiten.</div>';
       r.warn.forEach(function (m) { warn += '<div class="notice warn">' + esc(m) + '</div>'; });
@@ -917,7 +920,7 @@
         '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + (E.istTour({ beruf: w.beruf, art: w.art }) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten') + '</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
-        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>Schlechtwetter (Bau)</span></label>');
+        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>' + (w.paket === 'bau' || w.paket === 'de_bau' ? 'Schlechtwetter (Bau)' : 'Ausfallstunden (Firma schickt mich heim)') + '</span></label>');
     } else if (w.step === 'kv') {
       var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen'], cp = E.PAKETE[w.paket];
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
@@ -989,6 +992,7 @@
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
     if (!en) return;
+    var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
     $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
     $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {

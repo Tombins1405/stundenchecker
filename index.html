@@ -167,9 +167,9 @@
         </details>
 
         <div class="field" id="e-swgroup" hidden>
-          <label for="e-sw">Schlechtwetterstunden</label>
+          <label for="e-sw" id="e-swlbl">Schlechtwetterstunden</label>
           <input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0">
-          <small>Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
+          <small id="e-swhint">Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
         </div>
 
         <div class="field" id="e-praemiengroup" hidden>
@@ -390,8 +390,8 @@
         </select>
         <small>Das betrifft die Tage mit dem Status „Betrieb geschlossen / Betriebsurlaub“. Schau auf deinen Lohnzettel: Wenn der Tag unter „Lohn“ steht und deine Überstunden um 8 Stunden weniger sind, wird er aus den Überstunden bezahlt.</small></div>
 
-      <h3>Schlechtwetter</h3>
-      <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span>Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
+      <h3 id="s-sw-h">Schlechtwetter</h3>
+      <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span id="s-sw-t">Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
 
       <button type="button" class="btn danger" id="s-delete">Diesen Wertesatz löschen</button>
     </div>
@@ -430,7 +430,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030151810";</script>
+<script>window.APP_VERSION="20261030153705";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
