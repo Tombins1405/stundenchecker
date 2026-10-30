@@ -724,7 +724,7 @@
 
 
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
-  var MIA_OUT = { 'lkw:baustelle': ['helm', 'weste'], 'lkw:tour': ['kappe', 'paket'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste'], lkw: ['kappe', 'lenkrad'],
+  var MIA_OUT = { 'lkw:baustelle': ['helm', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
     bagger: ['helm', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'],
     'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
