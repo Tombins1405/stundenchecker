@@ -81,6 +81,9 @@
       });
     }
   };
+  // aktive Tage (nur das Datum, ohne Uhrzeit), die letzten 90
+  api.tag = function () { try { var s = stats(), t = new Date().toISOString().slice(0, 10), l = s.aktiv || []; if (l[l.length - 1] !== t) { l.push(t); s.aktiv = l.slice(-90); wr(SK, JSON.stringify(s)); } } catch (e) {} };
+  api.tag();
   window.StundenInsights = api;
   if (ON) { try { firebase.auth().onAuthStateChanged(function (u) { if (u) setTimeout(function () { api.push(false); }, 5000); }); } catch (e) {} }
 })();

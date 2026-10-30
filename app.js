@@ -699,6 +699,7 @@
     if (!out.kunden.length) delete out.kunden;
     if (!out.spaeter) delete out.spaeter;
     delete out.test;
+    ins('tag_gespeichert'); if (out.an) ins('notiz');
     data.days[ui.edDate] = out;
     ui.edBase = JSON.stringify(ui.edDraft);
     save();
@@ -896,11 +897,14 @@
   ];
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/ł/g, 'l').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  function miaTopic(i) { return String(MIA_FAQ[i].t).replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
   function miaAnswer(q) {
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
     MIA_FAQ.forEach(function (e, i) { var sc = 0, ks = e.k.concat(tr ? tr[i][2].split(' ') : []); ks.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = i; } });
+    ins('mia_frage');
     if (best == null) { try { if (window.StundenInsights) window.StundenInsights.miaOffen(q, L); } catch (e) {} }
+    else { ins('mia_antwort'); ins('mia_t_' + miaTopic(best)); }
     return best != null ? miaFaqText(best, 'a') : (MIA_UI[L] || MIA_UI.de).unk;
   }
   function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
@@ -915,7 +919,7 @@
     var ls = $('#mia-lang'); if (ls) { ls.innerHTML = Object.keys(MIA_LANGS).map(function (k) { return '<option value="' + k + '">' + MIA_LANGS[k].n + '</option>'; }).join(''); ls.addEventListener('change', function () { uiSetLang(this.value); $('#mia-ans').hidden = true; paintAsk(); }); }
     paintAsk(); ui.miaPaint = paintAsk;
     on('#mia-askbtn', 'click', function () { var p = $('#mia-ask'); p.hidden = !p.hidden; if (!p.hidden) { var q = $('#mia-q'); if (q) q.focus(); } });
-    on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) miaShowAns(miaFaqText(+b.dataset.faq, 'a')); });
+    on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) { ins('mia_chip'); ins('mia_t_' + miaTopic(+b.dataset.faq)); miaShowAns(miaFaqText(+b.dataset.faq, 'a')); } });
     function send() { var q = $('#mia-q').value.trim(); if (q) miaShowAns(miaAnswer(q)); }
     on('#mia-send', 'click', send);
     on('#mia-q', 'keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); send(); } });
@@ -929,7 +933,7 @@
         if (rec) { try { rec.stop(); } catch (e) {} return; }
         try {
           rec = new SR(); rec.lang = MIA_LANGS[miaLang()].sr; rec.interimResults = false; rec.maxAlternatives = 1;
-          rec.onresult = function (ev) { var t = ev.results[0][0].transcript; $('#mia-q').value = t; send(); };
+          rec.onresult = function (ev) { ins('mia_sprache'); var t = ev.results[0][0].transcript; $('#mia-q').value = t; send(); };
           rec.onerror = function () { miaShowAns((MIA_UI[miaLang()] || MIA_UI.de).mic); };
           rec.onend = function () { rec = null; mic.classList.remove('rec'); };
           mic.classList.add('rec'); rec.start();
@@ -965,6 +969,7 @@
   function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
   function wzClose(dismiss) { $('#wiz').hidden = true; if (dismiss && ui.wiz && ui.wiz.mode === 'start') ui.wizDismissed = true; ui.wiz = null; }
   function wzFinish() {
+    ins('assistent');
     var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
@@ -1385,7 +1390,7 @@
       case 's-delete': arm(t, 'Wirklich löschen?', function () {
         data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ui.setKey; }); ui.setKey = null; save(); renderSettings(); toast('Wertesatz gelöscht.');
       }); return;
-      case 'b-save': {
+      case 'b-save': ins('sicherung'); {
         var txt = JSON.stringify(data), dd = new Date(), fn = 'stunden-checker-sicherung-' + E.iso(dd.getFullYear(), dd.getMonth() + 1, dd.getDate()) + '.json';
         function dl() {
           try {
@@ -1698,6 +1703,7 @@
     s.onload = function () { cb(); }; s.onerror = function () { cb(); }; document.head.appendChild(s);
   }
   function uiSetLang(l) {
+    ins('sprache_' + l);
     try { localStorage.setItem('stundenchecker.lang', l); } catch (e) {}
     var sl = $('#ui-lang'); if (sl) sl.value = l; var ml = $('#mia-lang'); if (ml) ml.value = l;
     document.documentElement.lang = l; document.documentElement.dir = UI_RTL[l] ? 'rtl' : 'ltr';
