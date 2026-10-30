@@ -28,9 +28,9 @@
   function validISO(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s || ''); }
 
   var toastTimer = null;
-  function toast(msg) {
+  function toast(msg, ms) {
     var t = $('#toast'); t.textContent = msg; t.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2800);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 2800);
   }
   // Zweistufiges Bestätigen ohne Pop-up: erster Tipp ändert die Beschriftung, zweiter Tipp führt aus.
   function arm(btn, armedText, fn) {
@@ -1143,7 +1143,12 @@
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
     if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
-    else { toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.'); renderSettings(); }
+    else {
+      var spaet = data.settings.filter(function (e) { return e.gueltigAb > ab && (e.beruf !== set.beruf || (e.art || null) !== (set.art || null)); }).sort(function (x, y) { return x.gueltigAb < y.gueltigAb ? -1 : 1; })[0];
+      if (spaet) toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '. Aber ab ' + fmtDate(spaet.gueltigAb) + ' gilt noch ' + (E.berufName(spaet) || 'ein anderer Beruf') + ', darum ändert sich heute nichts. Wähle dafür das spätere Datum.', 8000);
+      else toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.');
+      renderSettings();
+    }
   }
   function lohnGruppenHtml(w) {
     var lg = E.LOHNGRUPPEN[w.paket]; if (!lg) return '';
