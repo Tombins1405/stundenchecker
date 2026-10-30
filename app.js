@@ -649,7 +649,8 @@
       '<g class="hand h-mouth"><circle cx="54" cy="72" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/><circle cx="66" cy="72" r="10" fill="' + fur + '" stroke="#6b4226" stroke-width="2"/></g>';
     return s + '</g></svg>';
   }
-  function miaFor(date) { var w = wAt(date || todayISO()); return miaOutfit(w.beruf, w.art); }
+  var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
+  function miaFor(date) { var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[w.paket] || []); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
@@ -706,7 +707,11 @@
 
 
   /* ---- Sprachen für Mia: Spracheingabe, Vorlesen, Antworten ---- */
-  var MIA_LANGS = { de: { n: 'Deutsch', sr: 'de-DE' }, pl: { n: 'Polski', sr: 'pl-PL' }, hu: { n: 'Magyar', sr: 'hu-HU' }, tr: { n: 'Türkçe', sr: 'tr-TR' }, en: { n: 'English', sr: 'en-GB' } };
+  var UI_RTL = { fa: 1 };
+  var UI_ALIAS = { bs: 'hr', sh: 'hr', ps: 'fa', prs: 'fa', nb: 'de', gsw: 'de' };
+  var MIA_LANGS = { de: { n: 'Deutsch', sr: 'de-DE' }, en: { n: 'English', sr: 'en-GB' }, pl: { n: 'Polski', sr: 'pl-PL' }, hu: { n: 'Magyar', sr: 'hu-HU' }, tr: { n: 'Türkçe', sr: 'tr-TR' },
+    hr: { n: 'Hrvatski', sr: 'hr-HR' }, sr: { n: 'Srpski', sr: 'sr-RS' }, it: { n: 'Italiano', sr: 'it-IT' }, ro: { n: 'Română', sr: 'ro-RO' }, uk: { n: 'Українська', sr: 'uk-UA' }, ru: { n: 'Русский', sr: 'ru-RU' },
+    cs: { n: 'Čeština', sr: 'cs-CZ' }, sk: { n: 'Slovenčina', sr: 'sk-SK' } };
   var MIA_UI = {
     de: { q: 'Deine Frage', go: 'Los', read: 'Vorlesen', ask: 'Frag mich etwas', unk: 'Das weiß ich noch nicht. Tippe auf eines der Themen unten, oder frage mit anderen Worten.', mic: 'Das Mikrofon geht gerade nicht. Erlaube es im Browser oder tippe deine Frage.' },
     pl: { q: 'Twoje pytanie', go: 'Dalej', read: 'Przeczytaj', ask: 'Zapytaj mnie', unk: 'Tego jeszcze nie wiem. Dotknij jednego z tematów poniżej albo zapytaj innymi słowami.', mic: 'Mikrofon teraz nie działa. Zezwól na niego w przeglądarce albo wpisz pytanie.' },
@@ -782,13 +787,13 @@
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
     MIA_FAQ.forEach(function (e, i) { var sc = 0, ks = e.k.concat(tr ? tr[i][2].split(' ') : []); ks.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = i; } });
-    return best != null ? miaFaqText(best, 'a') : MIA_UI[L].unk;
+    return best != null ? miaFaqText(best, 'a') : (MIA_UI[L] || MIA_UI.de).unk;
   }
   function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
   (function () {
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
     function paintAsk() {
-      var L = miaLang(), u = MIA_UI[L], chips = $('#mia-chips');
+      var L = miaLang(), u = MIA_UI[L] || MIA_UI.de, chips = $('#mia-chips');
       if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
       $('#mia-q').placeholder = u.q; $('#mia-send').textContent = u.go; $('#mia-read').textContent = u.read; $('#mia-askbtn').textContent = u.ask;
       var sel = $('#mia-lang'); if (sel) sel.value = L;
@@ -811,7 +816,7 @@
         try {
           rec = new SR(); rec.lang = MIA_LANGS[miaLang()].sr; rec.interimResults = false; rec.maxAlternatives = 1;
           rec.onresult = function (ev) { var t = ev.results[0][0].transcript; $('#mia-q').value = t; send(); };
-          rec.onerror = function () { miaShowAns(MIA_UI[miaLang()].mic); };
+          rec.onerror = function () { miaShowAns((MIA_UI[miaLang()] || MIA_UI.de).mic); };
           rec.onend = function () { rec = null; mic.classList.remove('rec'); };
           mic.classList.add('rec'); rec.start();
         } catch (e) { rec = null; mic.classList.remove('rec'); }
@@ -1427,38 +1432,79 @@
     $('#install-go').addEventListener('click', function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; bar.hidden = true; }); });
     $('#install-x').addEventListener('click', function () { bar.hidden = true; try { localStorage.setItem('stundenchecker.noinstall', '1'); } catch (e) { } });
   })();
-  /* ---- Oberfläche in Polnisch, Ungarisch, Türkisch: ersetzt bekannte deutsche Texte, alles andere bleibt deutsch ---- */
-  var UI_DICT = { en: {"Fertig. Du kannst jetzt deinen ersten Tag eintragen.": "Done. You can now enter your first day.", "Erfassen": "Log", "Übersicht": "Overview", "Konto": "Account", "Einstellungen": "Settings", "Datum": "Date", "Art des Tages": "Type of day", "Beginn": "Start", "Ende": "End", "Jetzt": "Now", "Zeiten wie am letzten Arbeitstag übernehmen": "Copy times from the last working day", "Pausen": "Breaks", "+ Pause hinzufügen": "+ Add break", "Diätenstunden": "Allowance hours", "Stunden": "Hours", "Prämien": "Bonuses", "Speichern": "Save", "Tag löschen": "Delete day", "Arbeit": "Work", "Urlaub": "Holiday", "Krankenstand": "Sick leave", "Pflegefreistellung": "Care leave", "Feiertag": "Public holiday", "Betrieb geschlossen / Betriebsurlaub": "Company closed / company holiday", "Zeitausgleich": "Time off in lieu", "Frei wegen Arztbesuch": "Off for doctor visit", "Frei": "Day off", "Hallo! Wen möchtest du an deiner Seite haben?": "Hello! Who would you like by your side?", "Wer soll dich begleiten?": "Who should accompany you?", "Weiblich": "Female", "Männlich": "Male", "Wie soll sie oder er heißen?": "What should the name be?", "Damit ich alles passend einrichte: Was machst du?": "So I can set everything up for you: what do you do?", "Was machst du beruflich?": "What is your job?", "Noch eine Frage, dann weiß ich es.": "One more question, then I know.", "Was beschreibt deine Arbeit am besten?": "What describes your work best?", "Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.": "Tell me what you want to record. I will hide the rest.", "Was möchtest du aufzeichnen?": "What do you want to record?", "Du kannst das jederzeit ändern.": "You can change this at any time.", "Diäten": "Daily allowance (Diäten)", "Fahrzeug und Kilometer": "Vehicle and kilometres", "Kunden, Baustellen und Tätigkeiten": "Customers, sites and tasks", "Schlechtwetter (Bau)": "Bad weather (construction)", "Der Kollektivvertrag steht auf deinem Lohnzettel.": "The collective agreement is on your payslip.", "Welcher Kollektivvertrag gilt für dich?": "Which collective agreement (Kollektivvertrag) applies to you?", "Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.": "It is on your payslip. If you do not know, choose \"I do not know\" and set everything yourself.", "Weiß ich nicht / eigene Werte": "I do not know / my own values", "Fast fertig. Jetzt noch dein Lohn.": "Almost done. Now your pay.", "Dein Lohn": "Your pay", "Stundenlohn (€ pro Stunde)": "Hourly wage (€ per hour)", "Wochenstunden": "Weekly hours", "Diäten (€ pro Stunde)": "Allowance (€ per hour)", "Eintritt in die Firma (optional)": "Start date at the company (optional)", "Alles Weitere kannst du später in den Einstellungen nachtragen.": "You can add everything else later in the settings.", "Noch nicht an einem echten Lohnzettel geprüft.": "Not yet checked against a real payslip.", "Bitte vergleiche die Werte später mit deinem Lohnzettel.": "Please compare the values with your payslip later.", "Weiter": "Next", "Zurück": "Back", "Fertig": "Done", "Abbrechen": "Cancel", "Später": "Later", "Zeig mir": "Show me", "Mia ruhig stellen": "Quiet Mia", "Mia wieder aktiv stellen": "Activate Mia again", "Lkw-Fahrer": "Truck driver", "Baggerfahrer / Maschinist": "Excavator operator / machine operator", "Kleintransport (bis 3,5 t)": "Small transport (up to 3.5 t)", "Mechaniker / Werkstatt": "Mechanic / workshop", "Handel / Verkauf": "Retail / sales", "Gastronomie / Hotel": "Hospitality / hotel", "Büro (Angestellte)": "Office (employee)", "Etwas anderes": "Something else", "Baustelle / Kurzstrecke": "Construction site / short distance", "Zustellung / Tour / Filiale": "Delivery / tour / branch", "Fernverkehr": "Long distance", "Müllabfuhr": "Waste collection", "Service (Kellner, Bar)": "Service (waiter, bar)", "Küche": "Kitchen"},"pl": {"Fertig. Du kannst jetzt deinen ersten Tag eintragen.": "Gotowe. Możesz teraz wpisać swój pierwszy dzień.", "Erfassen": "Wpisywanie", "Übersicht": "Przegląd", "Konto": "Konto", "Einstellungen": "Ustawienia", "Datum": "Data", "Art des Tages": "Rodzaj dnia", "Beginn": "Początek", "Ende": "Koniec", "Jetzt": "Teraz", "Zeiten wie am letzten Arbeitstag übernehmen": "Przejmij godziny z ostatniego dnia pracy", "Pausen": "Przerwy", "+ Pause hinzufügen": "+ Dodaj przerwę", "Diätenstunden": "Godziny diet", "Stunden": "Godziny", "Prämien": "Premie", "Speichern": "Zapisz", "Tag löschen": "Usuń dzień", "Arbeit": "Praca", "Urlaub": "Urlop", "Krankenstand": "Zwolnienie chorobowe", "Pflegefreistellung": "Opieka nad chorym", "Feiertag": "Święto", "Betrieb geschlossen / Betriebsurlaub": "Zakład zamknięty / urlop zakładowy", "Zeitausgleich": "Odbiór nadgodzin", "Frei wegen Arztbesuch": "Wolne na wizytę u lekarza", "Frei": "Wolne", "Hallo! Wen möchtest du an deiner Seite haben?": "Cześć! Kogo chcesz mieć przy sobie?", "Wer soll dich begleiten?": "Kto ma Ci towarzyszyć?", "Weiblich": "Kobieta", "Männlich": "Mężczyzna", "Wie soll sie oder er heißen?": "Jak ma się nazywać?", "Damit ich alles passend einrichte: Was machst du?": "Żebym wszystko dobrze ustawiła: czym się zajmujesz?", "Was machst du beruflich?": "Czym zajmujesz się zawodowo?", "Noch eine Frage, dann weiß ich es.": "Jeszcze jedno pytanie.", "Was beschreibt deine Arbeit am besten?": "Co najlepiej opisuje Twoją pracę?", "Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.": "Powiedz, co chcesz zapisywać. Resztę ukryję.", "Was möchtest du aufzeichnen?": "Co chcesz zapisywać?", "Du kannst das jederzeit ändern.": "Możesz to zmienić w każdej chwili.", "Diäten": "Diety (Diäten)", "Fahrzeug und Kilometer": "Pojazd i kilometry", "Kunden, Baustellen und Tätigkeiten": "Klienci, budowy i czynności", "Schlechtwetter (Bau)": "Złe warunki pogodowe (budowa)", "Der Kollektivvertrag steht auf deinem Lohnzettel.": "Układ zbiorowy jest na Twoim pasku wypłaty.", "Welcher Kollektivvertrag gilt für dich?": "Jaki układ zbiorowy (Kollektivvertrag) Cię dotyczy?", "Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.": "Jest na pasku wypłaty. Jeśli nie wiesz, wybierz „Nie wiem” i ustaw wszystko sam.", "Weiß ich nicht / eigene Werte": "Nie wiem / własne wartości", "Fast fertig. Jetzt noch dein Lohn.": "Prawie gotowe. Teraz Twoja stawka.", "Dein Lohn": "Twoja płaca", "Stundenlohn (€ pro Stunde)": "Stawka godzinowa (€ za godzinę)", "Wochenstunden": "Godziny tygodniowo", "Diäten (€ pro Stunde)": "Diety (€ za godzinę)", "Eintritt in die Firma (optional)": "Początek pracy w firmie (opcjonalnie)", "Alles Weitere kannst du später in den Einstellungen nachtragen.": "Resztę możesz uzupełnić później w ustawieniach.", "Noch nicht an einem echten Lohnzettel geprüft.": "Jeszcze nie sprawdzono na prawdziwym pasku wypłaty.", "Bitte vergleiche die Werte später mit deinem Lohnzettel.": "Porównaj wartości później ze swoim paskiem wypłaty.", "Weiter": "Dalej", "Zurück": "Wstecz", "Fertig": "Gotowe", "Abbrechen": "Anuluj", "Später": "Później", "Zeig mir": "Pokaż mi", "Mia ruhig stellen": "Wycisz Mię", "Mia wieder aktiv stellen": "Włącz Mię ponownie", "Lkw-Fahrer": "Kierowca ciężarówki", "Baggerfahrer / Maschinist": "Operator koparki / maszynista", "Kleintransport (bis 3,5 t)": "Mały transport (do 3,5 t)", "Mechaniker / Werkstatt": "Mechanik / warsztat", "Handel / Verkauf": "Handel / sprzedaż", "Gastronomie / Hotel": "Gastronomia / hotel", "Büro (Angestellte)": "Biuro (pracownik umysłowy)", "Etwas anderes": "Coś innego", "Baustelle / Kurzstrecke": "Budowa / krótki dystans", "Zustellung / Tour / Filiale": "Dostawa / trasa / filia", "Fernverkehr": "Transport międzynarodowy", "Müllabfuhr": "Wywóz śmieci", "Service (Kellner, Bar)": "Obsługa (kelner, bar)", "Küche": "Kuchnia"}, "hu": {"Fertig. Du kannst jetzt deinen ersten Tag eintragen.": "Kész. Most beírhatod az első napodat.", "Erfassen": "Rögzítés", "Übersicht": "Áttekintés", "Konto": "Fiók", "Einstellungen": "Beállítások", "Datum": "Dátum", "Art des Tages": "A nap típusa", "Beginn": "Kezdés", "Ende": "Vége", "Jetzt": "Most", "Zeiten wie am letzten Arbeitstag übernehmen": "Idők átvétele az utolsó munkanapról", "Pausen": "Szünetek", "+ Pause hinzufügen": "+ Szünet hozzáadása", "Diätenstunden": "Napidíj órák", "Stunden": "Órák", "Prämien": "Prémiumok", "Speichern": "Mentés", "Tag löschen": "Nap törlése", "Arbeit": "Munka", "Urlaub": "Szabadság", "Krankenstand": "Betegszabadság", "Pflegefreistellung": "Ápolási szabadság", "Feiertag": "Ünnepnap", "Betrieb geschlossen / Betriebsurlaub": "Üzem zárva / üzemi szabadság", "Zeitausgleich": "Szabadidő-kiegyenlítés", "Frei wegen Arztbesuch": "Szabad orvosi vizit miatt", "Frei": "Szabad", "Hallo! Wen möchtest du an deiner Seite haben?": "Szia! Kit szeretnél magad mellett?", "Wer soll dich begleiten?": "Ki kísérjen?", "Weiblich": "Nő", "Männlich": "Férfi", "Wie soll sie oder er heißen?": "Mi legyen a neve?", "Damit ich alles passend einrichte: Was machst du?": "Hogy mindent jól állítsak be: mit dolgozol?", "Was machst du beruflich?": "Mivel foglalkozol?", "Noch eine Frage, dann weiß ich es.": "Még egy kérdés, és tudom.", "Was beschreibt deine Arbeit am besten?": "Mi írja le legjobban a munkádat?", "Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.": "Mondd meg, mit szeretnél rögzíteni. A többit elrejtem.", "Was möchtest du aufzeichnen?": "Mit szeretnél rögzíteni?", "Du kannst das jederzeit ändern.": "Ezt bármikor módosíthatod.", "Diäten": "Napidíj (Diäten)", "Fahrzeug und Kilometer": "Jármű és kilométerek", "Kunden, Baustellen und Tätigkeiten": "Ügyfelek, építkezések és tevékenységek", "Schlechtwetter (Bau)": "Rossz idő (építkezés)", "Der Kollektivvertrag steht auf deinem Lohnzettel.": "A kollektív szerződés a bérjegyzéken áll.", "Welcher Kollektivvertrag gilt für dich?": "Melyik kollektív szerződés (Kollektivvertrag) vonatkozik rád?", "Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.": "A bérjegyzéken áll. Ha nem tudod, válaszd a „Nem tudom” lehetőséget, és állíts be mindent magad.", "Weiß ich nicht / eigene Werte": "Nem tudom / saját értékek", "Fast fertig. Jetzt noch dein Lohn.": "Mindjárt kész. Már csak a béred.", "Dein Lohn": "A béred", "Stundenlohn (€ pro Stunde)": "Órabér (€ óránként)", "Wochenstunden": "Heti órák", "Diäten (€ pro Stunde)": "Napidíj (€ óránként)", "Eintritt in die Firma (optional)": "Belépés a céghez (nem kötelező)", "Alles Weitere kannst du später in den Einstellungen nachtragen.": "A többit később pótolhatod a beállításokban.", "Noch nicht an einem echten Lohnzettel geprüft.": "Még nem ellenőriztük valódi bérjegyzéken.", "Bitte vergleiche die Werte später mit deinem Lohnzettel.": "Kérlek, később vesd össze az értékeket a bérjegyzékeddel.", "Weiter": "Tovább", "Zurück": "Vissza", "Fertig": "Kész", "Abbrechen": "Mégse", "Später": "Később", "Zeig mir": "Mutasd meg", "Mia ruhig stellen": "Mia elnémítása", "Mia wieder aktiv stellen": "Mia újra bekapcsolása", "Lkw-Fahrer": "Teherautó-sofőr", "Baggerfahrer / Maschinist": "Kotrógépkezelő / gépkezelő", "Kleintransport (bis 3,5 t)": "Kisáru-szállítás (3,5 t-ig)", "Mechaniker / Werkstatt": "Szerelő / műhely", "Handel / Verkauf": "Kereskedelem / eladás", "Gastronomie / Hotel": "Vendéglátás / szálloda", "Büro (Angestellte)": "Iroda (alkalmazott)", "Etwas anderes": "Valami más", "Baustelle / Kurzstrecke": "Építkezés / rövid táv", "Zustellung / Tour / Filiale": "Kiszállítás / túra / fiók", "Fernverkehr": "Távolsági fuvarozás", "Müllabfuhr": "Hulladékszállítás", "Service (Kellner, Bar)": "Felszolgálás (pincér, bár)", "Küche": "Konyha"}, "tr": {"Fertig. Du kannst jetzt deinen ersten Tag eintragen.": "Bitti. Şimdi ilk gününü girebilirsin.", "Erfassen": "Kayıt", "Übersicht": "Genel bakış", "Konto": "Hesap", "Einstellungen": "Ayarlar", "Datum": "Tarih", "Art des Tages": "Günün türü", "Beginn": "Başlangıç", "Ende": "Bitiş", "Jetzt": "Şimdi", "Zeiten wie am letzten Arbeitstag übernehmen": "Son iş gününün saatlerini al", "Pausen": "Molalar", "+ Pause hinzufügen": "+ Mola ekle", "Diätenstunden": "Harcırah saatleri", "Stunden": "Saatler", "Prämien": "Primler", "Speichern": "Kaydet", "Tag löschen": "Günü sil", "Arbeit": "İş", "Urlaub": "İzin", "Krankenstand": "Hastalık izni", "Pflegefreistellung": "Bakım izni", "Feiertag": "Resmi tatil", "Betrieb geschlossen / Betriebsurlaub": "İşyeri kapalı / toplu izin", "Zeitausgleich": "Mesai karşılığı izin", "Frei wegen Arztbesuch": "Doktor ziyareti için izinli", "Frei": "Boş gün", "Hallo! Wen möchtest du an deiner Seite haben?": "Merhaba! Yanında kimi istersin?", "Wer soll dich begleiten?": "Sana kim eşlik etsin?", "Weiblich": "Kadın", "Männlich": "Erkek", "Wie soll sie oder er heißen?": "Adı ne olsun?", "Damit ich alles passend einrichte: Was machst du?": "Her şeyi uygun ayarlamam için: ne iş yapıyorsun?", "Was machst du beruflich?": "Mesleğin ne?", "Noch eine Frage, dann weiß ich es.": "Bir soru daha, sonra biliyorum.", "Was beschreibt deine Arbeit am besten?": "İşini en iyi ne anlatır?", "Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.": "Ne kaydetmek istediğini söyle. Gerisini gizlerim.", "Was möchtest du aufzeichnen?": "Ne kaydetmek istiyorsun?", "Du kannst das jederzeit ändern.": "Bunu istediğin zaman değiştirebilirsin.", "Diäten": "Harcırah (Diäten)", "Fahrzeug und Kilometer": "Araç ve kilometre", "Kunden, Baustellen und Tätigkeiten": "Müşteriler, şantiyeler ve işler", "Schlechtwetter (Bau)": "Kötü hava (inşaat)", "Der Kollektivvertrag steht auf deinem Lohnzettel.": "Toplu iş sözleşmesi maaş bordronda yazar.", "Welcher Kollektivvertrag gilt für dich?": "Hangi toplu iş sözleşmesi (Kollektivvertrag) geçerli?", "Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.": "Maaş bordronda yazar. Bilmiyorsan „Bilmiyorum” seç ve her şeyi kendin ayarla.", "Weiß ich nicht / eigene Werte": "Bilmiyorum / kendi değerlerim", "Fast fertig. Jetzt noch dein Lohn.": "Neredeyse bitti. Şimdi ücretin.", "Dein Lohn": "Ücretin", "Stundenlohn (€ pro Stunde)": "Saatlik ücret (saat başına €)", "Wochenstunden": "Haftalık saat", "Diäten (€ pro Stunde)": "Harcırah (saat başına €)", "Eintritt in die Firma (optional)": "İşe giriş tarihi (isteğe bağlı)", "Alles Weitere kannst du später in den Einstellungen nachtragen.": "Gerisini daha sonra ayarlarda ekleyebilirsin.", "Noch nicht an einem echten Lohnzettel geprüft.": "Henüz gerçek bir maaş bordrosunda denenmedi.", "Bitte vergleiche die Werte später mit deinem Lohnzettel.": "Lütfen değerleri daha sonra bordronla karşılaştır.", "Weiter": "Devam", "Zurück": "Geri", "Fertig": "Bitti", "Abbrechen": "İptal", "Später": "Sonra", "Zeig mir": "Göster", "Mia ruhig stellen": "Mia’yı sustur", "Mia wieder aktiv stellen": "Mia’yı tekrar aç", "Lkw-Fahrer": "Kamyon şoförü", "Baggerfahrer / Maschinist": "Ekskavatör / makine operatörü", "Kleintransport (bis 3,5 t)": "Küçük nakliye (3,5 tona kadar)", "Mechaniker / Werkstatt": "Tamirci / atölye", "Handel / Verkauf": "Ticaret / satış", "Gastronomie / Hotel": "Gastronomi / otel", "Büro (Angestellte)": "Büro (memur / çalışan)", "Etwas anderes": "Başka bir şey", "Baustelle / Kurzstrecke": "Şantiye / kısa mesafe", "Zustellung / Tour / Filiale": "Teslimat / tur / şube", "Fernverkehr": "Uzun yol", "Müllabfuhr": "Çöp toplama", "Service (Kellner, Bar)": "Servis (garson, bar)", "Küche": "Mutfak"}};
-  var UI_PAT = { pl: 'Krok $1 z $2', hu: '$1. lépés / $2', tr: 'Adım $1 / $2', en: 'Step $1 of $2' };
-  var UI_ORIG = new WeakMap(), UI_SET = new WeakMap(), uiBusy = false;
-  function uiLang() { try { var l = localStorage.getItem('stundenchecker.lang'); if (l && MIA_LANGS[l]) return l; } catch (e) {} var n = ((navigator.language || 'de').slice(0, 2)).toLowerCase(); return MIA_LANGS[n] ? n : 'de'; }
+  /* ---- Oberfläche in vielen Sprachen: ersetzt deutsche Texte anhand der Dateien lang-xx.js; was fehlt, bleibt deutsch ---- */
+  var UI_ORIG = new WeakMap(), UI_SET = new WeakMap(), UI_RX = {}, uiBusy = false;
+  function uiLang() {
+    try { var l = localStorage.getItem('stundenchecker.lang'); if (l && MIA_LANGS[l]) return l; } catch (e) {}
+    var n = ((navigator.language || 'de').slice(0, 2)).toLowerCase(); n = UI_ALIAS[n] || n; return MIA_LANGS[n] ? n : 'de';
+  }
+  function uiDict(L) { return (window.UI_LANGS && window.UI_LANGS[L]) || null; }
+  function uiRx(L) {
+    if (UI_RX[L]) return UI_RX[L]; var d = uiDict(L); if (!d) return null;
+    var ks = Object.keys(d).filter(function (k) { return k.length >= 4 && d[k]; }).sort(function (x, y) { return y.length - x.length; });
+    var src = ks.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
+    try { UI_RX[L] = new RegExp('(?<![\\p{L}\\p{N}])(?:' + src + ')(?![\\p{L}])', 'gu'); } catch (e) { UI_RX[L] = null; }
+    return UI_RX[L];
+  }
+  function uiTr(de, L) {
+    var d = uiDict(L); if (!d) return null; var key = de.trim(); if (!key) return null;
+    var t = d[key]; if (t) return de.replace(key, t);
+    var mm = /^Schritt (\d+) von (\d+)$/.exec(key); if (mm && d['Schritt {1} von {2}']) return de.replace(key, d['Schritt {1} von {2}'].replace('{1}', mm[1]).replace('{2}', mm[2]));
+    var rx = uiRx(L); if (!rx) return null; var ch = false;
+    var out = de.replace(rx, function (k) { var v = d[k]; if (v) { ch = true; return v; } return k; });
+    return ch ? out : null;
+  }
   function uiTextNode(n, L) {
     var cur = n.nodeValue, de = UI_ORIG.get(n);
     if (de !== undefined && UI_SET.get(n) !== cur) de = undefined;
     if (de === undefined) de = cur;
-    var key = de.trim(), t = L !== 'de' && UI_DICT[L] ? UI_DICT[L][key] : null;
-    if (!t && L !== 'de' && UI_PAT[L]) { var mm = /^Schritt (\d+) von (\d+)$/.exec(key); if (mm) t = UI_PAT[L].replace('$1', mm[1]).replace('$2', mm[2]); }
-    if (t) { var nv = de.replace(key, t); UI_ORIG.set(n, de); UI_SET.set(n, nv); if (cur !== nv) n.nodeValue = nv; }
+    var t = L !== 'de' ? uiTr(de, L) : null;
+    if (t) { UI_ORIG.set(n, de); UI_SET.set(n, t); if (cur !== t) n.nodeValue = t; }
     else if (UI_ORIG.has(n) && UI_SET.get(n) === cur) { n.nodeValue = de; UI_ORIG.delete(n); UI_SET.delete(n); }
+  }
+  var UI_ATTR = ['placeholder', 'aria-label', 'title'];
+  function uiAttrs(root, L) {
+    var els = root.nodeType === 1 ? [root].concat([].slice.call(root.querySelectorAll('[placeholder],[aria-label],[title]'))) : [];
+    els.forEach(function (el) {
+      UI_ATTR.forEach(function (at) {
+        if (!el.hasAttribute(at)) return; var k = 'uio' + at.replace('-', ''), set = 'uis' + at.replace('-', ''), cur = el.getAttribute(at), de = el.dataset[k];
+        if (de !== undefined && el.dataset[set] !== cur) de = undefined; if (de === undefined) de = cur;
+        var t = L !== 'de' ? uiTr(de, L) : null;
+        if (t) { el.dataset[k] = de; el.dataset[set] = t; if (cur !== t) el.setAttribute(at, t); }
+        else if (el.dataset[k] !== undefined && el.dataset[set] === cur) { el.setAttribute(at, de); delete el.dataset[k]; delete el.dataset[set]; }
+      });
+    });
   }
   function uiWalk(root, L) {
     var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n, list = [];
-    while ((n = w.nextNode())) { var p = n.parentNode; if (p && (/^(SCRIPT|STYLE|H1)$/.test(p.nodeName) || (p.closest && p.closest('h1, .brand')))) continue; list.push(n); }
+    while ((n = w.nextNode())) { var p = n.parentNode; if (p && (/^(SCRIPT|STYLE|H1)$/.test(p.nodeName) || (p.closest && p.closest('h1, .brand, .nott')))) continue; list.push(n); }
     list.forEach(function (x) { uiTextNode(x, L); });
+    if (root.nodeType === 1) uiAttrs(root, L);
   }
   function uiApply(root) { if (uiBusy) return; uiBusy = true; try { uiWalk(root || document.body, uiLang()); } finally { uiBusy = false; } }
-  function uiSetLang(l) { var sl = $('#ui-lang'); if (sl) sl.value = l; var ml = $('#mia-lang'); if (ml) ml.value = l; try { localStorage.setItem('stundenchecker.lang', l); } catch (e) {} document.documentElement.lang = l; uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); }
+  function uiLoad(L, cb) {
+    if (L === 'de' || uiDict(L)) { cb(); return; }
+    var s = document.createElement('script'); s.src = 'lang-' + L + '.js' + (window.APP_VERSION ? '?v=' + window.APP_VERSION : '');
+    s.onload = function () { cb(); }; s.onerror = function () { cb(); }; document.head.appendChild(s);
+  }
+  function uiSetLang(l) {
+    try { localStorage.setItem('stundenchecker.lang', l); } catch (e) {}
+    var sl = $('#ui-lang'); if (sl) sl.value = l; var ml = $('#mia-lang'); if (ml) ml.value = l;
+    document.documentElement.lang = l; document.documentElement.dir = UI_RTL[l] ? 'rtl' : 'ltr';
+    uiLoad(l, function () { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); });
+  }
   (function () {
     var sl = $('#ui-lang'); if (sl) { sl.innerHTML = Object.keys(MIA_LANGS).map(function (k) { return '<option value="' + k + '">' + MIA_LANGS[k].n + '</option>'; }).join(''); sl.value = uiLang(); sl.addEventListener('change', function () { uiSetLang(this.value); }); }
-    if (!window.MutationObserver) return;
-    var mo = new MutationObserver(function (ms) {
-      if (uiBusy || uiLang() === 'de' && !document.documentElement.dataset.uiT) return;
-      uiBusy = true; mo.disconnect();
-      try { ms.forEach(function (m) { if (m.type === 'characterData') uiTextNode(m.target, uiLang()); else m.addedNodes.forEach(function (nd) { if (nd.nodeType === 3) uiTextNode(nd, uiLang()); else if (nd.nodeType === 1) uiWalk(nd, uiLang()); }); }); }
-      finally { mo.observe(document.body, { childList: true, subtree: true, characterData: true }); uiBusy = false; }
-    });
-    mo.observe(document.body, { childList: true, subtree: true, characterData: true });
-    if (uiLang() !== 'de') { document.documentElement.dataset.uiT = '1'; uiApply(document.body); }
-    document.documentElement.dataset.uiT = '1';
+    document.documentElement.lang = uiLang(); document.documentElement.dir = UI_RTL[uiLang()] ? 'rtl' : 'ltr';
+    if (window.MutationObserver) {
+      var mo = new MutationObserver(function (ms) {
+        if (uiBusy || uiLang() === 'de' && !uiDict('de')) { if (uiLang() === 'de') return; }
+        if (uiBusy) return; uiBusy = true; mo.disconnect();
+        try { ms.forEach(function (m) { if (m.type === 'characterData') uiTextNode(m.target, uiLang()); else if (m.type === 'attributes') uiAttrs(m.target, uiLang()); else m.addedNodes.forEach(function (nd) { if (nd.nodeType === 3) uiTextNode(nd, uiLang()); else if (nd.nodeType === 1) uiWalk(nd, uiLang()); }); }); }
+        finally { mo.observe(document.body, { childList: true, subtree: true, characterData: true }); uiBusy = false; }
+      });
+      mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+    uiLoad(uiLang(), function () { if (uiLang() !== 'de') { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); } });
   })();
 })();
