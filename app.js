@@ -703,6 +703,56 @@
     on('#mia-aktiv', 'change', function () { miaSet('ruhig', !this.checked); });
   })();
 
+
+  /* ---- Mia beantwortet Fragen (feste Antworten, kein Server) + Spracheingabe + Vorlesen ---- */
+  var MIA_FAQ = [
+    { t: 'Stunden eintragen', k: ['eintrag', 'stunden', 'beginn', 'ende', 'arbeitszeit', 'tag speichern', 'erfassen', 'zeit'], a: 'Öffne Erfassen. Tippe bei Beginn und Ende die Uhrzeit ein, trage die Pausen ein und tippe auf Speichern. Mit "Jetzt" nimmt die App die aktuelle Uhrzeit.' },
+    { t: 'Prämie anlegen', k: ['prämie', 'praemie', 'zulage', 'bonus', 'kran', 'anlegen'], a: 'Gehe zu Einstellungen, dann Prämien, und lege deine Prämie an (zum Beispiel pro Stunde, pro Tag oder pro Stück). Danach trägst du sie im Tag ein. Die App rechnet sie aus und vergleicht sie mit dem Lohnzettel.' },
+    { t: 'Lohnzettel prüfen', k: ['lohnzettel', 'abrechnung', 'prüfen', 'pruefen', 'stimmt', 'vergleich', 'abgleich', 'kontrol'], a: 'Öffne Übersicht und scrolle zu "Stimmt mein Lohnzettel?". Tippe die Stunden und Beträge von deinem Lohnzettel ab. Die App zeigt dir, was gleich ist und wo ein Unterschied in Stunden oder Euro bleibt. Du musst nicht alle Zeilen ausfüllen.' },
+    { t: 'Überstunden und Zuschläge', k: ['überstunden', 'ueberstunden', 'zuschlag', 'sonntag', 'samstag', 'feiertag', 'nacht', 'mehrarbeit'], a: 'Unter Einstellungen stehen Wochenstunden, Überstundenmodell und Zuschläge. Sie kommen aus deinem Kollektivvertrag. Ob sie stimmen, siehst du auf deinem Lohnzettel. Du kannst sie jederzeit ändern, auch ab einem Datum.' },
+    { t: 'Diäten / Taggeld', k: ['diäten', 'diaeten', 'taggeld', 'spesen', 'tagesgeld'], a: 'Diäten sind das Taggeld, das du zusätzlich bekommst. Unter Einstellungen, Diäten, stellst du ein, ob es pro Stunde oder pro Tag nach Stufen gezahlt wird. Den Betrag findest du auf deinem Lohnzettel.' },
+    { t: 'Lohn oder Beruf ändern', k: ['lohn ändern', 'lohn aendern', 'beruf', 'wechsel', 'neuer lohn', 'erhöhung', 'erhoehung', 'ab datum', 'stundenlohn'], a: 'Unter Einstellungen kannst du den Lohn oder den Beruf ab einem Datum ändern. Alte Tage bleiben mit den alten Werten gerechnet. So passt es auch nach einer Lohnerhöhung oder einem Jobwechsel.' },
+    { t: 'Urlaub oder Krankenstand', k: ['urlaub', 'krank', 'zeitausgleich', 'feiertag', 'frei', 'art des tages'], a: 'Wähle in Erfassen bei "Art des Tages" zum Beispiel Urlaub, Krankenstand oder Zeitausgleich. Dann musst du keine Uhrzeiten eintragen.' },
+    { t: 'Meine Daten und Datenschutz', k: ['daten', 'datenschutz', 'sicher', 'konto', 'speicher', 'weitergegeben', 'privat'], a: 'Deine Einträge liegen auf deinem Handy. Wenn du ein Konto hast, werden sie zusätzlich verschlüsselt auf einem Server in Frankfurt gesichert, damit nichts verloren geht. Niemand sonst sieht sie. Deine Lohnzettel-Zahlen tippst du selbst ab.' },
+    { t: 'Sicherung', k: ['sicherung', 'backup', 'verloren', 'wiederherstellen', 'handy wechsel'], a: 'Unter Konto findest du "Sicherung speichern oder teilen". Das speichert eine Datei mit allen deinen Daten. Damit kannst du alles auf einem neuen Handy wiederherstellen.' },
+    { t: 'App installieren', k: ['installier', 'startbildschirm', 'icon', 'symbol', 'app', 'link'], a: 'Öffne die Seite im Browser und tippe auf "App installieren" (Menü oben rechts). Falls Android warnt, tippe auf "Trotzdem installieren". Die App ist ungefährlich, sie ist nur diese Webseite.' },
+    { t: 'Sprache und Vorlesen', k: ['sprache', 'sprechen', 'mikrofon', 'diktier', 'vorlesen', 'deutsch'], a: 'Tippe bei deiner Frage an mich auf das Mikrofon und sprich. Mit "Vorlesen" lese ich dir meine Antwort vor. Das Mikrofon braucht Internet und deine Erlaubnis im Browser.' },
+    { t: 'Mia ruhig stellen', k: ['mia', 'milo', 'ruhig', 'weg', 'nervt', 'ausschalten', 'figur', 'name'], a: 'Tippe auf "Mia ruhig stellen", dann melde ich mich nicht mehr von selbst. Du kannst mich unter Konto wieder aktivieren, und dort auch Figur und Namen ändern.' }
+  ];
+  function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
+  function miaAnswer(q) {
+    var n = miaNorm(q), best = null, bs = 0;
+    MIA_FAQ.forEach(function (e) { var sc = 0; e.k.forEach(function (k) { if (n.indexOf(miaNorm(k)) >= 0) sc += k.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = e; } });
+    return best ? best.a : 'Das weiß ich noch nicht. Tippe auf eines der Themen unten, oder frage mit anderen Worten.';
+  }
+  function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
+  (function () {
+    function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
+    var chips = $('#mia-chips'); if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return '<button type="button" class="chip" data-faq="' + i + '">' + esc(e.t) + '</button>'; }).join('');
+    on('#mia-askbtn', 'click', function () { var p = $('#mia-ask'); p.hidden = !p.hidden; if (!p.hidden) { var q = $('#mia-q'); if (q) q.focus(); } });
+    on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) miaShowAns(MIA_FAQ[+b.dataset.faq].a); });
+    function send() { var q = $('#mia-q').value.trim(); if (q) miaShowAns(miaAnswer(q)); }
+    on('#mia-send', 'click', send);
+    on('#mia-q', 'keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); send(); } });
+    on('#mia-read', 'click', function () {
+      try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance($('#mia-ans').textContent); u.lang = 'de-DE'; var vs = speechSynthesis.getVoices().filter(function (v) { return /^de/i.test(v.lang); }); if (vs.length) u.voice = vs[0]; speechSynthesis.speak(u); } catch (e) {}
+    });
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = $('#mia-mic');
+    if (SR && mic) {
+      mic.hidden = false; var rec = null;
+      mic.addEventListener('click', function () {
+        if (rec) { try { rec.stop(); } catch (e) {} return; }
+        try {
+          rec = new SR(); rec.lang = 'de-DE'; rec.interimResults = false; rec.maxAlternatives = 1;
+          rec.onresult = function (ev) { var t = ev.results[0][0].transcript; $('#mia-q').value = t; send(); };
+          rec.onerror = function () { miaShowAns('Das Mikrofon geht gerade nicht. Erlaube es im Browser oder tippe deine Frage.'); };
+          rec.onend = function () { rec = null; mic.classList.remove('rec'); };
+          mic.classList.add('rec'); rec.start();
+        } catch (e) { rec = null; mic.classList.remove('rec'); }
+      });
+    }
+  })();
+
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
   var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }

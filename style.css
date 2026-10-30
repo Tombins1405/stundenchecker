@@ -377,3 +377,11 @@ body { padding-bottom: 100px; }
 .wzmia { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .wzmia .miasvg { width: 64px; height: 70px; flex: 0 0 auto; }
 .wzsay { background: #e7f1fb; color: #1f2937; border-radius: 14px; padding: 8px 12px; font-size: 0.95rem; }
+
+.askrow { display: flex; gap: 6px; margin-top: 8px; }
+.askrow input { flex: 1; min-width: 0; }
+.askchips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.askans { background: #e7f1fb; border-radius: 12px; padding: 10px; margin: 6px 0; }
+#mia-mic.rec { background: #fecaca; }
+.miabubble2 { max-height: 80vh; overflow-y: auto; }
+.askchips .chip { font-size: .9rem; font-weight: 600; letter-spacing: 0; text-transform: none; padding: 7px 12px; border: 1px solid var(--line, #cbd5e1); background: #fff; color: #1f2937; cursor: pointer; margin: 0; }
