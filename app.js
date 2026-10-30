@@ -1033,6 +1033,7 @@
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
     paketInfo(en);
     renderStufen(en);
+    renderLgBox(en);
     renderVerlauf();
     settingsVisibility(en);
   }
@@ -1124,6 +1125,28 @@
       : um === 'monat'
         ? 'Alle Stunden des Monats werden zusammengezählt, auch bezahlter Urlaub, Krankenstand und Feiertage. Davon werden die Sollstunden des Monats abgezogen: alle deine Arbeitstage (' + E.sollTage(en.ueberstunden).slice().sort(function (x, y) { return ((x + 6) % 7) - ((y + 6) % 7); }).map(function (d) { return WD[d]; }).join(', ') + '; Feiertage eingeschlossen) mal ' + fh(soll) + ' Stunden. Beispiel: ' + tage22 + ' Werktage ergeben ' + fh(tage22 * soll) + ' Sollstunden. Bei ' + fh(tage22 * soll + 11) + ' Stunden sind es 11,0 Überstunden. Im laufenden Monat wird nur bis heute gerechnet. Ein Tag ohne Eintrag, an dem du frei hattest, zieht Sollstunden ab. Trage ihn deshalb als Urlaub, Zeitausgleich oder Frei ein.'
         : 'Die Woche (Montag bis Sonntag) wird gerechnet. Stunden über der Tagesgrenze sind Überstunden, zum Beispiel alles ab Stunde ' + fh(gr) + ' an einem Tag. Dazu kommen Stunden, die über den Wochenstunden liegen. Beispiel bei Tagesgrenze ' + fh(gr) + ' und ' + fh(wo) + ' Wochenstunden: 5 Tage mit je ' + fh(gr) + ' Stunden sind ' + fh(5 * gr) + ' Stunden, minus ' + fh(wo) + ' = ' + fh(Math.max(0, 5 * gr - wo)) + ' Überstunden. Sonntage und Feiertage zählen über den Zuschlag.';
+  }
+  // Lohngruppe laut Kollektivvertrag auch in den Einstellungen: Gruppe und Stufe wählen, Stundenlohn übernehmen.
+  function stufeAusEintritt(ref) {
+    var e = data.profil && data.profil.eintritt; if (!e || !validISO(e)) return '';
+    var y = (new Date(ref + 'T00:00:00') - new Date(e + 'T00:00:00')) / 31557600000; if (!(y >= 0)) return '';
+    return y < 5 ? 0 : y < 10 ? 1 : y < 15 ? 2 : y < 20 ? 3 : 4;
+  }
+  function renderLgBox(en) {
+    var box = $('#s-lgbox'); if (!box) return;
+    var lg = E.LOHNGRUPPEN[en.paket]; if (!lg) { box.innerHTML = ''; return; }
+    var g = lg.gruppen.filter(function (x) { return x.id === en.lg; })[0];
+    var h = '<div class="field"><label for="s-lg">Lohngruppe laut Kollektivvertrag (' + esc(lg.stand) + ')</label><select id="s-lg"><option value="">Nicht gewählt</option>' +
+      lg.gruppen.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
+    if (g && lg.stufen) {
+      var ls = en.ls == null || en.ls === '' ? stufeAusEintritt(en.gueltigAb) : en.ls;
+      h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
+      en._lsVor = ls;
+    }
+    var i = lg.stufen ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null;
+    if (val != null) h += '<div class="btns"><button type="button" class="btn" id="s-lg-take">Mindestlohn übernehmen: ' + esc(eur.format(val)) + '</button></div>';
+    delete en._lsVor;
+    box.innerHTML = h; box.dataset.val = val != null ? val : '';
   }
   function renderStufen(en) {
     $('#s-stufen').innerHTML = (en.diaeten.stufen || []).map(function (s, i) {
@@ -1217,6 +1240,11 @@
   /* ============================================================ Ereignisse */
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
+    if (t.id === 's-lg-take') {
+      var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
+      if (enx && !isNaN(vx)) { enx.stundenlohn = vx; delete enx.test; save(); renderSettings(); toast('Stundenlohn übernommen.'); }
+      return;
+    }
     if (t.classList.contains('tab')) {
       if (t.dataset.view === 'erfassen') openEditor(todayISO(), 'erfassen'); else show(t.dataset.view);
       return;
@@ -1364,6 +1392,9 @@
   document.addEventListener('input', function (ev) { if (ev.target.id === 'e-date') return; onInput(ev); });
   document.addEventListener('change', function (ev) {
     var t = ev.target;
+    if (t.id === 's-lg' || t.id === 's-ls') {
+      var en0 = curEntry(); if (en0) { if (t.id === 's-lg') { en0.lg = t.value || null; en0.ls = null; } else en0.ls = t.value === '' ? null : +t.value; delete en0.test; save(); renderLgBox(en0); } return;
+    }
     if (t.id === 'b-file') {
       var f = t.files && t.files[0]; if (!f) return;
       var fr = new FileReader();
