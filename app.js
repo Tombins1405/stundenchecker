@@ -784,6 +784,7 @@
   /* Szene: Mia sitzt im Fahrzeug ihres Berufs (eigene Zeichnung, neutral, ohne Marke und Firmenlogo) */
   function miaScene(kind, f) {
     if (kind === 'bagger') return miaSceneBagger(f);
+    if (kind === 'transporter') return miaSceneTransporter(f);
     if (kind !== 'kipper') return '';
     var mia = '<g transform="translate(211 39) scale(.48)">' + miaInner(f, ['kappe']) + '</g>';
     var wheel = function (cx) { return '<g transform="translate(' + cx + ' 112)"><circle r="17" fill="#262626"/><circle r="17" fill="none" stroke="#111" stroke-width="2"/><g class="sc-spin"><circle r="10" fill="#d1d5db" stroke="#9ca3af" stroke-width="2"/><path d="M0-9v18M-9 0h18M-6.400-6.400l12.800 12.800M6.400-6.400l-12.800 12.800" stroke="#9ca3af" stroke-width="1.500"/></g><circle r="3" fill="#6b7280"/></g>'; };
@@ -815,6 +816,21 @@
       '<g class="sc-stick"><path d="M110 46L52 62L56 76L114 58Z" fill="url(#scTeal)" stroke="#0b6b70" stroke-width="2.500"/><circle cx="54" cy="69" r="5" fill="#9ca3af" stroke="#4b5563" stroke-width="2"/>' +
       '<g class="sc-bucket"><path d="M54 69L34 74Q26 92 40 100L62 96Q66 82 54 69Z" fill="#4b5563" stroke="#1f2937" stroke-width="2.500"/><path d="M36 99l-5 4M43 100l-4 5M51 98l-3 5" stroke="#9ca3af" stroke-width="2.500" stroke-linecap="round"/></g></g></g>' +
       '</g></svg>';
+  }
+  function miaSceneTransporter(f) {
+    var mia = '<g transform="translate(176 44) scale(.44)">' + miaInner(f, ['kappe']) + '</g>';
+    var wheel = function (cx) { return '<g transform="translate(' + cx + ' 111)"><circle r="16" fill="#262626"/><g class="sc-spin"><circle r="9" fill="#d1d5db" stroke="#9ca3af" stroke-width="2"/><path d="M0-8v16M-8 0h16M-5.600-5.600l11.200 11.200M5.600-5.600l-11.200 11.200" stroke="#9ca3af" stroke-width="1.500"/></g><circle r="2.800" fill="#6b7280"/></g>'; };
+    return '<svg class="scenesvg" viewBox="0 0 300 150" role="img" aria-label="Mia im Kleintransporter"><defs><linearGradient id="scSky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3f7"/><stop offset="1" stop-color="#eaf6fd"/></linearGradient><linearGradient id="scBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3e8ef"/></linearGradient><linearGradient id="scWin3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeefb"/><stop offset="1" stop-color="#8ec9e6"/></linearGradient><clipPath id="scClip3"><path d="M180 52H208Q212 52 214 56L220 80H180Z"/></clipPath></defs>' +
+      '<rect width="300" height="150" rx="14" fill="url(#scSky3)"/><path d="M0 104q40-30 90-8t110-12q50-8 100 12v54H0z" fill="#9bbf8a" opacity=".7"/><rect y="126" width="300" height="24" fill="#d9d2c3"/><path d="M0 126h300" stroke="#bdb5a3" stroke-width="2"/>' +
+      '<ellipse cx="150" cy="128" rx="118" ry="5" fill="rgba(0,0,0,.2)"/>' +
+      '<g class="sc-truck"><rect x="14" y="98" width="256" height="9" rx="3" fill="#374151"/>' +
+      '<path d="M18 100V46Q18 34 30 34H150Q164 34 168 46V100Z" fill="url(#scBox)" stroke="#9aa3af" stroke-width="2.500"/><path d="M34 40V96M58 40V96M82 40V96M106 40V96M130 40V96" stroke="#e5e7eb" stroke-width="2"/><rect x="18" y="92" width="150" height="8" fill="#cfd6df"/>' +
+      '<path d="M168 100V48Q168 40 176 40H196Q206 40 212 48L226 70L262 80Q270 82 270 92V100Z" fill="url(#scBox)" stroke="#9aa3af" stroke-width="2.500"/>' +
+      '<path d="M180 52H208Q212 52 214 56L220 80H180Z" fill="url(#scWin3)"/><g clip-path="url(#scClip3)">' + mia + '</g><path d="M180 52H208Q212 52 214 56L220 80H180Z" fill="none" stroke="#6b7280" stroke-width="2.500"/>' +
+      '<path d="M176 84H224" stroke="#b6bec9" stroke-width="2"/><path d="M174 46V98" stroke="#b6bec9" stroke-width="2"/><rect x="168" y="62" width="6" height="12" rx="2" fill="#374151"/><rect x="190" y="86" width="9" height="3" rx="1.500" fill="#6b7280"/>' +
+      '<path d="M262 84h6q3 0 3 4v6h-9z" fill="#fde047" stroke="#a16207" stroke-width="1"/><rect x="262" y="94" width="10" height="9" rx="2" fill="#1f2937"/><path d="M265 98h5" stroke="#9ca3af" stroke-width="1.500"/>' +
+      '<rect x="14" y="96" width="6" height="10" rx="2" fill="#374151"/>' +
+      wheel(60) + wheel(228) + '</g></svg>';
   }
   var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
   function miaFor(date) { var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
@@ -1075,7 +1091,7 @@
     if (w.mode === 'start') nSteps = 5;
     var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
-    var sc = (w.beruf === 'lkw' && w.art === 'baustelle') ? miaScene('kipper', w.mia === 'm' ? 'm' : 'w') : (w.beruf === 'bagger' ? miaScene('bagger', w.mia === 'm' ? 'm' : 'w') : '');
+    var sc = (w.beruf === 'lkw' && w.art === 'baustelle') ? miaScene('kipper', w.mia === 'm' ? 'm' : 'w') : (w.beruf === 'bagger' ? miaScene('bagger', w.mia === 'm' ? 'm' : 'w') : ((w.beruf === 'klein' || (w.beruf === 'lkw' && w.art === 'tour')) ? miaScene('transporter', w.mia === 'm' ? 'm' : 'w') : ''));
     if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
     else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + '</p>';
