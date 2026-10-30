@@ -848,6 +848,7 @@
   function miaNext() {
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
+    if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute alles zeigen? Wir fangen bei den Einstellungen an.' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
@@ -857,7 +858,8 @@
     return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
-    if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
+    if (k === 'rundgang') { tourStart(); }
+    else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'tag') { show('erfassen'); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('monat'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
@@ -896,6 +898,7 @@
     }, 26000);
     on('#mia-btn', 'click', function () { if (!$('#mia-bubble').hidden) { miaClose('mouth'); return; } miaOpen(false); });
     on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
+    on('#mia-tour', 'click', function () { miaClose('mouth'); tourStart(); });
     on('#mia-later', 'click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
     on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
     on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
@@ -1062,6 +1065,8 @@
   function tourSteps() {
     var w = wAt(todayISO()), b = w.beruf || '', gl = w.ueberstunden && w.ueberstunden.modell === 'gleit';
     var s = [{ t: 'Ich zeige dir in einer Minute, wie alles funktioniert. Du kannst jederzeit beenden.' },
+      { v: 'einstellungen', sel: '#s-lohn', t: 'Wir fangen bei den Einstellungen an. Hier steht dein Stundenlohn. Er gilt immer ab einem Datum, deshalb stimmt auch ein alter Monat noch.' },
+      { v: 'einstellungen', sel: '#s-praemien', t: 'Prämien und Zulagen legst du hier an. Schau auf deinen Lohnzettel, dort stehen sie meistens.' },
       { v: 'erfassen', sel: '#e-status', t: 'Hier wählst du die Art des Tages: Arbeit, Urlaub, Krankenstand oder Zeitausgleich. Bei Urlaub und Krankenstand brauchst du keine Uhrzeiten.' },
       { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
       { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
@@ -1070,7 +1075,6 @@
     s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
     s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
     s.push({ v: 'monat', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
-    s.push({ v: 'einstellungen', sel: '[data-view=einstellungen]', t: 'In den Einstellungen findest du Stundenlohn, Zuschläge, Prämien und Diäten.' });
     s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Konto: deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
     s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
     return s;
@@ -1138,7 +1142,7 @@
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
-    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); if (!(data.profil && data.profil.tourDone)) setTimeout(tourStart, 1600); }
+    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
     else { toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '.'); renderSettings(); }
   }
   function lohnGruppenHtml(w) {
