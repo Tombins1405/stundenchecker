@@ -211,6 +211,7 @@
       <div class="grid2">
         <div class="field" id="k-blwrap" hidden><label for="k-bl">Bundesland (für die Feiertage)</label><select id="k-bl"></select></div>
         <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"></div>
+        <div class="field"><label for="k-lztag">Lohnzettel kommt meist um den … des Monats</label><input type="number" id="k-lztag" inputmode="numeric" min="1" max="31" step="1" placeholder="10"><small>Mia fragt erst ab diesem Tag nach deinem Lohnzettel.</small></div>
         <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"></div>
       </div>
       <div class="grid2">
@@ -429,7 +430,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261030121444";</script>
+<script>window.APP_VERSION="20261030151810";</script>
 <script src="engine.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>

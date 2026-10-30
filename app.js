@@ -318,6 +318,7 @@
     if (kbl) { $('#k-blwrap').hidden = !(pkc && pkc.land === 'DE'); kbl.innerHTML = '<option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (p.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join(''); }
     $('#k-eintritt').value = p.eintritt || '';
     $('#k-urlaubjahr').value = p.urlaubJahr == null ? '' : p.urlaubJahr;
+    $('#k-lztag').value = p.lzTag == null ? '' : p.lzTag;
     $('#k-urlaubstart').value = p.urlaubStart == null ? '' : p.urlaubStart;
     $('#k-zastart').value = p.zaStart == null ? '' : p.zaStart;
     $('#k-kmvortag').checked = p.kmVortag !== false;
@@ -361,6 +362,7 @@
     if (!data.profil) data.profil = {};
     if (id === 'k-eintritt') { if (t.value === '' || validISO(t.value)) { data.profil.eintritt = t.value || null; delete data.profil.test; save(); renderKonten(); } return true; }
     if (id === 'k-bl') { data.profil.bl = t.value || ''; save(); renderKonten(); return true; }
+    if (id === 'k-lztag') { data.profil.lzTag = (val >= 1 && val <= 31) ? Math.round(val) : null; delete data.profil.test; save(); return true; }
     if (id === 'k-urlaubjahr') { data.profil.urlaubJahr = val; delete data.profil.test; save(); return true; }
     if (id === 'k-urlaubstart') { data.profil.urlaubStart = val; delete data.profil.test; save(); return true; }
     if (id === 'k-kmvortag') { data.profil.kmVortag = !!t.checked; delete data.profil.test; save(); return true; }
@@ -684,7 +686,8 @@
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
     var cnt = Object.keys(data.days).filter(function (k) { return k.slice(0, 7) === pk.key; }).length;
-    if (cnt >= 5 && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
+    var lzt = (data.profil && data.profil.lzTag) || 10; // Mia fragt erst ab dem Tag, an dem der Lohnzettel meist kommt
+    if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
     return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
