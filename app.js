@@ -1781,6 +1781,7 @@
         return;
       }
       case 'b-restore': arm(t, 'Daten wirklich ersetzen?', function () { restoreFrom($('#b-text').value); }); return;
+      case 'ab-clear': arm(t, 'Wirklich alle löschen?', function () { var key = ui.y + '-' + pad(ui.m); if (data.abgleich) delete data.abgleich[key]; save(); renderMonat(); toast('Die Eingaben dieses Monats sind gelöscht.'); }); return;
       case 'b-wipe': arm(t, 'Wirklich alles löschen?', function () { data = { version: 1, settings: [], days: {}, abgleich: {}, profil: {} }; save(); ui.setKey = null; ui.edDate = null; toast('Alle Daten gelöscht.'); show('monat'); }); return;
       case 't-load': loadTest(); return;
       case 't-remove': removeTest(); return;
