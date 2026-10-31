@@ -2235,21 +2235,25 @@
     $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
     $('#rb-share').addEventListener('click', function () {
       merken(); var erg; try { erg = bauen(); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); return; }
-      ins('bericht_' + erg.typ); var betreff = 'Stundenbericht', txt = 'Hallo, anbei mein Bericht.';
-      var fl = null; try { fl = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
-      if (fl && navigator.share) {
-        var p; try { p = navigator.share({ files: [fl], title: betreff, text: txt }); } catch (e) { p = null; }
-        if (p && p.then) { p.then(function () { }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); fertigHilfe(erg); }); return; }
-      }
-      ins('bericht_share_fehlt'); speichern(erg); fertigHilfe(erg);
+      ins('bericht_' + erg.typ); fertigHilfe(erg);
     });
+    /* Auf jedem Gerät derselbe Ablauf: erst fertig melden, dann der Nutzer wählt. Das Teilen-Fenster des Geräts ist nur eine der Möglichkeiten. */
     function fertigHilfe(erg) {
       var mail = $('#rb-mail').value.trim();
       $('#rb-dh').textContent = 'Dein Bericht ist fertig';
-      $('#rb-dbody').innerHTML = '<p>Tippe, falls gefragt, auf „Herunterladen“. Danach schickst du die Datei so:</p><p>1. Öffne WhatsApp oder deine E-Mail.<br>2. Tippe auf die Büroklammer oder das Plus.<br>3. Wähle „Dokument“ oder „Datei“, dann den Ordner „Downloads“ und diese Datei:<br><b>' + esc(erg.name) + '</b></p>';
-      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button><button type="button" class="btn" id="rb-zu">Fertig</button>';
+      $('#rb-dbody').innerHTML = '<p><b>' + esc(erg.name) + '</b></p><p>Tippe auf „Senden“. Wenn sich nichts öffnet, tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>';
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-send">Senden</button><button type="button" class="btn" id="rb-sp">PDF speichern</button><button type="button" class="btn" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button><button type="button" class="btn" id="rb-zu">Fertig</button>';
       $('#rb-dlg').hidden = false;
       $('#rb-zu').onclick = function () { $('#rb-dlg').hidden = true; };
+      $('#rb-sp').onclick = function () { speichern(erg); };
+      $('#rb-send').onclick = function () {
+        var fl = null; try { fl = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
+        if (fl && navigator.share) {
+          var p; try { p = navigator.share({ files: [fl], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { p = null; }
+          if (p && p.then) { p.then(function () { }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); }); return; }
+        }
+        ins('bericht_share_fehlt'); speichern(erg);
+      };
       $('#rb-wa').onclick = function () { location.href = 'https://wa.me/?text=' + encodeURIComponent('Hallo, anbei mein Bericht.'); };
       $('#rb-ml').onclick = function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent('Stundenbericht') + '&body=' + encodeURIComponent('Hallo, anbei mein Bericht. (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); };
     }
