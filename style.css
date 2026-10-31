@@ -506,3 +506,15 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .lzrow { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .lzrow b { font-variant-numeric: tabular-nums; }
 .lzrow select { grid-column: 1 / -1; max-width: 100%; }
+
+/* Geburtstag */
+.bdbox { position: relative; overflow: hidden; text-align: center; justify-items: center; }
+#bd-conf { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#bd-conf i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; animation: bdfall 3.2s linear infinite; }
+@keyframes bdfall { to { transform: translateY(520px) rotate(540deg); } }
+#bd-mia { display: flex; gap: 12px; align-items: flex-end; justify-content: center; position: relative; }
+.bdtanz { width: 92px; animation: bdtanz .7s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes bdtanz { from { transform: rotate(-9deg) translateY(0); } to { transform: rotate(9deg) translateY(-12px); } }
+.bdfoto { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent, #2a7); }
+.bdbox h3, .bdbox p, .bdbox .btns { position: relative; }
+@media (prefers-reduced-motion: reduce) { .bdtanz, #bd-conf i { animation: none; } }

@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261031194812">
+<link rel="stylesheet" href="style.css?v=20261031202542">
 </head>
 <body>
 
@@ -128,14 +128,6 @@
         <p>Die App zählt alle Stunden des Monats zusammen, auch bezahlten Urlaub, Krankenstand und Feiertage. Davon zieht sie die Sollstunden ab: alle deine Arbeitstage (Standard Montag bis Freitag) mal Tagessoll. Was darüber liegt, sind die Überstunden. Den Rest teilt sie auf die Zeilen „Lohn“, „Feiertagslohn“, „Urlaub“ und „Krankenstand“ auf, so wie es auch dein Lohnzettel macht. Das passt, wenn in den Einstellungen „Pro Monat“ gewählt ist.</p>
       </details>
     </div>
-    <details id="rb-card" class="card rbcard"><summary><strong>Bericht an die Firma</strong></summary>
-      <div class="field"><label for="rb-art">Welcher Bericht?</label><select id="rb-art"><option value="tag">Tagesbericht</option><option value="woche">Wochenbericht</option><option value="halb">Halbmonatsbericht (1.–15. oder 16.–Ende)</option><option value="monat">Monatsbericht</option></select></div>
-      <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
-      <div class="field"><label for="rb-name">Dein Name auf dem Bericht</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
-      <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
-      <div class="field"><label for="rb-sig">Meine Unterschrift (mit dem Finger)</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
-      <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
-    </details>
     <ul id="m-days" class="days"></ul>
   </section>
 
@@ -234,6 +226,15 @@
         <button type="button" class="btn danger" id="e-delete">Tag löschen</button>
       </div>
     </form>
+    <details id="rb-card" class="card rbcard"><summary><strong>Bericht an die Firma</strong></summary>
+      <div class="field"><label for="rb-art">Welcher Bericht?</label><select id="rb-art"><option value="tag">Tagesbericht</option><option value="woche">Wochenbericht</option><option value="halb">Halbmonatsbericht (1.–15. oder 16.–Ende)</option><option value="monat">Monatsbericht</option></select></div>
+      <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
+      <div class="field" id="rb-namewrap" hidden><label for="rb-name">Dein Name auf dem Bericht</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
+      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select><small>Danach frage ich dich nach dem Speichern, ob du ihn gleich senden willst.</small></div>
+      <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
+      <div class="field"><label for="rb-sig">Meine Unterschrift (mit dem Finger)</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
+      <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
+    </details>
   </section>
 
   <!-- ============ KONTEN ============ -->
@@ -266,12 +267,12 @@
     </div>
     <div class="card">
       <h3>Urlaubskartei</h3>
-      <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, Endsaldo). Dann siehst du sofort, ob es passt.</p>
+      <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, letzte Zahl „Endsaldo“ = Resturlaub). Dann siehst du sofort, ob es passt.</p>
       <div id="k-urlaub"></div>
     </div>
     <div class="card">
       <h3>Zeitausgleich-Konto</h3>
-      <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Die Veränderung trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“).</p>
+      <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Wie viele Stunden in diesem Monat aufs Konto gebucht oder abgebaut wurden, trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“). „Konto neu“ ist dein Stand danach.</p>
       <div id="k-za"></div>
     </div>
     <div class="card">
@@ -337,6 +338,10 @@
         <div class="field"><label for="kv-wst">Wochenstunden laut Vertrag</label><input type="number" id="kv-wst" inputmode="decimal" min="0" max="60" step="0.5"></div>
         <button type="button" class="btn" id="kv-send">Speichern und an den Entwickler schicken</button>
       </details>
+      <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
+      <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
+      <div class="field"><label for="s-geb">Geburtsdatum (freiwillig, für einen Geburtstagsgruß)</label><input type="date" id="s-geb"></div>
+      <div class="field"><label for="s-foto">Profilbild (freiwillig, bleibt nur auf diesem Handy)</label><input type="file" id="s-foto" accept="image/*"><div id="s-fotobox"></div></div>
       <div class="field"><label for="s-firma">Meine Firma (steht auf den Berichten)</label><input type="text" id="s-firma" maxlength="80" autocomplete="organization" placeholder="zum Beispiel Lagermax Vienna Line"></div>
     </div>
 
@@ -518,20 +523,22 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+<div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
+<div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261031194812";</script>
-<script src="engine.js?v=20261031194812"></script>
+<script>window.APP_VERSION="20261031202542";</script>
+<script src="engine.js?v=20261031202542"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261031194812"></script>
-<script src="timepicker.js?v=20261031194812"></script>
-<script src="pdf.js?v=20261031194812"></script>
-<script src="lzread.js?v=20261031194812"></script>
-<script src="app.js?v=20261031194812"></script>
-<script src="auth.js?v=20261031194812"></script>
-<script src="sync.js?v=20261031194812"></script>
-<script src="insights.js?v=20261031194812"></script>
+<script src="firebase-config.js?v=20261031202542"></script>
+<script src="timepicker.js?v=20261031202542"></script>
+<script src="pdf.js?v=20261031202542"></script>
+<script src="lzread.js?v=20261031202542"></script>
+<script src="app.js?v=20261031202542"></script>
+<script src="auth.js?v=20261031202542"></script>
+<script src="sync.js?v=20261031202542"></script>
+<script src="insights.js?v=20261031202542"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
