@@ -25,6 +25,10 @@
       if (m && /abrechnung|lohn|gehalt/.test(t)) return { y: +m[2], m: MON[m[1]] };
     }
     for (var j = 0; j < lines.length; j++) { var t2 = normMon(lines[j]), m2 = /(jaenner|januar|februar|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(20\d\d)/.exec(t2); if (m2) return { y: +m2[2], m: MON[m2[1]] }; }
+    for (var k = 0; k < lines.length; k++) { // Schreibweise 09/2026 oder 9.2026, nur in Zeilen über die Abrechnung
+      var t3 = normMon(lines[k]); if (!/abrechnung|lohn|gehalt|monat|zeitraum/.test(t3)) continue;
+      var m3 = /(?:^|\D)(0?[1-9]|1[0-2])\s*[\/.\-]\s*(20\d\d)(?!\d)/.exec(lines[k]); if (m3) return { y: +m3[2], m: +m3[1] };
+    }
     return null;
   }
   // lines: Textzeilen. gelernt: { normierteBezeichnung: key|'-' } aus früheren bestätigten Lohnzetteln.
