@@ -43,6 +43,25 @@
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
       zeilen.push({ label: label, norm: n, menge: menge, key: key });
     });
+    // Zeilen ohne „h“ (zum Beispiel „Lohn 160,00 13,34 2.134,82“): der Nutzer wählt einmal die Art und die Zahl, die App merkt es sich
+    var NUM = /\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2}/g, PERS = /iban|bic\b|@|tel\.|sv-?nr|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b|gmbh|\bag\b/i, schon = {};
+    zeilen.forEach(function (q) { schon[q.norm] = 1; });
+    var kand = [];
+    lines.forEach(function (ln) {
+      if (/€/.test(ln) || PERS.test(ln)) return;
+      var nums = String(ln).match(NUM); if (!nums) return;
+      var i0 = String(ln).search(NUM), label = String(ln).slice(0, i0).replace(/^[\s\d.,:\-–/]+/, '').replace(/\s+/g, ' ').trim();
+      if (!/[A-Za-zÄÖÜäöüß]{3}/.test(label) || label.length > 48) return;
+      var n = norm(label); if (n.length < 3 || schon[n] || /^(bem|sv|lst|bv)/.test(n)) return;
+      var key = null, pos = 0, rk = null;
+      if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length) pos = 0; }
+      else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
+      var menge = zahl(nums[pos]); if (isNaN(menge)) return;
+      if (key === null && rk && menge <= 400) key = rk[1];
+      var dup = n + '|' + nums.join(' '); if (schon[dup]) return; schon[dup] = 1;
+      kand.push({ label: label, norm: n, menge: menge, key: key, nums: nums, pos: pos, unsicher: true });
+    });
+    kand.slice(0, 25).forEach(function (q) { zeilen.push(q); });
     return { monat: monat(lines), zeilen: zeilen, lines: lines };
   }
   // Aus pdf.js-Textstücken Zeilen bauen (gleiche Höhe = eine Zeile).
@@ -76,6 +95,6 @@
       });
     });
   }
-  var api = { parse: parse, norm: norm, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  var api = { parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
