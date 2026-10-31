@@ -474,3 +474,5 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .wzfehlt { margin-top: 12px; }
 .wzfehlt summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .wzfehlt textarea { width: 100%; }
+.rbcard { margin: 12px 0; }
+.rbcard summary { cursor: pointer; padding: 6px 0; }

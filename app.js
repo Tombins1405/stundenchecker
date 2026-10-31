@@ -2027,4 +2027,82 @@
     }
     uiLoad(uiLang(), function () { if (uiLang() !== 'de') { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); } });
   })();
+  /* ---- Berichte als PDF (Tag, Woche, Monat) ---- */
+  (function () {
+    var card = $('#rb-card'); if (!card) return;
+    function hh(min) { return fh(min / 60) + ' h'; }
+    function addDays(s, n) { var p = E.parseISO(s), d = new Date(p.y, p.m - 1, p.d + n); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
+    function tageVon(von, bis) {
+      var res = [], cache = {};
+      for (var s = von; s <= bis; s = addDays(s, 1)) {
+        var p = E.parseISO(s), key = p.y + '-' + p.m;
+        if (!cache[key]) cache[key] = E.calcMonth(data, p.y, p.m, todayISO());
+        var r = cache[key].tage.filter(function (x) { return x.datum === s; })[0]; if (r) res.push(r);
+      }
+      return res;
+    }
+    function art(r) { var d = data.days[r.datum] || {}; return r.leer ? (r.typ !== 'werktag' ? (r.feiertag || (r.typ === 'sonntag' ? 'Sonntag' : r.typ === 'samstag' ? 'Samstag' : 'frei')) : '') : (r.status === 'arbeit' ? (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Arbeit') : E.STATUS[r.status].name) + (r.feiertag ? ' (' + r.feiertag + ')' : ''); }
+    function kopf(titel, zeitraum) {
+      var nm = ($('#rb-name').value || '').trim(), pr = data.profil || {};
+      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || ' '], [titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]] }];
+    }
+    function tabelleTage(tage) {
+      var sum = 0, rows = tage.map(function (r) {
+        var d = data.days[r.datum] || {}; sum += r.nettoMin || 0;
+        var nm = []; (d.kunden || []).forEach(function (k) { if (k.name) nm.push(k.name); });
+        return [WD[E.weekday(r.datum)] + ' ' + fmtDate(r.datum).replace(/\.\d{4}$/, '.'), art(r), d.von && d.bis ? d.von + '–' + d.bis : '', r.pausenMin ? hm(r.pausenMin) : '', r.nettoMin ? hh(r.nettoMin) : '', nm.join(', ')];
+      }).filter(function (c) { return c[1] || c[2] || c[4]; });
+      var mitK = rows.some(function (c) { return c[5]; });
+      rows.push({ cells: ['Summe', '', '', '', hh(sum), ''], bold: true });
+      if (!mitK) rows = rows.map(function (r) { var c = (r.cells || r).slice(0, 5); return r.cells ? { cells: c, bold: r.bold } : c; });
+      return { t: 'table', cols: mitK ? [{ w: 70 }, { w: 85 }, { w: 75 }, { w: 45 }, { w: 55, al: 'r' }, { w: 120 }] : [{ w: 90 }, { w: 130 }, { w: 100 }, { w: 60 }, { w: 70, al: 'r' }], head: mitK ? ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden', 'Kunden'] : ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden'], rows: rows };
+    }
+    function bauen() {
+      var typ = $('#rb-art').value, ds = $('#rb-datum').value || todayISO(), p = E.parseISO(ds), b, name;
+      if (typ === 'tag') {
+        var r = tageVon(ds, ds)[0], d = data.days[ds] || {}; name = 'Tagesbericht-' + ds;
+        b = kopf('Tagesbericht', WD[E.weekday(ds)] + ', ' + fmtDate(ds));
+        b.push({ t: 'kv', rows: [['Art', art(r) || '–'], ['Arbeitszeit', d.von && d.bis ? d.von + ' bis ' + d.bis : '–'], ['Pause', r.pausenMin ? hm(r.pausenMin) : '–'], ['Stunden gesamt', r.nettoMin ? hh(r.nettoMin) : '–']] });
+        var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; });
+        if (fz.length) { b.push({ t: 'h2', text: 'Fahrzeuge' }); b.push({ t: 'table', cols: [{ w: 80 }, { w: 65, al: 'r' }, { w: 65, al: 'r' }, { w: 55, al: 'r' }, { w: 50, al: 'r' }, { w: 50, al: 'r' }, { w: 45, al: 'r' }], head: ['Kennzeichen', 'km Anfang', 'km Ende', 'gefahren', 'Diesel l', 'AdBlue l', 'Öl l'], rows: fz.map(function (f) { var a = f.kmVon, e = f.kmBis; return [f.kfz, a == null || a === '' ? '' : a, e == null || e === '' ? '' : e, a !== '' && e !== '' && a != null && e != null ? (e - a) + ' km' : '', f.diesel == null ? '' : f.diesel, f.adblue == null ? '' : f.adblue, f.oel == null ? '' : f.oel]; }) }); }
+        var kr = []; (d.kunden || []).forEach(function (k) { var ts = (k.taet && k.taet.length ? k.taet : [{ tat: '', von: '', bis: '' }]); ts.forEach(function (t, i) { kr.push([i === 0 ? k.name : '', t.tat || '', t.von && t.bis ? t.von + '–' + t.bis : (t.von || '')]); }); });
+        if (kr.length) { b.push({ t: 'h2', text: 'Kunden und Tätigkeiten' }); b.push({ t: 'table', cols: [{ w: 150 }, { w: 220 }, { w: 90 }], head: ['Kunde', 'Tätigkeit', 'Zeit'], rows: kr }); }
+        if (d.notiz) b.push({ t: 'p', text: 'Anmerkung: ' + d.notiz });
+        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+      } else if (typ === 'woche') {
+        var wd = E.weekday(ds), mo = addDays(ds, -((wd + 6) % 7)), so = addDays(mo, 6); name = 'Wochenbericht-' + mo;
+        b = kopf('Wochenbericht', fmtDate(mo) + ' bis ' + fmtDate(so)); b.push(tabelleTage(tageVon(mo, so)));
+        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+      } else if (typ === 'halb') {
+        var h1 = p.d <= 15, v2 = E.iso(p.y, p.m, h1 ? 1 : 16), b2 = E.iso(p.y, p.m, h1 ? 15 : new Date(p.y, p.m, 0).getDate()); name = 'Halbmonatsbericht-' + v2;
+        b = kopf('Halbmonatsbericht', fmtDate(v2) + ' bis ' + fmtDate(b2)); b.push(tabelleTage(tageVon(v2, b2)));
+        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+      } else {
+        var von = E.iso(p.y, p.m, 1), bis = E.iso(p.y, p.m, new Date(p.y, p.m, 0).getDate()), cm = E.calcMonth(data, p.y, p.m, todayISO()), s = cm.summe; name = 'Monatsbericht-' + p.y + '-' + pad(p.m);
+        b = kopf('Monatsbericht', MON[p.m - 1] + ' ' + p.y);
+        var kv = [['Gearbeitet', fh(s.istStd) + ' h']]; if (s.lohnStd !== s.istStd) kv.push(['Lohnstunden', fh(s.lohnStd) + ' h']);
+        if (s.arbeitstage) kv.push(['Arbeitstage', '' + s.arbeitstage]); if (s.urlaub) kv.push(['Urlaubstage', '' + s.urlaub]); if (s.krank) kv.push(['Krankenstand', s.krank + ' Tage']);
+        b.push({ t: 'kv', rows: kv }); b.push(tabelleTage(cm.tage)); b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+      }
+      return { bytes: window.StundenPdf.build(b), name: name + '.pdf', typ: typ };
+    }
+    function speichern(erg) {
+      var bl = new Blob([erg.bytes], { type: 'application/pdf' }), ur = URL.createObjectURL(bl), an = document.createElement('a');
+      an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
+      toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
+    }
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtMail = $('#rb-mail').value.trim(); try { save(); } catch (e) { } }
+    card.addEventListener('toggle', function () { if (!card.open) return; var pr = data.profil || {}; if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (!$('#rb-datum').value) { var t = todayISO(), p = E.parseISO(t); $('#rb-datum').value = (p.y === ui.y && p.m === ui.m) ? t : E.iso(ui.y, ui.m, 1); } });
+    $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
+    $('#rb-share').addEventListener('click', function () {
+      merken(); var erg; try { erg = bauen(); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); return; }
+      ins('bericht_' + erg.typ); var mail = $('#rb-mail').value.trim(), betreff = 'Stundenbericht', txt = 'Hallo, anbei mein Bericht.';
+      try {
+        var fl = new File([erg.bytes], erg.name, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [fl] })) { navigator.share({ files: [fl], title: betreff, text: txt }).catch(function (er) { if (er && er.name !== 'AbortError') speichern(erg); }); return; }
+      } catch (e) { }
+      speichern(erg);
+      if (mail) setTimeout(function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(txt + ' (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); }, 600);
+    });
+  })();
 })();
