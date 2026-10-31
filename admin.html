@@ -22,7 +22,7 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left
 <div class="card"><h2>Überblick</h2><div id="ov"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cp">Alles kopieren</button><button id="dl">Als Textdatei speichern</button></div><small class="mut" id="cpm"></small></div>
 <div class="card"><h2>Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
 <div class="card"><h2>Mia</h2><div id="mi"></div></div>
-<div class="card"><h2>Rückmeldungen</h2><div id="fbl"></div></div>
+<div class="card"><h2>Rückmeldungen</h2><div id="fbf" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button type="button" data-f="offen">Offen</button><button type="button" data-f="erledigt">Erledigt</button><button type="button" data-f="alle">Alle</button></div><p class="mut" id="fbm"></p><div id="fbl"></div></div>
 <div class="card"><h2>Anmeldungen (neueste zuerst)</h2><div class="scroll" id="an"></div></div>
 <div class="card"><h2>Konten</h2><div class="scroll" id="pl"></div></div>
 <div class="card"><h2>Was hat wer ausgelöst? (je Konto)</h2><div id="wk"></div></div>
@@ -55,9 +55,28 @@ function report(P,F,M,S,fun,mm,mia){
  var L=['STUNDEN-CHECKER VERWALTUNG, Stand '+new Date().toLocaleString('de-AT'),'',
  'ÜBERBLICK','Konten: '+P.length+', Rückmeldungen: '+F.length,'Berufe: '+count(P,'beruf').replace(/&amp;/g,'&'),'Sprachen: '+count(P,'lang'),'Versionen: '+count(P,'version'),'',
  'NUTZUNG DER FUNKTIONEN',pl(fun),'','MIA',pl(mm),'Themen:',pl(mia,'mia_t_'),'',
- 'RÜCKMELDUNGEN'].concat(F.length?F.map(function(x){return '['+art(x)+'] '+(x.email||'ohne Konto')+', '+fmt(x.t)+'\n'+(x.text||'')+(x.img?'\n(mit Bild)':'')}):['- keine'],['','KONTEN'],P.map(function(x){return '- '+x.email+' | Beruf '+(x.beruf||x.paket||'?')+' | '+(x.tage||0)+' Tage | aktiv 7/30: '+aktiv(x,7)+'/'+aktiv(x,30)+' | '+(x.lang||'')+' | Version '+(x.version||'?')+' | zuletzt '+fmt(x.lastSeen)}),['','FRAGEN, DIE MIA NICHT BEANTWORTEN KONNTE'],M.length?M.map(function(x){return '- '+x.text+' ('+(x.lang||'')+', '+fmt(x.t)+')'}):['- keine'],['','ABWEICHUNGEN (anonym)'],S.length?S.map(function(x){return '- '+x.monat+' '+(x.beruf||x.paket||'')+': '+(x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')}):['- keine']);
+ 'RÜCKMELDUNGEN (nur offene)'].concat(F.filter(function(x){return st(x)!=='erledigt'}).length?F.filter(function(x){return st(x)!=='erledigt'}).map(function(x){return '['+art(x)+'] '+(x.email||'ohne Konto')+', '+fmt(x.t)+'\n'+(x.text||'')+(x.img?'\n(mit Bild)':'')}):['- keine'],['','KONTEN'],P.map(function(x){return '- '+x.email+' | Beruf '+(x.beruf||x.paket||'?')+' | '+(x.tage||0)+' Tage | aktiv 7/30: '+aktiv(x,7)+'/'+aktiv(x,30)+' | '+(x.lang||'')+' | Version '+(x.version||'?')+' | zuletzt '+fmt(x.lastSeen)}),['','FRAGEN, DIE MIA NICHT BEANTWORTEN KONNTE'],M.length?M.map(function(x){return '- '+x.text+' ('+(x.lang||'')+', '+fmt(x.t)+')'}):['- keine'],['','ABWEICHUNGEN (anonym)'],S.length?S.map(function(x){return '- '+x.monat+' '+(x.beruf||x.paket||'')+': '+(x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')}):['- keine']);
  return L.join('\n');
 }
+var FB=[],FILT='offen',LOCAL={};
+try{LOCAL=JSON.parse(localStorage.getItem('sc.fbstatus')||'{}')}catch(e){}
+function st(x){return x.status||LOCAL[x._id]||'offen'}
+function fbText(x){return 'RÜCKMELDUNG AUS DEM STUNDEN-CHECKER\nArt: '+art(x)+'\nVon: '+(x.email||'ohne Konto')+'\nAm: '+fmt(x.t)+'\nAnsicht: '+(x.view||'?')+', Sprache: '+(x.lang||'?')+', Version: '+(x.version||'?')+'\n\n'+(x.text||'')+(x.img?'\n\n(mit Bild, hier nicht enthalten)':'')}
+function drawFb(){
+ var L=FB.filter(function(x){return FILT==='alle'||st(x)===(FILT==='erledigt'?'erledigt':'offen')});
+ var no=FB.filter(function(x){return st(x)!=='erledigt'}).length;
+ document.querySelectorAll('#fbf button').forEach(function(b){b.style.opacity=b.dataset.f===FILT?'1':'.55'});
+ $('#fbm').textContent=no+' offen, '+(FB.length-no)+' erledigt';
+ $('#fbl').innerHTML=L.length?L.map(function(x){var e=st(x)==='erledigt';return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span> · <b style="color:'+(e?'#2e7d32':'#b45309')+'">'+(e?'Erledigt':'Noch offen')+'</b><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" data-cl="'+esc(x._id)+'">An Claude übertragen</button><button type="button" data-st="'+esc(x._id)+'">'+(e?'Wieder offen':'Erledigt')+'</button></div></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
+}
+function copyText(t,msg){function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');$('#fbm').textContent=msg}catch(e){$('#fbm').textContent='Kopieren nicht möglich.'}a.remove()}
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$('#fbm').textContent=msg},fb);else fb()}
+document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('button');if(!b)return;
+ if(b.dataset.f){FILT=b.dataset.f;drawFb();return}
+ if(b.dataset.cl){var x=FB.filter(function(y){return y._id===b.dataset.cl})[0];if(x)copyText(fbText(x),'Kopiert. Jetzt im Chat einfügen.');return}
+ if(b.dataset.st){var y=FB.filter(function(z){return z._id===b.dataset.st})[0];if(!y)return;var neu=st(y)==='erledigt'?'offen':'erledigt';y.status=neu;LOCAL[y._id]=neu;try{localStorage.setItem('sc.fbstatus',JSON.stringify(LOCAL))}catch(e){}
+  drawFb();db.collection('feedback').doc(y._id).update({status:neu}).catch(function(){$('#fbm').textContent+=' (Status nur in diesem Browser gespeichert)'});}
+});
 function run(){
  Promise.all([load('profiles','lastSeen'),load('feedback','t'),load('miaOffen','t'),load('statistik','t')]).then(function(r){
   var P=r[0],F=r[1],M=r[2],S=r[3];
@@ -66,7 +85,7 @@ function run(){
   $('#fe').innerHTML=lst(fun);
   var mm={};['mia_frage','mia_antwort','mia_chip','mia_sprache','mia_offen'].forEach(function(k){if(all[k])mm[k]=all[k]});
   $('#mi').innerHTML=lst(mm)+'<p class="mut" style="margin-top:10px">Themen, zu denen Mia antwortet:</p>'+lst(mia,'mia_t_');
-  $('#fbl').innerHTML=F.length?F.map(function(x){return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'</div>'}).join(''):'<p class="mut">Noch keine.</p>';
+  FB=F;drawFb();
   var byReg=P.slice().sort(function(a,b){return String(b.created||'')<String(a.created||'')?-1:1});
   $('#an').innerHTML='<table><tr><th>E-Mail</th><th>Registriert am</th><th>Letzte Anmeldung</th><th>Zuletzt in der App</th><th>Version</th></tr>'+byReg.map(function(x){return '<tr><td>'+esc(x.email)+'</td><td>'+fmt(x.created)+'</td><td>'+fmt(x.lastLogin)+'</td><td>'+fmt(x.lastSeen)+'</td><td>'+esc(x.version)+'</td></tr>'}).join('')+'</table>';
   $('#wk').innerHTML=P.map(function(x){var f=x.features||{},o={};Object.keys(f).forEach(function(k){if(typeof f[k]==='number')o[k]=f[k]});var n=Object.keys(o).reduce(function(a,k){return a+o[k]},0);return '<details style="border-bottom:1px solid var(--line);padding:6px 0"><summary><b>'+esc(x.email||'ohne E-Mail')+'</b> <span class="mut">· '+esc(x.beruf||x.paket||'')+' · '+n+' Aktionen</span></summary>'+lst(o)+'</details>'}).join('')||'<p class="mut">Noch keine.</p>';

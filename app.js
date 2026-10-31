@@ -69,6 +69,8 @@
     if (e.ueberstunden.zuschlagPct == null) e.ueberstunden.zuschlagPct = 50;
     if (e.stundenlohn === undefined) e.stundenlohn = null;
     if (!e.betriebFrei) e.betriebFrei = 'urlaub';
+    if (e.runAn === undefined) e.runAn = +e.runMin > 0;
+    if (!(+e.runMin > 0)) e.runMin = 15;
     if (!e.runBeg) e.runBeg = 'nahe';
     if (!e.runEnd) e.runEnd = 'nahe';
   });
@@ -982,8 +984,8 @@
     if (pose === 'ears') setTimeout(function () { ui.miaPose = null; miaPose('mouth'); }, 2200);
   }
   function miaAuto() {
-    if (ui.wiz || ui.miaAuto) return; var c = miaCfg(); if (c.ruhig || !miaNext()) return;
-    ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !miaCfg().ruhig) miaOpen(true); }, 1200);
+    if (ui.wiz || ui.miaAuto || TOUR) return; var c = miaCfg(); if (c.ruhig || !miaNext()) return;
+    ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !TOUR && !miaCfg().ruhig) miaOpen(true); }, 1200);
   }
   (function () {
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
@@ -1208,7 +1210,7 @@
       { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
       { v: E1, sel: '#s-uzus', up: f, t: 'Der Zuschlag auf Überstunden in Prozent. Auf dem Lohnzettel steht zum Beispiel „Überstd.-Zusch. 50 %“.' },
       { v: E1, sel: '#s-pauseauto', up: f, t: 'Zieht deine Firma jeden Tag automatisch eine Pause ab? Dann trage die Minuten ein, zum Beispiel 60. Sonst lass es leer.' },
-      { v: E1, sel: '#s-runmin', to: '#s-runend', up: '.card', t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann stell es hier ein. Sonst lass es auf „Keine Rundung“.' },
+      { v: E1, sel: '#s-runan', up: k, t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann setze den Haken und stell es ein. Sonst lass den Haken weg.' },
       { v: E1, sel: '#s-zsa', to: '#s-zft', up: '.grid3', t: 'Zuschläge für Samstag, Sonntag und Feiertag in Prozent. Bei 100 % zählt eine Stunde doppelt. Weißt du es nicht, lass 0 stehen.' },
       { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Mulde, pro Tour oder pro Stunde. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
       { v: E1, sel: '#s-dmodell', up: f, t: 'Wie werden bei dir Diäten gezahlt? Pro Stunde, pro Tag nach Stufen oder gar nicht. Wähle es aus.' },
@@ -1308,12 +1310,12 @@
     ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
     show('erfassen', true);
   }
-  function tourStart(assist) {
+  function tourStart(assist, intro) {
     if (ui.wiz || TOUR) return;
     var tag = assist === 'tag'; assist = assist === true;
     ins(assist ? 'assistentin' : tag ? 'tagfuehrung' : 'rundgang');
     if (tag) { if (!data.profil) data.profil = {}; data.profil.tagGefuehrt = todayISO(); save(); }
-    TOUR = { s: assist ? assistSteps() : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
+    TOUR = { s: assist ? (intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir alles zusammen ein. Was du gerade nicht weißt, überspringst du mit Weiter und holst es später nach. Ich erinnere dich dann ab und zu.' }].concat(assistSteps().slice(1)) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
     window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
     tourRender();
   }
@@ -1321,7 +1323,7 @@
   function wzFinish() {
     ins('assistent');
     var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
-    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
+    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
@@ -1335,7 +1337,7 @@
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
-    if (start) { toast('Fertig. Du kannst jetzt deinen ersten Tag eintragen.'); show('erfassen', true); }
+    if (start) { show('einstellungen', true); setTimeout(function () { tourStart(true, true); }, 500); }
     else {
       var spaet = data.settings.filter(function (e) { return e.gueltigAb > ab && (e.beruf !== set.beruf || (e.art || null) !== (set.art || null)); }).sort(function (x, y) { return x.gueltigAb < y.gueltigAb ? -1 : 1; })[0];
       if (spaet) toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '. Aber ab ' + fmtDate(spaet.gueltigAb) + ' gilt noch ' + (E.berufName(spaet) || 'ein anderer Beruf') + ', darum ändert sich heute nichts. Wähle dafür das spätere Datum.', 8000);
@@ -1574,6 +1576,7 @@
   }
   function settingsVisibility(en) {
     var dm = en.diaeten.modell, um = en.ueberstunden.modell;
+    $('#s-runbox').hidden = !en.runAn;
     $('#s-d-stunde').hidden = dm !== 'stunde';
     $('#s-d-tag').hidden = dm !== 'tag';
     $('#s-d-vorschlag').hidden = dm === 'aus';

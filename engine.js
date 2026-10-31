@@ -379,6 +379,7 @@
     var p = PAKETE[paketKey] || PAKETE.gueter, w = clone(p.werte);
     w.paket = PAKETE[paketKey] ? paketKey : 'gueter';
     w.gueltigAb = gueltigAb;
+    w.runAn = false; w.runMin = 15; w.runBeg = 'nahe'; w.runEnd = 'nahe';
     return w;
   }
   function wertAt(settings, dateStr) {
@@ -401,7 +402,7 @@
     var von = toMin(day && day.von), bis = toMin(day && day.bis), warn = [];
     if (von === null || bis === null) return { brutto: 0, pausen: 0, netto: 0, warn: warn };
     // Rundung der Zeiten laut Einstellung (nur die Berechnung, der eingetragene Wert bleibt stehen)
-    var rm = w && +w.runMin > 0 ? +w.runMin : 0;
+    var rm = w && w.runAn && +w.runMin > 0 ? +w.runMin : 0;
     if (rm) { von = rundZeit(von, w.runBeg, rm); bis = rundZeit(bis, w.runEnd, rm); }
     var brutto = bis - von;
     if (brutto < 0) brutto += 1440;
