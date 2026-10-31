@@ -2334,7 +2334,7 @@
       var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m };
       h.textContent = 'Eingelesene Lohnzetteldaten';
       var opts = [['', 'Nicht übernehmen']].concat(Object.keys(window.StundenLz.NAMEN).map(function (k) { return [k, window.StundenLz.NAMEN[k]]; }));
-      b.innerHTML = svg + '<p><b>' + MON[mo.m - 1] + ' ' + mo.y + '</b></p>' + (r.monat ? '' : '<p class="hint">Monat nicht erkannt, ich nehme den gerade angezeigten.</p>') + '<p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
+      b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + MON.map(function (mn, k) { return '<option value="' + (k + 1) + '"' + (k + 1 === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div><p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
         (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<b>' + (z.unsicher ? esc(z.nums[0]) : fh(z.menge) + ' h') + '</b>') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
       bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
     }
@@ -2388,7 +2388,7 @@
       else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
       else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
       else if (t.id === 'lz-apply') {
-        var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m }, key = mo.y + '-' + pad(mo.m), sel = $$('#lz-body [data-lzz]'), n = 0;
+        var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }, key = mo.y + '-' + pad(mo.m), sel = $$('#lz-body [data-lzz]'), n = 0;
         if (!data.abgleich) data.abgleich = {}; var cur = data.abgleich[key] || (data.abgleich[key] = {}); var lm = lzProfil().lzMap || (lzProfil().lzMap = {});
         var sum = {};
         sel.forEach(function (s) {
