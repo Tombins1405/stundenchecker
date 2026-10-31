@@ -1361,7 +1361,7 @@
 
     var cwb = cur ? E.berufName(cur) : null;
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
-    if (!$('#s-beruf-ab').value) { var nb = new Date(); $('#s-beruf-ab').value = E.iso(nb.getFullYear(), nb.getMonth() + 1, 1); }
+    if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
