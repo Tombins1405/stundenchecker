@@ -1089,7 +1089,7 @@
   ];
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/ł/g, 'l').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
-  function miaTopic(i) { return String(MIA_FAQ[i].t).replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
+  function miaTopic(i) { return String(MIA_FAQ[i].t).replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
   function miaAnswer(q) {
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
