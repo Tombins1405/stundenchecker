@@ -916,6 +916,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir deine Einstellungen gemeinsam durchgehen? Ich führe dich Feld für Feld, du trägst gleich mit ein.' });
+    if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
@@ -925,11 +926,12 @@
     var lzt = (data.profil && data.profil.lzTag) || 10; // Mia fragt erst ab dem Tag, an dem der Lohnzettel meist kommt
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
-    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
+    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
     if (k === 'rundgang') { tourStart(); }
+    else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true); }
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'tag') { show('erfassen'); }
@@ -1140,7 +1142,7 @@
   var TOUR = null;
   function tourSteps() {
     var w = wAt(todayISO()), b = w.beruf || '', gl = w.ueberstunden && w.ueberstunden.modell === 'gleit';
-    var s = [{ t: 'Ich zeige dir in einer Minute, wie du jeden Tag einträgst und wo du alles findest. Deine Einstellungen gehen wir danach Feld für Feld gemeinsam durch. Du kannst jederzeit beenden.' },
+    var s = [{ t: 'Ich zeige dir in einer Minute, wie du jeden Tag einträgst und wo du alles findest. Du kannst dabei gleich ausprobieren und etwas eintragen, dann tippst du auf Weiter. Du kannst jederzeit beenden.' },
       { v: 'erfassen', sel: '#e-status', t: 'Hier wählst du die Art des Tages: Arbeit, Urlaub, Krankenstand oder Zeitausgleich. Bei Urlaub und Krankenstand brauchst du keine Uhrzeiten.' },
       { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
       { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
@@ -1151,6 +1153,18 @@
     s.push({ v: 'monat', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
     s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Konto: deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
     s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
+    return s;
+  }
+  function tagSteps() {
+    var w = wAt(todayISO()), b = w.beruf || '', V = 'erfassen';
+    var s = [{ v: V, t: 'Wir tragen deinen Tag gemeinsam ein. Bei jedem Feld sage ich dir, was du tust. Trage es ein, dann tippst du auf Weiter. Was du nicht hast, lässt du leer.' },
+      { v: V, sel: '#e-status', t: 'Welche Art von Tag ist heute? Wähle Arbeit, Urlaub, Krankenstand oder Zeitausgleich.' },
+      { v: V, sel: '#e-von', t: 'Trage deinen Beginn ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit.' },
+      { v: V, sel: '#e-bis', t: 'Das Ende trägst du ein, wenn du fertig bist. Noch nicht so weit? Dann lass es leer und trage es später nach.' },
+      { v: V, sel: '#e-addpause', t: 'Hattest du eine Pause? Tippe auf „+ Pause hinzufügen“ und trage sie ein. Sonst tippe auf Weiter.' }];
+    if (b === 'lkw' || b === 'klein') s.push({ v: V, sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
+    if (b === 'lkw' || b === 'klein' || b === 'bagger') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist freiwillig.' });
+    s.push({ v: V, sel: '#e-save', t: 'Tippe jetzt auf „Speichern“. Danach bist du für heute fertig.' });
     return s;
   }
   function assistSteps() {
@@ -1223,15 +1237,15 @@
   function tourRender() {
     var T = TOUR; if (!T) return;
     var idx = T.i, st = T.s[idx], ov = $('#tour');
-    if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour' + (T.assist ? ' assist' : ''); document.body.appendChild(ov); }
+    if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour' + (T.assist || T.live ? ' assist' : ''); document.body.appendChild(ov); }
     if (st.v && ui.view !== st.v) show(st.v, true);
     T.el = null; T.ready = false;
     ov.innerHTML = '<div class="tour-hl" id="tour-hl" hidden></div><div class="tour-box" id="tour-box"></div>';
     var last = idx === T.s.length - 1, first = idx === 0;
     $('#tour-box').innerHTML = '<div class="tour-mia">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div><div class="tour-body"><p></p><div class="tour-btns">' +
-      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : (first && T.assist ? 'Los geht’s' : 'Weiter')) + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
+      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : (first && (T.assist || T.tag) ? 'Los geht’s' : 'Weiter')) + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
     $('#tour-box p').textContent = st.t;
-    $('#tour-box').style.top = T.assist ? '8px' : '30%'; $('#tour-box').style.bottom = 'auto';
+    $('#tour-box').style.top = (T.assist || T.live) ? '8px' : '30%'; $('#tour-box').style.bottom = 'auto';
     setTimeout(function () {
       if (!TOUR || TOUR !== T || T.i !== idx) return;
       var el = tourEl(st);
@@ -1239,7 +1253,7 @@
       if (!el) { T.ready = false; return; }
       T.el = el;
       var r = tourRect(st, el), H = window.innerHeight, boxH = $('#tour-box').offsetHeight, h = r.bottom - r.top;
-      var want = T.assist ? boxH + 24 : Math.max(70, (H - h) / 2);
+      var want = (T.assist || T.live) ? boxH + 24 : Math.max(70, (H - h) / 2);
       var y = Math.max(0, window.pageYOffset + r.top - want);
       if (Math.abs(y - window.pageYOffset) > 4) window.scrollTo({ top: y, behavior: tourReduced() ? 'auto' : 'smooth' });
       tourSettle(T, idx, function () { T.ready = true; tourPlace(); var hl = $('#tour-hl'); if (hl) { hl.classList.remove('pop'); void hl.offsetWidth; hl.classList.add('pop'); } });
@@ -1253,9 +1267,10 @@
     tourRender();
   }
   function tourEnd(done) {
-    var as = TOUR && TOUR.assist; TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
+    var as = TOUR && TOUR.assist, tg = TOUR && TOUR.tag; TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
     window.removeEventListener('scroll', tourOnMove); window.removeEventListener('resize', tourOnMove);
     if (!data.profil) data.profil = {};
+    if (tg) { save(); ins(done ? 'tagfuehrung_fertig' : 'tagfuehrung_abbruch'); return; }
     if (as) { if (done) data.profil.assistDone = true; save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
     data.profil.tourDone = true; save();
     ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
@@ -1263,8 +1278,10 @@
   }
   function tourStart(assist) {
     if (ui.wiz || TOUR) return;
-    ins(assist ? 'assistentin' : 'rundgang');
-    TOUR = { s: assist ? assistSteps() : tourSteps(), i: 0, dir: 1, assist: !!assist };
+    var tag = assist === 'tag'; assist = assist === true;
+    ins(assist ? 'assistentin' : tag ? 'tagfuehrung' : 'rundgang');
+    if (tag) { if (!data.profil) data.profil = {}; data.profil.tagGefuehrt = todayISO(); save(); }
+    TOUR = { s: assist ? assistSteps() : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
     window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
     tourRender();
   }
@@ -1395,6 +1412,7 @@
       rd.readAsDataURL(f);
     });
     $('#s-fotobox').addEventListener('click', function (ev) { if (ev.target.id === 'foto-weg') { try { localStorage.removeItem('stundenchecker.foto'); } catch (e) { } fotoZeigen(); } });
+    $('#s-tagf').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.tagesfuehrung = this.checked; save(); });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
   })();
@@ -1428,7 +1446,7 @@
     $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
     [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
-    fotoZeigen();
+    fotoZeigen(); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
