@@ -2163,7 +2163,7 @@
     function sgEnd() { if (!sDraw) return; sDraw = false; try { localStorage.setItem('stundenchecker.sig', sg.toDataURL('image/png')); } catch (e) { } }
     sg.addEventListener('pointerup', sgEnd); sg.addEventListener('pointercancel', sgEnd);
     $('#rb-sigclr').addEventListener('click', function () { sgWhite(); sHas = false; try { localStorage.removeItem('stundenchecker.sig'); } catch (e) { } });
-    function sigImg() { if (!sHas) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
+    function sigImg() { if (!sHas || !$('#rb-sigon').checked) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
     function bauen() {
       var typ = $('#rb-art').value, ds = $('#rb-datum').value || todayISO(), p = E.parseISO(ds), b, name;
       if (typ === 'tag') {
@@ -2205,10 +2205,12 @@
       an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
       toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
     }
-    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
-    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; }
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.sigAn = $('#rb-sigon').checked; p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
+    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
     fuellen();
-    var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || todayISO(); vorgabe = null; });
+    var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || (ui.edDate && /^\d{4}-\d{2}-\d{2}$/.test(ui.edDate) ? ui.edDate : todayISO()); vorgabe = null; });
+    $('#rb-sigon').addEventListener('change', function () { $('#rb-sigwrap').hidden = !this.checked; merken(); });
+    $('#rb-name').addEventListener('change', merken); $('#rb-mail').addEventListener('change', merken);
     $('#rb-rhythmus').addEventListener('change', function () { merken(); var v = this.value; if (v !== 'nie') $('#rb-art').value = v; });
     $('#rb-art').addEventListener('change', function () { $('#rb-datum').value = $('#rb-datum').value || todayISO(); });
     /* Nach dem Speichern eines Tages: ist heute der Tag für den Bericht? */
