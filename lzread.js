@@ -60,7 +60,7 @@
       if (!/[A-Za-zÄÖÜäöüß]{3}/.test(label) || label.length > 48 || /§/.test(label)) return; // Zeilen mit Paragraf sind Steuerangaben, keine Lohnzeilen
       var n = norm(label); if (n.length < 3 || schon[n] || /^(bem|sv|lst|bv)/.test(n)) return;
       var key = null, pos = 0, rk = null;
-      if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length) pos = 0; }
+      if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length || (gelernt['@' + n] !== undefined && gelernt['@' + n] !== nums.length)) pos = 0; }
       else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
       var menge = zahl(nums[pos]); if (isNaN(menge)) return;
       if (key === null && rk) { if (rk[1] === 'dStd' && nums.length === 1) key = 'dEuro'; else if (menge <= 400) key = rk[1]; }

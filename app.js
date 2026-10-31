@@ -2290,7 +2290,7 @@
   var lzUi = { step: '', res: null, buf: null, pwOk: null };
   function lzProfil() { if (!data.profil) data.profil = {}; return data.profil; }
   function lzOpen(step) { lzUi.step = step || (lzProfil().lzLesen === true ? 'datei' : 'erlaubnis'); lzRender(); $('#lz-dlg').hidden = false; }
-  function lzClose() { $('#lz-dlg').hidden = true; lzUi.buf = null; lzUi.pwOk = null; }
+  function lzClose() { $('#lz-dlg').hidden = true; lzUi.buf = null; lzUi.pwOk = null; lzUi.pwMem = null; lzUi.queue = []; }
   function lzBtn(txt, id, cls) { return '<button type="button" class="btn' + (cls ? ' ' + cls : '') + '" id="' + id + '">' + txt + '</button>'; }
   function lzRender() {
     var h = $('#lz-h'), b = $('#lz-body'), bt = $('#lz-btns'), s = lzUi.step, svg = '';
@@ -2304,7 +2304,7 @@
     } else if (s === 'datei') {
       h.textContent = 'Zeig mir deinen Lohnzettel';
       b.innerHTML = svg + '<p>Such jetzt die PDF-Datei deines Lohnzettels aus. Am besten die Datei, die du von deiner Firma bekommen hast. Bitte nicht ausdrucken oder neu speichern, sonst kann ich sie nicht lesen.</p><p class="hint">Wenn die Datei ein Kennwort hat, frage ich dich danach.</p>' +
-        '<input type="file" id="lz-file" accept="application/pdf,.pdf" hidden>';
+        '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden>';
       bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'warten') {
       h.textContent = 'Ich lese …'; b.innerHTML = svg + '<p>Einen Moment bitte.</p>'; bt.innerHTML = '';
@@ -2348,17 +2348,47 @@
     });
     return out.slice(0, 60);
   }
-  function lzFragePw(grund) { return new Promise(function (ok, fail) { lzUi.pwFalsch = grund === 'falsch'; lzUi.pwOk = ok; lzUi.pwFail = fail; lzUi.step = 'kennwort'; lzRender(); setTimeout(function () { var p = $('#lz-pw'); if (p) p.focus(); }, 60); }); }
-  function lzLese(file) {
+  function lzFragePw(grund) { if (grund !== 'falsch' && lzUi.pwMem) return Promise.resolve(lzUi.pwMem); lzUi.pwMem = null; return new Promise(function (ok, fail) { lzUi.pwFalsch = grund === 'falsch'; lzUi.pwOk = ok; lzUi.pwFail = fail; lzUi.step = 'kennwort'; lzRender(); setTimeout(function () { var p = $('#lz-pw'); if (p) p.focus(); }, 60); }); }
+  /* Mehrere Lohnzettel hintereinander: was die App schon kennt, übernimmt sie selbst, nur Neues wird gefragt */
+  function lzLese(files) { lzUi.queue = Array.prototype.slice.call(files); lzUi.erg = []; lzNext(); }
+  function lzBekannt(res) {
+    var lm = lzProfil().lzMap || {};
+    return !!(res.monat && res.zeilen.length && res.zeilen.every(function (z) { return lm[z.norm] !== undefined && (!z.nums || lm['@' + z.norm] === z.nums.length); }));
+  }
+  function lzApply(res, mo, items) {
+    var key = mo.y + '-' + pad(mo.m), n = 0, sum = {};
+    if (!data.abgleich) data.abgleich = {}; var cur = data.abgleich[key] || (data.abgleich[key] = {}); var lm = lzProfil().lzMap || (lzProfil().lzMap = {});
+    items.forEach(function (it) {
+      var z = it.z, menge = z.menge;
+      if (z.nums) { menge = window.StundenLz.zahl(z.nums[it.pos]); if (it.key) { lm['#' + z.norm] = it.pos; lm['@' + z.norm] = z.nums.length; } }
+      lm[z.norm] = it.key || '-'; if (it.key) sum[it.key] = (sum[it.key] || 0) + menge;
+    });
+    Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; });
+    save(); lzUi.erg.push({ y: mo.y, m: mo.m, n: n });
+    return n;
+  }
+  function lzFertig() {
+    var e = lzUi.erg || []; lzClose();
+    if (!e.length) return;
+    var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
+    var txt = e.some(function (x) { return x.n; }) ? 'Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.' : 'Nichts übernommen.';
+    toast(txt, 7000);
+    setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+  function lzNext() {
+    if (!lzUi.queue || !lzUi.queue.length) { lzFertig(); return; }
+    var file = lzUi.queue.shift();
     lzUi.step = 'warten'; lzRender();
     var fr = new FileReader();
     fr.onload = function () {
       window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
-        if (!o.hatText) { lzUi.step = 'keintext'; lzRender(); return; }
-        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender(); ins('lz_gelesen');
-      }, function (e) { if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
+        if (!o.hatText) { lzUi.queue = []; lzUi.step = 'keintext'; lzRender(); return; }
+        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; ins('lz_gelesen');
+        if (lzBekannt(res)) { lzApply(res, res.monat, res.zeilen.map(function (z) { return { z: z, key: z.key, pos: z.pos | 0 }; })); lzNext(); return; }
+        lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender();
+      }, function (e) { lzUi.queue = []; if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
     };
-    fr.onerror = function () { lzUi.step = 'fehler'; lzRender(); };
+    fr.onerror = function () { lzUi.queue = []; lzUi.step = 'fehler'; lzRender(); };
     fr.readAsArrayBuffer(file);
   }
   (function () {
@@ -2366,7 +2396,7 @@
     dlg.addEventListener('change', function (ev) {
       var t = ev.target;
       if (t.id === 'lz-ok') { $('#lz-weiter').disabled = !t.checked; return; }
-      if (t.id === 'lz-file' && t.files && t.files[0]) { lzLese(t.files[0]); t.value = ''; }
+      if (t.id === 'lz-file' && t.files && t.files[0]) { var fl = Array.prototype.slice.call(t.files); t.value = ''; lzLese(fl); }
     });
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
@@ -2386,19 +2416,13 @@
       else if (t.id === 'lz-nein') { lzProfil().lzLesen = false; save(); lzClose(); renderSettings(); }
       else if (t.id === 'lz-weiter') { lzProfil().lzLesen = true; save(); ins('lz_erlaubt'); lzUi.step = 'datei'; lzRender(); renderSettings(); }
       else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
-      else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
+      else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; lzUi.pwMem = pw; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
       else if (t.id === 'lz-apply') {
-        var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }, key = mo.y + '-' + pad(mo.m), sel = $$('#lz-body [data-lzz]'), n = 0;
-        if (!data.abgleich) data.abgleich = {}; var cur = data.abgleich[key] || (data.abgleich[key] = {}); var lm = lzProfil().lzMap || (lzProfil().lzMap = {});
-        var sum = {};
-        sel.forEach(function (s) {
-          var z = r.zeilen[+s.dataset.lzz], menge = z.menge, ps = document.querySelector('#lz-body [data-lzp="' + s.dataset.lzz + '"]');
-          if (z.nums && ps) { var pi = +ps.value; menge = window.StundenLz.zahl(z.nums[pi]); if (s.value) lm['#' + z.norm] = pi; }
-          lm[z.norm] = s.value || '-'; if (s.value) sum[s.value] = (sum[s.value] || 0) + menge;
+        var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }, items = $$('#lz-body [data-lzz]').map(function (sl) {
+          var ps = document.querySelector('#lz-body [data-lzp="' + sl.dataset.lzz + '"]'), z = r.zeilen[+sl.dataset.lzz];
+          return { z: z, key: sl.value, pos: ps ? +ps.value : (z.pos | 0) };
         });
-        Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; });
-        save(); lzClose(); ui.y = mo.y; ui.m = mo.m; show('monat'); renderMonat(); toast(n ? 'Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.' : 'Nichts übernommen.', 6000);
-        setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+        lzApply(r, mo, items); lzNext();
       }
     });
     $('#lz-start').addEventListener('click', function () { lzOpen(); });
