@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261031181222">
+<link rel="stylesheet" href="style.css?v=20261031181852">
 </head>
 <body>
 
@@ -133,6 +133,7 @@
       <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
       <div class="field"><label for="rb-name">Dein Name auf dem Bericht</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
+      <div class="field"><label for="rb-sig">Meine Unterschrift (mit dem Finger)</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
       <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
     </details>
     <ul id="m-days" class="days"></ul>
@@ -503,18 +504,18 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261031181222";</script>
-<script src="engine.js?v=20261031181222"></script>
+<script>window.APP_VERSION="20261031181852";</script>
+<script src="engine.js?v=20261031181852"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261031181222"></script>
-<script src="timepicker.js?v=20261031181222"></script>
-<script src="pdf.js?v=20261031181222"></script>
-<script src="app.js?v=20261031181222"></script>
-<script src="auth.js?v=20261031181222"></script>
-<script src="sync.js?v=20261031181222"></script>
-<script src="insights.js?v=20261031181222"></script>
+<script src="firebase-config.js?v=20261031181852"></script>
+<script src="timepicker.js?v=20261031181852"></script>
+<script src="pdf.js?v=20261031181852"></script>
+<script src="app.js?v=20261031181852"></script>
+<script src="auth.js?v=20261031181852"></script>
+<script src="sync.js?v=20261031181852"></script>
+<script src="insights.js?v=20261031181852"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

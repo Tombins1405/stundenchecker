@@ -2080,25 +2080,46 @@
       rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
       rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
       kopfz.push({ t: 'table', fs: 8, cols: [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }, { w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }], head: ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', 'Tour', 'Ruhepause', 'Normal Std.', 'Über-Std.', 'Tagesgeld Std.'], rows: rows });
-      kopfz.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: ' ' });
+      kopfz.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: ' ', img: sigImg() });
       return kopfz;
     }
+
+    /* Unterschrift mit dem Finger: bleibt nur auf diesem Gerät (nicht in der Cloud) */
+    var sg = $('#rb-sig'), sx = sg.getContext('2d'), sDraw = false, sHas = false;
+    function sgWhite() { sx.fillStyle = '#fff'; sx.fillRect(0, 0, sg.width, sg.height); sx.strokeStyle = '#111'; sx.lineWidth = 3; sx.lineCap = 'round'; sx.lineJoin = 'round'; }
+    sgWhite();
+    try { var sv0 = localStorage.getItem('stundenchecker.sig'); if (sv0) { var im0 = new Image(); im0.onload = function () { sx.drawImage(im0, 0, 0); sHas = true; }; im0.src = sv0; } } catch (e) { }
+    function sgPos(ev) { var r = sg.getBoundingClientRect(); return [(ev.clientX - r.left) * sg.width / r.width, (ev.clientY - r.top) * sg.height / r.height]; }
+    sg.addEventListener('pointerdown', function (ev) { sDraw = true; sHas = true; var q = sgPos(ev); sx.beginPath(); sx.moveTo(q[0], q[1]); sx.lineTo(q[0] + 0.1, q[1]); sx.stroke(); try { sg.setPointerCapture(ev.pointerId); } catch (e) { } ev.preventDefault(); });
+    sg.addEventListener('pointermove', function (ev) { if (!sDraw) return; var q = sgPos(ev); sx.lineTo(q[0], q[1]); sx.stroke(); ev.preventDefault(); });
+    function sgEnd() { if (!sDraw) return; sDraw = false; try { localStorage.setItem('stundenchecker.sig', sg.toDataURL('image/png')); } catch (e) { } }
+    sg.addEventListener('pointerup', sgEnd); sg.addEventListener('pointercancel', sgEnd);
+    $('#rb-sigclr').addEventListener('click', function () { sgWhite(); sHas = false; try { localStorage.removeItem('stundenchecker.sig'); } catch (e) { } });
+    function sigImg() { if (!sHas) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
     function bauen() {
       var typ = $('#rb-art').value, ds = $('#rb-datum').value || todayISO(), p = E.parseISO(ds), b, name;
       if (typ === 'tag') {
         var r = tageVon(ds, ds)[0], d = data.days[ds] || {}; name = 'Tagesbericht-' + ds;
-        b = kopf('Tagesbericht', WD[E.weekday(ds)] + ', ' + fmtDate(ds));
-        b.push({ t: 'kv', rows: [['Art', art(r) || '–'], ['Arbeitszeit', d.von && d.bis ? d.von + ' bis ' + d.bis : '–'], ['Pause', r.pausenMin ? hm(r.pausenMin) : '–'], ['Stunden gesamt', r.nettoMin ? hh(r.nettoMin) : '–']] });
-        var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; });
-        if (fz.length) { b.push({ t: 'h2', text: 'Fahrzeuge' }); b.push({ t: 'table', cols: [{ w: 80 }, { w: 65, al: 'r' }, { w: 65, al: 'r' }, { w: 55, al: 'r' }, { w: 50, al: 'r' }, { w: 50, al: 'r' }, { w: 45, al: 'r' }], head: ['Kennzeichen', 'km Anfang', 'km Ende', 'gefahren', 'Diesel l', 'AdBlue l', 'Öl l'], rows: fz.map(function (f) { var a = f.kmVon, e = f.kmBis; return [f.kfz, a == null || a === '' ? '' : a, e == null || e === '' ? '' : e, a !== '' && e !== '' && a != null && e != null ? (e - a) + ' km' : '', f.diesel == null ? '' : f.diesel, f.adblue == null ? '' : f.adblue, f.oel == null ? '' : f.oel]; }) }); }
-        var kr = []; (d.kunden || []).forEach(function (k) { var ts = (k.taet && k.taet.length ? k.taet : [{ tat: '', von: '', bis: '' }]); ts.forEach(function (t, i) { kr.push([i === 0 ? k.name : '', t.tat || '', t.von && t.bis ? t.von + '–' + t.bis : (t.von || '')]); }); });
-        if (kr.length) { b.push({ t: 'h2', text: 'Kunden und Tätigkeiten' }); b.push({ t: 'table', cols: [{ w: 150 }, { w: 220 }, { w: 90 }], head: ['Kunde', 'Tätigkeit', 'Zeit'], rows: kr }); }
+        var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; }), nm = ($('#rb-name').value || '').trim(), fi = (data.profil && data.profil.firma) || '';
+        function zs(f, k) { return fz.map(function (x) { return x[k] == null || x[k] === '' ? '' : (fz.length > 1 ? x.kfz + ': ' : '') + x[k]; }).filter(Boolean).join(', '); }
+        var kmA = zs(fz, 'kmVon'), kmE = zs(fz, 'kmBis');
+        b = [{ t: 'h1', text: 'Tagesbericht' }].concat(fi ? [{ t: 'p', text: fi, size: 12, bold: true }] : []);
+        b.push({ t: 'table', fs: 11, cols: [{ w: 3 }, { w: 2 }, { w: 1.4 }, { w: 1.4 }], head: ['Name', 'KFZ-Kennzeichen', 'Type', 'Datum'], rows: [[nm, fz.map(function (f) { return f.kfz; }).join(', '), '', fmtDate(ds)]] });
+        b.push({ t: 'table', fs: 11, cols: [{ w: 1.4 }, { w: 1.4 }, { w: 1 }, { w: 1 }, { w: 1 }], head: ['Anfangs-km-Stand', 'End-km-Stand', 'Diesel l', 'AdBlue l', 'Motoröl l'], rows: [[kmA, kmE, zs(fz, 'diesel'), zs(fz, 'adblue'), zs(fz, 'oel')]] });
+        var zl = [];
+        (d.kunden || []).forEach(function (k) { var ts = (k.taet && k.taet.length ? k.taet : [{ tat: '', von: '', bis: '' }]); ts.forEach(function (t) { zl.push({ von: t.von || '', bis: t.bis || '', k: k.name || '', t: t.tat || '' }); }); });
+        (d.pausen || []).forEach(function (p) { if (p.von && p.bis) zl.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); });
+        if (!zl.some(function (z) { return z.t !== 'Pause'; }) && (d.von || d.bis)) zl.push({ von: d.von || '', bis: d.bis || '', k: '', t: '' });
+        zl.sort(function (x, y) { return (x.von || '99').localeCompare(y.von || '99'); });
+        var tr = zl.map(function (z) { return [z.von, z.bis, z.k, z.t]; }); while (tr.length < 8) tr.push(['', '', '', '']);
+        b.push({ t: 'table', fs: 11, cols: [{ w: 1 }, { w: 1 }, { w: 4 }, { w: 4 }], head: ['Uhrzeit von', 'Uhrzeit bis', 'Kunde, Baustelle', 'Tätigkeit'], rows: tr });
+        b.push({ t: 'table', fs: 11, cols: [{ w: 2 }, { w: 4 }, { w: 4 }], head: ['Gesamtstd.', 'Unterschrift Fahrer', 'Unterschrift Büro'], rows: [{ cells: [r.nettoMin ? fh(r.nettoMin / 60) : '', ' ', ' '], minH: 56, img: sigImg(), col: 1 }] });
         if (d.notiz) b.push({ t: 'p', text: 'Anmerkung: ' + d.notiz });
-        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+        return { bytes: window.StundenPdf.build(b, { landscape: true }), name: name + '.pdf', typ: typ };
       } else if (typ === 'woche') {
         var wd = E.weekday(ds), mo = addDays(ds, -((wd + 6) % 7)), so = addDays(mo, 6); name = 'Wochenbericht-' + mo;
         b = kopf('Wochenbericht', fmtDate(mo) + ' bis ' + fmtDate(so)); b.push(tabelleTage(tageVon(mo, so)));
-        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma', img: sigImg() });
       } else if (typ === 'halb') {
         var h1 = p.d <= 15, v2 = E.iso(p.y, p.m, h1 ? 1 : 16), b2 = E.iso(p.y, p.m, h1 ? 15 : new Date(p.y, p.m, 0).getDate()); name = 'Halbmonatsbericht-' + v2;
         return { bytes: window.StundenPdf.build(zeitblatt(v2, b2), { landscape: true }), name: name + '.pdf', typ: typ };
@@ -2107,7 +2128,7 @@
         b = kopf('Monatsbericht', MON[p.m - 1] + ' ' + p.y);
         var kv = [['Gearbeitet', fh(s.istStd) + ' h']]; if (s.lohnStd !== s.istStd) kv.push(['Lohnstunden', fh(s.lohnStd) + ' h']);
         if (s.arbeitstage) kv.push(['Arbeitstage', '' + s.arbeitstage]); if (s.urlaub) kv.push(['Urlaubstage', '' + s.urlaub]); if (s.krank) kv.push(['Krankenstand', s.krank + ' Tage']);
-        b.push({ t: 'kv', rows: kv }); b.push(tabelleTage(cm.tage)); b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+        b.push({ t: 'kv', rows: kv }); b.push(tabelleTage(cm.tage)); b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma', img: sigImg() });
       }
       return { bytes: window.StundenPdf.build(b), name: name + '.pdf', typ: typ };
     }
@@ -2116,8 +2137,8 @@
       an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
       toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
     }
-    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtMail = $('#rb-mail').value.trim(); try { save(); } catch (e) { } }
-    card.addEventListener('toggle', function () { if (!card.open) return; var pr = data.profil || {}; if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (!$('#rb-datum').value) { var t = todayISO(), p = E.parseISO(t); $('#rb-datum').value = (p.y === ui.y && p.m === ui.m) ? t : E.iso(ui.y, ui.m, 1); } });
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
+    card.addEventListener('toggle', function () { if (!card.open) return; var pr = data.profil || {}; if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; if (!$('#rb-datum').value) { var t = todayISO(), p = E.parseISO(t); $('#rb-datum').value = (p.y === ui.y && p.m === ui.m) ? t : E.iso(ui.y, ui.m, 1); } });
     $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
     $('#rb-share').addEventListener('click', function () {
       merken(); var erg; try { erg = bauen(); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); return; }
