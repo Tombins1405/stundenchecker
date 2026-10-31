@@ -69,6 +69,8 @@
     if (e.ueberstunden.zuschlagPct == null) e.ueberstunden.zuschlagPct = 50;
     if (e.stundenlohn === undefined) e.stundenlohn = null;
     if (!e.betriebFrei) e.betriebFrei = 'urlaub';
+    if (!e.runBeg) e.runBeg = 'nahe';
+    if (!e.runEnd) e.runEnd = 'nahe';
   });
   applyRegion();
   try { localStorage.setItem(KEY + '.probe', '1'); localStorage.removeItem(KEY + '.probe'); } catch (e) { speicherOk = false; }
@@ -255,6 +257,20 @@
         ((chips || small.length) ? '<small>' + chips + small.join(' · ') + '</small>' : '') + '</span>' +
         '<span class="d-val">' + val + '</span></button></li>';
     }).join('');
+    // Ansicht: Liste, Monatsraster oder beides (Einstellung)
+    var an = (data.profil && data.profil.monatAnsicht) || 'liste', first = cm.tage.length ? E.weekday(cm.tage[0].datum) : 1, off = (first + 6) % 7;
+    $('#m-days').hidden = an === 'raster'; $('#m-grid').hidden = an === 'liste';
+    if (an !== 'liste') {
+      var g = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(function (n) { return '<div class="mg-h">' + n + '</div>'; }).join('');
+      for (var q = 0; q < off; q++) g += '<div class="mg-c mg-e"></div>';
+      cm.tage.forEach(function (r) {
+        var d = data.days[r.datum] || {}, ik = r.leer ? '' : (r.status === 'arbeit' && r.swMin && !r.nettoMin ? 'sw' : r.status), v = '';
+        if (!r.leer) { if (r.status === 'arbeit' && r.nettoMin > 0) v = fh(r.nettoMin / 60); else if (r.creditMin) v = fh(r.creditMin / 60); }
+        var ic = ik && ik !== 'arbeit' ? '<span class="d-ico">' + dayIco(ik) + '</span>' : '', dd = E.parseISO(r.datum).d;
+        g += '<button type="button" class="mg-c' + (r.typ !== 'werktag' ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '') + '" data-date="' + r.datum + '" aria-label="' + esc(fmtShort(r.datum)) + '"><b>' + dd + '</b>' + ic + (v ? '<small>' + v + '</small>' : '') + '</button>';
+      });
+      $('#m-grid').innerHTML = g;
+    }
   }
 
   function monthKey() { return ui.y + '-' + pad(ui.m); }
@@ -271,6 +287,13 @@
     zaKonto: 'Nur wenn dein Lohnzettel ein Zeitausgleich-Konto zeigt: der Zuwachs in diesem Monat. Diese Stunden wurden nicht ausbezahlt, sondern aufs Konto gebucht. Sie werden zu den Überstunden dazugezählt.'
   };
   // Firmen, die Diäten und Überstunden erst im Folgemonat abrechnen: der Lohnzettel von Monat N zeigt die Aufzeichnung von Monat N-1.
+  function ueberRows() {
+    return Object.keys(data.abgleich).sort().filter(function (k) { return data.abgleich[k].ueber != null; }).map(function (k) {
+      var y = +k.slice(0, 4), m = +k.slice(5, 7), lz = data.abgleich[k];
+      var s = abSumme(E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, y, m), app = Math.max(0, s.ueberStd), paid = +lz.ueber, konto = +lz.zaKonto || 0;
+      return { y: y, m: m, app: app, paid: paid, konto: konto, diff: Math.round((paid + konto - app) * 100) / 100 };
+    });
+  }
   function abSumme(summe, y, m) {
     var wm = wAt(y + '-' + (m < 10 ? '0' : '') + m + '-01');
     if (!wm || !wm.folgemonat) return summe;
@@ -382,11 +405,7 @@
         return '<tr><td>' + monKurz(+r.key.slice(0, 4), +r.key.slice(5, 7)) + '</td><td>' + (r.ver >= 0 ? '+' : '−') + fh(Math.abs(r.ver)) + ' h</td><td><strong>' + fh(r.saldo) + ' h</strong></td><td>' + numIn('kz-' + r.key, r.zettel, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint">Noch keine Buchung. Trage im Monatsabgleich die Zeile „Zeitausgleich-Konto“ ein, wenn dein Lohnzettel Zeitausgleich-Stunden zeigt.</p>';
     // Überstunden im Überblick
-    var orows = Object.keys(data.abgleich).sort().filter(function (k) { return data.abgleich[k].ueber != null; }).map(function (k) {
-      var y = +k.slice(0, 4), m = +k.slice(5, 7), lz = data.abgleich[k];
-      var s = abSumme(E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, y, m), app = Math.max(0, s.ueberStd), paid = +lz.ueber, konto = +lz.zaKonto || 0;
-      return { y: y, m: m, app: app, paid: paid, konto: konto, diff: Math.round((paid + konto - app) * 100) / 100 };
-    });
+    var orows = ueberRows();
     $('#k-ueber').innerHTML = orows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Von dir</th><th>Bezahlt</th><th>Konto</th><th>Unterschied</th></tr></thead><tbody>' +
       orows.map(function (r) {
         var cls = Math.abs(r.diff) <= 0.5 ? 'ok' : (r.diff < 0 ? 'no' : '');
@@ -925,6 +944,8 @@
     var cnt = Object.keys(data.days).filter(function (k) { return k.slice(0, 7) === pk.key; }).length;
     var lzt = (data.profil && data.profil.lzTag) || 10; // Mia fragt erst ab dem Tag, an dem der Lohnzettel meist kommt
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
+    var ur = ueberRows().slice(-4), neg = ur.filter(function (x) { return x.diff < -1.5; }).length, pos = ur.filter(function (x) { return x.diff > 1.5; }).length;
+    if (ur.length >= 3 && (neg >= 3 || pos >= 3)) out.push({ k: 'abweichung', pose: 'eyes', text: 'Deine Überstunden weichen in mehreren Monaten vom Lohnzettel ab. Schau bitte nach, ob diese Einstellungen stimmen: Überstunden-Modell, Betrieb geschlossen und Rundung.' });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
@@ -934,6 +955,7 @@
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true); }
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
+    else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'tag') { show('erfassen'); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lzlesen') { lzOpen('erlaubnis'); }
@@ -1186,6 +1208,7 @@
       { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
       { v: E1, sel: '#s-uzus', up: f, t: 'Der Zuschlag auf Überstunden in Prozent. Auf dem Lohnzettel steht zum Beispiel „Überstd.-Zusch. 50 %“.' },
       { v: E1, sel: '#s-pauseauto', up: f, t: 'Zieht deine Firma jeden Tag automatisch eine Pause ab? Dann trage die Minuten ein, zum Beispiel 60. Sonst lass es leer.' },
+      { v: E1, sel: '#s-runmin', to: '#s-runend', up: '.card', t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann stell es hier ein. Sonst lass es auf „Keine Rundung“.' },
       { v: E1, sel: '#s-zsa', to: '#s-zft', up: '.grid3', t: 'Zuschläge für Samstag, Sonntag und Feiertag in Prozent. Bei 100 % zählt eine Stunde doppelt. Weißt du es nicht, lass 0 stehen.' },
       { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Mulde, pro Tour oder pro Stunde. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
       { v: E1, sel: '#s-dmodell', up: f, t: 'Wie werden bei dir Diäten gezahlt? Pro Stunde, pro Tag nach Stufen oder gar nicht. Wähle es aus.' },
@@ -1196,6 +1219,7 @@
       { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Setze nur die Haken, die du brauchst.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-sw', up: k, t: 'Setze den Haken, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
+      { v: E1, sel: '#s-ansichtsel', up: f, t: 'Wie möchtest du den Monat sehen? Als Liste, als Raster wie ein Kalender oder beides.' },
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
@@ -1297,7 +1321,7 @@
   function wzFinish() {
     ins('assistent');
     var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
-    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; } }
+    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
@@ -1421,6 +1445,7 @@
       rd.readAsDataURL(f);
     }
     $('#s-fotobox').addEventListener('click', function (ev) { if (ev.target.id === 'foto-weg') { try { localStorage.removeItem('stundenchecker.foto'); } catch (e) { } fotoZeigen(); } });
+    $('#s-ansichtsel').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.monatAnsicht = this.value; save(); });
     $('#s-tagf').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.tagesfuehrung = this.checked; save(); });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
@@ -1455,6 +1480,7 @@
     $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
     [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
+    $('#s-ansichtsel').value = (data.profil && data.profil.monatAnsicht) || 'liste';
     fotoZeigen(); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();

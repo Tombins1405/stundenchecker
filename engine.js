@@ -391,9 +391,18 @@
 
   /* ---------------------------------------------------------------- Arbeitszeit eines Tages */
   // Nachtdienste über Mitternacht: die Stunden gehören zum Tag, an dem der Dienst beginnt (kein Doppelzählen).
+  // art: 'nahe' = zur nächsten Marke, 'auf' = aufrunden, 'ab' = abrunden, sonst keine Rundung
+  function rundZeit(min, art, schritt) {
+    if (art !== 'nahe' && art !== 'auf' && art !== 'ab') return min;
+    var q = min / schritt;
+    return Math.round((art === 'nahe' ? Math.round(q) : art === 'auf' ? Math.ceil(q) : Math.floor(q)) * schritt);
+  }
   function dayMinutes(day, w) {
     var von = toMin(day && day.von), bis = toMin(day && day.bis), warn = [];
     if (von === null || bis === null) return { brutto: 0, pausen: 0, netto: 0, warn: warn };
+    // Rundung der Zeiten laut Einstellung (nur die Berechnung, der eingetragene Wert bleibt stehen)
+    var rm = w && +w.runMin > 0 ? +w.runMin : 0;
+    if (rm) { von = rundZeit(von, w.runBeg, rm); bis = rundZeit(bis, w.runEnd, rm); }
     var brutto = bis - von;
     if (brutto < 0) brutto += 1440;
     if (brutto === 0) warn.push('Von und Bis sind gleich.');
@@ -793,7 +802,7 @@
   return {
     abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
-    easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
+    rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
