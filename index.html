@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261031223404">
+<link rel="stylesheet" href="style.css?v=20261031224610">
 </head>
 <body>
 
@@ -312,17 +312,16 @@
       <button type="button" class="btn" id="a-logout">Abmelden</button>
       <p class="legal-links"><a href="impressum.html" target="_blank" rel="noopener">Impressum</a> · <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a> · <a href="agb.html" target="_blank" rel="noopener">Nutzungsbedingungen</a></p>
     </div>
-    <div class="card" id="assist-card">
-      <button type="button" class="btn primary" id="assist-start">Mia hilft mir beim Einstellen</button>
-      <p class="hint">Mia führt dich Schritt für Schritt durch alle Felder. Du trägst gleich mit ein.</p>
+
+    <div class="card" id="s-profil">
+      <h3>Meine Daten</h3>
+      <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
+      <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
+      <div class="field"><label for="s-geb">Geburtsdatum (freiwillig, für einen Geburtstagsgruß)</label><input type="date" id="s-geb"></div>
+      <div class="field"><label for="s-foto">Profilbild (freiwillig, bleibt nur auf diesem Handy)</label><div class="btns"><label class="btn" for="s-kamera">Foto aufnehmen</label><label class="btn" for="s-foto">Aus Galerie wählen</label></div><input type="file" id="s-kamera" accept="image/*" capture="user" hidden><input type="file" id="s-foto" accept="image/*" hidden><div id="s-fotobox"></div></div>
+      <div class="field"><label for="s-firma">Meine Firma (steht auf den Berichten)</label><input type="text" id="s-firma" maxlength="80" autocomplete="organization" placeholder="zum Beispiel Musterfirma GmbH"></div>
     </div>
-    <div class="card" id="s-lz">
-      <h3>Lohnzettel automatisch lesen</h3>
-      <label class="check"><input type="checkbox" id="lz-chk"> Der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen</label>
-      <p class="hint">Nur auf deinem Gerät, nichts wird hochgeladen. Du bestätigst jede Zeile.</p>
-      <div class="btns"><button type="button" class="btn" id="lz-start">Lohnzettel lesen</button></div>
-      <button type="button" class="linkbtn" id="lz-forget" style="align-self:flex-start">Gemerkte Zeilenbezeichnungen löschen</button>
-    </div>
+
     <div class="card" id="s-beruf">
       <h3>Mein Beruf</h3>
       <p id="s-beruf-now" class="hint"></p>
@@ -336,34 +335,6 @@
         <div class="field"><label for="kv-branche">Branche deines Betriebs</label><input type="text" id="kv-branche" maxlength="80" autocomplete="off"></div>
         <div class="field"><label for="kv-wst">Wochenstunden laut Vertrag</label><input type="number" id="kv-wst" inputmode="decimal" min="0" max="60" step="0.5"></div>
         <button type="button" class="btn" id="kv-send">Speichern und an den Entwickler schicken</button>
-      </details>
-      <label class="check"><input type="checkbox" id="s-tagf"> Mia führt mich jeden Tag Schritt für Schritt durch das Eintragen</label>
-      <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
-      <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
-      <div class="field"><label for="s-geb">Geburtsdatum (freiwillig, für einen Geburtstagsgruß)</label><input type="date" id="s-geb"></div>
-      <div class="field"><label for="s-foto">Profilbild (freiwillig, bleibt nur auf diesem Handy)</label><div class="btns"><label class="btn" for="s-kamera">Foto aufnehmen</label><label class="btn" for="s-foto">Aus Galerie wählen</label></div><input type="file" id="s-kamera" accept="image/*" capture="user" hidden><input type="file" id="s-foto" accept="image/*" hidden><div id="s-fotobox"></div></div>
-      <div class="field"><label for="s-firma">Meine Firma (steht auf den Berichten)</label><input type="text" id="s-firma" maxlength="80" autocomplete="organization" placeholder="zum Beispiel Musterfirma GmbH"></div>
-    </div>
-
-    <div class="card" id="s-berichte">
-      <h3>Berichte an die Firma</h3>
-      <div class="field"><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
-      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
-      <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
-      <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
-      <div class="field" id="rb-sigwrap" hidden><label for="rb-sig">Unterschreibe hier mit dem Finger</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
-    </div>
-
-    <div class="card">
-      <details id="s-all">
-        <summary><strong>Alle meine Wertesätze</strong> (für Fortgeschrittene)</summary>
-        <p class="hint">Jeder Wertesatz gilt ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.</p>
-        <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
-        <div class="grid2" style="align-items:end">
-          <div class="field"><label for="s-newdate">Neue Werte gelten ab</label><input type="date" id="s-newdate"></div>
-          <button type="button" class="btn" id="s-new">Neue Werte ab diesem Datum anlegen</button>
-        </div>
-        <small>Der neue Wertesatz übernimmt alles vom bisherigen. Du änderst nur, was sich geändert hat.</small>
       </details>
     </div>
 
@@ -499,6 +470,42 @@
 
 
 
+    <div class="card" id="s-berichte">
+      <h3>Berichte an die Firma</h3>
+      <div class="field"><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
+      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
+      <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
+      <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
+      <div class="field" id="rb-sigwrap" hidden><label for="rb-sig">Unterschreibe hier mit dem Finger</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
+    </div>
+
+    <div class="card" id="assist-card">
+      <button type="button" class="btn primary" id="assist-start">Mia hilft mir beim Einstellen</button>
+      <p class="hint">Mia führt dich Schritt für Schritt durch alle Felder. Du trägst gleich mit ein.</p>
+      <label class="check"><input type="checkbox" id="s-tagf"> Mia führt mich jeden Tag Schritt für Schritt durch das Eintragen</label>
+    </div>
+
+    <div class="card" id="s-lz">
+      <h3>Lohnzettel automatisch lesen</h3>
+      <label class="check"><input type="checkbox" id="lz-chk"> Der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen</label>
+      <p class="hint">Nur auf deinem Gerät, nichts wird hochgeladen. Du bestätigst jede Zeile.</p>
+      <div class="btns"><button type="button" class="btn" id="lz-start">Lohnzettel lesen</button></div>
+      <button type="button" class="linkbtn" id="lz-forget" style="align-self:flex-start">Gemerkte Zeilenbezeichnungen löschen</button>
+    </div>
+
+    <div class="card">
+      <details id="s-all">
+        <summary><strong>Alle meine Wertesätze</strong> (für Fortgeschrittene)</summary>
+        <p class="hint">Jeder Wertesatz gilt ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.</p>
+        <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
+        <div class="grid2" style="align-items:end">
+          <div class="field"><label for="s-newdate">Neue Werte gelten ab</label><input type="date" id="s-newdate"></div>
+          <button type="button" class="btn" id="s-new">Neue Werte ab diesem Datum anlegen</button>
+        </div>
+        <small>Der neue Wertesatz übernimmt alles vom bisherigen. Du änderst nur, was sich geändert hat.</small>
+      </details>
+    </div>
+
     <div class="card" id="b-card">
       <details><summary><strong>Sicherung</strong> (Daten sichern oder wiederherstellen)</summary>
       <p class="hint">Deine Daten liegen nur auf diesem Gerät. Speichere die Sicherung als Datei, zum Beispiel in deinem Google Drive oder per WhatsApp an dich selbst.</p>
@@ -513,6 +520,7 @@
       <button type="button" class="btn danger" id="b-wipe">Alle Daten löschen</button>
       </details>
     </div>
+  
   </section>
 
 </main>
@@ -535,21 +543,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261031223404";</script>
-<script src="engine.js?v=20261031223404"></script>
+<script>window.APP_VERSION="20261031224610";</script>
+<script src="engine.js?v=20261031224610"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261031223404"></script>
-<script src="timepicker.js?v=20261031223404"></script>
-<script src="datepicker.js?v=20261031223404"></script>
-<script src="selectpicker.js?v=20261031223404"></script>
-<script src="pdf.js?v=20261031223404"></script>
-<script src="lzread.js?v=20261031223404"></script>
-<script src="app.js?v=20261031223404"></script>
-<script src="auth.js?v=20261031223404"></script>
-<script src="sync.js?v=20261031223404"></script>
-<script src="insights.js?v=20261031223404"></script>
+<script src="firebase-config.js?v=20261031224610"></script>
+<script src="timepicker.js?v=20261031224610"></script>
+<script src="datepicker.js?v=20261031224610"></script>
+<script src="selectpicker.js?v=20261031224610"></script>
+<script src="pdf.js?v=20261031224610"></script>
+<script src="lzread.js?v=20261031224610"></script>
+<script src="app.js?v=20261031224610"></script>
+<script src="auth.js?v=20261031224610"></script>
+<script src="sync.js?v=20261031224610"></script>
+<script src="insights.js?v=20261031224610"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

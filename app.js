@@ -1170,6 +1170,9 @@
   function assistSteps() {
     var E1 = 'einstellungen', f = '.field', k = 'label.check';
     return [{ t: 'Ich führe dich jetzt durch deine Einstellungen. Bei jedem Feld kannst du gleich etwas eintragen, dann tippst du auf Weiter. Was du nicht weißt, lässt du leer. Du kannst es später nachholen.' },
+      { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
+      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Freiwillig: Geburtsdatum für einen Geburtstagsgruß und ein Profilbild. Du kannst beides überspringen.' },
+      { v: E1, sel: '#s-firma', up: f, t: 'Der Name deiner Firma. Er steht auf den Berichten. Weißt du ihn nicht auswendig, lass das Feld leer.' },
       { v: E1, sel: '#s-beruf', t: 'Hier steht dein Beruf. Stimmt das? Wenn nicht, ändere ihn hier. Sonst tippe auf Weiter.' },
       { v: E1, sel: '#s-umodell', up: f, t: 'Wie zählt deine Firma Überstunden? Wähle es aus. Weißt du es nicht, nimm „Pro Monat“ und frage später im Büro nach.' },
       { v: E1, sel: '#s-gleitbox', t: 'Die Sollzeit für jeden Wochentag. Zum Beispiel Montag bis Donnerstag 8,5 Stunden und Freitag 6. Leer lassen geht auch.' },
@@ -1193,13 +1196,10 @@
       { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Setze nur die Haken, die du brauchst.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-sw', up: k, t: 'Setze den Haken, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
-      { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
-      { v: E1, sel: '#s-firma', up: f, t: 'Der Name deiner Firma. Er steht auf den Berichten. Weißt du ihn nicht auswendig, lass das Feld leer.' },
-      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Freiwillig: Geburtsdatum für einen Geburtstagsgruß und ein Profilbild. Du kannst beides überspringen.' },
-      { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
+      { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
       { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
