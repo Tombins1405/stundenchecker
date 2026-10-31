@@ -534,3 +534,12 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .dp-day { height: 44px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; padding: 0; }
 .dp-day.now { border-color: var(--accent, #1e6fd9); }
 .dp-day.on { background: var(--accent, #1e6fd9); color: #fff; }
+
+/* Auswahllisten */
+select[data-sp] { pointer-events: none; }
+.sp-ov { z-index: 130; }
+.sp-box { max-width: 400px; }
+.sp-list { display: grid; gap: 6px; max-height: 55vh; overflow: auto; }
+.sp-opt { text-align: left; padding: 14px 12px; border: 1px solid var(--line, #cbd5e1); border-radius: 12px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; min-height: 48px; }
+.sp-opt.on { background: var(--accent, #1e6fd9); color: #fff; border-color: transparent; font-weight: 600; }
+.sp-opt[disabled] { opacity: .45; }
