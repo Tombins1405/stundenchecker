@@ -919,6 +919,7 @@
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
+    if (data.profil && data.profil.lzLesen === undefined && Object.keys(data.days).length >= 3) out.push({ k: 'lzlesen', text: 'Darf ich dir künftig das Abtippen vom Lohnzettel abnehmen? Du zeigst mir die PDF-Datei, ich lese sie nur hier auf deinem Handy ab, und du musst nichts mehr eintippen. Du entscheidest und kannst es jederzeit ausschalten.' });
     var cnt = Object.keys(data.days).filter(function (k) { return k.slice(0, 7) === pk.key; }).length;
     var lzt = (data.profil && data.profil.lzTag) || 10; // Mia fragt erst ab dem Tag, an dem der Lohnzettel meist kommt
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
@@ -930,6 +931,8 @@
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'tag') { show('erfassen'); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
+    else if (k === 'lzlesen') { lzOpen('erlaubnis'); }
+    else if (k === 'lohnzettel' && data.profil && data.profil.lzLesen === true) { lzOpen('datei'); }
     else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('monat'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
   }
   function miaPose(p) { var b = $('#mia-btn'); if (b && $('#mia-float')) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
@@ -1410,6 +1413,7 @@
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
     var kvp = (data.profil && data.profil.kv) || {}; [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || ''; });
+    $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
@@ -2181,5 +2185,89 @@
       speichern(erg);
       if (mail) setTimeout(function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(txt + ' (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); }, 600);
     });
+  })();
+  /* ---- Lohnzettel automatisch lesen (nur mit Zustimmung, nur auf dem Gerät) ---- */
+  var lzUi = { step: '', res: null, buf: null, pwOk: null };
+  function lzProfil() { if (!data.profil) data.profil = {}; return data.profil; }
+  function lzOpen(step) { lzUi.step = step || (lzProfil().lzLesen === true ? 'datei' : 'erlaubnis'); lzRender(); $('#lz-dlg').hidden = false; }
+  function lzClose() { $('#lz-dlg').hidden = true; lzUi.buf = null; lzUi.pwOk = null; }
+  function lzBtn(txt, id, cls) { return '<button type="button" class="btn' + (cls ? ' ' + cls : '') + '" id="' + id + '">' + txt + '</button>'; }
+  function lzRender() {
+    var h = $('#lz-h'), b = $('#lz-body'), bt = $('#lz-btns'), s = lzUi.step, svg = '';
+    try { svg = '<div style="width:64px;margin:0 auto">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { }
+    if (s === 'erlaubnis') {
+      h.textContent = 'Darf ich dir das Abtippen abnehmen?';
+      b.innerHTML = svg + '<p>Wenn du magst, lese ich künftig deinen Lohnzettel für dich ab. Dann musst du die Stunden nicht mehr von Hand eintragen, und ich vergleiche sie gleich mit deiner Aufzeichnung.</p>' +
+        '<p>Das geht nur hier auf deinem Handy. Es wird nichts hochgeladen. Ich lese keine Namen, keine Adresse, keine Sozialversicherungsnummer und keine Bankdaten, nur die Stunden in den Zeilen. Du siehst alles vorher und bestätigst jede Zeile. Ausschalten kannst du es jederzeit in den Einstellungen.</p>' +
+        '<label class="check"><input type="checkbox" id="lz-ok"> Ja, der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen.</label>';
+      bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
+    } else if (s === 'datei') {
+      h.textContent = 'Zeig mir deinen Lohnzettel';
+      b.innerHTML = svg + '<p>Such jetzt die PDF-Datei deines Lohnzettels aus. Am besten die Datei, die du von deiner Firma bekommen hast. Bitte nicht ausdrucken oder neu speichern, sonst kann ich sie nicht lesen.</p><p class="hint">Wenn die Datei ein Kennwort hat, frage ich dich danach.</p>' +
+        '<input type="file" id="lz-file" accept="application/pdf,.pdf" hidden>';
+      bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
+    } else if (s === 'warten') {
+      h.textContent = 'Ich lese …'; b.innerHTML = svg + '<p>Einen Moment bitte.</p>'; bt.innerHTML = '';
+    } else if (s === 'kennwort') {
+      h.textContent = 'Die Datei hat ein Kennwort';
+      b.innerHTML = svg + '<p>' + (lzUi.pwFalsch ? 'Das Kennwort war leider falsch. Bitte noch einmal.' : 'Gib das Kennwort deiner Datei ein. Ich brauche es nur jetzt zum Öffnen und speichere es nicht.') + '</p><div class="field"><label for="lz-pw">Kennwort</label><input type="password" id="lz-pw" autocomplete="off"></div>';
+      bt.innerHTML = lzBtn('Öffnen', 'lz-pwok', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
+    } else if (s === 'keintext') {
+      h.textContent = 'Das kann ich nicht lesen';
+      b.innerHTML = svg + '<p>In dieser Datei steckt nur ein Bild und kein Text. Das passiert, wenn man sie ausdruckt oder mit „Als PDF drucken“ neu speichert. Nimm bitte die ursprüngliche PDF-Datei deiner Firma. Wenn du nur ein Foto oder die Papierversion hast, tippe die Zeilen im Abgleich einfach ab.</p>';
+      bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Schließen', 'lz-cancel');
+    } else if (s === 'fehler') {
+      h.textContent = 'Das hat nicht geklappt';
+      b.innerHTML = svg + '<p>Ich konnte die Datei nicht öffnen. Prüfe bitte deine Internetverbindung, sie wird beim ersten Mal kurz gebraucht, um das Lesemodul zu laden. Du kannst die Zeilen auch von Hand im Abgleich eintragen.</p>';
+      bt.innerHTML = lzBtn('Noch einmal', 'lz-pick2', 'primary') + lzBtn('Schließen', 'lz-cancel');
+    } else if (s === 'pruefen') {
+      var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m };
+      h.textContent = 'Das habe ich gefunden';
+      var opts = [['', 'Nicht übernehmen']].concat(Object.keys(window.StundenLz.NAMEN).map(function (k) { return [k, window.StundenLz.NAMEN[k]]; }));
+      b.innerHTML = svg + '<p><b>' + MON[mo.m - 1] + ' ' + mo.y + '</b></p>' + (r.monat ? '' : '<p class="hint">Monat nicht erkannt, ich nehme den gerade angezeigten.</p>') + '<p>Bitte schau kurz, ob es stimmt.</p>' +
+        (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span><b>' + fh(z.menge) + ' h</b><select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
+      bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
+    }
+  }
+  function lzFragePw(grund) { return new Promise(function (ok, fail) { lzUi.pwFalsch = grund === 'falsch'; lzUi.pwOk = ok; lzUi.pwFail = fail; lzUi.step = 'kennwort'; lzRender(); setTimeout(function () { var p = $('#lz-pw'); if (p) p.focus(); }, 60); }); }
+  function lzLese(file) {
+    lzUi.step = 'warten'; lzRender();
+    var fr = new FileReader();
+    fr.onload = function () {
+      window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
+        if (!o.hatText) { lzUi.step = 'keintext'; lzRender(); return; }
+        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; lzUi.step = 'pruefen'; lzRender(); ins('lz_gelesen');
+      }, function (e) { if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
+    };
+    fr.onerror = function () { lzUi.step = 'fehler'; lzRender(); };
+    fr.readAsArrayBuffer(file);
+  }
+  (function () {
+    var dlg = $('#lz-dlg'); if (!dlg) return;
+    dlg.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t.id === 'lz-ok') { $('#lz-weiter').disabled = !t.checked; return; }
+      if (t.id === 'lz-file' && t.files && t.files[0]) { lzLese(t.files[0]); t.value = ''; }
+    });
+    dlg.addEventListener('click', function (ev) {
+      var t = ev.target.closest('button'); if (!t) return;
+      if (t.id === 'lz-cancel') { if (lzUi.pwFail && lzUi.step === 'kennwort') { var f = lzUi.pwFail; lzUi.pwFail = null; f(new Error('abgebrochen')); } lzClose(); }
+      else if (t.id === 'lz-nein') { lzProfil().lzLesen = false; save(); lzClose(); renderSettings(); }
+      else if (t.id === 'lz-weiter') { lzProfil().lzLesen = true; save(); ins('lz_erlaubt'); lzUi.step = 'datei'; lzRender(); renderSettings(); }
+      else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
+      else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
+      else if (t.id === 'lz-apply') {
+        var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m }, key = mo.y + '-' + pad(mo.m), sel = $$('#lz-body [data-lzz]'), n = 0;
+        if (!data.abgleich) data.abgleich = {}; var cur = data.abgleich[key] || (data.abgleich[key] = {}); var lm = lzProfil().lzMap || (lzProfil().lzMap = {});
+        var sum = {};
+        sel.forEach(function (s) { var z = r.zeilen[+s.dataset.lzz]; lm[z.norm] = s.value || '-'; if (s.value) sum[s.value] = (sum[s.value] || 0) + z.menge; });
+        Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; });
+        save(); lzClose(); ui.y = mo.y; ui.m = mo.m; show('monat'); renderMonat(); toast(n ? 'Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.' : 'Nichts übernommen.', 6000);
+        setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+      }
+    });
+    $('#lz-start').addEventListener('click', function () { lzOpen(); });
+    $('#lz-chk').addEventListener('change', function () { lzProfil().lzLesen = this.checked; save(); if (this.checked) lzOpen('erlaubnis'); });
+    $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
 })();

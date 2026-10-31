@@ -498,3 +498,11 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .st-frei .d-ico, .st-sw .d-ico { background: #eceff1; color: #455a64; }
 .d-ico.st-dienst-i { background: #fff3e0; color: #b45309; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .d-ico { background: #1d2a3d; color: var(--accent); } }
+
+/* Lohnzettel lesen */
+.lzbox { background: var(--surface); color: var(--ink); border-radius: 16px; padding: 18px; max-width: 460px; width: 100%; max-height: 90vh; overflow: auto; display: grid; gap: 12px; }
+.lzbox h3 { margin: 0; }
+.lzbox select { max-width: 55%; }
+.lzrow { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.lzrow b { font-variant-numeric: tabular-nums; }
+.lzrow select { grid-column: 1 / -1; max-width: 100%; }
