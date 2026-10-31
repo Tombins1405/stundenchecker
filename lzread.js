@@ -8,6 +8,7 @@
   var REGELN = [
     [/zuschl|zusch|zuschlag/, null],
     [/lohnsteuer|sozialvers|brutto|netto|auszahlung|beitrag|kosten|sechstel|pendler|bemessung/, null],
+    [/zs$/, null], // „Überstunden 50% ZS“: Zuschlag auf dieselben Stunden, zählt nicht noch einmal
     [/sonderurlaub/, 'sonder'],
     [/^uberstunden|^uberstd|^mehrarbeit|^ust/, 'ueber'],
     [/feiertag/, 'feiertag'],
@@ -17,7 +18,7 @@
     [/diaten|aufwandsentsch|taggeld|tagesgeld|reisekosten/, 'dStd'],
     [/^lohn$|^stundenlohn|^normalstunden|^arbeitszeit|^normalarbeitszeit|^gehalt|^lohn/, 'lohn']
   ];
-  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', sonder: 'Sonderurlaub' };
+  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub' };
   function zahl(s) { return parseFloat(String(s).replace(/\./g, '').replace(',', '.')); }
   function monat(lines) {
     for (var i = 0; i < lines.length; i++) {
@@ -50,7 +51,8 @@
     // Zeilen ohne „h“ (zum Beispiel „Lohn 160,00 13,34 2.134,82“): der Nutzer wählt einmal die Art und die Zahl, die App merkt es sich
     var NUM = /\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2}/g, PERS = /iban|bic\b|@|tel\.|sv-?nr|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b|gmbh|\bag\b/i, schon = {};
     zeilen.forEach(function (q) { schon[q.norm] = 1; });
-    var kand = [];
+    var kand = [], used = {};
+    zeilen.forEach(function (q) { if (q.key) used[q.key] = 1; });
     lines.forEach(function (ln) {
       if (/€/.test(ln) || PERS.test(ln)) return;
       var nums = String(ln).match(NUM); if (!nums) return;
@@ -61,7 +63,10 @@
       if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length) pos = 0; }
       else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
       var menge = zahl(nums[pos]); if (isNaN(menge)) return;
-      if (key === null && rk && menge <= 400) key = rk[1];
+      if (key === null && rk) { if (rk[1] === 'dStd' && nums.length === 1) key = 'dEuro'; else if (menge <= 400) key = rk[1]; }
+      if (key && !(gelernt[n] !== undefined) && used[key]) key = null; // dieselbe Art nie zweimal vorbelegen
+      if (key === null && gelernt[n] === undefined && (menge > 400 || /^summe/.test(n))) return; // Beträge und Summen sind nie Stunden
+      if (key) used[key] = 1;
       var dup = n + '|' + nums.join(' '); if (schon[dup]) return; schon[dup] = 1;
       kand.push({ label: label, norm: n, menge: menge, key: key, nums: nums, pos: pos, unsicher: true });
     });
