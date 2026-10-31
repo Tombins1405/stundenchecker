@@ -23,7 +23,9 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left
 <div class="card"><h2>Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
 <div class="card"><h2>Mia</h2><div id="mi"></div></div>
 <div class="card"><h2>Rückmeldungen</h2><div id="fbl"></div></div>
+<div class="card"><h2>Anmeldungen (neueste zuerst)</h2><div class="scroll" id="an"></div></div>
 <div class="card"><h2>Konten</h2><div class="scroll" id="pl"></div></div>
+<div class="card"><h2>Was hat wer ausgelöst? (je Konto)</h2><div id="wk"></div></div>
 <div class="card"><h2>Fragen, die Mia nicht beantworten konnte</h2><div id="mo"></div></div>
 <div class="card"><h2>Abweichungen (anonym, nur mit Einwilligung)</h2><div class="scroll" id="st"></div></div>
 </div>
@@ -65,9 +67,12 @@ function run(){
   var mm={};['mia_frage','mia_antwort','mia_chip','mia_sprache','mia_offen'].forEach(function(k){if(all[k])mm[k]=all[k]});
   $('#mi').innerHTML=lst(mm)+'<p class="mut" style="margin-top:10px">Themen, zu denen Mia antwortet:</p>'+lst(mia,'mia_t_');
   $('#fbl').innerHTML=F.length?F.map(function(x){return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'</div>'}).join(''):'<p class="mut">Noch keine.</p>';
+  var byReg=P.slice().sort(function(a,b){return String(b.created||'')<String(a.created||'')?-1:1});
+  $('#an').innerHTML='<table><tr><th>E-Mail</th><th>Registriert am</th><th>Letzte Anmeldung</th><th>Zuletzt in der App</th><th>Version</th></tr>'+byReg.map(function(x){return '<tr><td>'+esc(x.email)+'</td><td>'+fmt(x.created)+'</td><td>'+fmt(x.lastLogin)+'</td><td>'+fmt(x.lastSeen)+'</td><td>'+esc(x.version)+'</td></tr>'}).join('')+'</table>';
+  $('#wk').innerHTML=P.map(function(x){var f=x.features||{},o={};Object.keys(f).forEach(function(k){if(typeof f[k]==='number')o[k]=f[k]});var n=Object.keys(o).reduce(function(a,k){return a+o[k]},0);return '<details style="border-bottom:1px solid var(--line);padding:6px 0"><summary><b>'+esc(x.email||'ohne E-Mail')+'</b> <span class="mut">· '+esc(x.beruf||x.paket||'')+' · '+n+' Aktionen</span></summary>'+lst(o)+'</details>'}).join('')||'<p class="mut">Noch keine.</p>';
   $('#pl').innerHTML='<table><tr><th>E-Mail</th><th>Beruf</th><th>Erfasste Tage</th><th>Aktive Tage (letzte 7 / 30)</th><th>Sprache</th><th>Registriert am</th><th>Zuletzt in der App</th></tr>'+P.map(function(x){return '<tr><td>'+esc(x.email)+'</td><td>'+esc(x.beruf||x.paket)+'</td><td>'+esc(x.tage)+'</td><td>'+aktiv(x,7)+' / '+aktiv(x,30)+'</td><td>'+esc(x.lang)+'</td><td>'+fmt(x.created)+'</td><td>'+fmt(x.lastSeen)+'</td></tr>'}).join('')+'</table>';
   $('#mo').innerHTML=M.length?M.map(function(x){return '<div class="fb">'+esc(x.text)+' <span class="mut">('+esc(x.lang||'')+', '+fmt(x.t)+')</span></div>'}).join(''):'<p class="mut">Noch keine.</p>';
-  $('#st').innerHTML=S.length?'<table><tr><th>Monat</th><th>Beruf</th><th>Zeilen</th></tr>'+S.map(function(x){return '<tr><td>'+esc(x.monat)+'</td><td>'+esc(x.beruf||x.paket)+'</td><td>'+esc((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', '))+'</td></tr>'}).join('')+'</table>':'<p class="mut">Noch keine.</p>';
+  $('#st').innerHTML=S.length?'<table><tr><th>Zeitpunkt</th><th>Monat</th><th>Beruf</th><th>Zeilen</th></tr>'+S.map(function(x){return '<tr><td>'+fmt(x.t)+'</td><td>'+esc(x.monat)+'</td><td>'+esc(x.beruf||x.paket)+'</td><td>'+esc((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', '))+'</td></tr>'}).join('')+'</table>':'<p class="mut">Noch keine.</p>';
  REPORT=report(P,F,M,S,fun,mm,mia);
  },function(e){$('#ov').textContent='Kein Zugriff oder noch nicht eingerichtet ('+(e&&e.code||e)+').'});
 }

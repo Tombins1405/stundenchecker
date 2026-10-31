@@ -159,8 +159,8 @@
     werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 200 } })
   };
   PAKETE.de_handel = {
-    name: 'Deutschland: Einzelhandel (zum Beispiel Edeka)', land: 'DE', pruefen: true,
-    hinweis: 'Richtwerte für den Einzelhandel in Nordrhein-Westfalen, Tabelle ab 1.8.2026: 37,5 Stunden/Woche. Der Tarif wird je Bundesland verhandelt und gilt nur, wenn dein Betrieb tarifgebunden ist (bei Edeka entscheidet die Regionalgesellschaft). Beispiele Gehaltsgruppe IV a: 4.014 bis 4.488 € im Monat, je nach Tätigkeitsjahr. Welche Zuschläge für Überstunden, Spätdienst und Sonntag gelten, konnte ich nicht belegen: Sie stehen bei 0, bitte trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Bei Monatsgehalt sind Überstunden oft schon im Gehalt oder auf einem Arbeitszeitkonto.',
+    name: 'Deutschland: Einzelhandel', land: 'DE', pruefen: true,
+    hinweis: 'Richtwerte für den Einzelhandel in Nordrhein-Westfalen, Tabelle ab 1.8.2026: 37,5 Stunden/Woche. Der Tarif wird je Bundesland verhandelt und gilt nur, wenn dein Betrieb tarifgebunden ist. Beispiele Gehaltsgruppe IV a: 4.014 bis 4.488 € im Monat, je nach Tätigkeitsjahr. Welche Zuschläge für Überstunden, Spätdienst und Sonntag gelten, konnte ich nicht belegen: Sie stehen bei 0, bitte trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Bei Monatsgehalt sind Überstunden oft schon im Gehalt oder auf einem Arbeitszeitkonto.',
     werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 37.5, tagesGrenze: null, zuschlagPct: 0 } })
   };
   PAKETE.de_buero = {
