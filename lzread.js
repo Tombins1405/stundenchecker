@@ -57,7 +57,7 @@
       if (/€/.test(ln) || PERS.test(ln)) return;
       var nums = String(ln).match(NUM); if (!nums) return;
       var i0 = String(ln).search(NUM), label = String(ln).slice(0, i0).replace(/^[\s\d.,:\-–/]+/, '').replace(/\s+/g, ' ').trim();
-      if (!/[A-Za-zÄÖÜäöüß]{3}/.test(label) || label.length > 48) return;
+      if (!/[A-Za-zÄÖÜäöüß]{3}/.test(label) || label.length > 48 || /§/.test(label)) return; // Zeilen mit Paragraf sind Steuerangaben, keine Lohnzeilen
       var n = norm(label); if (n.length < 3 || schon[n] || /^(bem|sv|lst|bv)/.test(n)) return;
       var key = null, pos = 0, rk = null;
       if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length) pos = 0; }
