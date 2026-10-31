@@ -518,3 +518,19 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .bdfoto { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent, #2a7); }
 .bdbox h3, .bdbox p, .bdbox .btns { position: relative; }
 @media (prefers-reduced-motion: reduce) { .bdtanz, #bd-conf i { animation: none; } }
+
+/* Datumsfeld */
+.dp-wrap { position: relative; display: block; }
+.dp-wrap input { width: 100%; padding-right: 52px; }
+.dp-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; color: var(--ink); }
+.dp-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
+.dp-ov { z-index: 120; }
+.dp-box { max-width: 380px; }
+.dp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dp-head strong { text-transform: capitalize; }
+.dp-head .btn { min-width: 52px; }
+.dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.dp-wd { font-size: .8rem; opacity: .7; padding: 4px 0; }
+.dp-day { height: 44px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; padding: 0; }
+.dp-day.now { border-color: var(--accent, #1e6fd9); }
+.dp-day.on { background: var(--accent, #1e6fd9); color: #fff; }
