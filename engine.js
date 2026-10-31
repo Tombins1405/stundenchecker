@@ -750,7 +750,7 @@
       }
       var app = r2(z.hole(summe) || 0);
       var eingetragenOhneApp = has && +v > 0 && app === 0;
-      if (!z.pflicht && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
+      if ((!z.pflicht || (z.key === 'dStd' && app === 0)) && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
       if (z.nurAlle && !alle && !(has && +v > 0)) return; // Euro-Zeile nur auf Wunsch oder wenn eingetragen
       if (!has) { rows.push({ key: z.key, label: z.label, unit: z.unit, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
       var lzWert = +v + (z.key === 'ueber' ? za : 0) + (z.key === 'lohn' ? so : 0); // Überstunden + Zeitausgleich-Konto, Lohn + Sonderurlaub

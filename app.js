@@ -1399,7 +1399,7 @@
       var pw = E.PAKETE[w.paket].werte;
       html += '<h3>Dein Lohn</h3>' +
         lohnGruppenHtml(w) +
-        '<div class="field"><label for="wz-einst">Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
+        '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
@@ -1486,7 +1486,7 @@
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
-    $('#s-form').hidden = !en; $('#s-form2').hidden = !en;
+    $('#s-form').hidden = !en; $('#s-form2').hidden = !en || !!(en.diaeten && en.diaeten.modell === 'aus' && E.BERUFE[en.beruf] && E.BERUFE[en.beruf].diaeten === false);
     if (!en) return;
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
