@@ -460,3 +460,14 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .tour-body { flex: 1; min-width: 0; }
 .tour-body p { margin: 0 0 10px; font-size: .98rem; line-height: 1.4; }
 .tour-btns { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* Rundgang: weicher Übergang, Rahmen erscheint erst, wenn die Seite fertig gescrollt hat */
+.tour-hl.pop { animation: tourpop .5s ease-out; }
+@keyframes tourpop { 0% { outline-width: 12px; outline-color: rgba(253, 224, 71, .0); } 100% { outline-width: 3px; outline-color: #fde047; } }
+.tour.moving .tour-hl { transition: none; }
+/* Einstellungsassistentin: die Seite bleibt bedienbar, nur die Sprechblase fängt Tipper ab */
+.tour.assist { pointer-events: none; }
+.tour.assist .tour-box { pointer-events: auto; }
+.tour.assist .tour-hl { box-shadow: 0 0 0 100vmax rgba(15, 23, 42, .38); }
+.tour.assist:has(.tour-hl[hidden]) { background: rgba(15, 23, 42, .38); }
+@media (prefers-reduced-motion: reduce) { .tour-hl.pop { animation: none; } }

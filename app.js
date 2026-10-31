@@ -848,7 +848,8 @@
   function miaNext() {
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
-    if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute alles zeigen? Wir fangen bei den Einstellungen an.' });
+    if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir deine Einstellungen gemeinsam durchgehen? Ich führe dich Feld für Feld, du trägst gleich mit ein.' });
+    if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
@@ -859,6 +860,7 @@
   }
   function miaGo(k) {
     if (k === 'rundgang') { tourStart(); }
+    else if (k === 'assist') { tourStart(true); }
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'tag') { show('erfassen'); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
@@ -1060,13 +1062,12 @@
   }
   function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
   function wzClose(dismiss) { $('#wiz').hidden = true; if (dismiss && ui.wiz && ui.wiz.mode === 'start') ui.wizDismissed = true; ui.wiz = null; }
-  /* ---- Rundgang mit Mia: ein heller Rahmen zeigt auf das, was Mia gerade erklärt ---- */
+  /* ---- Rundgang mit Mia: ein heller Rahmen zeigt auf das, was Mia gerade erklärt ----
+     Zwei Arten: "Rundgang" (erklärt, sperrt die Seite) und "Einstellungsassistentin" (führt Feld für Feld, du trägst gleich mit ein). */
   var TOUR = null;
   function tourSteps() {
     var w = wAt(todayISO()), b = w.beruf || '', gl = w.ueberstunden && w.ueberstunden.modell === 'gleit';
-    var s = [{ t: 'Ich zeige dir in einer Minute, wie alles funktioniert. Du kannst jederzeit beenden.' },
-      { v: 'einstellungen', sel: '#s-lohn', t: 'Wir fangen bei den Einstellungen an. Hier steht dein Stundenlohn. Er gilt immer ab einem Datum, deshalb stimmt auch ein alter Monat noch.' },
-      { v: 'einstellungen', sel: '#s-praemien', t: 'Prämien und Zulagen legst du hier an. Schau auf deinen Lohnzettel, dort stehen sie meistens.' },
+    var s = [{ t: 'Ich zeige dir in einer Minute, wie du jeden Tag einträgst und wo du alles findest. Deine Einstellungen gehen wir danach Feld für Feld gemeinsam durch. Du kannst jederzeit beenden.' },
       { v: 'erfassen', sel: '#e-status', t: 'Hier wählst du die Art des Tages: Arbeit, Urlaub, Krankenstand oder Zeitausgleich. Bei Urlaub und Krankenstand brauchst du keine Uhrzeiten.' },
       { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
       { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
@@ -1079,32 +1080,97 @@
     s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
     return s;
   }
-  function tourEl(st) { if (!st.sel) return null; var el = document.querySelector(st.sel); return el && el.offsetParent !== null ? el : null; }
+  function assistSteps() {
+    var E1 = 'einstellungen', f = '.field', k = 'label.check';
+    return [{ t: 'Ich führe dich jetzt durch deine Einstellungen. Bei jedem Feld kannst du gleich etwas eintragen, dann tippst du auf Weiter. Was du nicht weißt, lässt du leer. Du kannst es später nachholen.' },
+      { v: E1, sel: '#s-beruf', t: 'Hier steht dein Beruf. Stimmt das? Wenn nicht, ändere ihn hier. Sonst tippe auf Weiter.' },
+      { v: E1, sel: '#s-umodell', up: f, t: 'Wie zählt deine Firma Überstunden? Wähle es aus. Weißt du es nicht, nimm „Pro Monat“ und frage später im Büro nach.' },
+      { v: E1, sel: '#s-gleitbox', t: 'Die Sollzeit für jeden Wochentag. Zum Beispiel Montag bis Donnerstag 8,5 Stunden und Freitag 6. Leer lassen geht auch.' },
+      { v: E1, sel: '#s-einst', up: f, t: 'Die Einstufung steht auf deinem Lohnzettel, zum Beispiel „Kraftfahrer 3a“. Sie zeigt, welcher Kollektivvertrag für dich gilt.' },
+      { v: E1, sel: '#s-lgbox', t: 'Die Lohngruppe laut Kollektivvertrag. Wähle sie, wenn du sie kennst.' },
+      { v: E1, sel: '#s-monat', up: f, t: 'Steht auf deinem Lohnzettel ein fester Monatslohn? Dann trage ihn hier ein. Wenn nicht, lass das Feld leer.' },
+      { v: E1, sel: '#s-monatstd', up: f, t: 'Durch wie viele Stunden wird dein Monatslohn geteilt? Meistens steht es auf dem Lohnzettel, oft 173.' },
+      { v: E1, sel: '#s-lohn', up: f, t: 'Dein Stundenlohn steht auf dem Lohnzettel bei „Lohn“. Eine Erhöhung trägst du darunter „ab Datum“ ein.' },
+      { v: E1, sel: '#s-woche', up: f, t: 'Wie viele Stunden pro Woche sind bei dir normale Arbeitszeit? Zum Beispiel 40, im Bau 39.' },
+      { v: E1, sel: '#s-tagsollfield', t: 'Stunden pro Arbeitstag. Leer lassen, dann rechnet die App Wochenstunden geteilt durch deine Arbeitstage.' },
+      { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
+      { v: E1, sel: '#s-uzus', up: f, t: 'Der Zuschlag auf Überstunden in Prozent. Auf dem Lohnzettel steht zum Beispiel „Überstd.-Zusch. 50 %“.' },
+      { v: E1, sel: '#s-pauseauto', up: f, t: 'Zieht deine Firma jeden Tag automatisch eine Pause ab? Dann trage die Minuten ein, zum Beispiel 60. Sonst lass es leer.' },
+      { v: E1, sel: '#s-zsa', to: '#s-zft', up: '.grid3', t: 'Zuschläge für Samstag, Sonntag und Feiertag in Prozent. Bei 100 % zählt eine Stunde doppelt. Weißt du es nicht, lass 0 stehen.' },
+      { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Mulde, pro Tour oder pro Stunde. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
+      { v: E1, sel: '#s-dmodell', up: f, t: 'Wie werden bei dir Diäten gezahlt? Pro Stunde, pro Tag nach Stufen oder gar nicht. Wähle es aus.' },
+      { v: E1, sel: '#s-d-stunde', t: 'Der Diätensatz je Stunde steht auf dem Lohnzettel. Dazu die Höchststunden pro Tag, falls es eine Grenze gibt.' },
+      { v: E1, sel: '#s-d-tag', t: 'Die Stufen für das Taggeld: Ab wie vielen Stunden gibt es welchen Betrag?' },
+      { v: E1, sel: '#s-d-vorschlag', t: 'Womit soll die App die Diätenstunden vorschlagen? Sie schlägt es dir bei jedem Tag vor, du kannst es jederzeit ändern.' },
+      { v: E1, sel: '#s-folge', up: k, t: 'Setze den Haken, wenn deine Firma Diäten und Überstunden erst im Folgemonat abrechnet.' },
+      { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Setze nur die Haken, die du brauchst.' },
+      { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
+      { v: E1, sel: '#s-sw', up: k, t: 'Setze den Haken, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
+      { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
+  }
+  function tourEl(st) {
+    if (!st.sel) return null;
+    var el = document.querySelector(st.sel); if (!el || el.offsetParent === null) return null;
+    if (st.up) { var u = el.closest(st.up); if (u && u.offsetParent !== null) el = u; }
+    return el;
+  }
+  function tourRect(st, el) {
+    var r = el.getBoundingClientRect(), o = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    if (st.to) {
+      var e2 = document.querySelector(st.to);
+      if (e2 && e2.offsetParent !== null) { if (st.up) { var u2 = e2.closest(st.up); if (u2) e2 = u2; } var r2 = e2.getBoundingClientRect(); o.left = Math.min(o.left, r2.left); o.top = Math.min(o.top, r2.top); o.right = Math.max(o.right, r2.right); o.bottom = Math.max(o.bottom, r2.bottom); }
+    }
+    return o;
+  }
+  function tourReduced() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  /* Rahmen und Sprechblase an die aktuelle Stelle setzen (auch während die Seite scrollt oder die Tastatur aufgeht) */
+  function tourPlace() {
+    var T = TOUR; if (!T || !T.el || !T.ready) return;
+    var st = T.s[T.i], r = tourRect(st, T.el), pad = 6, hl = $('#tour-hl'), box = $('#tour-box'); if (!hl || !box) return;
+    hl.hidden = false; hl.style.left = (r.left - pad) + 'px'; hl.style.top = (r.top - pad) + 'px'; hl.style.width = (r.right - r.left + 2 * pad) + 'px'; hl.style.height = (r.bottom - r.top + 2 * pad) + 'px';
+    if (T.assist) { box.style.top = '8px'; box.style.bottom = 'auto'; return; }
+    var below = (r.top + r.bottom) / 2 < window.innerHeight / 2;
+    box.style.top = below ? Math.min(window.innerHeight - 190, r.bottom + 16) + 'px' : 'auto';
+    box.style.bottom = below ? 'auto' : Math.max(12, window.innerHeight - r.top + 16) + 'px';
+  }
+  /* wartet, bis die Seite fertig gescrollt hat */
+  function tourSettle(T, idx, cb) {
+    var prev = -1, same = 0, n = 0;
+    var iv = setInterval(function () {
+      if (!TOUR || TOUR !== T || T.i !== idx) { clearInterval(iv); return; }
+      var y = window.pageYOffset; same = Math.abs(y - prev) < 1 ? same + 1 : 0; prev = y; n++;
+      if (same >= 2 || n > 30) { clearInterval(iv); cb(); }
+    }, 70);
+  }
+  function tourOnMove() {
+    var T = TOUR; if (!T || !T.ready) return;
+    var ov = $('#tour'); if (ov) { ov.classList.add('moving'); clearTimeout(T.mv); T.mv = setTimeout(function () { var o2 = $('#tour'); if (o2) o2.classList.remove('moving'); }, 160); }
+    if (T.raf) return; T.raf = requestAnimationFrame(function () { if (TOUR) TOUR.raf = 0; tourPlace(); });
+  }
   function tourRender() {
     var T = TOUR; if (!T) return;
-    var st = T.s[T.i], ov = $('#tour');
-    if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour'; document.body.appendChild(ov); }
+    var idx = T.i, st = T.s[idx], ov = $('#tour');
+    if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour' + (T.assist ? ' assist' : ''); document.body.appendChild(ov); }
     if (st.v && ui.view !== st.v) show(st.v, true);
-    var el = null;
+    T.el = null; T.ready = false;
     ov.innerHTML = '<div class="tour-hl" id="tour-hl" hidden></div><div class="tour-box" id="tour-box"></div>';
-    var last = T.i === T.s.length - 1, first = T.i === 0;
+    var last = idx === T.s.length - 1, first = idx === 0;
     $('#tour-box').innerHTML = '<div class="tour-mia">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div><div class="tour-body"><p></p><div class="tour-btns">' +
-      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : 'Weiter') + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
+      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : (first && T.assist ? 'Los geht’s' : 'Weiter')) + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
     $('#tour-box p').textContent = st.t;
+    $('#tour-box').style.top = T.assist ? '8px' : '30%'; $('#tour-box').style.bottom = 'auto';
     setTimeout(function () {
-      if (!TOUR || TOUR.i !== T.i) return;
-      el = tourEl(st);
+      if (!TOUR || TOUR !== T || T.i !== idx) return;
+      var el = tourEl(st);
       if (st.sel && !el) { tourStep(T.dir || 1); return; }
-      var hl = $('#tour-hl'), box = $('#tour-box');
-      if (el) {
-        el.scrollIntoView({ block: 'center' });
-        var r = el.getBoundingClientRect(), pad = 6;
-        hl.hidden = false; hl.style.left = (r.left - pad) + 'px'; hl.style.top = (r.top - pad) + 'px'; hl.style.width = (r.width + 2 * pad) + 'px'; hl.style.height = (r.height + 2 * pad) + 'px';
-        var below = r.top + r.height / 2 < window.innerHeight / 2;
-        box.style.top = below ? Math.min(window.innerHeight - 190, r.bottom + 16) + 'px' : 'auto';
-        box.style.bottom = below ? 'auto' : Math.max(12, window.innerHeight - r.top + 16) + 'px';
-      } else { box.style.top = '30%'; box.style.bottom = 'auto'; }
-    }, 220);
+      if (!el) { T.ready = false; return; }
+      T.el = el;
+      var r = tourRect(st, el), H = window.innerHeight, boxH = $('#tour-box').offsetHeight, h = r.bottom - r.top;
+      var want = T.assist ? boxH + 24 : Math.max(70, (H - h) / 2);
+      var y = Math.max(0, window.pageYOffset + r.top - want);
+      if (Math.abs(y - window.pageYOffset) > 4) window.scrollTo({ top: y, behavior: tourReduced() ? 'auto' : 'smooth' });
+      tourSettle(T, idx, function () { T.ready = true; tourPlace(); var hl = $('#tour-hl'); if (hl) { hl.classList.remove('pop'); void hl.offsetWidth; hl.classList.add('pop'); } });
+    }, 90);
   }
   function tourStep(d) {
     if (!TOUR) return;
@@ -1114,15 +1180,20 @@
     tourRender();
   }
   function tourEnd(done) {
-    TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
-    if (!data.profil) data.profil = {}; data.profil.tourDone = true; save();
+    var as = TOUR && TOUR.assist; TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
+    window.removeEventListener('scroll', tourOnMove); window.removeEventListener('resize', tourOnMove);
+    if (!data.profil) data.profil = {};
+    if (as) { if (done) data.profil.assistDone = true; save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
+    data.profil.tourDone = true; save();
     ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
     show('erfassen', true);
   }
-  function tourStart() {
+  function tourStart(assist) {
     if (ui.wiz || TOUR) return;
-    ins('rundgang');
-    TOUR = { s: tourSteps(), i: 0, dir: 1 }; tourRender();
+    ins(assist ? 'assistentin' : 'rundgang');
+    TOUR = { s: assist ? assistSteps() : tourSteps(), i: 0, dir: 1, assist: !!assist };
+    window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
+    tourRender();
   }
 
   function wzFinish() {
@@ -1488,6 +1559,7 @@
     var t = ev.target.closest('button'); if (!t) return;
     if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else tourEnd(false); return; }
     if (t.id === 'tour-start') { tourStart(); return; }
+    if (t.id === 'assist-start') { tourStart(true); return; }
     if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }
     if (t.dataset.an) { var cur = (ui.edDraft.an || {}).w; anSet('w', cur === t.dataset.an ? '' : t.dataset.an); anChips(); return; }
     if (t.dataset.prvor != null) {
