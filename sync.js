@@ -41,14 +41,19 @@
   function useRemote(remote) { wr(KEY, remote.json); setMeta({ uid: uid, t: remote.t || 0, syncedT: remote.t || 0 }); reload(); }
 
   function push() {
-    var raw = rd(KEY), m = meta();
+    var raw = rd(KEY), m = meta(), cut = new Date().toISOString();
     if (!uid || !raw || m.uid !== uid) return Promise.resolve(false);
     if (raw.length > 900000) { status('Es sind zu viele Daten für die Speicherung im Konto.', 'bad'); return Promise.resolve(false); }
     var t = m.t || Date.now();
     status('Wird gespeichert …');
     return db.collection('users').doc(uid).set({ json: raw, t: t, v: 1, updated: firebase.firestore.FieldValue.serverTimestamp() }).then(function () {
       var mm = meta(); if ((mm.t || 0) <= t) { mm.syncedT = t; setMeta(mm); }
-      status('In deinem Konto gespeichert ✓', 'ok'); return true;
+      status('In deinem Konto gespeichert ✓', 'ok');
+      // Serverzeit lesen: Notizen, die in diesem Speichervorgang schon enthalten waren, bekommen damit einen Zeitpunkt, den das Handy nicht verstellen kann
+      db.collection('users').doc(uid).get({ source: 'server' }).then(function (sn) {
+        var u = sn.get('updated'); if (u && u.toMillis) document.dispatchEvent(new CustomEvent('sc-servertime', { detail: { ms: u.toMillis(), cutoff: cut } }));
+      }).catch(function () {});
+      return true;
     }, function () { status('Noch nicht im Konto gespeichert. Es fehlt die Verbindung. Deine Daten sind auf diesem Gerät sicher.', 'bad'); return false; });
   }
 

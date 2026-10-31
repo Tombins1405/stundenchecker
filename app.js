@@ -692,7 +692,7 @@
     var n = { w: w || undefined, t: t || undefined }, now = new Date().toISOString();
     var oa = (alt && alt.an) || null;
     if (!oa || (!oa.t && !oa.w)) n.ts = now;
-    else { n.ts = oa.ts || now; if ((oa.t || '') !== t || (oa.w || '') !== w) n.tm = now; else if (oa.tm) n.tm = oa.tm; }
+    else { n.ts = oa.ts || now; if (oa.st) n.st = oa.st; if ((oa.t || '') !== t || (oa.w || '') !== w) n.tm = now; else { if (oa.tm) n.tm = oa.tm; if (oa.sm) n.sm = oa.sm; } }
     if (!n.w) delete n.w; if (!n.t) delete n.t;
     out.an = n;
   }
@@ -701,22 +701,31 @@
   function anListe() {
     return Object.keys(data.days).sort().filter(function (k) { var x = data.days[k].an; return x && (x.t || x.w); }).map(function (k) {
       var d = data.days[k], x = d.an;
-      return { datum: k, art: E.STATUS[d.status] ? E.STATUS[d.status].name : '', w: x.w ? AN_ART[x.w] : '', t: x.t || '', ts: x.ts ? fmtStamp(x.ts) : '', tm: x.tm ? fmtStamp(x.tm) : '' };
+      return { datum: k, art: E.STATUS[d.status] ? E.STATUS[d.status].name : '', w: x.w ? AN_ART[x.w] : '', t: x.t || '', ts: x.ts ? fmtStamp(x.ts) : '', tm: x.tm ? fmtStamp(x.tm) : '', sv: (x.tm ? x.sm : x.st) ? fmtStamp(x.tm ? x.sm : x.st) : '' };
     });
   }
   function anRender() {
     var box = $('#an-list'); if (!box) return;
     var l = anListe();
     box.innerHTML = l.length ? l.map(function (x) {
-      return '<div class="anrow"><strong>' + esc(fmtShort(x.datum)) + ' · ' + esc(x.art) + '</strong>' + (x.w ? '<div>' + esc(x.w) + '</div>' : '') + (x.t ? '<div>' + esc(x.t) + '</div>' : '') + '<small>Eingetragen am ' + esc(x.ts) + (x.tm ? ', geändert am ' + esc(x.tm) : '') + '</small></div>';
+      return '<div class="anrow"><strong>' + esc(fmtShort(x.datum)) + ' · ' + esc(x.art) + '</strong>' + (x.w ? '<div>' + esc(x.w) + '</div>' : '') + (x.t ? '<div>' + esc(x.t) + '</div>' : '') + '<small>Eingetragen am ' + esc(x.ts) + (x.tm ? ', geändert am ' + esc(x.tm) : '') + '</small>' + (x.sv ? '<small>Vom Server bestätigt am ' + esc(x.sv) + '</small>' : '') + '</div>';
     }).join('') : '<p class="hint">Noch keine Notizen. Du findest das Notizfeld in Erfassen bei jedem Tag.</p>';
   }
   function anText() {
     return 'Notizen zu meinen Arbeitstagen (aus dem Stunden-Checker)\n\n' + anListe().map(function (x) {
-      return fmtShort(x.datum) + ' · ' + x.art + (x.w ? '\n' + x.w : '') + (x.t ? '\n' + x.t : '') + '\nEingetragen am ' + x.ts + (x.tm ? ', geändert am ' + x.tm : '');
+      return fmtShort(x.datum) + ' · ' + x.art + (x.w ? '\n' + x.w : '') + (x.t ? '\n' + x.t : '') + '\nEingetragen am ' + x.ts + (x.tm ? ', geändert am ' + x.tm : '') + (x.sv ? '\nVom Server bestätigt am ' + x.sv : '');
     }).join('\n\n');
   }
 
+  document.addEventListener('sc-servertime', function (ev) { // Serverzeit für Notizen
+    var d = ev.detail || {}, iso = new Date(d.ms).toISOString(), ch = false;
+    Object.keys(data.days).forEach(function (k) {
+      var x = data.days[k].an; if (!x) return;
+      if (x.ts && !x.st && x.ts <= d.cutoff) { x.st = iso; ch = true; }
+      if (x.tm && !x.sm && x.tm <= d.cutoff) { x.sm = iso; ch = true; }
+    });
+    if (ch) { save(); anRender(); }
+  });
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
@@ -934,6 +943,7 @@
     }, 26000);
     on('#mia-btn', 'click', function () { if (!$('#mia-bubble').hidden) { miaClose('mouth'); return; } miaOpen(false); });
     on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
+    on('#mia-assist', 'click', function () { miaClose('mouth'); tourStart(true); });
     on('#mia-tour', 'click', function () { miaClose('mouth'); tourStart(); });
     on('#mia-later', 'click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
     on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
