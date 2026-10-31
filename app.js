@@ -2057,6 +2057,30 @@
       if (!mitK) rows = rows.map(function (r) { var c = (r.cells || r).slice(0, 5); return r.cells ? { cells: c, bold: r.bold } : c; });
       return { t: 'table', cols: mitK ? [{ w: 70 }, { w: 85 }, { w: 75 }, { w: 45 }, { w: 55, al: 'r' }, { w: 120 }] : [{ w: 90 }, { w: 130 }, { w: 100 }, { w: 60 }, { w: 70, al: 'r' }], head: mitK ? ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden', 'Kunden'] : ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden'], rows: rows };
     }
+    function kw(s) { var p = E.parseISO(s), d = new Date(Date.UTC(p.y, p.m - 1, p.d)), n = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - n); var y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil(((d - y0) / 86400000 + 1) / 7); }
+    function zeitblatt(von, bis) {
+      var nm = ($('#rb-name').value || '').trim(), rows = [], sN = 0, sU = 0, sU50 = 0, sU100 = 0, sD = 0;
+      tageVon(von, bis).forEach(function (r) {
+        var d = data.days[r.datum] || {}; if (r.leer && !(d.von || d.bis)) return;
+        var w = wAt(r.datum), soll = Math.round(E.sollFuer(w.ueberstunden, E.weekday(r.datum)) * 60), net = r.nettoMin || 0;
+        var frei = r.typ !== 'werktag', nor = frei ? 0 : Math.min(net, soll), ue = net - nor; if (r.status !== 'arbeit') { nor = 0; ue = 0; }
+        sN += nor; sU += ue; if (frei) sU100 += ue; else sU50 += ue; sD += r.diaetenStd || 0;
+        var ps = (d.pausen || []).filter(function (x) { return x.von && x.bis; }).map(function (x) { return x.von + '-' + x.bis; }).join(', ');
+        var tour = (d.kunden || []).map(function (k) { return k.name; }).filter(Boolean).join(', ');
+        var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; }); if (!fz.length) fz = [{}];
+        fz.forEach(function (f, i) {
+          var first = i === 0, wk = WD[E.weekday(r.datum)];
+          rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? art(r) : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '']);
+        });
+      });
+      var kopfz = [{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }, { t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }];
+      rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD)], bold: true });
+      rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
+      rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
+      kopfz.push({ t: 'table', fs: 8, cols: [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }, { w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }], head: ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', 'Tour', 'Ruhepause', 'Normal Std.', 'Über-Std.', 'Tagesgeld Std.'], rows: rows });
+      kopfz.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: ' ' });
+      return kopfz;
+    }
     function bauen() {
       var typ = $('#rb-art').value, ds = $('#rb-datum').value || todayISO(), p = E.parseISO(ds), b, name;
       if (typ === 'tag') {
@@ -2075,8 +2099,7 @@
         b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
       } else if (typ === 'halb') {
         var h1 = p.d <= 15, v2 = E.iso(p.y, p.m, h1 ? 1 : 16), b2 = E.iso(p.y, p.m, h1 ? 15 : new Date(p.y, p.m, 0).getDate()); name = 'Halbmonatsbericht-' + v2;
-        b = kopf('Halbmonatsbericht', fmtDate(v2) + ' bis ' + fmtDate(b2)); b.push(tabelleTage(tageVon(v2, b2)));
-        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma' });
+        return { bytes: window.StundenPdf.build(zeitblatt(v2, b2), { landscape: true }), name: name + '.pdf', typ: typ };
       } else {
         var von = E.iso(p.y, p.m, 1), bis = E.iso(p.y, p.m, new Date(p.y, p.m, 0).getDate()), cm = E.calcMonth(data, p.y, p.m, todayISO()), s = cm.summe; name = 'Monatsbericht-' + p.y + '-' + pad(p.m);
         b = kopf('Monatsbericht', MON[p.m - 1] + ' ' + p.y);

@@ -11,8 +11,8 @@
     words.forEach(function (w) { var t = cur ? cur + ' ' + w : w; if (width(t, size, bold) <= maxW || !cur) cur = t; else { lines.push(cur); cur = w; } });
     if (cur) lines.push(cur); return lines.length ? lines : [''];
   }
-  function build(blocks) {
-    var PW = 595, PH = 842, M = 48, CW = PW - 2 * M, pages = [], ops, y;
+  function build(blocks, opts) {
+    var land = opts && opts.landscape, PW = land ? 842 : 595, PH = land ? 595 : 842, M = land ? 30 : 48, CW = PW - 2 * M, pages = [], ops, y;
     function newPage() { ops = []; pages.push(ops); y = PH - M; }
     function need(h) { if (y - h < M + 20) newPage(); }
     function text(x, yy, s, size, bold, al, w) {
@@ -27,11 +27,11 @@
       else if (b.t === 'p') { var ls = wrap(b.text, b.size || 10, CW, b.bold); ls.forEach(function (l) { need(14); text(M, y - 10, l, b.size || 10, b.bold); y -= (b.size || 10) + 4; }); y -= 3; }
       else if (b.t === 'kv') { b.rows.forEach(function (r) { need(15); text(M, y - 10, r[0], 10, true); text(M + 130, y - 10, r[1], 10, false); y -= 15; }); y -= 4; }
       else if (b.t === 'table') {
-        var tot = b.cols.reduce(function (a, c) { return a + c.w; }, 0), cols = b.cols.map(function (c) { return { w: c.w / tot * CW, al: c.al || 'l' }; });
+        var tot = b.cols.reduce(function (a, c) { return a + c.w; }, 0), fs = b.fs || 9, lh = fs + 3, cols = b.cols.map(function (c) { return { w: c.w / tot * CW, al: c.al || 'l' }; });
         function row(cells, bold, shade) {
-          var cl = cells.map(function (c, i) { return wrap(c == null ? '' : String(c), 9, cols[i].w - 8, bold); }), n = Math.max.apply(null, cl.map(function (a) { return a.length; })), h = n * 12 + 6;
+          var cl = cells.map(function (c, i) { return wrap(c == null ? '' : String(c), fs, cols[i].w - 6, bold); }), n = Math.max.apply(null, cl.map(function (a) { return a.length; })), h = n * lh + 6;
           need(h); if (shade) ops.push('0.92 g ' + M + ' ' + (y - h).toFixed(1) + ' ' + CW + ' ' + h + ' re f 0 g');
-          var x = M; cl.forEach(function (ls, i) { ls.forEach(function (l, k) { text(x + 4, y - 11 - k * 12, l, 9, bold, cols[i].al, cols[i].w - 8); }); x += cols[i].w; });
+          var x = M; cl.forEach(function (ls, i) { ls.forEach(function (l, k) { text(x + 3, y - 10 - k * lh, l, fs, bold, cols[i].al, cols[i].w - 6); }); x += cols[i].w; });
           y -= h; line(M, y, PW - M, y, 0.8);
         }
         need(24); line(M, y, PW - M, y, 0.3); row(b.head, true, true);
