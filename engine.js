@@ -109,7 +109,7 @@
     },
     gastro: {
       name: 'Hotel- und Gastgewerbe',
-      hinweis: 'KV Hotel- und Gastgewerbe (Quelle: vida.at, Stand 2024, bitte auf neuere Fassung prüfen): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Nachtarbeit (0 bis 6 Uhr) hat einen Zuschlag, dessen Höhe im Lohnabkommen steht, das ich nicht geöffnet habe. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
+      hinweis: 'KV Hotel- und Gastgewerbe (Quellen: vida.at für den Rahmen mit Stand 2024, wko.at für den Abschluss 2026): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Löhne und Gehälter steigen ab 1.10.2026 im Durchschnitt um 3 %, dazu eine Einmalzahlung bis höchstens 275 € brutto (bis 31.12.2026 auszuzahlen). Nachtarbeit (0 bis 6 Uhr) hat einen pauschalen Zuschlag, gestaffelt in Dritteln je begonnene 2 Stunden; die Höhe steht im Lohnabkommen, die App kennt sie nicht, trage sie als Prämie ein. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -341,9 +341,22 @@
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
+        theke: { name: 'Feinkost / Bedientheke / Bäckerei', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lager: { name: 'Lager / Warenübernahme', b: { fahrzeug: false, kunden: false, praemien: true } },
+        leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
     gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
-      arten: { service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: false } }, kueche: { name: 'Küche', b: { fahrzeug: false, kunden: false, praemien: false } } } },
+      arten: {
+        service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        kueche: { name: 'Küche', b: { fahrzeug: false, kunden: false, praemien: false } },
+        chef: { name: 'Küchenchef / Koch', b: { fahrzeug: false, kunden: false, praemien: true } },
+        rezeption: { name: 'Rezeption / Empfang', b: { fahrzeug: false, kunden: false, praemien: false } },
+        housekeeping: { name: 'Zimmerservice / Housekeeping', b: { fahrzeug: false, kunden: false, praemien: false } },
+        betrieb: { name: 'Betriebsküche / Catering / Kantine', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
     anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
   function berufName(w) {

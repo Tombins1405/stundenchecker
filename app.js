@@ -20,7 +20,7 @@
   var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', eigen: 'Eigene Werte' };
+  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', de_handel: 'Einzelhandel (Deutschland)', de_gastro: 'Gastgewerbe (Deutschland)', eigen: 'Eigene Werte' };
   function todayISO() { var d = new Date(); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
   function fmtDate(s) { var p = E.parseISO(s); return p.d + '.' + p.m + '.' + p.y; }
   function fmtShort(s) { var p = E.parseISO(s); return WD[E.weekday(s)] + ' ' + p.d + '.' + p.m + '.'; }
@@ -490,6 +490,10 @@
   var PR_VOR = {
     gueter: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 15], ['Möbeltransportzulage', 'tag', 'Einsatztage mit händischer Be- und Entladung von Stücken ab 40 kg', 7.33], ['Autotransportzulage (Spezialfahrzeug)', 'tag', 'Einsatztage mit Spezialfahrzeug für Autotransporte', 7.33], ['Abfalleinsammlungszulage', 'tag', 'Einsatztage mit Abfalleinsammlung', 20.01], ['Schwergüterzulage (250 bis 500 kg)', 'stueck', 'Je Stück und Arbeitspartie', 19.71], ['Klavier- oder Kassentransport', 'stueck', 'Je Stück und Arbeitspartie', 23.41], ['Schmutzzulage', 'tag', '10 % des KV-Lohns bei Müll, Fäkalien oder offenen Schüttgütern'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     klein: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    handel: [['Provision / Umsatzprämie', 'monat', 'einmal pro Monat'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Nachtzuschlag', 'stunde', 'Stunden nach 20 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    gastro: [['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale / Umsatzbeteiligung', 'monat', 'einmal pro Monat'], ['Schmutzzulage', 'tag', 'Einsatztage']],
+    de_handel: [['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Nachtzuschlag', 'stunde', 'Stunden nach 20 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    de_gastro: [['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale', 'monat', 'einmal pro Monat']],
     bau: [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']]
   };
   function renderPrVor() {
@@ -794,7 +798,8 @@
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
   var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
     bagger: ['barhaupt', 'weste', 'ohren'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'schluessel'], handel: ['schuerze'], buero: ['krawatte', 'mappe'], aussendienst: ['krawatte', 'mappe'],
-    'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'] };
+    'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'], 'gastro:chef': ['kochhaube', 'schuerze'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
+    'handel:verkauf': ['schuerze'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
   function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, skip: m.skip || {} }; }
   function miaSvg(f, outfit, pose) {
