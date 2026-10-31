@@ -2314,7 +2314,7 @@
     } else if (s === 'keintext') {
       h.textContent = 'Das kann ich nicht lesen';
       b.innerHTML = svg + '<p>In dieser Datei steckt nur ein Bild und kein Text. Das passiert, wenn man sie ausdruckt oder mit „Als PDF drucken“ neu speichert. Nimm bitte die ursprüngliche PDF-Datei deiner Firma. Wenn du nur ein Foto oder die Papierversion hast, tippe die Zeilen im Abgleich einfach ab.</p>';
-      bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Schließen', 'lz-cancel');
+      bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Bezeichnungen eintippen', 'lz-hand') + lzBtn('Schließen', 'lz-cancel');
     } else if (s === 'fehler') {
       h.textContent = 'Das hat nicht geklappt';
       b.innerHTML = svg + '<p>Ich konnte die Datei nicht öffnen. Prüfe bitte deine Internetverbindung, sie wird beim ersten Mal kurz gebraucht, um das Lesemodul zu laden. Du kannst die Zeilen auch von Hand im Abgleich eintragen.</p>';
@@ -2324,7 +2324,11 @@
       var lb = lzUi.labels || [];
       b.innerHTML = svg + '<p>Ich konnte keine Stundenzeilen finden. Wenn du magst, lerne ich diesen Lohnzettel kennen, dann klappt es beim nächsten Mal. Dazu schicke ich dem Entwickler nur die Zeilenbezeichnungen, die Zahlen sind durch # ersetzt.</p><p>Das ist alles, was gesendet wird. Nimm den Haken weg, was du nicht schicken willst:</p>' +
         (lb.length ? '<div class="lzlabels">' + lb.map(function (t, i) { return '<label class="check"><input type="checkbox" data-lzl="' + i + '" checked> ' + esc(t) + '</label>'; }).join('') + '</div>' : '<p>Aus dieser Datei kann ich nichts Brauchbares schicken. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
-      bt.innerHTML = (lb.length ? lzBtn('Bezeichnungen schicken', 'lz-vsend', 'primary') : '') + lzBtn('Nein danke', 'lz-cancel');
+      bt.innerHTML = (lb.length ? lzBtn('Bezeichnungen schicken', 'lz-vsend', 'primary') : '') + lzBtn('Bezeichnungen eintippen', 'lz-hand', lb.length ? '' : 'primary') + lzBtn('Nein danke', 'lz-cancel');
+    } else if (s === 'hand') {
+      h.textContent = 'Zeilenbezeichnungen eintippen';
+      b.innerHTML = svg + '<p>Schreibe die Bezeichnungen so ab, wie sie auf deinem Lohnzettel stehen, eine pro Zeile. Zum Beispiel „Überstunden Grundlohn“. Bitte ohne Zahlen, ohne Namen und ohne Adresse.</p><div class="field"><label for="lz-hand-t">Bezeichnungen</label><textarea id="lz-hand-t" rows="8" maxlength="1500"></textarea></div><p class="hint">Der Text geht an den Entwickler, damit er deinen Lohnzettel einbauen kann.</p>';
+      bt.innerHTML = lzBtn('Schicken', 'lz-hsend', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'pruefen') {
       var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m };
       h.textContent = 'Eingelesene Lohnzetteldaten';
@@ -2366,6 +2370,12 @@
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
       if (t.id === 'lz-cancel') { if (lzUi.pwFail && lzUi.step === 'kennwort') { var f = lzUi.pwFail; lzUi.pwFail = null; f(new Error('abgebrochen')); } lzClose(); }
+      else if (t.id === 'lz-hand') { lzUi.step = 'hand'; lzRender(); }
+      else if (t.id === 'lz-hsend') {
+        var tx = ($('#lz-hand-t').value || '').replace(/\d/g, '#').trim(); if (!tx) { lzClose(); return; }
+        try { window.StundenInsights.feedback('wunsch', '[Lohnzettel-Vorlage von Hand] ' + tx.replace(/\s*\n+\s*/g, ' | ').slice(0, 1800), null).then(function () { toast('Danke! Ich lerne diesen Lohnzettel kennen.', 5000); ins('lz_vorlage_hand'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
+        lzClose();
+      }
       else if (t.id === 'lz-vsend') {
         var sel = $$('#lz-body [data-lzl]').filter(function (c) { return c.checked; }).map(function (c) { return lzUi.labels[+c.dataset.lzl]; });
         if (!sel.length) { lzClose(); return; }
