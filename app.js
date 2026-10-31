@@ -1193,6 +1193,14 @@
       { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Setze nur die Haken, die du brauchst.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-sw', up: k, t: 'Setze den Haken, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
+      { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
+      { v: E1, sel: '#s-firma', up: f, t: 'Der Name deiner Firma. Er steht auf den Berichten. Weißt du ihn nicht auswendig, lass das Feld leer.' },
+      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Freiwillig: Geburtsdatum für einen Geburtstagsgruß und ein Profilbild. Du kannst beides überspringen.' },
+      { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
+      { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
+      { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
+      { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
+      { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
   function tourEl(st) {
@@ -1406,11 +1414,12 @@
     });
     [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { $('#' + q[0]).addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil[q[1]] = this.value.trim(); save(); }); });
     $('#s-geb').addEventListener('change', function () { if (!data.profil) data.profil = {}; if (this.value) data.profil.geb = this.value; else delete data.profil.geb; delete data.profil.gebGruss; save(); });
-    $('#s-foto').addEventListener('change', function () {
-      var f = this.files && this.files[0]; if (!f) return; var rd = new FileReader();
+    ['#s-foto', '#s-kamera'].forEach(function (q) { $(q).addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; if (f) fotoLaden(f); }); });
+    function fotoLaden(f) {
+      var rd = new FileReader();
       rd.onload = function () { var im = new Image(); im.onload = function () { var c = document.createElement('canvas'), z = 160, q = Math.min(im.width, im.height), cx = c.getContext('2d'); c.width = c.height = z; cx.drawImage(im, (im.width - q) / 2, (im.height - q) / 2, q, q, 0, 0, z, z); try { localStorage.setItem('stundenchecker.foto', c.toDataURL('image/jpeg', 0.8)); } catch (e) { } fotoZeigen(); toast('Profilbild gespeichert (nur auf diesem Handy).'); }; im.src = rd.result; };
       rd.readAsDataURL(f);
-    });
+    }
     $('#s-fotobox').addEventListener('click', function (ev) { if (ev.target.id === 'foto-weg') { try { localStorage.removeItem('stundenchecker.foto'); } catch (e) { } fotoZeigen(); } });
     $('#s-tagf').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.tagesfuehrung = this.checked; save(); });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
@@ -2300,7 +2309,7 @@
       h.textContent = 'Ich lese …'; b.innerHTML = svg + '<p>Einen Moment bitte.</p>'; bt.innerHTML = '';
     } else if (s === 'kennwort') {
       h.textContent = 'Die Datei hat ein Kennwort';
-      b.innerHTML = svg + '<p>' + (lzUi.pwFalsch ? 'Das Kennwort war leider falsch. Bitte noch einmal.' : 'Gib das Kennwort deiner Datei ein. Ich brauche es nur jetzt zum Öffnen und speichere es nicht.') + '</p><div class="field"><label for="lz-pw">Kennwort</label><input type="password" id="lz-pw" autocomplete="off"></div>';
+      b.innerHTML = svg + '<p>' + (lzUi.pwFalsch ? 'Das Kennwort war leider falsch. Bitte noch einmal.' : 'Gib das Kennwort deiner Datei ein. Ich brauche es nur jetzt zum Öffnen und speichere es nicht.') + '</p><div class="field"><label for="lz-pw">Kennwort</label><div class="a-pwrow"><input type="password" id="lz-pw" autocomplete="off"><button type="button" class="eyebtn" data-eye="lz-pw" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div></div>';
       bt.innerHTML = lzBtn('Öffnen', 'lz-pwok', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'keintext') {
       h.textContent = 'Das kann ich nicht lesen';
@@ -2310,6 +2319,12 @@
       h.textContent = 'Das hat nicht geklappt';
       b.innerHTML = svg + '<p>Ich konnte die Datei nicht öffnen. Prüfe bitte deine Internetverbindung, sie wird beim ersten Mal kurz gebraucht, um das Lesemodul zu laden. Du kannst die Zeilen auch von Hand im Abgleich eintragen.</p>';
       bt.innerHTML = lzBtn('Noch einmal', 'lz-pick2', 'primary') + lzBtn('Schließen', 'lz-cancel');
+    } else if (s === 'vorlage') {
+      h.textContent = 'Diesen Lohnzettel kenne ich noch nicht';
+      var lb = lzUi.labels || [];
+      b.innerHTML = svg + '<p>Ich konnte keine Stundenzeilen finden. Wenn du magst, lerne ich diesen Lohnzettel kennen, dann klappt es beim nächsten Mal. Dazu schicke ich dem Entwickler nur die Zeilenbezeichnungen, die Zahlen sind durch # ersetzt.</p><p>Das ist alles, was gesendet wird. Nimm den Haken weg, was du nicht schicken willst:</p>' +
+        (lb.length ? '<div class="lzlabels">' + lb.map(function (t, i) { return '<label class="check"><input type="checkbox" data-lzl="' + i + '" checked> ' + esc(t) + '</label>'; }).join('') + '</div>' : '<p>Aus dieser Datei kann ich nichts Brauchbares schicken. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
+      bt.innerHTML = (lb.length ? lzBtn('Bezeichnungen schicken', 'lz-vsend', 'primary') : '') + lzBtn('Nein danke', 'lz-cancel');
     } else if (s === 'pruefen') {
       var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m };
       h.textContent = 'Eingelesene Lohnzetteldaten';
@@ -2319,6 +2334,15 @@
       bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
     }
   }
+  function lzLabels(lines) {
+    var out = [], seen = {};
+    (lines || []).forEach(function (ln) {
+      var t = String(ln).replace(/\d/g, '#').replace(/#+(?:[.,]#+)*/g, '#').replace(/\s+/g, ' ').trim();
+      if (t.indexOf('#') < 0 || !/[A-Za-zÄÖÜäöüß]{3}/.test(t) || t.length > 48 || seen[t]) return;
+      seen[t] = 1; out.push(t);
+    });
+    return out.slice(0, 60);
+  }
   function lzFragePw(grund) { return new Promise(function (ok, fail) { lzUi.pwFalsch = grund === 'falsch'; lzUi.pwOk = ok; lzUi.pwFail = fail; lzUi.step = 'kennwort'; lzRender(); setTimeout(function () { var p = $('#lz-pw'); if (p) p.focus(); }, 60); }); }
   function lzLese(file) {
     lzUi.step = 'warten'; lzRender();
@@ -2326,7 +2350,7 @@
     fr.onload = function () {
       window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
         if (!o.hatText) { lzUi.step = 'keintext'; lzRender(); return; }
-        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; lzUi.step = 'pruefen'; lzRender(); ins('lz_gelesen');
+        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender(); ins('lz_gelesen');
       }, function (e) { if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
     };
     fr.onerror = function () { lzUi.step = 'fehler'; lzRender(); };
@@ -2342,6 +2366,12 @@
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
       if (t.id === 'lz-cancel') { if (lzUi.pwFail && lzUi.step === 'kennwort') { var f = lzUi.pwFail; lzUi.pwFail = null; f(new Error('abgebrochen')); } lzClose(); }
+      else if (t.id === 'lz-vsend') {
+        var sel = $$('#lz-body [data-lzl]').filter(function (c) { return c.checked; }).map(function (c) { return lzUi.labels[+c.dataset.lzl]; });
+        if (!sel.length) { lzClose(); return; }
+        try { window.StundenInsights.feedback('wunsch', '[Lohnzettel-Vorlage] ' + sel.join(' | ').slice(0, 1800), null).then(function () { toast('Danke! Ich lerne diesen Lohnzettel kennen.', 5000); ins('lz_vorlage'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
+        lzClose();
+      }
       else if (t.id === 'lz-nein') { lzProfil().lzLesen = false; save(); lzClose(); renderSettings(); }
       else if (t.id === 'lz-weiter') { lzProfil().lzLesen = true; save(); ins('lz_erlaubt'); lzUi.step = 'datei'; lzRender(); renderSettings(); }
       else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }

@@ -43,7 +43,22 @@
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
       zeilen.push({ label: label, norm: n, menge: menge, key: key });
     });
-    return { monat: monat(lines), zeilen: zeilen };
+    if (!zeilen.length) { // Zahlen ohne Einheit (zum Beispiel nur „Überstunden 12,50“): nur Zeilen, die ich sicher kenne
+      lines.forEach(function (ln) {
+        if (/€|eur/i.test(ln)) return;
+        var m = /^(.*?[A-Za-zÄÖÜäöüß]{3}.*?)\s+(\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2})\s*$/.exec(ln.trim());
+        if (!m) return;
+        var label = m[1].replace(/\s+/g, ' ').trim(), n = norm(label), key = null;
+        if (n.length < 3) return;
+        if (gelernt[n] !== undefined) key = gelernt[n] === '-' ? null : gelernt[n];
+        else for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { key = REGELN[i][1]; break; }
+        if (!key) return;
+        var menge = zahl(m[2]); if (isNaN(menge)) return;
+        var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
+        zeilen.push({ label: label, norm: n, menge: menge, key: key });
+      });
+    }
+    return { monat: monat(lines), zeilen: zeilen, lines: lines };
   }
   // Aus pdf.js-Textstücken Zeilen bauen (gleiche Höhe = eine Zeile).
   function zeilenAus(items) {
