@@ -2331,10 +2331,10 @@
       b.innerHTML = svg + '<p>Schreibe die Bezeichnungen so ab, wie sie auf deinem Lohnzettel stehen, eine pro Zeile. Zum Beispiel „Überstunden Grundlohn“. Bitte ohne Zahlen, ohne Namen und ohne Adresse.</p><div class="field"><label for="lz-hand-t">Bezeichnungen</label><textarea id="lz-hand-t" rows="8" maxlength="1500"></textarea></div><p class="hint">Der Text geht an den Entwickler, damit er deinen Lohnzettel einbauen kann.</p>';
       bt.innerHTML = lzBtn('Schicken', 'lz-hsend', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'pruefen') {
-      var r = lzUi.res, mo = r.monat || { y: ui.y, m: ui.m };
+      var r = lzUi.res, mo = r.monat || { y: new Date().getFullYear(), m: 0 };
       h.textContent = 'Eingelesene Lohnzetteldaten';
       var opts = [['', 'Nicht übernehmen']].concat(Object.keys(window.StundenLz.NAMEN).map(function (k) { return [k, window.StundenLz.NAMEN[k]]; }));
-      b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + MON.map(function (mn, k) { return '<option value="' + (k + 1) + '"' + (k + 1 === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div><p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
+      b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + [ 'Monat wählen'].concat(MON).map(function (mn, k) { return '<option value="' + k + '"' + (k === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div><p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
         (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<b>' + (z.unsicher ? esc(z.nums[0]) : fh(z.menge) + ' h') + '</b>') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
       bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
     }
@@ -2418,7 +2418,7 @@
       else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
       else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; lzUi.pwMem = pw; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
       else if (t.id === 'lz-apply') {
-        var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }, items = $$('#lz-body [data-lzz]').map(function (sl) {
+        var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }; if (!mo.m) { toast('Bitte wähl zuerst den Monat.'); return; } var items = $$('#lz-body [data-lzz]').map(function (sl) {
           var ps = document.querySelector('#lz-body [data-lzp="' + sl.dataset.lzz + '"]'), z = r.zeilen[+sl.dataset.lzz];
           return { z: z, key: sl.value, pos: ps ? +ps.value : (z.pos | 0) };
         });
@@ -2427,6 +2427,7 @@
     });
     $('#lz-start').addEventListener('click', function () { lzOpen(); });
     $('#lz-chk').addEventListener('change', function () { lzProfil().lzLesen = this.checked; save(); if (this.checked) lzOpen('erlaubnis'); });
+    $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
   setTimeout(function () { try { geburtstagPruefen(); } catch (e) { } }, 1800);
