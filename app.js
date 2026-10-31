@@ -1350,6 +1350,7 @@
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
     ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
+    $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
   })();
 
@@ -1378,6 +1379,7 @@
     var cwb = cur ? E.berufName(cur) : null;
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
+    if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
@@ -2044,7 +2046,7 @@
     function art(r) { var d = data.days[r.datum] || {}; return r.leer ? (r.typ !== 'werktag' ? (r.feiertag || (r.typ === 'sonntag' ? 'Sonntag' : r.typ === 'samstag' ? 'Samstag' : 'frei')) : '') : (r.status === 'arbeit' ? (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Arbeit') : E.STATUS[r.status].name) + (r.feiertag ? ' (' + r.feiertag + ')' : ''); }
     function kopf(titel, zeitraum) {
       var nm = ($('#rb-name').value || '').trim(), pr = data.profil || {};
-      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || ' '], [titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]] }];
+      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || ' ']].concat(pr.firma ? [['Firma', pr.firma]] : [], [[titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]]) }];
     }
     function tabelleTage(tage) {
       var sum = 0, rows = tage.map(function (r) {
@@ -2073,7 +2075,7 @@
           rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? art(r) : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '']);
         });
       });
-      var kopfz = [{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }, { t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }];
+      var fi = (data.profil && data.profil.firma) || '', kopfz = [{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }].concat(fi ? [{ t: 'p', text: fi, size: 13, bold: true }] : [], [{ t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }]);
       rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD)], bold: true });
       rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
       rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
