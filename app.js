@@ -1360,7 +1360,7 @@
       var t = ev.target.closest('button'); if (!t || !ui.wiz) return; var w = ui.wiz;
       if (t.dataset.wbf) {
         var bf = ($('#wz-bf') && $('#wz-bf').value || '').trim(); if (bf.length < 3) { toast('Bitte schreib kurz, welcher Beruf fehlt.'); return; }
-        try { window.StundenInsights.feedback('beruf', bf, null).then(function () { toast('Danke! Wir melden uns, sobald es deinen Beruf gibt.'); if ($('#wz-bf')) $('#wz-bf').value = ''; ins('beruf_fehlt'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
+        try { window.StundenInsights.feedback('wunsch', '[Mein Beruf fehlt] ' + bf, null).then(function () { toast('Danke! Wir melden uns, sobald es deinen Beruf gibt.'); if ($('#wz-bf')) $('#wz-bf').value = ''; ins('beruf_fehlt'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
         return;
       }
       if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
@@ -1373,6 +1373,13 @@
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
     ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
+    $('#kv-send').addEventListener('click', function () {
+      var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
+      if (!f.name && !f.gruppe) { toast('Bitte trage mindestens den Kollektivvertrag oder die Einstufung ein.'); return; }
+      if (!data.profil) data.profil = {}; data.profil.kv = f; save();
+      var tx = 'Kollektivvertrag: ' + (f.name || '-') + ' | Einstufung: ' + (f.gruppe || '-') + ' | Branche: ' + (f.branche || '-') + ' | Wochenstunden: ' + (f.wst || '-');
+      try { window.StundenInsights.feedback('wunsch', '[Mein Kollektivvertrag] ' + tx, null).then(function () { toast('Danke! Wir prüfen deinen Kollektivvertrag und melden uns.'); ins('kv_gemeldet'); }, function () { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }); } catch (e) { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }
+    });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
   })();
@@ -1402,6 +1409,7 @@
     var cwb = cur ? E.berufName(cur) : null;
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
+    var kvp = (data.profil && data.profil.kv) || {}; [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || ''; });
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
