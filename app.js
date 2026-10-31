@@ -2100,7 +2100,7 @@
   (function () {
     var card = $('#rb-card'); if (!card) return;
     function hh(min) { return fh(min / 60) + ' h'; }
-    function bName() { var p = data.profil || {}, n = ((p.vorname || '') + ' ' + (p.nachname || '')).trim(); return n || ($('#rb-name').value || '').trim() || p.berichtName || ''; }
+    function bName() { var p = data.profil || {}; return ($('#rb-name').value || '').trim() || ((p.vorname || '') + ' ' + (p.nachname || '')).trim() || p.berichtName || ''; }
     function addDays(s, n) { var p = E.parseISO(s), d = new Date(p.y, p.m - 1, p.d + n); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
     function tageVon(von, bis) {
       var res = [], cache = {};
@@ -2205,8 +2205,8 @@
       an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
       toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
     }
-    function merken() { var p = data.profil || (data.profil = {}); if (!$('#rb-namewrap').hidden) p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
-    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); $('#rb-namewrap').hidden = hat; if (!hat && !$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; }
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
+    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; }
     fuellen();
     var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || todayISO(); vorgabe = null; });
     $('#rb-rhythmus').addEventListener('change', function () { merken(); var v = this.value; if (v !== 'nie') $('#rb-art').value = v; });
@@ -2233,14 +2233,24 @@
     $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
     $('#rb-share').addEventListener('click', function () {
       merken(); var erg; try { erg = bauen(); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); return; }
-      ins('bericht_' + erg.typ); var mail = $('#rb-mail').value.trim(), betreff = 'Stundenbericht', txt = 'Hallo, anbei mein Bericht.';
-      try {
-        var fl = new File([erg.bytes], erg.name, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [fl] })) { navigator.share({ files: [fl], title: betreff, text: txt }).catch(function (er) { if (er && er.name !== 'AbortError') speichern(erg); }); return; }
-      } catch (e) { }
-      speichern(erg);
-      if (mail) setTimeout(function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent(betreff) + '&body=' + encodeURIComponent(txt + ' (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); }, 600);
+      ins('bericht_' + erg.typ); var betreff = 'Stundenbericht', txt = 'Hallo, anbei mein Bericht.';
+      var fl = null; try { fl = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
+      if (fl && navigator.share) {
+        var p; try { p = navigator.share({ files: [fl], title: betreff, text: txt }); } catch (e) { p = null; }
+        if (p && p.then) { p.then(function () { }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); fertigHilfe(erg); }); return; }
+      }
+      ins('bericht_share_fehlt'); speichern(erg); fertigHilfe(erg);
     });
+    function fertigHilfe(erg) {
+      var mail = $('#rb-mail').value.trim();
+      $('#rb-dh').textContent = 'Dein Bericht ist fertig';
+      $('#rb-dbody').innerHTML = '<p>Tippe, falls gefragt, auf „Herunterladen“. Danach schickst du die Datei so:</p><p>1. Öffne WhatsApp oder deine E-Mail.<br>2. Tippe auf die Büroklammer oder das Plus.<br>3. Wähle „Dokument“ oder „Datei“, dann den Ordner „Downloads“ und diese Datei:<br><b>' + esc(erg.name) + '</b></p>';
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button><button type="button" class="btn" id="rb-zu">Fertig</button>';
+      $('#rb-dlg').hidden = false;
+      $('#rb-zu').onclick = function () { $('#rb-dlg').hidden = true; };
+      $('#rb-wa').onclick = function () { location.href = 'https://wa.me/?text=' + encodeURIComponent('Hallo, anbei mein Bericht.'); };
+      $('#rb-ml').onclick = function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent('Stundenbericht') + '&body=' + encodeURIComponent('Hallo, anbei mein Bericht. (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); };
+    }
   })();
   /* ---- Lohnzettel automatisch lesen (nur mit Zustimmung, nur auf dem Gerät) ---- */
   var lzUi = { step: '', res: null, buf: null, pwOk: null };

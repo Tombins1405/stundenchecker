@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261031202542">
+<link rel="stylesheet" href="style.css?v=20261031203829">
 </head>
 <body>
 
@@ -227,10 +227,10 @@
       </div>
     </form>
     <details id="rb-card" class="card rbcard"><summary><strong>Bericht an die Firma</strong></summary>
+      <div class="field" id="rb-namewrap"><label for="rb-name">Name</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-art">Welcher Bericht?</label><select id="rb-art"><option value="tag">Tagesbericht</option><option value="woche">Wochenbericht</option><option value="halb">Halbmonatsbericht (1.–15. oder 16.–Ende)</option><option value="monat">Monatsbericht</option></select></div>
       <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
-      <div class="field" id="rb-namewrap" hidden><label for="rb-name">Dein Name auf dem Bericht</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
-      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select><small>Danach frage ich dich nach dem Speichern, ob du ihn gleich senden willst.</small></div>
+      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
       <div class="field"><label for="rb-sig">Meine Unterschrift (mit dem Finger)</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
       <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
@@ -526,19 +526,19 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261031202542";</script>
-<script src="engine.js?v=20261031202542"></script>
+<script>window.APP_VERSION="20261031203829";</script>
+<script src="engine.js?v=20261031203829"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261031202542"></script>
-<script src="timepicker.js?v=20261031202542"></script>
-<script src="pdf.js?v=20261031202542"></script>
-<script src="lzread.js?v=20261031202542"></script>
-<script src="app.js?v=20261031202542"></script>
-<script src="auth.js?v=20261031202542"></script>
-<script src="sync.js?v=20261031202542"></script>
-<script src="insights.js?v=20261031202542"></script>
+<script src="firebase-config.js?v=20261031203829"></script>
+<script src="timepicker.js?v=20261031203829"></script>
+<script src="pdf.js?v=20261031203829"></script>
+<script src="lzread.js?v=20261031203829"></script>
+<script src="app.js?v=20261031203829"></script>
+<script src="auth.js?v=20261031203829"></script>
+<script src="sync.js?v=20261031203829"></script>
+<script src="insights.js?v=20261031203829"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
