@@ -156,6 +156,21 @@
   }
 
   /* ============================================================ MONAT */
+  /* Tagessymbole (Kalenderliste): Form und Farbe zeigen die Art des Tages, ohne den Text zu ersetzen */
+  var DAY_ICO = {
+    arbeit: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    urlaub: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+    krank: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+    arzt: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
+    pflege: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.500-7 10-7 10z"/>',
+    feiertag: '<path d="M12 3l2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/>',
+    betriebsurlaub: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
+    za: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+    frei: '<path d="M20 14.500A8 8 0 1 1 9.500 4 6.500 6.500 0 0 0 20 14.500z"/>',
+    sw: '<path d="M7 15a4 4 0 0 1 .5-8 5.500 5.500 0 0 1 10.500 1.500A3.500 3.500 0 0 1 17.500 15zM9 18l-1 2M13 18l-1 2M17 18l-1 2"/>',
+    dienst: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'
+  };
+  function dayIco(k) { return DAY_ICO[k] ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + DAY_ICO[k] + '</svg>' : ''; }
   function renderMonat() {
     $('#storage-warn').hidden = speicherOk;
     $('#onboard').hidden = !(data.settings.length === 0 && Object.keys(data.days).length === 0);
@@ -230,9 +245,12 @@
         main = '<strong>' + esc(E.STATUS[r.status].name) + (r.auto ? ' (bezahlt)' : '') + '</strong>';
         if (r.creditMin) val = fh(r.creditMin / 60) + ' h';
       }
-      var cls = 'day' + (rest ? ' rest' : '') + (r.datum === today ? ' today' : '');
+      var ik = r.leer ? '' : (r.status === 'arbeit' && r.swMin && !r.nettoMin ? 'sw' : r.status), dn = false;
+      if (!r.leer && d.dienste) Object.keys(d.dienste).forEach(function (q) { if (+d.dienste[q] > 0) dn = true; });
+      if (r.feiertag && r.leer === false && r.status === 'arbeit') ik = 'arbeit';
+      var cls = 'day' + (rest ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '');
       return '<li><button type="button" class="' + cls + '" data-date="' + r.datum + '">' +
-        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i></span>' +
+        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i><span class="d-icos">' + (ik && ik !== 'arbeit' ? '<span class="d-ico">' + dayIco(ik) + '</span>' : '') + (dn ? '<span class="d-ico st-dienst-i">' + dayIco('dienst') + '</span>' : '') + '</span></span>' +
         '<span class="d-main' + (r.leer ? ' none' : '') + '">' + main +
         ((chips || small.length) ? '<small>' + chips + small.join(' · ') + '</small>' : '') + '</span>' +
         '<span class="d-val">' + val + '</span></button></li>';

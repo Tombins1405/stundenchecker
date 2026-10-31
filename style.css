@@ -476,3 +476,25 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .wzfehlt textarea { width: 100%; }
 .rbcard { margin: 12px 0; }
 .rbcard summary { cursor: pointer; padding: 6px 0; }
+
+/* Tagessymbole und Farben */
+.day { border-left: 5px solid var(--line); }
+.day.st-arbeit { border-left-color: var(--accent); }
+.day.st-urlaub { border-left-color: #f2a100; }
+.day.st-krank, .day.st-arzt { border-left-color: var(--bad); }
+.day.st-pflege { border-left-color: #d6409f; }
+.day.st-feiertag { border-left-color: var(--good); }
+.day.st-betriebsurlaub { border-left-color: #8d6e63; }
+.day.st-za { border-left-color: #00acc1; }
+.day.st-sw { border-left-color: #607d8b; }
+.d-icos { display: flex; gap: 4px; margin-top: 6px; }
+.d-ico { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); flex: none; }
+.st-urlaub .d-ico { background: #fdeccc; color: #8a5300; }
+.st-krank .d-ico, .st-arzt .d-ico { background: var(--bad-soft); color: var(--bad); }
+.st-pflege .d-ico { background: #fce4f1; color: #a31d73; }
+.st-feiertag .d-ico { background: var(--good-soft); color: var(--good); }
+.st-betriebsurlaub .d-ico { background: #efebe9; color: #6d4c41; }
+.st-za .d-ico { background: #d9f3f6; color: #00727f; }
+.st-frei .d-ico, .st-sw .d-ico { background: #eceff1; color: #455a64; }
+.d-ico.st-dienst-i { background: #fff3e0; color: #b45309; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .d-ico { background: #1d2a3d; color: var(--accent); } }
