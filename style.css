@@ -471,3 +471,6 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .tour.assist .tour-hl { box-shadow: 0 0 0 100vmax rgba(15, 23, 42, .38); }
 .tour.assist:has(.tour-hl[hidden]) { background: rgba(15, 23, 42, .38); }
 @media (prefers-reduced-motion: reduce) { .tour-hl.pop { animation: none; } }
+.wzfehlt { margin-top: 12px; }
+.wzfehlt summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+.wzfehlt textarea { width: 100%; }
