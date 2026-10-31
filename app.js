@@ -2323,9 +2323,9 @@
     } else if (s === 'vorlage') {
       h.textContent = 'Diesen Lohnzettel kenne ich noch nicht';
       var lb = lzUi.labels || [];
-      b.innerHTML = svg + '<p>Ich konnte keine Stundenzeilen finden. Wenn du magst, lerne ich diesen Lohnzettel kennen, dann klappt es beim nächsten Mal. Dazu schicke ich dem Entwickler nur die Zeilenbezeichnungen, die Zahlen sind durch # ersetzt.</p><p>Das ist alles, was gesendet wird. Nimm den Haken weg, was du nicht schicken willst:</p>' +
-        (lb.length ? '<div class="lzlabels">' + lb.map(function (t, i) { return '<label class="check"><input type="checkbox" data-lzl="' + i + '" checked> ' + esc(t) + '</label>'; }).join('') + '</div>' : '<p>Aus dieser Datei kann ich nichts Brauchbares schicken. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
-      bt.innerHTML = (lb.length ? lzBtn('Bezeichnungen schicken', 'lz-vsend', 'primary') : '') + lzBtn('Bezeichnungen eintippen', 'lz-hand', lb.length ? '' : 'primary') + lzBtn('Nein danke', 'lz-cancel');
+      b.innerHTML = svg + (lb.length ? '<p>Darf ich ihn kennenlernen? Dann klappt es beim nächsten Mal. Ich schicke nur die Namen der Lohnzeilen, keine Zahlen und keine persönlichen Daten.</p><details><summary>Das wird gesendet</summary><ul class="lzlabels">' + lb.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></details>' :
+        '<p>Aus dieser Datei kann ich nichts Brauchbares schicken. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
+      bt.innerHTML = (lb.length ? lzBtn('Ja, bitte', 'lz-vsend', 'primary') : lzBtn('Bezeichnungen eintippen', 'lz-hand', 'primary')) + lzBtn('Nein danke', 'lz-cancel');
     } else if (s === 'hand') {
       h.textContent = 'Zeilenbezeichnungen eintippen';
       b.innerHTML = svg + '<p>Schreibe die Bezeichnungen so ab, wie sie auf deinem Lohnzettel stehen, eine pro Zeile. Zum Beispiel „Überstunden Grundlohn“. Bitte ohne Zahlen, ohne Namen und ohne Adresse.</p><div class="field"><label for="lz-hand-t">Bezeichnungen</label><textarea id="lz-hand-t" rows="8" maxlength="1500"></textarea></div><p class="hint">Der Text geht an den Entwickler, damit er deinen Lohnzettel einbauen kann.</p>';
@@ -2343,7 +2343,7 @@
     var out = [], seen = {};
     (lines || []).forEach(function (ln) {
       var t = String(ln).replace(/\d/g, '#').replace(/#+(?:[.,]#+)*/g, '#').replace(/\s+/g, ' ').trim();
-      if (t.indexOf('#') < 0 || !/[A-Za-zÄÖÜäöüß]{3}/.test(t) || t.length > 48 || seen[t]) return;
+      if (!/\d[.,]\d\d(?!\d)/.test(String(ln)) || /iban|bic\b|@|tel\.|sv-?nr|sozialvers.*nummer|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b/i.test(t) || !/[A-Za-zÄÖÜäöüß]{3}/.test(t) || t.length > 48 || seen[t]) return;
       seen[t] = 1; out.push(t);
     });
     return out.slice(0, 60);
@@ -2378,7 +2378,7 @@
         lzClose();
       }
       else if (t.id === 'lz-vsend') {
-        var sel = $$('#lz-body [data-lzl]').filter(function (c) { return c.checked; }).map(function (c) { return lzUi.labels[+c.dataset.lzl]; });
+        var sel = lzUi.labels || [];
         if (!sel.length) { lzClose(); return; }
         try { window.StundenInsights.feedback('wunsch', '[Lohnzettel-Vorlage] ' + sel.join(' | ').slice(0, 1800), null).then(function () { toast('Danke! Ich lerne diesen Lohnzettel kennen.', 5000); ins('lz_vorlage'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
         lzClose();
