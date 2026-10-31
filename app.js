@@ -132,7 +132,7 @@
     if (view === 'monat') renderMonat();
     if (view === 'erfassen') renderEditor();
     if (view === 'konten') renderKonten();
-    if (view === 'einstellungen') { renderPraemienSettings(); renderSettings(); fillBackup(); renderCheck(); }
+    if (view === 'einstellungen') { renderPraemienSettings(); renderDiensteSettings(); renderSettings(); fillBackup(); renderCheck(); }
     renderOpenDay();
     window.scrollTo(0, 0);
     if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01');
@@ -175,6 +175,7 @@
       (s.gleit && w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>') +
       (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
+      (s.dienste || []).map(function (x) { return '<div><dt>' + esc(x.name) + '</dt><dd>' + String(x.menge).replace('.', ',') + '<small> ' + (DS_KURZ[x.einheit] || '') + '</small></dd></div>'; }).join('') +
       '</dl>';
     if (w.schlechtwetter || s.swStd > 0) {
       var sw = cm.schlechtwetter, pct = Math.min(100, sw.verbrauchtStd / sw.kontingentStd * 100);
@@ -273,12 +274,12 @@
       var v = lz[r.key];
       if (r.status === 'info') return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(AB_HINT[r.key]) + '</small>' +
-        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="0.25" value="' + (v == null ? '' : esc(v)) + '" placeholder="Zuwachs"><span>h</span></div></div></div>';
+        '<small class="abhint">' + esc(r.key.indexOf('ds_') === 0 ? 'Steht dafür eine Zeile auf dem Lohnzettel? Dann trage den Betrag in Euro ein.' : AB_HINT[r.key]) + '</small>' +
+        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="0.25" value="' + (v == null ? '' : esc(v)) + '" placeholder="' + (r.key.indexOf('ds_') === 0 ? 'Betrag' : 'Zuwachs') + '"><span>' + (r.key.indexOf('ds_') === 0 ? '€' : 'h') + '</span></div></div></div>';
       var isE = r.unit === '€';
       return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(isE ? (r.key === 'dEuro' ? 'Der Betrag bei Diäten auf dem Lohnzettel, in Euro.' : 'Prämie in Euro, so wie auf dem Lohnzettel.') : AB_HINT[r.key]) + '</small>' +
+        '<small class="abhint">' + esc(isE ? (r.key === 'dEuro' ? 'Der Betrag bei Diäten auf dem Lohnzettel, in Euro.' : (r.key.indexOf('ds_') === 0 ? 'Betrag in Euro, so wie auf dem Lohnzettel.' : 'Prämie in Euro, so wie auf dem Lohnzettel.')) : AB_HINT[r.key]) + '</small>' +
         '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="' + (isE ? '0.01' : '0.25') + '" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>' + (isE ? '€' : 'h') + '</span></div>' +
         '<div class="abapp">Deine Aufzeichnung<br><b>' + (isE ? eur.format(r.app) : fh(r.app) + ' h') + '</b></div>' +
         '<span class="chip" data-chip="' + r.key + '"></span></div></div>';
@@ -481,6 +482,37 @@
     box.innerHTML = list.map(function (x, i) { return '<button type="button" class="chip" data-prvor="' + i + '">' + esc(x[0]) + '</button>'; }).join('');
     box._list = list;
   }
+  /* ---- Dienste: Bereitschaft, Notdiensteinsatz und eigene, frei bezahlt ---- */
+  var DS_EINHEIT = [['tag', 'je Tag (Haken)'], ['stunde', 'je Stunde (Anzahl)'], ['einsatz', 'je Einsatz (Anzahl)']];
+  var DS_KURZ = { tag: 'Tage', stunde: 'Stunden', einsatz: 'Einsätze' };
+  function diensteListe() { if (!data.profil) data.profil = {}; if (!data.profil.dienste) data.profil.dienste = []; return data.profil.dienste; }
+  function dsNeu(art, name) {
+    diensteListe().push({ id: 'd' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: name, art: art, einheit: art === 'notdienst' ? 'einsatz' : 'tag', betrag: 0, regel: '' });
+    ins('dienst_neu_' + art); save(); renderDiensteSettings();
+  }
+  function renderDiensteSettings() {
+    var list = diensteListe();
+    $('#ds-list').innerHTML = list.length ? list.map(function (p, i) {
+      return '<div class="prblock">' +
+        '<div class="field pn"><label for="ds-n' + i + '">Name des Dienstes</label><input type="text" id="ds-n' + i + '" data-ds="' + i + '" data-df="name" maxlength="60" autocomplete="off" value="' + esc(p.name || '') + '"></div>' +
+        '<button type="button" class="rm" data-rmds="' + i + '" aria-label="Dienst ' + (i + 1) + ' entfernen">×</button>' +
+        '<div class="field"><label for="ds-b' + i + '">Betrag (€), wenn bekannt</label><input type="number" id="ds-b' + i + '" data-ds="' + i + '" data-df="betrag" inputmode="decimal" step="0.01" min="0" value="' + (+p.betrag > 0 ? esc(p.betrag) : '') + '"></div>' +
+        '<div class="field"><label for="ds-e' + i + '">Wofür</label><select id="ds-e' + i + '" data-ds="' + i + '" data-df="einheit">' + DS_EINHEIT.map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field pn"><label for="ds-r' + i + '">Wann zählt er? (nur für dich zur Erinnerung)</label><input type="text" id="ds-r' + i + '" data-ds="' + i + '" data-df="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
+        '</div>';
+    }).join('') : '<p class="hint">Noch kein Dienst angelegt.</p>';
+    var have = list.map(function (p) { return p.name; });
+    $$('#ds-vor [data-dsneu]').forEach(function (b) { b.hidden = have.indexOf(b.textContent) >= 0; });
+  }
+  function renderDiensteTag() {
+    var list = diensteListe().filter(function (p) { return p.name; }), d = ui.edDraft, dm = d.dienste || {};
+    $('#e-dienstgroup').hidden = !list.length;
+    $('#e-dienste').innerHTML = list.map(function (p) {
+      var v = dm[p.id];
+      if (p.einheit === 'tag') return '<label class="check"><input type="checkbox" data-dd="' + esc(p.id) + '"' + (v > 0 ? ' checked' : '') + '> ' + esc(p.name) + '</label>';
+      return '<div class="field"><label for="dd-' + esc(p.id) + '">' + esc(p.name) + (p.einheit === 'stunde' ? ' (Stunden)' : ' (Anzahl)') + '</label><input type="number" id="dd-' + esc(p.id) + '" data-dd="' + esc(p.id) + '" inputmode="decimal" min="0" step="' + (p.einheit === 'stunde' ? '0.5' : '1') + '" value="' + (v > 0 ? esc(v) : '') + '"></div>';
+    }).join('');
+  }
   function renderPraemienTag() {
     var list = praemienListe().filter(function (p) { return p.name && (p.einheit === 'tag' || p.einheit === 'stueck' || p.einheit === 'tour'); }), d = ui.edDraft;
     $('#e-praemiengroup').hidden = !list.length || d.status !== 'arbeit' || !E.bausteine(wAt(ui.edDate)).praemien;
@@ -549,7 +581,7 @@
     Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
     if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
     $('#e-tat-list').innerHTML = topt; $('#f-kfz-list').innerHTML = kopt;
-    renderFahrzeuge(); renderPraemienTag();
+    renderFahrzeuge(); renderPraemienTag(); renderDiensteTag();
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
@@ -701,6 +733,8 @@
     anFinal(out, data.days[ui.edDate]);
     var prx = {}; Object.keys(out.praemien || {}).forEach(function (k) { if (+out.praemien[k] > 0) prx[k] = +out.praemien[k]; });
     if (st !== 'arbeit' || !Object.keys(prx).length) delete out.praemien; else out.praemien = prx;
+    var dsx = {}; Object.keys(out.dienste || {}).forEach(function (k) { if (+out.dienste[k] > 0) dsx[k] = +out.dienste[k]; });
+    if (!Object.keys(dsx).length) delete out.dienste; else { out.dienste = dsx; ins('dienst_erfasst'); }
     var fzl = fahrzeugeSpeichern(out.fahrzeuge); delete out.fz;
     if (st !== 'arbeit' || !fzl.length) delete out.fahrzeuge; else out.fahrzeuge = fzl;
     if (!out.kunden.length) delete out.kunden;
@@ -1588,6 +1622,7 @@
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
+      case 'ds-add': dsNeu('eigen', ''); var dn = $('#ds-n' + (diensteListe().length - 1)); if (dn) dn.focus(); return;
       case 'pr-add': praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: '', betrag: 0, einheit: 'stueck', regel: '' }); save(); renderPraemienSettings(); var pn = $('#pr-n' + (praemienListe().length - 1)); if (pn) pn.focus(); return;
       case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
       case 'e-addkunde': ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
@@ -1656,6 +1691,8 @@
       case 't-remove': removeTest(); return;
     }
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
+    if (t.dataset.rmds !== undefined) { arm(t, 'Sicher?', function () { diensteListe().splice(+t.dataset.rmds, 1); save(); renderDiensteSettings(); }); return; }
+    if (t.dataset.dsneu) { dsNeu(t.dataset.dsneu, t.textContent); return; }
     if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
     if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
@@ -1673,6 +1710,18 @@
       if (t.dataset.pf === 'einheit') { po.einheit = t.value; save(); renderPraemienSettings(); return; }
       if (t.dataset.pf === 'betrag') { var bv = parseFloat(String(t.value).replace(',', '.')); po.betrag = isNaN(bv) ? 0 : bv; } else po[t.dataset.pf] = t.value;
       save(); return;
+    }
+    if (t.dataset && t.dataset.ds !== undefined && t.closest('#ds-list')) {
+      var dso = diensteListe()[+t.dataset.ds]; if (!dso) return;
+      if (t.dataset.df === 'einheit') { dso.einheit = t.value; save(); renderDiensteSettings(); return; }
+      if (t.dataset.df === 'betrag') { var dbv = parseFloat(String(t.value).replace(',', '.')); dso.betrag = isNaN(dbv) ? 0 : dbv; } else dso[t.dataset.df] = t.value;
+      save(); return;
+    }
+    if (t.dataset && t.dataset.dd !== undefined && t.closest('#e-dienste')) {
+      if (!ui.edDraft.dienste) ui.edDraft.dienste = {};
+      var dv = t.type === 'checkbox' ? (t.checked ? 1 : 0) : parseFloat(String(t.value).replace(',', '.'));
+      if (dv > 0) ui.edDraft.dienste[t.dataset.dd] = dv; else delete ui.edDraft.dienste[t.dataset.dd];
+      return;
     }
     if (t.dataset && t.dataset.pd !== undefined && t.closest('#e-praemien')) {
       if (!ui.edDraft.praemien) ui.edDraft.praemien = {};

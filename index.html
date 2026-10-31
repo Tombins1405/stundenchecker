@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261031115900">
+<link rel="stylesheet" href="style.css?v=20261031133542">
 </head>
 <body>
 
@@ -196,6 +196,11 @@
           <button type="button" class="btn" id="e-addkunde">+ Kunde / Baustelle hinzufügen</button>
           <div id="e-kz" class="result" aria-live="polite"></div>
         </div>
+      </div>
+
+      <div class="field" id="e-dienstgroup" hidden>
+        <span class="lbl">Bereitschaft / Notdienst</span>
+        <div id="e-dienste"></div>
       </div>
 
       <details class="field" id="e-an-box">
@@ -396,6 +401,14 @@
       <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
     </div>
 
+    <div class="card" id="s-dienste">
+      <h3>Bereitschaft und Notdienst</h3>
+      <p class="hint">Nur, wenn es das bei dir gibt. Wie es bezahlt wird, legst du selbst fest. Kennst du den Betrag nicht, lass ihn leer.</p>
+      <div id="ds-list"></div>
+      <div class="chips" id="ds-vor"><button type="button" class="chip" data-dsneu="bereitschaft">Bereitschaft</button><button type="button" class="chip" data-dsneu="notdienst">Notdiensteinsatz</button></div>
+      <button type="button" class="btn" id="ds-add">+ Eigenen Dienst hinzufügen</button>
+    </div>
+
     <div class="card" id="s-form2" hidden>
       <h3>Diäten</h3>
       <div class="field">
@@ -481,17 +494,17 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script>window.APP_VERSION="20261031115900";</script>
-<script src="engine.js?v=20261031115900"></script>
+<script>window.APP_VERSION="20261031133542";</script>
+<script src="engine.js?v=20261031133542"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261031115900"></script>
-<script src="timepicker.js?v=20261031115900"></script>
-<script src="app.js?v=20261031115900"></script>
-<script src="auth.js?v=20261031115900"></script>
-<script src="sync.js?v=20261031115900"></script>
-<script src="insights.js?v=20261031115900"></script>
+<script src="firebase-config.js?v=20261031133542"></script>
+<script src="timepicker.js?v=20261031133542"></script>
+<script src="app.js?v=20261031133542"></script>
+<script src="auth.js?v=20261031133542"></script>
+<script src="sync.js?v=20261031133542"></script>
+<script src="insights.js?v=20261031133542"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

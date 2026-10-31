@@ -667,12 +667,24 @@
     // Aufteilung wie auf dem Lohnzettel: Lohn = alle Stunden minus Überstunden minus Feiertag, Urlaub, Krankenstand, Pflege.
     var credMin = s.feMin + s.urMin + s.krMin + s.pfMin;
     var normalMin = Math.max(0, s.lohnMin - Math.max(0, s.ueberMin) - credMin);
+    // Dienste (Bereitschaft, Notdienst, frei benannt): zählen an jedem Tagestyp, auch ohne Arbeitszeit. Die Bezahlung legt der Nutzer fest.
+    var dList = (data.profil && data.profil.dienste) || [], dSum = {};
+    for (var dd = 1; dd <= n; dd++) {
+      var dday = days[iso(y, m, dd)];
+      if (!dday || !dday.dienste) continue;
+      dList.forEach(function (p) {
+        var v = +dday.dienste[p.id]; if (!(v > 0)) return;
+        var a = dSum[p.id] || (dSum[p.id] = { id: p.id, name: p.name, art: p.art, einheit: p.einheit, menge: 0, euro: 0 });
+        a.menge += v; a.euro += v * (+p.betrag || 0);
+      });
+    }
+    var dArr = Object.keys(dSum).map(function (k) { dSum[k].menge = r2(dSum[k].menge); dSum[k].euro = r2(dSum[k].euro); return dSum[k]; });
     var sw = swVerbraucht(data, iso(y, m, 1));
     return {
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
-        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
+        diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
@@ -728,6 +740,17 @@
       var key = 'pr_' + p.id, v = lz && lz[key], has = hasNum(v), hit = ((summe.praemien) || []).filter(function (x) { return x.id === p.id; })[0];
       var app = r2(hit ? hit.euro : 0);
       if (!alle && app === 0 && !(has && +v > 0)) return;
+      if (!has) { rows.push({ key: key, label: p.name, unit: '€', app: app, lz: null, diff: null, status: 'offen', faktor: 'euro' }); return; }
+      var diff = r2(+v - app), a = Math.abs(diff);
+      rows.push({ key: key, label: p.name, unit: '€', app: app, lz: +v, lzGesamt: +v, diff: diff, faktor: 'euro', status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
+    });
+    // Dienste: mit Betrag gegen die Zeile auf dem Lohnzettel, ohne Betrag nur als Hinweis, ob es eine Zeile dafür gibt
+    var DE_NAME = { tag: 'Tage', stunde: 'Stunden', einsatz: 'Einsätze' };
+    ((summe && summe.dienstDef) || []).forEach(function (p) {
+      var key = 'ds_' + p.id, v = lz && lz[key], has = hasNum(v), hit = ((summe.dienste) || []).filter(function (x) { return x.id === p.id; })[0];
+      var menge = hit ? hit.menge : 0, app = r2(hit ? hit.euro : 0);
+      if (!alle && menge === 0 && !(has && +v > 0)) return;
+      if (!p.betrag) { rows.push({ key: key, label: p.name + ' (' + String(menge).replace('.', ',') + ' ' + (DE_NAME[p.einheit] || '') + ' eingetragen)', unit: '€', app: null, lz: has ? +v : null, diff: null, status: 'info' }); return; }
       if (!has) { rows.push({ key: key, label: p.name, unit: '€', app: app, lz: null, diff: null, status: 'offen', faktor: 'euro' }); return; }
       var diff = r2(+v - app), a = Math.abs(diff);
       rows.push({ key: key, label: p.name, unit: '€', app: app, lz: +v, lzGesamt: +v, diff: diff, faktor: 'euro', status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
