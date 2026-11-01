@@ -566,7 +566,7 @@
   }
 
   /* ---- Prämien ---- */
-  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['taet', 'je Stunde einer Tätigkeit (z. B. Kran)'], ['tag', 'je Tag (Haken)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
+  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['taet', 'je Stunde einer Tätigkeit (z. B. Kran)'], ['tag', 'je Tag (Ein/Aus)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
   function praemienListe() { if (!data.profil) data.profil = {}; if (!data.profil.praemien) data.profil.praemien = []; return data.profil.praemien; }
   function renderPraemienSettings() {
     var list = praemienListe();
@@ -602,7 +602,7 @@
     box._list = list;
   }
   /* ---- Dienste: Bereitschaft, Notdiensteinsatz und eigene, frei bezahlt ---- */
-  var DS_EINHEIT = [['tag', 'je Tag (Haken)'], ['stunde', 'je Stunde (Anzahl)'], ['einsatz', 'je Einsatz (Anzahl)']];
+  var DS_EINHEIT = [['tag', 'je Tag (Ein/Aus)'], ['stunde', 'je Stunde (Anzahl)'], ['einsatz', 'je Einsatz (Anzahl)']];
   var DS_KURZ = { tag: 'Tage', stunde: 'Stunden', einsatz: 'Einsätze' };
   function diensteListe() { if (!data.profil) data.profil = {}; if (!data.profil.dienste) data.profil.dienste = []; return data.profil.dienste; }
   function dsNeu(art, name) {
@@ -1517,25 +1517,25 @@
       { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
       { v: E1, sel: '#s-uzus', up: f, t: 'Der Zuschlag auf Überstunden in Prozent. Auf dem Lohnzettel steht zum Beispiel „Überstd.-Zusch. 50 %“.' },
       { v: E1, sel: '#s-pauseauto', up: f, t: 'Zieht deine Firma jeden Tag automatisch eine Pause ab? Dann trage die Minuten ein, zum Beispiel 60. Sonst lass es leer.' },
-      { v: E1, sel: '#s-runan', up: k, t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann setze den Haken und stell es ein. Sonst lass den Haken weg.' },
+      { v: E1, sel: '#s-runan', up: k, t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann schalte es ein und wähle die Minuten. Sonst lass es aus.' },
       { v: E1, sel: '#s-zsa', to: '#s-zft', up: '.grid3', t: 'Zuschläge für Samstag, Sonntag und Feiertag in Prozent. Bei 100 % zählt eine Stunde doppelt. Weißt du es nicht, lass 0 stehen.' },
       { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Mulde, pro Tour oder pro Stunde. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
       { v: E1, sel: '#s-dmodell', up: f, t: 'Wie werden bei dir Diäten gezahlt? Pro Stunde, pro Tag nach Stufen oder gar nicht. Wähle es aus.' },
       { v: E1, sel: '#s-d-stunde', t: 'Der Diätensatz je Stunde steht auf dem Lohnzettel. Dazu die Höchststunden pro Tag, falls es eine Grenze gibt.' },
       { v: E1, sel: '#s-d-tag', t: 'Die Stufen für das Taggeld: Ab wie vielen Stunden gibt es welchen Betrag?' },
       { v: E1, sel: '#s-d-vorschlag', t: 'Womit soll die App die Diätenstunden vorschlagen? Sie schlägt es dir bei jedem Tag vor, du kannst es jederzeit ändern.' },
-      { v: E1, sel: '#s-folge', up: k, t: 'Setze den Haken, wenn deine Firma Diäten und Überstunden erst im Folgemonat abrechnet.' },
-      { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Setze nur die Haken, die du brauchst.' },
+      { v: E1, sel: '#s-folge', up: k, t: 'Schalte ein, wenn deine Firma Diäten und Überstunden erst im Folgemonat abrechnet.' },
+      { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Schalte nur ein, was du brauchst.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
-      { v: E1, sel: '#s-sw', up: k, t: 'Setze den Haken, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
+      { v: E1, sel: '#s-sw', up: k, t: 'Schalte ein, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
       { v: E1, sel: '#s-ansichtsel', up: f, t: 'Wie möchtest du den Monat sehen? Als Liste, als Raster wie ein Kalender oder beides.' },
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
-      { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
+      { v: E1, sel: '#rb-sigon', up: k, t: 'Schalte ein, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
       { v: E1, sel: '#fest-add', up: k, t: 'Hast du jede Woche am gleichen Tag frei oder Berufsschule? Dann lege hier einen festen Tag an. Ich trage ihn dir dann ein.' },
-      { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
+      { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann schalte es ein.' },
       { v: E1, sel: '#s-luecke', up: k, t: 'Soll ich nachfragen, wenn Tage ohne Eintrag bleiben, zum Beispiel bei Urlaub oder Krankenstand? Dann lass den Schalter an.' },
-      { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Setze die Haken nur, wenn du es willst.' },
+      { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Schalte nur ein, was du willst.' },
       { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
