@@ -28,7 +28,7 @@
         var doc = {
           uid: u.uid, email: u.email || null, created: u.metadata && u.metadata.creationTime || null, lastLogin: u.metadata && u.metadata.lastSignInTime || null,
           lastSeen: stamp(), lang: info.lang || null, version: window.APP_VERSION || null, beruf: info.beruf || null, paket: info.paket || null, land: info.land || null,
-          tage: info.tage || 0, features: stats(), consent: consent()
+          tage: info.tage || 0, geraet: info.geraet || null, features: stats(), consent: consent()
         };
         db().collection('profiles').doc(u.uid).set(doc, { merge: true }).then(function () { wr('stundenchecker.profpush', String(Date.now())); }, function () {});
       } catch (e) {}
@@ -43,7 +43,7 @@
         if (!ON) { rej(new Error('off')); return; }
         try {
           var u = user(), a = app(), info = a.info ? a.info() : {};
-          db().collection('feedback').add({ uid: u ? u.uid : null, email: u ? u.email : null, art: art, text: String(text).slice(0, 4000), img: img || null, view: info.view || null, lang: info.lang || null, version: window.APP_VERSION || null, t: stamp(), neu: true }).then(function (x) { api.admin('Neues Feedback: ' + art); res(x); }, rej);
+          db().collection('feedback').add({ uid: u ? u.uid : null, email: u ? u.email : null, art: art, text: String(text).slice(0, 4000), img: img || null, view: info.view || null, geraet: info.geraet || null, lang: info.lang || null, version: window.APP_VERSION || null, t: stamp(), neu: true }).then(function (x) { api.admin('Neues Feedback: ' + art); res(x); }, rej);
         } catch (e) { rej(e); }
       });
     },

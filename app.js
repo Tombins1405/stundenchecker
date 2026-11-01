@@ -83,11 +83,27 @@
 
   function sortedSettings() { return data.settings.slice().sort(function (a, b) { return a.gueltigAb < b.gueltigAb ? -1 : 1; }); }
   function wAt(d) { return E.wertAt(data.settings, d); }
+  /* grobe Geräteangabe für den Admin (nur mit Zustimmung bei „Mithelfen“): Betriebssystem, Modellcode, Browser, Bildschirm */
+  function geraetInfo() {
+    try {
+      var ua = navigator.userAgent || '', os = '', mo = '', br = '', m;
+      if ((m = ua.match(/Android ([\d.]+)/))) { os = 'Android ' + m[1].split('.')[0]; var mm = ua.match(/Android [\d.]+; ([^;)]+?)(?: Build|\))/); if (mm && mm[1] !== 'K' && mm[1].length < 30) mo = mm[1]; }
+      else if ((m = ua.match(/(?:iPhone|CPU) OS ([\d_]+)/))) os = (/iPad/.test(ua) ? 'iPadOS ' : 'iOS ') + m[1].split('_')[0];
+      else if (/Windows/.test(ua)) os = 'Windows'; else if (/Mac OS X/.test(ua)) os = 'macOS'; else if (/Linux/.test(ua)) os = 'Linux';
+      if ((m = ua.match(/SamsungBrowser\/(\d+)/))) br = 'Samsung Internet ' + m[1];
+      else if ((m = ua.match(/EdgA?\/(\d+)/))) br = 'Edge ' + m[1];
+      else if ((m = ua.match(/(?:CriOS|Chrome)\/(\d+)/))) br = 'Chrome ' + m[1];
+      else if ((m = ua.match(/(?:FxiOS|Firefox)\/(\d+)/))) br = 'Firefox ' + m[1];
+      else if ((m = ua.match(/Version\/(\d+).*Safari/))) br = 'Safari ' + m[1];
+      var sa = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+      return [os, mo, br, window.innerWidth + 'x' + window.innerHeight + ' @' + (window.devicePixelRatio || 1), sa ? 'als App installiert' : 'im Browser'].filter(Boolean).join(' · ').slice(0, 140);
+    } catch (e) { return null; }
+  }
   window.StundenApp = {
     profil: function () { return data.profil || {}; },
     info: function () {
       var w = wAt(todayISO()), pk = E.PAKETE[w.paket];
-      return { beruf: w.beruf || null, paket: w.paket || null, land: pk && pk.land === 'DE' ? 'DE' : 'AT', lang: (window.localStorage && localStorage.getItem('stundenchecker.lang')) || (navigator.language || '').slice(0, 2), tage: Object.keys(data.days).length, view: ui.view };
+      return { beruf: w.beruf || null, paket: w.paket || null, land: pk && pk.land === 'DE' ? 'DE' : 'AT', lang: (window.localStorage && localStorage.getItem('stundenchecker.lang')) || (navigator.language || '').slice(0, 2), tage: Object.keys(data.days).length, view: ui.view, geraet: data.profil && data.profil.consent && data.profil.consent.statistik ? geraetInfo() : null };
     }
   };
   function ins(name) { try { if (window.StundenInsights) window.StundenInsights.count(name); } catch (e) {} }
