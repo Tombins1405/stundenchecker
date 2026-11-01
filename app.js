@@ -1246,6 +1246,10 @@
   }
   /* ---- Mia spricht (Stimmen des Geräts, nichts wird hochgeladen) ---- */
   var MIA_KLANG = [['normal', 'Normal', 1, 1], ['hell', 'Heller', 1.35, 1.05], ['tief', 'Tiefer', 0.75, 0.95], ['ruhig', 'Langsam und ruhig', 1, 0.8], ['flott', 'Flott', 1, 1.25]];
+  function miaKlang() {
+    var m = (data.profil && data.profil.mia) || {}, pr = MIA_KLANG.filter(function (x) { return x[0] === (m.klang || 'normal'); })[0] || MIA_KLANG[0];
+    var p = +m.pitch, r = +m.rate; return [p >= 0.3 && p <= 2 ? p : pr[2], r >= 0.5 && r <= 2 ? r : pr[3]];
+  }
   function miaStimmen() {
     if (!('speechSynthesis' in window)) return [];
     var lg = miaLang(), vs = speechSynthesis.getVoices().filter(function (v) { return v.lang.slice(0, 2).toLowerCase() === lg; });
@@ -1258,13 +1262,14 @@
     sel.innerHTML = '<option value="">Automatisch</option>' + vs.map(function (v, i) { return '<option value="' + esc(v.voiceURI) + '"' + (v.voiceURI === cur ? ' selected' : '') + '>' + (vs.length > 1 ? (i + 1) + ': ' : '') + esc(v.name.replace(/^(Microsoft|Google)\s+/i, '')) + '</option>'; }).join('');
     var kl = $('#mia-klang'); if (kl && !kl.options.length) kl.innerHTML = MIA_KLANG.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('');
     if (kl) kl.value = (data.profil && data.profil.mia && data.profil.mia.klang) || 'normal';
+    var kv = miaKlang(), rp = $('#mia-pitch'), rr = $('#mia-rate'); if (rp && document.activeElement !== rp) rp.value = kv[0]; if (rr && document.activeElement !== rr) rr.value = kv[1];
     try { sel.dispatchEvent(new Event('sp-refresh')); } catch (e) { }
   }
   function miaSag(text, erzwingen) {
     try {
       var c = miaCfg(); if (!('speechSynthesis' in window) || !text || (!c.spricht && !erzwingen)) return;
       var LG = miaLang(), tl = window.UI_LANGS && window.UI_LANGS[LG]; if (tl && tl[text]) text = tl[text]; speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = (MIA_LANGS[LG] || MIA_LANGS.de).sr;
-      var vs = miaStimmen(), id = (data.profil && data.profil.mia && data.profil.mia.stimme) || '', v = vs.filter(function (x) { return x.voiceURI === id; })[0] || vs[0]; if (v) u.voice = v; var kk = MIA_KLANG.filter(function (x) { return x[0] === ((data.profil && data.profil.mia && data.profil.mia.klang) || 'normal'); })[0] || MIA_KLANG[0]; u.pitch = kk[2]; u.rate = kk[3]; speechSynthesis.speak(u);
+      var vs = miaStimmen(), id = (data.profil && data.profil.mia && data.profil.mia.stimme) || '', v = vs.filter(function (x) { return x.voiceURI === id; })[0] || vs[0]; if (v) u.voice = v; var kk = miaKlang(); u.pitch = kk[0]; u.rate = kk[1]; speechSynthesis.speak(u);
     } catch (e) { }
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
@@ -1304,7 +1309,9 @@
     ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { on('#mia-l-' + k, 'change', function () { var l = Object.assign({}, miaLook()); l[k] = this.value; miaSet('look', l); }); });
     on('#mia-spricht', 'change', function () { miaSet('spricht', this.checked); if (this.checked) miaSag('Hallo, so klinge ich.', true); });
     on('#mia-stimme', 'change', function () { miaSet('stimme', this.value); miaSag('Hallo, so klinge ich.', true); });
-    on('#mia-klang', 'change', function () { miaSet('klang', this.value); miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-klang', 'change', function () { var pr = MIA_KLANG.filter(function (x) { return x[0] === this.value; }.bind(this))[0] || MIA_KLANG[0], m = data.profil && data.profil.mia; if (m) { delete m.pitch; delete m.rate; } miaSet('klang', this.value); miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-pitch', 'change', function () { miaSet('pitch', +this.value); miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-rate', 'change', function () { miaSet('rate', +this.value); miaSag('Hallo, so klinge ich.', true); });
     on('#mia-probe', 'click', function () { miaSag('Hallo, so klinge ich.', true); });
     try { if ('speechSynthesis' in window) speechSynthesis.addEventListener('voiceschanged', miaStimmenFuellen); } catch (e) { }
     on('#mia-aktiv', 'change', function () { miaSet('ruhig', !this.checked); });
