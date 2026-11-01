@@ -1517,7 +1517,7 @@
       { v: V, sel: '#e-bis', t: 'Das Ende trägst du ein, wenn du fertig bist. Noch nicht so weit? Dann lass es leer und trage es später nach.' },
       { v: V, sel: '#e-addpause', t: 'Hattest du eine Pause? Tippe auf „+ Pause hinzufügen“ und trage sie ein. Sonst tippe auf Weiter.' }];
     if (b === 'lkw' || b === 'klein') s.push({ v: V, sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
-    if (b === 'lkw' || b === 'klein' || b === 'bagger') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist freiwillig.' });
+    if (b === 'lkw' || b === 'klein' || b === 'bagger') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist optional.' });
     s.push({ v: V, sel: '#e-save', t: 'Tippe jetzt auf „Speichern“. Danach bist du für heute fertig.' });
     return s;
   }
@@ -1574,13 +1574,13 @@
       { v: E1, sel: '#s-sw', up: k, t: 'Schalte ein, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
       { v: E1, sel: '#s-ansichtsel', up: f, t: 'Wie möchtest du den Monat sehen? Als Liste, als Raster wie ein Kalender oder beides.' },
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
-      { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
+      { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist optional.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Schalte ein, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
       { v: E1, sel: '#fest-add', up: k, t: 'Hast du jede Woche am gleichen Tag frei oder Berufsschule? Dann lege hier einen festen Tag an. Ich trage ihn dir dann ein.' },
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann schalte es ein.' },
       { v: E1, sel: '#s-luecke', up: k, t: 'Soll ich nachfragen, wenn Tage ohne Eintrag bleiben, zum Beispiel bei Urlaub oder Krankenstand? Dann lass den Schalter an.' },
-      { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Schalte nur ein, was du willst.' },
-      { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
+      { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist optional. Schalte nur ein, was du willst.' },
+      { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist optional.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
   function tourEl(st) {
@@ -1764,7 +1764,7 @@
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
-        (w.mode === 'start' ? '<h4>Mithelfen (freiwillig)</h4><label class="check"><input type="checkbox" data-wfc="statistik"' + (w.cStat ? ' checked' : '') + '><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label><label class="check"><input type="checkbox" data-wfc="miaFragen"' + (w.cMia ? ' checked' : '') + '><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>' : '') +
+        (w.mode === 'start' ? '<h4>Mithelfen (optional)</h4><label class="check"><input type="checkbox" data-wfc="statistik"' + (w.cStat ? ' checked' : '') + '><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label><label class="check"><input type="checkbox" data-wfc="miaFragen"' + (w.cMia ? ' checked' : '') + '><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>' : '') +
         '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
     }
     var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn' || w.step === 'mia';
@@ -2563,7 +2563,7 @@
     }
     uiLoad(uiLang(), function () { if (uiLang() !== 'de') { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); } });
   })();
-  /* ---- Profilbild und Geburtstagsgruß (freiwillig) ---- */
+  /* ---- Profilbild und Geburtstagsgruß (optional) ---- */
   function fotoGet() { try { return localStorage.getItem('stundenchecker.foto') || ''; } catch (e) { return ''; } }
   function fotoZeigen() { var b = $('#s-fotobox'); if (!b) return; var f = fotoGet(); b.innerHTML = f ? '<img src="' + f + '" alt="Dein Profilbild" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin-top:6px"> <button type="button" class="linkbtn" id="foto-weg">Bild entfernen</button>' : ''; }
   function feier(h, t) {
