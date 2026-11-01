@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261101010420">
+<link rel="stylesheet" href="style.css?v=20261101012902">
 </head>
 <body>
 
@@ -244,9 +244,9 @@
       <p class="hint">Aus dem Eintrittsdatum rechnet die App deinen Urlaubsanspruch aus und prüft ihn gegen den Lohnzettel.</p>
       <div class="grid2">
         <div class="field" id="k-blwrap" hidden><label for="k-bl">Bundesland (für die Feiertage)</label><select id="k-bl"></select></div>
-        <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"></div>
+        <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"><small>Das Eintrittsdatum braucht die App für den Urlaub und für die Stufe in deinem Kollektivvertrag.</small></div>
         <div class="field"><label for="k-lztag">Lohnzettel kommt meist um den … des Monats</label><input type="number" id="k-lztag" inputmode="numeric" min="1" max="31" step="1" placeholder="10"><small>Mia fragt erst ab diesem Tag nach deinem Lohnzettel.</small></div>
-        <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"></div>
+        <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"><small>Wie viele Urlaubstage du pro Jahr hast, steht in deinem Dienstvertrag. Oft sind es 25 Arbeitstage.</small></div>
       </div>
       <div class="grid2">
         <div class="field"><label for="k-urlaubstart">Urlaub beim Eintritt (Tage)</label><input type="number" id="k-urlaubstart" inputmode="decimal" step="0.01" placeholder="0"><small>Nur wenn du Urlaub mitgenommen hast.</small></div>
@@ -378,8 +378,8 @@
       <div class="field"><label for="s-einst">Einstufung auf deinem Lohnzettel</label><input type="text" id="s-einst" maxlength="60" data-path="einstufung" data-type="text" placeholder="zum Beispiel Kraftfahrer 3a oder LG 1/A"></div>
       <div id="s-lgbox"></div>
       <div class="field"><label for="s-monat" id="s-monat-l">Fixer Monatslohn (€ brutto, freiwillig)</label><input type="number" id="s-monat" inputmode="decimal" step="0.01" min="0" data-path="monatslohn" data-type="numnull" placeholder="zum Beispiel 2134,82"><small id="s-monat-h">Wenn dein Lohnzettel einen festen Monatslohn zeigt. Die App rechnet daraus den Stundenlohn (Monatslohn geteilt durch Monatsstunden).</small></div>
-      <div class="field"><label for="s-monatstd" id="s-monatstd-l">Monatsstunden für den Fixlohn</label><input type="number" id="s-monatstd" inputmode="decimal" step="0.01" min="1" data-path="monatsStd" data-type="numnull" placeholder="173"></div>
-      <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
+      <div class="field"><label for="s-monatstd" id="s-monatstd-l">Monatsstunden für den Fixlohn</label><input type="number" id="s-monatstd" inputmode="decimal" step="0.01" min="1" data-path="monatsStd" data-type="numnull" placeholder="173"><small>Durch diese Zahl wird dein Monatslohn geteilt, um den Stundenlohn zu errechnen. Sie steht meistens auf dem Lohnzettel, oft 173.</small></div>
+      <div class="field"><label for="s-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="s-lohn" inputmode="decimal" step="0.01" min="0" data-path="stundenlohn" data-type="numnull"><small>Steht auf dem Lohnzettel bei „Lohn“. Damit rechnet die App aus, was ein Unterschied in Euro wert ist.</small><div id="s-lgtake"></div><div class="verlauf" id="s-lohn-verlauf" data-vf="stundenlohn" data-label="Neuer Stundenlohn"></div></div>
       <div class="grid2">
         <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
         <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
@@ -563,21 +563,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261101010420";</script>
-<script src="engine.js?v=20261101010420"></script>
+<script>window.APP_VERSION="20261101012902";</script>
+<script src="engine.js?v=20261101012902"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261101010420"></script>
-<script src="timepicker.js?v=20261101010420"></script>
-<script src="datepicker.js?v=20261101010420"></script>
-<script src="selectpicker.js?v=20261101010420"></script>
-<script src="pdf.js?v=20261101010420"></script>
-<script src="lzread.js?v=20261101010420"></script>
-<script src="app.js?v=20261101010420"></script>
-<script src="auth.js?v=20261101010420"></script>
-<script src="sync.js?v=20261101010420"></script>
-<script src="insights.js?v=20261101010420"></script>
+<script src="firebase-config.js?v=20261101012902"></script>
+<script src="timepicker.js?v=20261101012902"></script>
+<script src="datepicker.js?v=20261101012902"></script>
+<script src="selectpicker.js?v=20261101012902"></script>
+<script src="pdf.js?v=20261101012902"></script>
+<script src="lzread.js?v=20261101012902"></script>
+<script src="app.js?v=20261101012902"></script>
+<script src="auth.js?v=20261101012902"></script>
+<script src="sync.js?v=20261101012902"></script>
+<script src="insights.js?v=20261101012902"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

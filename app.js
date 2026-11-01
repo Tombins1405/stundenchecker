@@ -1204,7 +1204,7 @@
       { v: E1, sel: '#s-lgbox', t: 'Die Lohngruppe laut Kollektivvertrag. Wähle sie, wenn du sie kennst.' },
       { v: E1, sel: '#s-monat', up: f, t: 'Steht auf deinem Lohnzettel ein fester Monatslohn? Dann trage ihn hier ein. Wenn nicht, lass das Feld leer.' },
       { v: E1, sel: '#s-monatstd', up: f, t: 'Durch wie viele Stunden wird dein Monatslohn geteilt? Meistens steht es auf dem Lohnzettel, oft 173.' },
-      { v: E1, sel: '#s-lohn', up: f, t: 'Dein Stundenlohn steht auf dem Lohnzettel bei „Lohn“. Eine Erhöhung trägst du darunter „ab Datum“ ein.' },
+      { v: E1, sel: '#s-lohn', to: '#s-lgtake', up: f, t: 'Dein Stundenlohn steht auf dem Lohnzettel bei „Lohn“. Kennst du deine Lohngruppe, kannst du darunter den Mindestlohn übernehmen. Eine Erhöhung trägst du danach „ab Datum“ ein.' },
       { v: E1, sel: '#s-woche', up: f, t: 'Wie viele Stunden pro Woche sind bei dir normale Arbeitszeit? Zum Beispiel 40, im Bau 39.' },
       { v: E1, sel: '#s-tagsollfield', t: 'Stunden pro Arbeitstag. Leer lassen, dann rechnet die App Wochenstunden geteilt durch deine Arbeitstage.' },
       { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
@@ -1615,7 +1615,7 @@
   }
   function renderLgBox(en) {
     var box = $('#s-lgbox'); if (!box) return;
-    var lg = E.LOHNGRUPPEN[en.paket]; if (!lg) { box.innerHTML = ''; return; }
+    var lg = E.LOHNGRUPPEN[en.paket]; if (!lg) { box.innerHTML = ''; var tk0 = $('#s-lgtake'); if (tk0) tk0.innerHTML = ''; return; }
     var g = lg.gruppen.filter(function (x) { return x.id === en.lg; })[0];
     var h = '<div class="field"><label for="s-lg">Lohngruppe laut Kollektivvertrag (' + esc(lg.stand) + ')</label><select id="s-lg"><option value="">Nicht gewählt</option>' +
       lg.gruppen.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
@@ -1625,9 +1625,9 @@
       en._lsVor = ls;
     }
     var i = lg.stufen ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null;
-    if (val != null) h += '<div class="btns"><button type="button" class="btn" id="s-lg-take">Mindestlohn übernehmen: ' + esc(eur.format(val)) + '</button></div>';
     delete en._lsVor;
     box.innerHTML = h; box.dataset.val = val != null ? val : '';
+    var tk = $('#s-lgtake'); if (tk) tk.innerHTML = val != null ? '<div class="btns"><button type="button" class="btn primary" id="s-lg-take">Mindestlohn übernehmen: ' + esc(eur.format(val)) + '</button></div>' : '';
   }
   function renderStufen(en) {
     $('#s-stufen').innerHTML = (en.diaeten.stufen || []).map(function (s, i) {
@@ -2066,6 +2066,40 @@
     $('#install-go').addEventListener('click', function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; bar.hidden = true; }); });
     $('#install-x').addEventListener('click', function () { bar.hidden = true; try { localStorage.setItem('stundenchecker.noinstall', '1'); } catch (e) { } });
   })();
+
+  /* ---- Info-Zeichen (i): Beschreibungen unter Feldern werden zu einem Fenster, das auf Tipp aufgeht ---- */
+  (function () {
+    var dlg = document.createElement('div'); dlg.id = 'info-dlg'; dlg.className = 'cropov'; dlg.hidden = true;
+    dlg.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="info-h"><h3 id="info-h"></h3><p id="info-t"></p><div class="btns"><button type="button" class="btn primary" id="info-x">Schließen</button></div></div>';
+    document.body.appendChild(dlg);
+    function close() { dlg.hidden = true; }
+    function nearLabel(el) { var f = el.closest('.field, .abrow'); return f ? f.querySelector('label') : null; }
+    function infoify() {
+      var list = document.querySelectorAll('.field > small:not([data-ifi]), .abrow > small.abhint:not([data-ifi])');
+      for (var i = 0; i < list.length; i++) {
+        var sm = list[i], lb = nearLabel(sm);
+        if (!lb || !String(sm.textContent).trim()) continue;
+        sm.setAttribute('data-ifi', '1'); sm.hidden = true;
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'info'; b.setAttribute('aria-label', 'Info'); b._sm = sm;
+        lb.appendChild(b);
+      }
+    }
+    document.addEventListener('click', function (ev) {
+      var b = ev.target.closest && ev.target.closest('button.info');
+      if (b) {
+        ev.preventDefault(); ev.stopPropagation();
+        var lb = b.parentNode, c = lb.cloneNode(true), x = c.querySelector('button.info'); if (x) x.remove();
+        $('#info-h').textContent = String(c.textContent).replace(/\s+/g, ' ').trim();
+        $('#info-t').textContent = String(b._sm.textContent).trim();
+        dlg.hidden = false; return;
+      }
+      if (ev.target.id === 'info-x' || ev.target === dlg) close();
+    }, true);
+    var tm = null;
+    new MutationObserver(function () { clearTimeout(tm); tm = setTimeout(infoify, 60); }).observe(document.body, { childList: true, subtree: true });
+    infoify();
+  })();
+
   /* ---- Oberfläche in vielen Sprachen: ersetzt deutsche Texte anhand der Dateien lang-xx.js; was fehlt, bleibt deutsch ---- */
   var UI_ORIG = new WeakMap(), UI_SET = new WeakMap(), UI_RX = {}, uiBusy = false;
   function uiLang() {
