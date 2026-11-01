@@ -167,6 +167,7 @@
     krank: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
     arzt: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
     schule: '<path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/>',
+    frist: '<path d="M6 3v18M6 4h12l-2.500 4L18 12H6"/>',
     pflege: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.500-7 10-7 10z"/>',
     feiertag: '<path d="M12 3l2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/>',
     betriebsurlaub: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
@@ -181,7 +182,8 @@
     ['krank', 'Krankenstand', 'Du warst krank. Der Tag wird als bezahlte Abwesenheit gutgeschrieben.'],
     ['arzt', 'Frei wegen Arztbesuch', 'Frei für einen Arztbesuch. Ob er bezahlt wird, hängt von deiner Firma ab.'],
     ['pflege', 'Pflegefreistellung', 'Frei, um ein krankes Kind oder einen Angehörigen zu pflegen.'],
-    ['schule', 'Berufsschule', 'Berufsschultag für Lehrlinge. Der Tag zählt wie ein Arbeitstag mit Sollstunden.'],
+    ['schule', 'Schulung / Berufsschule', 'Berufsschule, Kurs oder Seminar. Der Tag zählt wie ein Arbeitstag mit Sollstunden.'],
+    ['frist', 'Frist läuft ab', 'An diesem Tag läuft ein Ausweis, Kurs oder eine Prüfung ab.'],
     ['feiertag', 'Feiertag', 'Gesetzlicher Feiertag.'],
     ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
     ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
@@ -244,7 +246,7 @@
     if (s.urlaub) parts.push(s.urlaub + ' Urlaub');
     if (s.krank) parts.push(s.krank + ' Krankenstand');
     if (s.pflege) parts.push(s.pflege + ' Pflegefreistellung');
-    if (s.schule) parts.push(s.schule + ' Berufsschule');
+    if (s.schule) parts.push(s.schule + ' Schulung / Berufsschule');
     if (s.za) parts.push(s.za + ' Zeitausgleich');
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
@@ -285,9 +287,10 @@
       var ik = r.leer ? '' : (r.status === 'arbeit' && r.swMin && !r.nettoMin ? 'sw' : r.status), dn = false;
       if (!r.leer && d.dienste) Object.keys(d.dienste).forEach(function (q) { if (+d.dienste[q] > 0) dn = true; });
       if (r.feiertag && r.leer === false && r.status === 'arbeit') ik = 'arbeit';
+      var frs = fristenAm(r.datum); if (frs.length) small.push('Frist: ' + esc(frs.join(', ')));
       var cls = 'day' + (rest ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '');
       return '<li><button type="button" class="' + cls + '" data-date="' + r.datum + '">' +
-        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i><span class="d-icos">' + (ik && ik !== 'arbeit' ? '<span class="d-ico" data-ik="' + ik + '">' + dayIco(ik) + '</span>' : '') + (dn ? '<span class="d-ico st-dienst-i" data-ik="dienst">' + dayIco('dienst') + '</span>' : '') + '</span></span>' +
+        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i><span class="d-icos">' + (ik && ik !== 'arbeit' ? '<span class="d-ico" data-ik="' + ik + '">' + dayIco(ik) + '</span>' : '') + (dn ? '<span class="d-ico st-dienst-i" data-ik="dienst">' + dayIco('dienst') + '</span>' : '') + (frs.length ? '<span class="d-ico st-frist-i" data-ik="frist">' + dayIco('frist') + '</span>' : '') + '</span></span>' +
         '<span class="d-main' + (r.leer ? ' none' : '') + '">' + main +
         ((chips || small.length) ? '<small>' + chips + small.join(' · ') + '</small>' : '') + '</span>' +
         '<span class="d-val">' + val + '</span></button></li>';
@@ -1177,9 +1180,10 @@
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
     var ur = ueberRows().slice(-4), neg = ur.filter(function (x) { return x.diff < -1.5; }).length, pos = ur.filter(function (x) { return x.diff > 1.5; }).length;
     if (ur.length >= 3 && (neg >= 3 || pos >= 3)) out.push({ k: 'abweichung', pose: 'eyes', text: 'Deine Überstunden weichen in mehreren Monaten vom Lohnzettel ab. Schau bitte nach, ob diese Einstellungen stimmen: Überstunden-Modell, Betrieb geschlossen und Rundung.' });
+    fristenMia(out);
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
-    return out.filter(function (s) { return (c.skip[s.k] || 0) < 2; })[0] || null;
+    return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
     if (k === 'rundgang') { tourStart(); }
@@ -1188,6 +1192,7 @@
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'tag') { show('erfassen'); }
+    else if (k.indexOf('frist_') === 0) { show('konten'); setTimeout(function () { var el = $('#fr-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lzlesen') { lzOpen('erlaubnis'); }
     else if (k === 'lohnzettel' && data.profil && data.profil.lzLesen === true) { lzOpen('datei'); }
@@ -1253,7 +1258,7 @@
     on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose('mouth'); miaGo(k); });
     on('#mia-assist', 'click', function () { miaClose('mouth'); tourStart(true); });
     on('#mia-tour', 'click', function () { miaClose('mouth'); tourStart(); });
-    on('#mia-later', 'click', function () { if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
+    on('#mia-later', 'click', function () { if (ui.miaStep && ui.miaStep.indexOf('frist_') === 0) fristSpaet(ui.miaStep.slice(6)); else if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
     on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
     on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
     on('#mia-name', 'input', function () { miaSet('name', this.value.slice(0, 20)); });
@@ -1335,6 +1340,7 @@
     { t: 'Was die App kann', k: ['kann', 'alles', 'funktion', 'macht', 'leistet', 'wofuer', 'nutzen', 'ueberblick', 'was ist', 'hilfe'], a: 'Die App rechnet deine Arbeitszeit, Pausen, Überstunden, Diäten und Prämien aus und vergleicht alles mit deinem Lohnzettel. Du kannst Urlaub, Krankenstand und Zeitausgleich eintragen, Notizen zu Tagen schreiben, die App in 13 Sprachen nutzen und mich alles fragen. Tippe unten auf ein Thema, wenn du Genaueres wissen willst.' },
     { t: 'Stunden eintragen', k: ['eintrag', 'stunden', 'beginn', 'ende', 'arbeitszeit', 'tag speichern', 'erfassen', 'zeit'], a: 'Öffne Erfassen. Tippe bei Beginn und Ende die Uhrzeit ein, trage die Pausen ein und tippe auf Speichern. Mit "Jetzt" nimmt die App die aktuelle Uhrzeit.' },
     { t: 'Prämie anlegen', k: ['prämie', 'praemie', 'zulage', 'bonus', 'kran', 'anlegen'], a: 'Gehe zu Einstellungen, dann Prämien, und lege deine Prämie an (zum Beispiel pro Stunde, pro Tag oder pro Stück). Danach trägst du sie im Tag ein. Die App rechnet sie aus und vergleicht sie mit dem Lohnzettel.' },
+    { t: 'Fristen und Ausweise', k: ['frist', 'code 95', 'code95', 'fahrerkarte', 'staplerschein', 'kranschein', 'ablauf', 'ausweis', 'erinnerung', 'schulung', 'kurs'], a: 'Öffne Profil und scrolle zu "Fristen und Ausweise". Lege Code 95, Fahrerkarte, Staplerschein oder eigene Fristen mit Ablaufdatum an. Ich erinnere dich rechtzeitig, und der Termin kommt auf Wunsch in den Kalender deines Handys.' },
     { t: 'Lohnzettel prüfen', k: ['lohnzettel', 'abrechnung', 'prüfen', 'pruefen', 'stimmt', 'vergleich', 'abgleich', 'kontrol'], a: 'Öffne Übersicht und scrolle zu "Stimmt mein Lohnzettel?". Tippe die Stunden und Beträge von deinem Lohnzettel ab. Die App zeigt dir, was gleich ist und wo ein Unterschied in Stunden oder Euro bleibt. Du musst nicht alle Zeilen ausfüllen.' },
     { t: 'Überstunden und Zuschläge', k: ['überstunden', 'ueberstunden', 'zuschlag', 'sonntag', 'samstag', 'feiertag', 'nacht', 'mehrarbeit'], a: 'Unter Einstellungen stehen Wochenstunden, Überstundenmodell und Zuschläge. Sie kommen aus deinem Kollektivvertrag. Ob sie stimmen, siehst du auf deinem Lohnzettel. Du kannst sie jederzeit ändern, auch ab einem Datum.' },
     { t: 'Diäten / Taggeld', k: ['diäten', 'diaeten', 'taggeld', 'spesen', 'tagesgeld'], a: 'Diäten sind das Taggeld, das du zusätzlich bekommst. Unter Einstellungen, Diäten, stellst du ein, ob es pro Stunde oder pro Tag nach Stufen gezahlt wird. Den Betrag findest du auf deinem Lohnzettel.' },
@@ -1454,7 +1460,7 @@
     var E1 = 'einstellungen', f = '.field', k = 'label.check';
     return [{ t: 'Ich führe dich jetzt durch deine Einstellungen. Bei jedem Feld kannst du gleich etwas eintragen, dann tippst du auf Weiter. Was du nicht weißt, lässt du leer. Du kannst es später nachholen.' },
       { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
-      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Freiwillig: Geburtsdatum für einen Geburtstagsgruß und ein Profilbild. Du kannst beides überspringen.' },
+      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Optional: Geburtsdatum und ein Profilbild. Du kannst beides überspringen.' },
       { v: E1, sel: '#s-firma', up: f, t: 'Der Name deiner Firma. Er steht auf den Berichten. Weißt du ihn nicht auswendig, lass das Feld leer.' },
       { v: E1, sel: '#s-beruf', t: 'Hier steht dein Beruf. Stimmt das? Wenn nicht, ändere ihn hier. Sonst tippe auf Weiter.' },
       { v: E1, sel: '#s-umodell', up: f, t: 'Wie zählt deine Firma Überstunden? Wähle es aus. Weißt du es nicht, nimm „Pro Monat“ und frage später im Büro nach.' },
@@ -2472,20 +2478,109 @@
   /* ---- Profilbild und Geburtstagsgruß (freiwillig) ---- */
   function fotoGet() { try { return localStorage.getItem('stundenchecker.foto') || ''; } catch (e) { return ''; } }
   function fotoZeigen() { var b = $('#s-fotobox'); if (!b) return; var f = fotoGet(); b.innerHTML = f ? '<img src="' + f + '" alt="Dein Profilbild" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin-top:6px"> <button type="button" class="linkbtn" id="foto-weg">Bild entfernen</button>' : ''; }
+  function feier(h, t) {
+    var conf = '', i, b, k, hue;
+    for (i = 0; i < 90; i++) conf += '<i style="left:' + Math.round(Math.random() * 100) + '%;animation-delay:' + (Math.random() * 3).toFixed(2) + 's;animation-duration:' + (2.6 + Math.random() * 2).toFixed(1) + 's;background:hsl(' + Math.round(Math.random() * 360) + ',80%,60%)"></i>';
+    for (b = 0; b < 6; b++) {
+      hue = Math.round(Math.random() * 360);
+      var x = 12 + Math.random() * 76, y = 12 + Math.random() * 38;
+      for (k = 0; k < 16; k++) { var an = k / 16 * 6.2832, r = 55 + Math.random() * 55; conf += '<u style="left:' + x.toFixed(0) + '%;top:' + y.toFixed(0) + '%;--dx:' + Math.round(Math.cos(an) * r) + 'px;--dy:' + Math.round(Math.sin(an) * r) + 'px;animation-delay:' + (b * 0.55).toFixed(2) + 's;background:hsl(' + ((hue + k * 7) % 360) + ',90%,60%)"></u>'; }
+    }
+    $('#bd-conf').innerHTML = conf;
+    var f = fotoGet(), fig = ''; try { fig = miaSvg(miaCfg().figur, miaFor(), 'happy'); } catch (e) { }
+    $('#bd-mia').innerHTML = (f ? '<img src="' + f + '" alt="" class="bdfoto">' : '') + '<div class="bdtanz">' + fig + '</div>';
+    $('#bd-h').textContent = h; $('#bd-t').textContent = t;
+    $('#bd-dlg').hidden = false;
+  }
   function geburtstagPruefen() {
     var p = data.profil; if (!p || !p.geb || !/^\d{4}-\d{2}-\d{2}$/.test(p.geb)) return;
     var t = todayISO(); if (p.geb.slice(5) !== t.slice(5) || p.gebGruss === t) return;
     p.gebGruss = t; save();
-    var vn = (p.vorname || '').trim(), alt = +t.slice(0, 4) - +p.geb.slice(0, 4), f = fotoGet(), conf = '';
-    for (var i = 0; i < 28; i++) conf += '<i style="left:' + Math.round(Math.random() * 100) + '%;animation-delay:' + (Math.random() * 2.5).toFixed(2) + 's;background:hsl(' + Math.round(Math.random() * 360) + ',80%,60%)"></i>';
-    $('#bd-conf').innerHTML = conf;
-    var fig = ''; try { fig = miaSvg(miaCfg().figur, miaFor(), 'happy'); } catch (e) { }
-    $('#bd-mia').innerHTML = (f ? '<img src="' + f + '" alt="" class="bdfoto">' : '') + '<div class="bdtanz">' + fig + '</div>';
-    $('#bd-h').textContent = 'Alles Gute zum Geburtstag' + (vn ? ', ' + vn : '') + '!';
-    $('#bd-t').textContent = (alt > 0 && alt < 120 ? 'Heute wirst du ' + alt + '. ' : '') + 'Ich wünsche dir einen schönen Tag. Komm gut und gesund durch die Stunden!';
-    $('#bd-dlg').hidden = false; ins('geburtstag');
+    var vn = (p.vorname || '').trim(), alt = +t.slice(0, 4) - +p.geb.slice(0, 4);
+    feier('Alles Gute zum Geburtstag' + (vn ? ', ' + vn : '') + '!', (alt > 0 && alt < 120 ? 'Heute wirst du ' + alt + '. ' : '') + 'Ich wünsche dir einen schönen Tag. Komm gut und gesund durch die Stunden!');
+    ins('geburtstag');
   }
   $('#bd-ok').addEventListener('click', function () { $('#bd-dlg').hidden = true; });
+
+  /* ---- Fristen und Ausweise (Code 95, Fahrerkarte, Staplerschein ...) ---- */
+  var FR_VOR = [
+    ['Für alle', [['Führerschein', 0], ['Erste-Hilfe-Auffrischung', 4], ['Brandschutz-Unterweisung', 0], ['Sicherheitsunterweisung', 0], ['Arbeitsmedizinische Untersuchung', 0]]],
+    ['Fahrer', [['Code 95 (Weiterbildung für Berufskraftfahrer)', 5], ['Fahrerkarte', 5], ['ADR-Bescheinigung (Gefahrgut)', 5], ['Ladekran-Berechtigung', 0], ['Ladungssicherung-Schulung', 0]]],
+    ['Bau und Maschinen', [['Baggerschein / Maschinenführer', 0], ['Kranschein', 0], ['Staplerschein', 0], ['Hebebühnen-Berechtigung', 0], ['Absturzsicherung-Schulung', 0]]],
+    ['Werkstatt und Metall', [['Pickerl-Ermächtigung (§ 57a)', 0], ['Schweißerprüfung', 0], ['Hochvolt-Schulung', 0], ['Kältemittel-Sachkunde', 0]]],
+    ['Küche und Gastro', [['Hygieneschulung', 0], ['Allergen-Schulung', 0]]],
+    ['Lager und Handel', [['Prüfung des Staplers (jährlich)', 1]]],
+    ['Büro', [['Datenschutz-Schulung', 0], ['Brandschutzwart-Ausbildung', 0]]]
+  ];
+  function fristListe() { if (!data.profil) data.profil = {}; return data.profil.fristen || (data.profil.fristen = []); }
+  function fristTage(f) { if (!f.ablauf) return null; var a = E.parseISO(f.ablauf), t = E.parseISO(todayISO()); return Math.round((Date.UTC(a.y, a.m - 1, a.d) - Date.UTC(t.y, t.m - 1, t.d)) / 86400000); }
+  function fristenAm(datum) { return (data.profil && data.profil.fristen || []).filter(function (f) { return f.ablauf === datum; }).map(function (f) { return f.name || 'Frist'; }); }
+  function fristSpaet(id) { fristListe().forEach(function (f) { if (f.id === id) f.spaet = todayISO(); }); save(); }
+  function fristenMia(out) {
+    fristListe().forEach(function (f) {
+      var n = fristTage(f); if (n === null || f.mia === 'nie' || n > (+f.vorlauf || 30) || f.spaet === todayISO()) return;
+      if (f.mia === 'einmal') { if (n <= 0 ? f.m2 : f.m1) return; }
+      var txt = (f.name || 'Frist') + ': ' + (n < 0 ? 'ist abgelaufen. Erneuere es so bald wie möglich.' : n === 0 ? 'läuft heute ab. Erneuere es jetzt.' : 'läuft bald ab. Plane die Erneuerung ein.') + ' ' + fmtDate(f.ablauf);
+      out.unshift({ k: 'frist_' + f.id, pose: 'eyes', text: txt });
+      if (f.mia === 'einmal') { if (n <= 0) f.m2 = true; else f.m1 = true; save(); }
+    });
+  }
+  function fristIcs(f) {
+    var d = f.ablauf.replace(/-/g, ''), v = +f.vorlauf || 30, pad = function (x) { return (x < 10 ? '0' : '') + x; }, n = new Date(), st = n.getUTCFullYear() + pad(n.getUTCMonth() + 1) + pad(n.getUTCDate()) + 'T' + pad(n.getUTCHours()) + pad(n.getUTCMinutes()) + '00Z';
+    var e = E.parseISO(f.ablauf), nx = new Date(e.y, e.m - 1, e.d + 1), dn = nx.getFullYear() + pad(nx.getMonth() + 1) + pad(nx.getDate());
+    var nm = String(f.name || 'Frist').replace(/[\;,]/g, ' ').replace(/[\r\n]+/g, ' ');
+    var al = function (trig, t) { return 'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:' + t + '\r\nTRIGGER:' + trig + '\r\nEND:VALARM\r\n'; };
+    var alarme = [[v * 24 - 9, v + ' Tagen'], [7 * 24 - 9, '7 Tagen'], [24 - 9, '1 Tag']].filter(function (a, i, arr) { return a[0] > 0 && arr.map(function (x) { return x[0]; }).indexOf(a[0]) === i && (i === 0 || a[0] < arr[0][0]); });
+    var s = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Stunden-Checker//DE\r\nBEGIN:VEVENT\r\nUID:' + f.id + '@stunden-checker\r\nDTSTAMP:' + st + '\r\nDTSTART;VALUE=DATE:' + d + '\r\nDTEND;VALUE=DATE:' + dn + '\r\nSUMMARY:' + nm + ' läuft ab\r\nDESCRIPTION:Erinnerung vom Stunden-Checker\r\n';
+    alarme.forEach(function (a) { s += al('-PT' + a[0] + 'H', nm + ' läuft in ' + a[1] + ' ab'); });
+    s += al('PT9H', nm + ' läuft heute ab') + 'END:VEVENT\r\nEND:VCALENDAR\r\n';
+    return s;
+  }
+  function renderFristen() {
+    var el = $('#fr-list'); if (!el) return;
+    var opt = function (arr, cur) { return arr.map(function (x) { return '<option value="' + x[0] + '"' + (String(cur) === String(x[0]) ? ' selected' : '') + '>' + x[1] + '</option>'; }).join(''); };
+    var vl = [[7, '7 Tage vorher'], [14, '14 Tage vorher'], [30, '30 Tage vorher'], [60, '60 Tage vorher'], [90, '90 Tage vorher']];
+    var ml = [['taeglich', 'Jeden Tag, bis es erledigt ist'], ['einmal', 'Einmal vorher und am Ablauftag'], ['nie', 'Nur im Kalender, ohne Meldung']];
+    el.innerHTML = fristListe().map(function (f) {
+      var n = fristTage(f), v = +f.vorlauf || 30, st = n === null ? '' : n < 0 ? ['bad', 'Abgelaufen'] : n === 0 ? ['bad', 'Heute fällig'] : n <= v ? ['warn', 'Bald fällig'] : ['ok', 'Gültig'];
+      return '<div class="frrow" data-id="' + esc(f.id) + '"><div class="frtop"><input type="text" data-f="name" maxlength="60" value="' + esc(f.name || '') + '" aria-label="Name der Frist"><button type="button" class="btn" data-act="del" aria-label="Entfernen">×</button></div>' +
+        '<div class="field"><label>Läuft ab am</label><input type="date" data-f="ablauf" value="' + esc(f.ablauf || '') + '"></div>' +
+        (st ? '<p class="frstat fr-' + st[0] + '">' + st[1] + '</p>' : '') +
+        '<div class="field"><label>Erinnern ab</label><select data-f="vorlauf">' + opt(vl, v) + '</select></div>' +
+        '<div class="field"><label>Meldung in der App</label><select data-f="mia">' + opt(ml, f.mia || 'taeglich') + '</select></div>' +
+        '<label class="check"><input type="checkbox" data-f="kal"' + (f.kal ? ' checked' : '') + '><span>In meinem Handy-Kalender eingetragen</span></label>' +
+        '<div class="btns"><button type="button" class="btn" data-act="ics"' + (f.ablauf ? '' : ' disabled') + '>Kalenderdatei laden</button><button type="button" class="btn primary" data-act="neu">Erneuert / bestanden</button></div></div>';
+    }).join('');
+    var vo = $('#fr-vorl'); if (vo && !vo.dataset.f) { vo.dataset.f = 1; vo.innerHTML = FR_VOR.map(function (g) { return '<p class="frgrp">' + g[0] + '</p><div class="frchips">' + g[1].map(function (x) { return '<button type="button" class="btn" data-n="' + esc(x[0]) + '" data-y="' + x[1] + '">' + x[0] + '</button>'; }).join('') + '</div>'; }).join(''); }
+  }
+  function fristNeu(name, jahre) { fristListe().push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: name || 'Neue Frist', laufzeit: jahre || 0, ablauf: '', vorlauf: 30, mia: 'taeglich', kal: false }); save(); renderFristen(); }
+  (function () {
+    var el = $('#fr-list'); if (!el) return;
+    function row(t) { var r = t.closest('.frrow'); if (!r) return null; var f = fristListe().filter(function (x) { return x.id === r.dataset.id; })[0]; return f ? { f: f, r: r } : null; }
+    function fertig(f, neu) { f.ablauf = neu; f.kal = false; delete f.m1; delete f.m2; delete f.spaet; save(); renderFristen(); feier('Geschafft!', (f.name || 'Frist') + ' ist wieder gültig bis ' + fmtDate(neu)); ins('frist_erneuert'); }
+    el.addEventListener('change', function (ev) {
+      var t = ev.target, o = row(t); if (!o || !t.dataset.f) return; var k = t.dataset.f;
+      if (k === 'ablauf') { var alt = o.f.ablauf; if (t.value && alt && t.value > alt) { fertig(o.f, t.value); return; } o.f.ablauf = t.value; o.f.kal = false; delete o.f.m1; delete o.f.m2; delete o.f.spaet; }
+      else if (k === 'kal') o.f.kal = t.checked;
+      else if (k === 'vorlauf') { o.f.vorlauf = +t.value; o.f.kal = false; delete o.f.m1; delete o.f.m2; }
+      else o.f[k] = t.value;
+      save(); renderFristen();
+    });
+    el.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-act]'); if (!b) return; var o = row(b); if (!o) return;
+      if (b.dataset.act === 'del') { var l = fristListe(); l.splice(l.indexOf(o.f), 1); save(); renderFristen(); }
+      else if (b.dataset.act === 'ics') {
+        try { var bl = new Blob([fristIcs(o.f)], { type: 'text/calendar' }), u = URL.createObjectURL(bl), a = document.createElement('a'); a.href = u; a.download = 'frist.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast('Kalenderdatei geladen. Öffne sie und tippe auf Hinzufügen.'); } catch (e) { toast('Das hat nicht geklappt.'); }
+      } else if (b.dataset.act === 'neu') {
+        if (+o.f.laufzeit > 0) { var t0 = todayISO(), bs = o.f.ablauf && o.f.ablauf >= t0 ? o.f.ablauf : t0, p = E.parseISO(bs), d = new Date(p.y + (+o.f.laufzeit), p.m - 1, p.d); fertig(o.f, E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate())); }
+        else { toast('Trage das neue Ablaufdatum ein.'); var di = o.r.querySelector('[data-f="ablauf"]'); if (di) di.focus(); }
+      }
+    });
+    $('#fr-add').addEventListener('click', function () { var v = $('#fr-vorl'); v.hidden = !v.hidden; });
+    $('#fr-eigen').addEventListener('click', function () { fristNeu('Neue Frist', 0); $('#fr-vorl').hidden = true; });
+    $('#fr-vorl').addEventListener('click', function (ev) { var b = ev.target.closest('[data-n]'); if (!b) return; fristNeu(b.dataset.n, +b.dataset.y); $('#fr-vorl').hidden = true; });
+    renderFristen();
+  })();
   /* ---- Berichte als PDF (Tag, Woche, Monat) ---- */
   (function () {
     var card = $('#rb-card'); if (!card) return;

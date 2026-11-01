@@ -185,7 +185,7 @@
     urlaub:        { name: 'Urlaub',                  credit: true },
     krank:         { name: 'Krankenstand',            credit: true },
     pflege:        { name: 'Pflegefreistellung',      credit: true },
-    schule:        { name: 'Berufsschule',            credit: true },
+    schule:        { name: 'Schulung / Berufsschule',            credit: true },
     feiertag:      { name: 'Feiertag',                credit: true },
     betriebsurlaub:{ name: 'Betrieb geschlossen / Betriebsurlaub', credit: true },
     za:            { name: 'Zeitausgleich',           credit: false },

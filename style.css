@@ -511,15 +511,17 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 
 /* Geburtstag */
 .bdbox { position: relative; overflow: hidden; text-align: center; justify-items: center; }
-#bd-conf { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#bd-conf { position: fixed; inset: 0; z-index: 9; pointer-events: none; overflow: hidden; }
 #bd-conf i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; animation: bdfall 3.2s linear infinite; }
-@keyframes bdfall { to { transform: translateY(520px) rotate(540deg); } }
+@keyframes bdfall { to { transform: translateY(110vh) rotate(540deg); } }
+#bd-conf u { position: absolute; width: 7px; height: 7px; border-radius: 50%; opacity: 0; animation: bdspark 1.6s ease-out infinite; }
+@keyframes bdspark { 0% { transform: translate(0,0) scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } }
 #bd-mia { display: flex; gap: 12px; align-items: flex-end; justify-content: center; position: relative; }
 .bdtanz { width: 92px; animation: bdtanz .7s ease-in-out infinite alternate; transform-origin: 50% 100%; }
 @keyframes bdtanz { from { transform: rotate(-9deg) translateY(0); } to { transform: rotate(9deg) translateY(-12px); } }
 .bdfoto { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent, #2a7); }
 .bdbox h3, .bdbox p, .bdbox .btns { position: relative; }
-@media (prefers-reduced-motion: reduce) { .bdtanz, #bd-conf i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bdtanz, #bd-conf i, #bd-conf u { animation: none; } }
 
 /* Datumsfeld */
 .dp-wrap { position: relative; display: block; }
@@ -663,3 +665,15 @@ h3[data-ico="repeat"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://ww
 h3[data-ico="repeat"]::before { background: #bf360c; }
 .festrow { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
 .festrow .btn { padding: 8px 12px; }
+
+/* Fristen */
+.st-frist .d-ico, .d-ico.st-frist-i { background: #ffe4ec; color: #b0124f; }
+.frrow { border: 1px solid var(--line, #cfd8dc); border-radius: 12px; padding: 12px; margin: 10px 0; display: grid; gap: 10px; }
+.frtop { display: flex; gap: 8px; }
+.frtop input { flex: 1; min-width: 0; }
+.frstat { margin: 0; font-weight: 700; }
+.fr-ok { color: #1e8e3e; } .fr-warn { color: #b45309; } .fr-bad { color: #c62828; }
+.frgrp { margin: 12px 0 4px; font-weight: 700; }
+.frchips { display: flex; flex-wrap: wrap; gap: 8px; }
+h3[data-ico="flag"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 3v18M6 4h12l-2.500 4L18 12H6%22/%3E%3C/svg%3E"); }
+h3[data-ico="flag"]::before { background: #b0124f; }

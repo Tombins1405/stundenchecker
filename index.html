@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261101154426">
+<link rel="stylesheet" href="style.css?v=20261101174801">
 </head>
 <body>
 
@@ -280,6 +280,14 @@
         <input type="file" id="icon-file" accept="image/*" hidden>
       </div>
     </div>
+    <div class="card" id="fr-card">
+      <h3 data-ico="flag">Fristen und Ausweise</h3>
+      <div class="field"><label>Meine Fristen</label><small>Lege Ausweise, Kurse und Prüfungen mit Ablaufdatum an. Trage das Datum von deinem Dokument ein, die Vorschläge sind nur Beispiele. Die Kalenderdatei legt den Termin mit Erinnerungen in den Handy-Kalender. Ändert sich das Datum, lade sie neu.</small></div>
+      <div id="fr-list"></div>
+      <div class="btns"><button type="button" class="btn" id="fr-add">+ Aus Vorschlägen</button><button type="button" class="btn" id="fr-eigen">+ Eigene Frist</button></div>
+      <div id="fr-vorl" hidden></div>
+    </div>
+
     <div class="card">
       <h3 data-ico="sun">Urlaubskartei</h3>
       <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, letzte Zahl „Endsaldo“ = Resturlaub). Dann siehst du sofort, ob es passt.</p>
@@ -334,7 +342,7 @@
       <h3 data-ico="card">Meine Daten</h3>
       <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
       <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
-      <div class="field"><label for="s-geb">Geburtsdatum (freiwillig, für einen Geburtstagsgruß)</label><input type="date" id="s-geb"></div>
+      <div class="field"><label for="s-geb">Geburtsdatum (optional)</label><input type="date" id="s-geb"></div>
       <div class="field"><label for="s-foto">Profilbild (freiwillig, bleibt nur auf diesem Handy)</label><div class="btns"><label class="btn" for="s-kamera">Foto aufnehmen</label><label class="btn" for="s-foto">Aus Galerie wählen</label></div><input type="file" id="s-kamera" accept="image/*" capture="user" hidden><input type="file" id="s-foto" accept="image/*" hidden><div id="s-fotobox"></div></div>
       <div class="field"><label for="s-firma">Meine Firma (steht auf den Berichten)</label><input type="text" id="s-firma" maxlength="80" autocomplete="organization" placeholder="zum Beispiel Musterfirma GmbH"></div>
     </div>
@@ -590,23 +598,23 @@
 
 <div id="lk-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lk-h"><h3 id="lk-h"></h3><div id="lk-body"></div><div class="btns" id="lk-btns"></div></div></div>
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
-<div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
+<div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261101154426";</script>
-<script src="engine.js?v=20261101154426"></script>
+<script>window.APP_VERSION="20261101174801";</script>
+<script src="engine.js?v=20261101174801"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261101154426"></script>
-<script src="timepicker.js?v=20261101154426"></script>
-<script src="datepicker.js?v=20261101154426"></script>
-<script src="selectpicker.js?v=20261101154426"></script>
-<script src="pdf.js?v=20261101154426"></script>
-<script src="lzread.js?v=20261101154426"></script>
-<script src="app.js?v=20261101154426"></script>
-<script src="auth.js?v=20261101154426"></script>
-<script src="sync.js?v=20261101154426"></script>
-<script src="insights.js?v=20261101154426"></script>
+<script src="firebase-config.js?v=20261101174801"></script>
+<script src="timepicker.js?v=20261101174801"></script>
+<script src="datepicker.js?v=20261101174801"></script>
+<script src="selectpicker.js?v=20261101174801"></script>
+<script src="pdf.js?v=20261101174801"></script>
+<script src="lzread.js?v=20261101174801"></script>
+<script src="app.js?v=20261101174801"></script>
+<script src="auth.js?v=20261101174801"></script>
+<script src="sync.js?v=20261101174801"></script>
+<script src="insights.js?v=20261101174801"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
