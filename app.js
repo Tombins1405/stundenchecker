@@ -369,7 +369,7 @@
   }
   /* ---- Weitere Zeilen vom Lohnzettel (frei benannt) ---- */
   function abExtra(neu) { var k = monthKey(), o = data.abgleich[k]; if (!o && !neu) return []; if (!o) o = data.abgleich[k] = {}; if (!o.extra && neu) o.extra = []; return o.extra || []; }
-  function abExtraClean() { var k = monthKey(), o = data.abgleich[k]; if (!o) return; if (o.extra && !o.extra.length) delete o.extra; if (!Object.keys(o).some(function (q) { return q !== 'test' && o[q] != null; })) delete data.abgleich[k]; }
+  function abExtraClean() { var k = monthKey(), o = data.abgleich[k]; if (!o) return; if (o.extra && !o.extra.length) delete o.extra; if (!Object.keys(o).some(function (q) { return q !== 'test' && q !== 'gelesen' && o[q] != null; })) delete data.abgleich[k]; }
   function renderAbExtra() {
     var el = $('#ab-extra'); if (!el) return;
     el.innerHTML = '<h4 class="abx-h">Weitere Zeilen vom Lohnzettel</h4>' + abExtra().map(function (x, i) {
@@ -423,6 +423,7 @@
       html += '<p style="margin-top:8px">Prüfe zuerst: Sind alle Tage und Pausen richtig eingetragen? Gibt es Zeitausgleich, oder rechnet deine Firma manche Stunden erst im Folgemonat ab? Passen Zuschläge und die Zählweise der Überstunden in den Einstellungen? Bleibt der Unterschied, frage mit deiner Aufzeichnung im Büro nach. Die App ersetzt keine Rechtsberatung.</p></div>';
     }
     if (given && !E.istBau(wm) && ui.summe && ui.summe.swStd > 0 && lz.zaKonto != null && +lz.zaKonto < 0) html += '<div class="notice warn"><strong>Ausfallstunden und Zeitausgleich.</strong> In diesem Monat hast du ' + fh(ui.summe.swStd) + ' Ausfallstunden aufgeschrieben, und dein Zeitausgleich-Konto ist gesunken. Wenn dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, trägt sie nach § 1155 ABGB grundsätzlich das Risiko, und Zeitausgleich muss in der Regel vereinbart sein. Das hängt vom Einzelfall und vom Kollektivvertrag ab, deshalb ist das ein Hinweis und keine Rechtsberatung. Frag bei Betriebsrat, Gewerkschaft (vida) oder Arbeiterkammer nach.</div>';
+    if (lz.gelesen) html = '<div class="notice warn"><strong>Aus der PDF gelesen.</strong> Beim Lesen können Fehler passieren. Bitte vergleiche die Zahlen mit deinem Lohnzettel, bevor du dich darauf verlässt.</div>' + html;
     $('#ab-result').innerHTML = html;
     if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; })); } catch (e) {} }
   }
@@ -2219,7 +2220,7 @@
       var key = monthKey(), f = id.slice(3), o = data.abgleich[key] || (data.abgleich[key] = {});
       var num = parseFloat(String(t.value).replace(',', '.'));
       o[f] = (t.value === '' || isNaN(num)) ? null : num; delete o.test;
-      var any = Object.keys(o).some(function (k) { return k !== 'test' && o[k] != null; });
+      var any = Object.keys(o).some(function (k) { return k !== 'test' && k !== 'gelesen' && o[k] != null; });
       if (!any) delete data.abgleich[key];
       save(); paintAbgleich(); return;
     }
@@ -2759,7 +2760,7 @@
       pr.berichtGefragt = rh + ende; save();
       var nm = (pr.vorname || '').trim(), txt = { tag: 'Tagesbericht', woche: 'Wochenbericht', halb: 'Halbmonatsbericht', monat: 'Monatsbericht' }[rh];
       $('#rb-dh').textContent = (nm ? nm + ', s' : 'S') + 'oll ich den ' + txt + ' gleich fertig machen?';
-      $('#rb-dbody').innerHTML = '<p>Heute ist der Tag dafür. Ich bereite ihn vor, du musst nur noch auf „PDF erstellen und senden“ tippen.</p>';
+      $('#rb-dbody').innerHTML = miaKopf() + '<p>Heute ist der Tag dafür. Ich bereite ihn vor, du musst nur noch auf „PDF erstellen und senden“ tippen.</p>';
       $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-ja">Ja, bitte</button><button type="button" class="btn" id="rb-spaeter">Später</button>';
       $('#rb-dlg').hidden = false;
       $('#rb-spaeter').onclick = function () { $('#rb-dlg').hidden = true; };
@@ -2769,7 +2770,7 @@
     function frageName(weiter) {
       if (bName()) return weiter();
       $('#rb-dh').textContent = 'Wie heißt du?';
-      $('#rb-dbody').innerHTML = '<p>Auf dem Bericht fehlt dein Name. Ohne Namen kann ihn niemand dir zuordnen.</p><div class="field"><label for="rb-dname">Vor- und Nachname</label><input type="text" id="rb-dname" maxlength="80" autocomplete="name"></div>';
+      $('#rb-dbody').innerHTML = miaKopf() + '<p>Auf dem Bericht fehlt dein Name. Ohne Namen kann ihn niemand dir zuordnen.</p><div class="field"><label for="rb-dname">Vor- und Nachname</label><input type="text" id="rb-dname" maxlength="80" autocomplete="name"></div>';
       $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-dok">Weiter</button><button type="button" class="btn" id="rb-dohne">Ohne Namen weiter</button><button type="button" class="btn" id="rb-dx">Abbrechen</button>';
       $('#rb-dlg').hidden = false; $('#rb-dx').onclick = zu;
       $('#rb-dok').onclick = function () { var v = $('#rb-dname').value.trim(); if (!v) { toast('Bitte gib deinen Namen ein.'); return; } $('#rb-name').value = v; merken(); weiter(); };
@@ -2789,7 +2790,7 @@
     function frageUnterschrift() {
       var pr = data.profil, erstes = pr.sigAn !== true && pr.sigAn !== false;
       $('#rb-dh').textContent = 'Bitte unterschreiben';
-      $('#rb-dbody').innerHTML = '<canvas id="rb-dsig" width="600" height="240" style="width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none"></canvas>' +
+      $('#rb-dbody').innerHTML = miaKopf() + '<canvas id="rb-dsig" width="600" height="240" style="width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none"></canvas>' +
         '<p class="hint">Unterschreibe mit dem Finger oder der Maus. Wenn du lieber auf Papier unterschreibst, lass das Feld leer.</p>' +
         (erstes ? '<label class="check"><input type="checkbox" id="rb-dauto"> Diese Unterschrift merken und künftig automatisch einsetzen</label>' : '');
       $('#rb-dbtns').innerHTML = '<button type="button" class="btn" id="rb-dclr">Löschen</button><button type="button" class="btn primary" id="rb-dweiter">Weiter</button><button type="button" class="btn" id="rb-dx">Abbrechen</button>';
@@ -2840,6 +2841,7 @@
   /* ---- Lohnzettel automatisch lesen (nur mit Zustimmung, nur auf dem Gerät) ---- */
   var lzUi = { step: '', res: null, buf: null, pwOk: null };
   function lzProfil() { if (!data.profil) data.profil = {}; return data.profil; }
+  function miaKopf() { try { return '<div style="width:64px;margin:0 auto">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { return ''; } }
   function lzOpen(step) { lzUi.step = step || (lzProfil().lzLesen === true ? 'datei' : 'erlaubnis'); lzRender(); $('#lz-dlg').hidden = false; }
   function lzClose() { $('#lz-dlg').hidden = true; lzUi.buf = null; lzUi.pwOk = null; lzUi.pwMem = null; lzUi.queue = []; }
   function lzBtn(txt, id, cls) { return '<button type="button" class="btn' + (cls ? ' ' + cls : '') + '" id="' + id + '">' + txt + '</button>'; }
@@ -2869,7 +2871,7 @@
       bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Bezeichnungen eintippen', 'lz-hand') + lzBtn('Schließen', 'lz-cancel');
     } else if (s === 'ergebnis') {
       h.textContent = 'Das habe ich übernommen';
-      b.innerHTML = svg + '<ul class="legende">' + (lzUi.erg || []).filter(function (x) { return x.n && data.abgleich[x.y + '-' + pad(x.m)]; }).map(function (x) { return '<li><span style="flex:1"><strong>' + MON[x.m - 1] + ' ' + x.y + '</strong></span><button type="button" class="btn" data-lzdel="' + x.y + '-' + pad(x.m) + '">Löschen</button></li>'; }).join('') + '</ul>';
+      b.innerHTML = svg + '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte prüfe die Zahlen mit deinem Lohnzettel.</div><ul class="legende">' + (lzUi.erg || []).filter(function (x) { return x.n && data.abgleich[x.y + '-' + pad(x.m)]; }).map(function (x) { return '<li><span style="flex:1"><strong>' + MON[x.m - 1] + ' ' + x.y + '</strong></span><button type="button" class="btn" data-lzdel="' + x.y + '-' + pad(x.m) + '">Löschen</button></li>'; }).join('') + '</ul>';
       bt.innerHTML = lzBtn('Fertig', 'lz-done', 'primary');
     } else if (s === 'fehler') {
       h.textContent = 'Das hat nicht geklappt';
@@ -2920,7 +2922,7 @@
       if (z.nums) { menge = window.StundenLz.zahl(z.nums[it.pos]); if (it.key) { lm['#' + z.norm] = it.pos; lm['@' + z.norm] = z.nums.length; } }
       lm[z.norm] = it.key || '-'; if (it.key) sum[it.key] = (sum[it.key] || 0) + menge;
     });
-    Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; });
+    Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; }); if (n) cur.gelesen = true;
     save(); lzUi.erg.push({ y: mo.y, m: mo.m, n: n });
     return n;
   }
@@ -2930,13 +2932,13 @@
     lzClose();
     if (!e.length) return;
     var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
-    var txt = e.some(function (x) { return x.n; }) ? 'Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.' : 'Nichts übernommen.';
+    var txt = e.some(function (x) { return x.n; }) ? 'Übernommen. Bitte prüfe die Zahlen mit deinem Lohnzettel. Das Ergebnis siehst du unter „Stimmt mein Lohnzettel?“.' : 'Nichts übernommen.';
     toast(txt, 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
   function lzFertig2(e) {
     lzClose(); var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
-    toast('Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.', 7000);
+    toast('Übernommen. Bitte prüfe die Zahlen mit deinem Lohnzettel. Das Ergebnis siehst du unter „Stimmt mein Lohnzettel?“.', 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
   function lzNext() {
