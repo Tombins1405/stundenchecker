@@ -1242,6 +1242,7 @@
     if (!ui.miaPose) miaPose(c.ruhig || !miaNext() ? 'mouth' : '');
   }
   /* ---- Mia spricht (Stimmen des Geräts, nichts wird hochgeladen) ---- */
+  var MIA_KLANG = [['normal', 'Normal', 1, 1], ['hell', 'Heller', 1.35, 1.05], ['tief', 'Tiefer', 0.75, 0.95], ['ruhig', 'Langsam und ruhig', 1, 0.8], ['flott', 'Flott', 1, 1.25]];
   function miaStimmen() {
     if (!('speechSynthesis' in window)) return [];
     var lg = miaLang(), vs = speechSynthesis.getVoices().filter(function (v) { return v.lang.slice(0, 2).toLowerCase() === lg; });
@@ -1251,14 +1252,16 @@
   function miaStimmenFuellen() {
     var sel = $('#mia-stimme'); if (!sel) return; var vs = miaStimmen(), cur = (data.profil && data.profil.mia && data.profil.mia.stimme) || '';
     var sig = vs.map(function (v) { return v.voiceURI; }).join('|') + '#' + cur + '#' + miaLang(); if (sel.dataset.sig === sig) return; sel.dataset.sig = sig;
-    sel.innerHTML = '<option value="">Automatisch</option>' + vs.map(function (v) { return '<option value="' + esc(v.voiceURI) + '"' + (v.voiceURI === cur ? ' selected' : '') + '>' + esc(v.name.replace(/^(Microsoft|Google)\s+/i, '')) + '</option>'; }).join('');
+    sel.innerHTML = '<option value="">Automatisch</option>' + vs.map(function (v, i) { return '<option value="' + esc(v.voiceURI) + '"' + (v.voiceURI === cur ? ' selected' : '') + '>' + (vs.length > 1 ? (i + 1) + ': ' : '') + esc(v.name.replace(/^(Microsoft|Google)\s+/i, '')) + '</option>'; }).join('');
+    var kl = $('#mia-klang'); if (kl && !kl.options.length) kl.innerHTML = MIA_KLANG.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('');
+    if (kl) kl.value = (data.profil && data.profil.mia && data.profil.mia.klang) || 'normal';
     try { sel.dispatchEvent(new Event('sp-refresh')); } catch (e) { }
   }
   function miaSag(text, erzwingen) {
     try {
       var c = miaCfg(); if (!('speechSynthesis' in window) || !text || (!c.spricht && !erzwingen)) return;
       var LG = miaLang(), tl = window.UI_LANGS && window.UI_LANGS[LG]; if (tl && tl[text]) text = tl[text]; speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = (MIA_LANGS[LG] || MIA_LANGS.de).sr;
-      var vs = miaStimmen(), id = (data.profil && data.profil.mia && data.profil.mia.stimme) || '', v = vs.filter(function (x) { return x.voiceURI === id; })[0] || vs[0]; if (v) u.voice = v; speechSynthesis.speak(u);
+      var vs = miaStimmen(), id = (data.profil && data.profil.mia && data.profil.mia.stimme) || '', v = vs.filter(function (x) { return x.voiceURI === id; })[0] || vs[0]; if (v) u.voice = v; var kk = MIA_KLANG.filter(function (x) { return x[0] === ((data.profil && data.profil.mia && data.profil.mia.klang) || 'normal'); })[0] || MIA_KLANG[0]; u.pitch = kk[2]; u.rate = kk[3]; speechSynthesis.speak(u);
     } catch (e) { }
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
@@ -1298,6 +1301,7 @@
     ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { on('#mia-l-' + k, 'change', function () { var l = Object.assign({}, miaLook()); l[k] = this.value; miaSet('look', l); }); });
     on('#mia-spricht', 'change', function () { miaSet('spricht', this.checked); if (this.checked) miaSag('Hallo, so klinge ich.', true); });
     on('#mia-stimme', 'change', function () { miaSet('stimme', this.value); miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-klang', 'change', function () { miaSet('klang', this.value); miaSag('Hallo, so klinge ich.', true); });
     on('#mia-probe', 'click', function () { miaSag('Hallo, so klinge ich.', true); });
     try { if ('speechSynthesis' in window) speechSynthesis.addEventListener('voiceschanged', miaStimmenFuellen); } catch (e) { }
     on('#mia-aktiv', 'change', function () { miaSet('ruhig', !this.checked); });
@@ -1417,7 +1421,7 @@
     on('#mia-send', 'click', send);
     on('#mia-q', 'keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); send(); } });
     on('#mia-read', 'click', function () {
-      try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance($('#mia-ans').textContent); var LG = miaLang(); u.lang = MIA_LANGS[LG].sr; var vs = speechSynthesis.getVoices().filter(function (v) { return v.lang.slice(0, 2).toLowerCase() === LG; }); if (vs.length) u.voice = vs[0]; speechSynthesis.speak(u); } catch (e) {}
+      miaSag($('#mia-ans').textContent, true);
     });
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = $('#mia-mic');
     if (SR && mic) {
