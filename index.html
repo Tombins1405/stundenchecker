@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261101012902">
+<link rel="stylesheet" href="style.css?v=20261101020049">
 </head>
 <body>
 
@@ -133,6 +133,7 @@
     </div>
     <div id="m-grid" class="mgrid" hidden></div>
     <ul id="m-days" class="days"></ul>
+    <button type="button" class="linkbtn" id="m-legende">Legende: Was bedeuten die Symbole?</button>
   </section>
 
   <!-- ============ ERFASSEN ============ -->
@@ -176,10 +177,11 @@
         </details>
 
         <div class="field" id="e-swgroup" hidden>
-          <label for="e-sw" id="e-swlbl">Schlechtwetterstunden</label>
-          <input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0">
-          <button type="button" class="linkbtn" id="e-sw-sugg" style="align-self:flex-start" hidden></button>
-          <small id="e-swhint">Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.</small>
+          <label class="check" for="e-swon"><input type="checkbox" id="e-swon"><span id="e-swonl">Ich wurde früher heimgeschickt</span></label>
+          <div id="e-swbox" hidden>
+            <div class="field"><label for="e-swgrund">Warum?</label><input type="text" id="e-swgrund" maxlength="160" autocomplete="off" placeholder="zum Beispiel Regen, keine Arbeit, um 11:00 heimgeschickt"></div>
+            <div class="field"><label for="e-sw"><span id="e-swlbl">Ausfallstunden</span></label><input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0"><small id="e-swhint">Die App rechnet die Ausfallstunden selbst aus: die normalen Stunden des Tages minus die Stunden, die du gearbeitet hast. Du kannst die Zahl ändern.</small></div>
+          </div>
         </div>
 
         <div class="field" id="e-praemiengroup" hidden>
@@ -304,7 +306,7 @@
   <!-- ============ EINSTELLUNGEN ============ -->
   <section id="v-einstellungen" class="view" aria-label="Einstellungen" hidden>
     <div class="card" id="a-account" hidden>
-      <h3 data-ico="user">Konto</h3>
+      <h3 data-ico="key">Konto</h3>
       <p>Angemeldet als <strong id="a-user"></strong></p>
       <p id="a-sync" class="a-sync"></p>
       <button type="button" class="btn" id="a-logout">Abmelden</button>
@@ -312,7 +314,7 @@
     </div>
 
     <div class="card" id="s-profil">
-      <h3 data-ico="user">Meine Daten</h3>
+      <h3 data-ico="card">Meine Daten</h3>
       <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
       <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
       <div class="field"><label for="s-geb">Geburtsdatum (freiwillig, für einen Geburtstagsgruß)</label><input type="date" id="s-geb"></div>
@@ -327,7 +329,7 @@
         <div class="field"><label for="s-beruf-ab">Ändern ab</label><input type="date" id="s-beruf-ab"></div>
         <button type="button" class="btn" id="s-beruf-go">Beruf oder Arbeitsweise ändern</button>
       </div>
-      <details class="wzfehlt" id="s-kv"><summary>Mein Kollektivvertrag</summary>
+      <details class="wzfehlt" id="s-kv"><summary>Mein Kollektivvertrag<span id="s-kv-cur"></span></summary>
         <div class="field"><label for="kv-name">Wie heißt dein Kollektivvertrag? (steht oft auf dem Lohnzettel)</label><input type="text" id="kv-name" maxlength="120" autocomplete="off"></div>
         <div class="field"><label for="kv-gruppe">Einstufung oder Lohngruppe</label><input type="text" id="kv-gruppe" maxlength="80" autocomplete="off"></div>
         <div class="field"><label for="kv-branche">Branche deines Betriebs</label><input type="text" id="kv-branche" maxlength="80" autocomplete="off"></div>
@@ -337,12 +339,12 @@
     </div>
 
     <div class="card" id="s-form" hidden>
-      <h3 id="s-formtitle">Wertesatz</h3>
+      <h3 id="s-formtitle">Meine Werte</h3>
 
       <details class="field" id="s-adv">
-        <summary>Erweitert: Regelpaket und Startdatum dieses Wertesatzes</summary>
+        <summary>Erweitert: Regelpaket und Startdatum dieser Werte</summary>
         <div class="field">
-          <label for="s-ab">Dieser Wertesatz gilt ab</label>
+          <label for="s-ab">Diese Werte gelten ab</label>
           <input type="date" id="s-ab" data-path="gueltigAb" data-type="text">
         </div>
         <div class="field">
@@ -350,11 +352,11 @@
           <select id="s-paket"></select>
           <div id="s-paketinfo" class="notice"></div>
           <button type="button" class="btn" id="s-paketload">Alle Werte durch die Vorgaben des Pakets ersetzen</button>
-          <small>Nur für den Start oder wenn du die Firma wechselst. Das ersetzt alle Werte dieses Wertesatzes, auch Stundenlohn und Diäten. Für eine Lohnerhöhung brauchst du das nicht, die trägst du bei „Stundenlohn“ ein.</small>
+          <small>Nur für den Start oder wenn du die Firma wechselst. Das ersetzt alle Werte ab diesem Datum, auch Stundenlohn und Diäten. Für eine Lohnerhöhung brauchst du das nicht, die trägst du bei „Stundenlohn“ ein.</small>
         </div>
       </details>
 
-      <h3 data-ico="clock">Stunden</h3>
+      <h3 data-ico="hourglass">Stunden</h3>
       <div class="field">
         <label for="s-umodell">Wie zählt deine Firma Überstunden?</label>
         <select id="s-umodell" data-path="ueberstunden.modell" data-type="text">
@@ -473,7 +475,7 @@
       <h3 id="s-sw-h" data-ico="cloud">Schlechtwetter</h3>
       <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span id="s-sw-t">Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
 
-      <button type="button" class="btn danger" id="s-delete">Diesen Wertesatz löschen</button>
+      <button type="button" class="btn danger" id="s-delete">Diese Werte löschen</button>
     </div>
 
 
@@ -499,13 +501,13 @@
     </div>
 
     <div class="card" id="s-help" hidden>
-      <h3 data-ico="gift">Mithelfen (freiwillig)</h3>
+      <h3 data-ico="chat">Mithelfen (freiwillig)</h3>
       <label class="check"><input type="checkbox" id="c-stat"><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label>
       <label class="check"><input type="checkbox" id="c-mia"><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>
     </div>
 
     <div class="card" id="s-lz">
-      <h3 data-ico="doc">Lohnzettel automatisch lesen</h3>
+      <h3 data-ico="scan">Lohnzettel automatisch lesen</h3>
       <label class="check"><input type="checkbox" id="lz-chk"> Der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen</label>
       <p class="hint">Nur auf deinem Gerät, nichts wird hochgeladen. Du bestätigst jede Zeile.</p>
       <div class="btns"><button type="button" class="btn" id="lz-start">Lohnzettel lesen</button></div>
@@ -515,14 +517,14 @@
 
     <div class="card">
       <details id="s-all">
-        <summary><strong>Alle meine Wertesätze</strong> (für Fortgeschrittene)</summary>
-        <p class="hint">Jeder Wertesatz gilt ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.</p>
-        <div id="s-list" class="chips" role="group" aria-label="Wertesätze"></div>
+        <summary><strong>Alle meine Werte nach Datum</strong> (für Fortgeschrittene)</summary>
+        <p class="hint">Deine Werte gelten immer ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.</p>
+        <div id="s-list" class="chips" role="group" aria-label="Werte nach Datum"></div>
         <div class="grid2" style="align-items:end">
           <div class="field"><label for="s-newdate">Neue Werte gelten ab</label><input type="date" id="s-newdate"></div>
           <button type="button" class="btn" id="s-new">Neue Werte ab diesem Datum anlegen</button>
         </div>
-        <small>Der neue Wertesatz übernimmt alles vom bisherigen. Du änderst nur, was sich geändert hat.</small>
+        <small>Die neuen Werte übernehmen alles vom bisherigen Stand. Du änderst nur, was sich geändert hat.</small>
       </details>
     </div>
 
@@ -563,21 +565,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261101012902";</script>
-<script src="engine.js?v=20261101012902"></script>
+<script>window.APP_VERSION="20261101020049";</script>
+<script src="engine.js?v=20261101020049"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261101012902"></script>
-<script src="timepicker.js?v=20261101012902"></script>
-<script src="datepicker.js?v=20261101012902"></script>
-<script src="selectpicker.js?v=20261101012902"></script>
-<script src="pdf.js?v=20261101012902"></script>
-<script src="lzread.js?v=20261101012902"></script>
-<script src="app.js?v=20261101012902"></script>
-<script src="auth.js?v=20261101012902"></script>
-<script src="sync.js?v=20261101012902"></script>
-<script src="insights.js?v=20261101012902"></script>
+<script src="firebase-config.js?v=20261101020049"></script>
+<script src="timepicker.js?v=20261101020049"></script>
+<script src="datepicker.js?v=20261101020049"></script>
+<script src="selectpicker.js?v=20261101020049"></script>
+<script src="pdf.js?v=20261101020049"></script>
+<script src="lzread.js?v=20261101020049"></script>
+<script src="app.js?v=20261101020049"></script>
+<script src="auth.js?v=20261101020049"></script>
+<script src="sync.js?v=20261101020049"></script>
+<script src="insights.js?v=20261101020049"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

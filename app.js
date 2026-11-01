@@ -175,6 +175,35 @@
     dienst: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'
   };
   function dayIco(k) { return DAY_ICO[k] ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + DAY_ICO[k] + '</svg>' : ''; }
+  var LEGENDE = [
+    ['urlaub', 'Urlaub', 'Bezahlter Urlaubstag.'],
+    ['krank', 'Krankenstand', 'Du warst krank. Der Tag wird als bezahlte Abwesenheit gutgeschrieben.'],
+    ['arzt', 'Frei wegen Arztbesuch', 'Frei für einen Arztbesuch. Ob er bezahlt wird, hängt von deiner Firma ab.'],
+    ['pflege', 'Pflegefreistellung', 'Frei, um ein krankes Kind oder einen Angehörigen zu pflegen.'],
+    ['feiertag', 'Feiertag', 'Gesetzlicher Feiertag.'],
+    ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
+    ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
+    ['frei', 'Frei', 'Ein freier Tag ohne Bezahlung und ohne Stunden.'],
+    ['sw', 'Ausfall / Schlechtwetter', 'Du wurdest heimgeschickt, weil es keine Arbeit gab oder das Wetter schlecht war.'],
+    ['dienst', 'Bereitschaft / Dienst', 'An diesem Tag hattest du Bereitschaft oder Notdienst.']
+  ];
+  function legendeName(k) { var r = LEGENDE.filter(function (x) { return x[0] === k; })[0]; return r ? r[1] : ''; }
+  function legendeOpen() {
+    var dlg = $('#leg-dlg');
+    if (!dlg) {
+      dlg = document.createElement('div'); dlg.id = 'leg-dlg'; dlg.className = 'cropov'; dlg.hidden = true;
+      dlg.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="leg-h"><h3 id="leg-h">Legende: Was bedeuten die Symbole?</h3><ul class="legende" id="leg-list"></ul><div class="btns"><button type="button" class="btn primary" id="leg-x">Schließen</button></div></div>';
+      document.body.appendChild(dlg);
+      dlg.addEventListener('click', function (ev) { if (ev.target === dlg || ev.target.id === 'leg-x') dlg.hidden = true; });
+    }
+    $('#leg-list').innerHTML = LEGENDE.map(function (r) { return '<li class="st-' + r[0] + '"><span class="d-ico">' + dayIco(r[0]) + '</span><span><strong>' + esc(r[1]) + '</strong><br>' + esc(r[2]) + '</span></li>'; }).join('');
+    dlg.hidden = false;
+  }
+  document.addEventListener('click', function (ev) {
+    var ic = ev.target.closest && ev.target.closest('.d-ico[data-ik]');
+    if (ic) { ev.preventDefault(); ev.stopPropagation(); toast(legendeName(ic.dataset.ik) || ''); return; }
+    if (ev.target.closest && ev.target.closest('#m-legende')) { ev.preventDefault(); legendeOpen(); }
+  }, true);
   function renderMonat() {
     $('#storage-warn').hidden = speicherOk;
     $('#onboard').hidden = !(data.settings.length === 0 && Object.keys(data.days).length === 0);
@@ -238,6 +267,7 @@
         if (r.diaetenStd) small.push('Diäten ' + fh(r.diaetenStd) + ' h');
         if (r.swMin) small.push((E.istBau(wAt(r.datum)) ? 'Schlechtwetter ' : 'Ausfall ') + fh(r.swMin / 60) + ' h');
         if (r.extraMin) small.push('+ ' + fh(r.extraMin / 60) + ' h zusätzlich bezahlt');
+        if (d.swOn && d.swGrund) small.push(esc(d.swGrund));
         if (d.notiz) small.push(esc(d.notiz));
         if (d.an && (d.an.t || d.an.w)) chips += '<span class="chip">Notiz</span>';
         if (r.nettoMin > 0) {
@@ -254,7 +284,7 @@
       if (r.feiertag && r.leer === false && r.status === 'arbeit') ik = 'arbeit';
       var cls = 'day' + (rest ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '');
       return '<li><button type="button" class="' + cls + '" data-date="' + r.datum + '">' +
-        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i><span class="d-icos">' + (ik && ik !== 'arbeit' ? '<span class="d-ico">' + dayIco(ik) + '</span>' : '') + (dn ? '<span class="d-ico st-dienst-i">' + dayIco('dienst') + '</span>' : '') + '</span></span>' +
+        '<span class="d-date"><b>' + p.d + '</b><i>' + WD[E.weekday(r.datum)] + '</i><span class="d-icos">' + (ik && ik !== 'arbeit' ? '<span class="d-ico" data-ik="' + ik + '">' + dayIco(ik) + '</span>' : '') + (dn ? '<span class="d-ico st-dienst-i" data-ik="dienst">' + dayIco('dienst') + '</span>' : '') + '</span></span>' +
         '<span class="d-main' + (r.leer ? ' none' : '') + '">' + main +
         ((chips || small.length) ? '<small>' + chips + small.join(' · ') + '</small>' : '') + '</span>' +
         '<span class="d-val">' + val + '</span></button></li>';
@@ -612,7 +642,8 @@
     $('#e-von').value = d.von || '';
     $('#e-bis').value = d.bis || '';
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
-    $('#e-sw').value = d.sw ? d.sw : '';
+    if (d.swOn === undefined && +d.sw > 0) { d.swOn = true; d.swAuto = false; } // alte Einträge: Wert nicht überschreiben
+    $('#e-sw').value = d.sw ? d.sw : ''; $('#e-swon').checked = !!d.swOn; $('#e-swgrund').value = d.swGrund || ''; $('#e-swbox').hidden = !d.swOn;
     $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra; $('#e-extra-box').hidden = !d.extra;
     renderAn();
     var seen = {}, opts = '';
@@ -628,7 +659,7 @@
     $('#e-notiz-list').innerHTML = opts; // Vorschläge aus früheren Einträgen
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
-    var bau = E.istBau(w); $('#e-swlbl').textContent = bau ? 'Schlechtwetterstunden' : 'Ausfallstunden'; $('#e-swhint').textContent = bau ? 'Ausgefallene Stunden wegen Schlechtwetter, in halben Stunden.' : 'Stunden, die ausgefallen sind, weil dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, in halben Stunden. Die Uhrzeit, wann du heimgeschickt wurdest, schreibst du am besten dazu.';
+    var bau = E.istBau(w); $('#e-swlbl').textContent = bau ? 'Schlechtwetterstunden' : 'Ausfallstunden'; $('#e-swonl').textContent = bau ? 'Schlechtwetter an diesem Tag' : 'Ich wurde früher heimgeschickt';
     var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
     var tr1 = E.istTour(w); $('#e-klbl').textContent = tr1 ? 'Touren mit Tätigkeiten (optional)' : 'Kunden / Baustellen mit Tätigkeiten (optional)'; $('#e-addkunde').textContent = tr1 ? '+ Tour hinzufügen' : '+ Kunde / Baustelle hinzufügen';
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
@@ -652,6 +683,11 @@
   function line(label, value, main) { return '<div class="line' + (main ? ' main' : '') + '"><span>' + label + '</span><span>' + value + '</span></div>'; }
   function updatePreview() {
     var d = ui.edDraft, w = wAt(ui.edDate), r = E.calcDay(d, ui.edDate, w), html = '', warn = '';
+    if (d.swOn && d.swAuto !== false && w.schlechtwetter && d.status === 'arbeit') { // Ausfallstunden = normale Tagesstunden minus gearbeitete Stunden
+      var restSw = Math.max(0, Math.floor((Math.round(E.sollFuer(w.ueberstunden, E.weekday(ui.edDate)) * 60) - r.nettoMin) / 30) / 2);
+      if (+d.sw !== restSw) { d.sw = restSw; r = E.calcDay(d, ui.edDate, w); }
+      var swi = $('#e-sw'); if (swi && document.activeElement !== swi) swi.value = d.sw || '';
+    }
     $('#e-diaeten').placeholder = 'Vorschlag';
     (function () {
       var kh = '', kz = E.kundenZeiten(d, w);
@@ -664,13 +700,6 @@
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
       $('#e-kz').innerHTML = d.status === 'arbeit' ? kh : '';
-    })();
-    (function () {
-      var b = $('#e-sw-sugg'), rest = 0;
-      if (b && w.schlechtwetter && d.status === 'arbeit' && d.von && d.bis && !(+d.sw > 0) && r.nettoMin > 0) {
-        rest = Math.floor((Math.round(E.sollFuer(w.ueberstunden, E.weekday(ui.edDate)) * 60) - r.nettoMin) / 30) / 2;
-      }
-      b.hidden = !(rest >= 0.5); if (rest >= 0.5) { b.textContent = 'Rest des Arbeitstags: ' + String(rest).replace('.', ',') + ' h (übernehmen)'; b.dataset.v = rest; }
     })();
     var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
     sg.hidden = !te; if (te) { sg.textContent = 'Meistens bis ' + te + ' (übernehmen)'; sg.dataset.t = te; }
@@ -776,10 +805,10 @@
       if (!d.von && !(+d.sw > 0)) { toast(data.days[ui.edDate] ? 'Beginn fehlt. Soll der Tag leer sein? Dann tippe unten auf „Tag löschen“.' : 'Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
     }
     var out = E.clone(d);
-    out.sw = +out.sw || 0;
+    out.sw = out.swOn ? (+out.sw || 0) : 0; if (!out.swOn) { delete out.swOn; delete out.swGrund; delete out.swAuto; }
     out.diaeten = (out.diaeten === null || out.diaeten === '' || isNaN(+out.diaeten)) ? null : +out.diaeten;
     out.pausen = (out.pausen || []).filter(function (p) { return p.von && p.bis; });
-    if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; out.notiz = ''; out.spaeter = false; }
+    if (st !== 'arbeit') { out.von = ''; out.bis = ''; out.pausen = []; out.kunden = []; out.diaeten = null; out.sw = 0; delete out.swOn; delete out.swGrund; delete out.swAuto; out.notiz = ''; out.spaeter = false; }
     out.kunden = (out.kunden || []).map(function (k) { return { name: (k.name || '').trim(), taet: (k.taet || []).map(function (t) { return { tat: (t.tat || '').trim(), von: t.von || '', bis: t.bis || '' }; }).filter(function (t) { return t.tat || t.von || t.bis; }) }; }).filter(function (k) { return k.name || k.taet.length; });
     out.notiz = kundenNamen(out).join(', ');
     anFinal(out, data.days[ui.edDate]);
@@ -1204,7 +1233,7 @@
       { v: E1, sel: '#s-lgbox', t: 'Die Lohngruppe laut Kollektivvertrag. Wähle sie, wenn du sie kennst.' },
       { v: E1, sel: '#s-monat', up: f, t: 'Steht auf deinem Lohnzettel ein fester Monatslohn? Dann trage ihn hier ein. Wenn nicht, lass das Feld leer.' },
       { v: E1, sel: '#s-monatstd', up: f, t: 'Durch wie viele Stunden wird dein Monatslohn geteilt? Meistens steht es auf dem Lohnzettel, oft 173.' },
-      { v: E1, sel: '#s-lohn', to: '#s-lgtake', up: f, t: 'Dein Stundenlohn steht auf dem Lohnzettel bei „Lohn“. Kennst du deine Lohngruppe, kannst du darunter den Mindestlohn übernehmen. Eine Erhöhung trägst du danach „ab Datum“ ein.' },
+      { v: E1, sel: '#s-lohn', to: '#s-lgtake', up: f, t: 'Dein Stundenlohn steht auf dem Lohnzettel bei „Lohn“. Kennst du deine Lohngruppe, kannst du darunter den Schalter für den Mindestlohn einschalten. Eine Erhöhung trägst du danach „ab Datum“ ein.' },
       { v: E1, sel: '#s-woche', up: f, t: 'Wie viele Stunden pro Woche sind bei dir normale Arbeitszeit? Zum Beispiel 40, im Bau 39.' },
       { v: E1, sel: '#s-tagsollfield', t: 'Stunden pro Arbeitstag. Leer lassen, dann rechnet die App Wochenstunden geteilt durch deine Arbeitstage.' },
       { v: E1, sel: '#s-grenzefield', t: 'Ab wie vielen Stunden pro Tag zählt jede weitere als Überstunde? Zum Beispiel 9.' },
@@ -1479,12 +1508,21 @@
       return '<button type="button" class="pick" data-key="' + e.gueltigAb + '" aria-pressed="' + (e.gueltigAb === ui.setKey) + '">ab ' + fmtDate(e.gueltigAb) + ' · ' + esc((E.BERUFE[e.beruf] && E.BERUFE[e.beruf].name) || (PAKET_KURZ[e.paket] || (E.PAKETE[e.paket] && E.PAKETE[e.paket].name) || '')) + (e === cur ? ' · aktuell' : '') + '</button>';
     }).join('') : '<p class="hint">Du hast noch keine eigenen Werte. Bis dahin rechnet die App mit den Werten für Güterbeförderung.</p>';
     if (!$('#s-newdate').value) { var n = new Date(); $('#s-newdate').value = E.iso(n.getFullYear(), n.getMonth() + 1, 1); }
-    $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Ersten Wertesatz anlegen';
+    $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Erste Werte anlegen';
 
     var cwb = cur ? E.berufName(cur) : null;
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
-    var kvp = (data.profil && data.profil.kv) || {}; [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || ''; });
+    var kvp = (data.profil && data.profil.kv) || {}, kvv = {};
+    if (cur) { // schon gewählte Angaben gleich anzeigen
+      var lgx = E.LOHNGRUPPEN[cur.paket], gx = lgx && lgx.gruppen.filter(function (x) { return x.id === cur.lg; })[0];
+      kvv.name = (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || '';
+      kvv.gruppe = cur.einstufung || (gx ? gx.name + (lgx.stufen && cur.ls != null && cur.ls !== '' ? ', ' + lgx.stufen[+cur.ls] : '') : '');
+      kvv.branche = cwb || PAKET_KURZ[cur.paket] || '';
+      kvv.wst = String(E.wochenStd(cur.ueberstunden) || '');
+    }
+    [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || kvv[q[0]] || ''; });
+    var kvc = $('#s-kv-cur'); if (kvc) kvc.textContent = kvv.name ? ': ' + (PAKET_KURZ[cur.paket] || kvv.name) : '';
     $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
     [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
@@ -1499,7 +1537,7 @@
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
     $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
-    $('#s-formtitle').textContent = 'Wertesatz ab ' + fmtDate(en.gueltigAb);
+    $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
       if (inp.type === 'checkbox') inp.checked = !!v;
@@ -1569,7 +1607,7 @@
       target = base ? E.clone(base) : E.neuerWertesatz('gueter', date);
       target.gueltigAb = date; delete target.test; data.settings.push(target);
     }
-    setPath(target, path, val); delete target.test;
+    setPath(target, path, val); delete target.test; if (path === 'stundenlohn') target.lgAuto = false;
     // spätere Wertesätze mit dem alten Wert übernehmen den neuen Betrag gleich mit
     sortedSettings().forEach(function (e) { if (e.gueltigAb > date && getPath(e, path) === getPath(E.wertAt(sortedSettings(), E.addDays(date, -1)) || {}, path)) setPath(e, path, val); });
     ui.setKey = date; save(); renderSettings(); toast('Gespeichert: ab ' + fmtDate(date) + ' gilt ' + eur.format(val) + '.');
@@ -1627,7 +1665,10 @@
     var i = lg.stufen ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null;
     delete en._lsVor;
     box.innerHTML = h; box.dataset.val = val != null ? val : '';
-    var tk = $('#s-lgtake'); if (tk) tk.innerHTML = val != null ? '<div class="btns"><button type="button" class="btn primary" id="s-lg-take">Mindestlohn übernehmen: ' + esc(eur.format(val)) + '</button></div>' : '';
+    var on = val != null && (en.lgAuto === true || (en.lgAuto === undefined && en.stundenlohn != null && Math.abs(en.stundenlohn - val) < 0.005));
+    if (on && en.stundenlohn !== val) { en.stundenlohn = val; en.lgAuto = true; save(); }
+    var tk = $('#s-lgtake'); if (tk) tk.innerHTML = val != null ? '<label class="check" for="s-lg-take"><input type="checkbox" id="s-lg-take"' + (on ? ' checked' : '') + '><span>Mindestlohn laut Kollektivvertrag verwenden: ' + esc(eur.format(val)) + '</span></label>' : '';
+    var sl = $('#s-lohn'); if (sl) { sl.disabled = on; if (on) sl.value = val; }
   }
   function renderStufen(en) {
     $('#s-stufen').innerHTML = (en.diaeten.stufen || []).map(function (s, i) {
@@ -1646,7 +1687,7 @@
     else if (t === 'num') { v = parseFloat(String(inp.value).replace(',', '.')); if (isNaN(v)) v = 0; }
     else if (t === 'numnull') { v = String(inp.value).trim() === '' ? null : parseFloat(String(inp.value).replace(',', '.')); if (v !== null && isNaN(v)) v = null; }
     else v = inp.value;
-    setPath(en, inp.dataset.path, v);
+    setPath(en, inp.dataset.path, v); if (inp.dataset.path === 'stundenlohn' || inp.dataset.path === 'monatslohn') en.lgAuto = false;
     if (inp.dataset.path === 'monatslohn' || inp.dataset.path === 'monatsStd') {
       var ms = en.monatsStd > 0 ? en.monatsStd : 173;
       if (en.monatslohn > 0) { en.stundenlohn = Math.round(en.monatslohn / ms * 100) / 100; var sl = $('#s-lohn'); if (sl) sl.value = en.stundenlohn; }
@@ -1659,7 +1700,7 @@
     var en = curEntry(); if (!en) return;
     var v = inp.value;
     if (!validISO(v)) { inp.value = en.gueltigAb; return; }
-    if (data.settings.some(function (e) { return e !== en && e.gueltigAb === v; })) { toast('Für dieses Datum gibt es schon einen Wertesatz.'); inp.value = en.gueltigAb; return; }
+    if (data.settings.some(function (e) { return e !== en && e.gueltigAb === v; })) { toast('Für dieses Datum gibt es schon Werte.'); inp.value = en.gueltigAb; return; }
     en.gueltigAb = v; ui.setKey = v; delete en.test; save(); renderSettings();
   }
 
@@ -1733,7 +1774,7 @@
     }
     if (t.id === 's-lg-take') {
       var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
-      if (enx && !isNaN(vx)) { enx.stundenlohn = vx; delete enx.test; save(); renderSettings(); toast('Stundenlohn übernommen.'); }
+      if (enx && !isNaN(vx)) { if (t.checked) { enx.stundenlohn = vx; enx.lgAuto = true; } else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
       return;
     }
     if (t.classList.contains('tab')) {
@@ -1759,7 +1800,6 @@
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
       case 'od-go': if (ui.openDay) openEditor(ui.openDay, 'erfassen'); return;
-      case 'e-sw-sugg': ui.edDraft.sw = parseFloat(t.dataset.v) || 0; $('#e-sw').value = ui.edDraft.sw; anChips(); updatePreview(); return;
       case 'e-bis-sugg': ui.edDraft.bis = t.dataset.t; $('#e-bis').value = t.dataset.t; updatePreview(); return;
       case 'e-von-now': case 'e-bis-now': {
         var nw = new Date(), hhmm = String(nw.getHours()).padStart(2, '0') + ':' + String(nw.getMinutes()).padStart(2, '0'), fld = t.id === 'e-von-now' ? 'von' : 'bis';
@@ -1781,7 +1821,7 @@
       case 's-new': {
         var date = $('#s-newdate').value;
         if (!validISO(date)) { toast('Bitte ein Datum wählen.'); return; }
-        if (data.settings.some(function (e) { return e.gueltigAb === date; })) { toast('Für dieses Datum gibt es schon einen Wertesatz.'); return; }
+        if (data.settings.some(function (e) { return e.gueltigAb === date; })) { toast('Für dieses Datum gibt es schon Werte.'); return; }
         var base = curEntry(), ne = base ? E.clone(base) : E.neuerWertesatz('gueter', date);
         ne.gueltigAb = date; delete ne.test; data.settings.push(ne); ui.setKey = date; save(); renderSettings(); toast('Neue Werte ab ' + fmtDate(date) + ' angelegt. Ändere jetzt, was sich geändert hat.'); var fm = $('#s-form'); if (fm && fm.scrollIntoView) fm.scrollIntoView({ behavior: 'smooth', block: 'start' }); return;
       }
@@ -1792,7 +1832,7 @@
       }); return;
       case 's-addstufe': { var e2 = curEntry(); if (!e2) return; e2.diaeten.stufen.push({ ab: 0, satz: 0 }); save(); renderStufen(e2); return; }
       case 's-delete': arm(t, 'Wirklich löschen?', function () {
-        data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ui.setKey; }); ui.setKey = null; save(); renderSettings(); toast('Wertesatz gelöscht.');
+        data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ui.setKey; }); ui.setKey = null; save(); renderSettings(); toast('Werte gelöscht.');
       }); return;
       case 'b-save': ins('sicherung'); {
         var txt = JSON.stringify(data), dd = new Date(), fn = 'stunden-checker-sicherung-' + E.iso(dd.getFullYear(), dd.getMonth() + 1, dd.getDate()) + '.json';
@@ -1885,7 +1925,9 @@
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
       case 'e-extra': { var xv = parseFloat(String(t.value).replace(',', '.')); if (xv > 0) ui.edDraft.extra = xv; else delete ui.edDraft.extra; updatePreview(); return; }
-      case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; anChips(); updatePreview(); return;
+      case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; ui.edDraft.swAuto = false; anChips(); updatePreview(); return;
+      case 'e-swon': ui.edDraft.swOn = t.checked; if (t.checked) ui.edDraft.swAuto = true; else { ui.edDraft.sw = 0; $('#e-sw').value = ''; } $('#e-swbox').hidden = !t.checked; anChips(); updatePreview(); return;
+      case 'e-swgrund': ui.edDraft.swGrund = t.value; return;
       case 'e-an': anSet('t', t.value); return;
       case 'e-spaeter': ui.edDraft.spaeter = t.checked; return;
     }
@@ -1901,6 +1943,11 @@
   document.addEventListener('input', function (ev) { if (ev.target.id === 'e-date') return; onInput(ev); });
   document.addEventListener('change', function (ev) {
     var t = ev.target;
+    if (t.id === 's-lg-take') {
+      var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
+      if (enx && !isNaN(vx)) { if (t.checked) { enx.stundenlohn = vx; enx.lgAuto = true; } else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
+      return;
+    }
     if (t.id === 's-lg' || t.id === 's-ls') {
       var en0 = curEntry(); if (en0) { if (t.id === 's-lg') { en0.lg = t.value || null; en0.ls = null; } else en0.ls = t.value === '' ? null : +t.value; delete en0.test; save(); renderLgBox(en0); } return;
     }
@@ -2074,11 +2121,23 @@
     document.body.appendChild(dlg);
     function close() { dlg.hidden = true; }
     function nearLabel(el) { var f = el.closest('.field, .abrow'); return f ? f.querySelector('label') : null; }
+    function infoTarget(sm) {
+      if (sm.matches('.field > small, .abrow > small.abhint')) return nearLabel(sm);
+      var isHint = sm.tagName === 'SMALL' || (sm.tagName === 'P' && sm.classList.contains('hint') && !sm.id);
+      if (!isHint) return null;
+      var pv = sm.previousElementSibling;
+      if (pv && pv.tagName === 'H3') return pv;
+      if (pv && pv.matches('label.check')) return pv;
+      var par = sm.parentElement, pp = par && par.previousElementSibling;
+      if (par && par.id && /box$/.test(par.id) && pp && pp.matches('label.check')) return pp;
+      return null;
+    }
     function infoify() {
-      var list = document.querySelectorAll('.field > small:not([data-ifi]), .abrow > small.abhint:not([data-ifi])');
+      var list = document.querySelectorAll('.field > small, .abrow > small.abhint, .card > p.hint:not([id]), .card small');
       for (var i = 0; i < list.length; i++) {
-        var sm = list[i], lb = nearLabel(sm);
+        var sm = list[i], lb = infoTarget(sm);
         if (!lb || !String(sm.textContent).trim()) continue;
+        if (sm.getAttribute('data-ifi') && [].some.call(lb.querySelectorAll('button.info'), function (x) { return x._sm === sm; })) continue;
         sm.setAttribute('data-ifi', '1'); sm.hidden = true;
         var b = document.createElement('button'); b.type = 'button'; b.className = 'info'; b.setAttribute('aria-label', 'Info'); b._sm = sm;
         lb.appendChild(b);

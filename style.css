@@ -600,3 +600,43 @@ button.info::before { content: ""; position: absolute; inset: 4px; background: v
 .check:not(.wdays .check) input[type="checkbox"]:checked::after { content: "✓"; right: auto; left: 9px; }
 .check:not(.wdays .check) input[type="checkbox"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .wdays .check input:checked { accent-color: #1e8e3e; }
+
+/* Symbole der Überschriften: jedes Symbol nur einmal, jedes in einer eigenen Farbe */
+h3[data-ico="key"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Ccircle%20cx=%228%22%20cy=%2215%22%20r=%224%22/%3E%3Cpath%20d=%22M11%2012l9-9M16%207l3%203M14%209l2%202%22/%3E%3C/svg%3E"); }
+h3[data-ico="card"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Crect%20x=%223%22%20y=%225%22%20width=%2218%22%20height=%2214%22%20rx=%222%22/%3E%3Ccircle%20cx=%229%22%20cy=%2211%22%20r=%222%22/%3E%3Cpath%20d=%22M6%2016c.5-2%205.500-2%206%200M14%2010h4M14%2014h4%22/%3E%3C/svg%3E"); }
+h3[data-ico="hourglass"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M6%203h12M6%2021h12M7%203c0%205%205%206%205%209s-5%204-5%209M17%203c0%205-5%206-5%209s5%204%205%209%22/%3E%3C/svg%3E"); }
+h3[data-ico="chat"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M4%205h16v11H9l-5%204z%22/%3E%3Cpath%20d=%22M8%209h8M8%2012h5%22/%3E%3C/svg%3E"); }
+h3[data-ico="scan"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M14%203H6v18h12V7zM14%203v4h4%22/%3E%3Ccircle%20cx=%2211%22%20cy=%2214%22%20r=%222.500%22/%3E%3Cpath%20d=%22M13%2016l2.500%202.500%22/%3E%3C/svg%3E"); }
+h3[data-ico="check"]::before { background: #1e8e3e; }
+h3[data-ico="user"]::before { background: #1565c0; }
+h3[data-ico="sun"]::before { background: #f59f00; }
+h3[data-ico="swap"]::before { background: #00897b; }
+h3[data-ico="clock"]::before { background: #8e24aa; }
+h3[data-ico="key"]::before { background: #546e7a; }
+h3[data-ico="card"]::before { background: #3949ab; }
+h3[data-ico="bag"]::before { background: #795548; }
+h3[data-ico="hourglass"]::before { background: #d81b60; }
+h3[data-ico="star"]::before { background: #f9a825; }
+h3[data-ico="gift"]::before { background: #e53935; }
+h3[data-ico="bell"]::before { background: #ef6c00; }
+h3[data-ico="coin"]::before { background: #9e9d24; }
+h3[data-ico="list"]::before { background: #0097a7; }
+h3[data-ico="home"]::before { background: #558b2f; }
+h3[data-ico="cloud"]::before { background: #0288d1; }
+h3[data-ico="grid"]::before { background: #7e57c2; }
+h3[data-ico="doc"]::before { background: #6d4c41; }
+h3[data-ico="chat"]::before { background: #26a69a; }
+h3[data-ico="scan"]::before { background: #00838f; }
+.st-arzt .d-ico { background: #ede7f6; color: #5e35b1; }
+.day.st-arzt { border-left-color: #5e35b1; }
+.st-frei .d-ico { background: #e8eaf6; color: #3949ab; }
+.day.st-frei { border-left-color: #3949ab; }
+.st-sw .d-ico { background: #e1f1fb; color: #0277bd; }
+.day.st-sw { border-left-color: #0288d1; }
+.st-betriebsurlaub .d-ico { background: #efebe9; color: #5d4037; }
+.mg-c.st-arzt { }
+
+.legende { list-style: none; margin: 8px 0 12px; padding: 0; display: grid; gap: 10px; max-height: 60vh; overflow: auto; }
+.legende li { display: flex; gap: 12px; align-items: flex-start; font-size: .95rem; }
+.legende .d-ico { flex: none; }
+#m-legende { margin: 14px 0 6px; }
