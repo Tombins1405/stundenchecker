@@ -2349,7 +2349,6 @@
         var tr = zl.map(function (z) { return [z.von, z.bis, z.k, z.t]; }); while (tr.length < 8) tr.push(['', '', '', '']);
         b.push({ t: 'table', fs: 11, cols: [{ w: 1 }, { w: 1 }, { w: 4 }, { w: 4 }], head: ['Uhrzeit von', 'Uhrzeit bis', 'Kunde, Baustelle', 'Tätigkeit'], rows: tr });
         b.push({ t: 'table', fs: 11, cols: [{ w: 2 }, { w: 4 }, { w: 4 }], head: ['Gesamtstd.', 'Unterschrift Fahrer', 'Unterschrift Büro'], rows: [{ cells: [r.nettoMin ? fh(r.nettoMin / 60) : '', ' ', ' '], minH: 56, img: sigImg(), col: 1 }] });
-        if (d.notiz) b.push({ t: 'p', text: 'Anmerkung: ' + d.notiz });
         return { bytes: window.StundenPdf.build(b, { landscape: true }), name: name + '.pdf', typ: typ };
       } else if (typ === 'woche') {
         var wd = E.weekday(ds), mo = addDays(ds, -((wd + 6) % 7)), so = addDays(mo, 6); name = 'Wochenbericht-' + mo;

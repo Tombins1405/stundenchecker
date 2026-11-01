@@ -36,7 +36,8 @@
           need(h); if (shade) ops.push('0.92 g ' + M + ' ' + (y - h).toFixed(1) + ' ' + CW + ' ' + h + ' re f 0 g');
           var x = M; cl.forEach(function (ls, i) { ls.forEach(function (l, k) { text(x + 3, y - 10 - k * lh, l, fs, bold, cols[i].al, cols[i].w - 6); }); x += cols[i].w; });
           if (ex && ex.img) { var xi = M; for (var q = 0; q < ex.col; q++) xi += cols[q].w; drawImg(ex.img, xi + 6, y - h + 4, cols[ex.col].w - 12, h - 8); }
-          y -= h; line(M, y, PW - M, y, 0.8);
+          var gx = M; line(gx, y, gx, y - h, 0.5); cols.forEach(function (c) { gx += c.w; line(gx, y, gx, y - h, 0.5); }); // Raster: senkrechte Linien
+          y -= h; line(M, y, PW - M, y, 0.5);
         }
         need(24); line(M, y, PW - M, y, 0.3); row(b.head, true, true);
         b.rows.forEach(function (r) { row(r.cells || r, !!r.bold, false, r.cells ? r : null); });
