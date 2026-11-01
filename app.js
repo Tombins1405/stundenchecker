@@ -864,7 +864,7 @@
     'gastro:service': ['schuerze', 'tablett'], 'gastro:kueche': ['kochhaube', 'schuerze'], 'gastro:chef': ['kochhaube', 'schuerze'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
     'handel:verkauf': ['schuerze'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
-  function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, skip: m.skip || {} }; }
+  function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, spricht: m.spricht === true, skip: m.skip || {} }; }
   function miaSvg(f, outfit, pose) {
     outfit = outfit || []; var w = f !== 'm', has = function (x) { return outfit.indexOf(x) >= 0; };
     var sh0 = w ? '#f58aa5' : '#4fc0cf', sh1 = w ? '#c4476a' : '#237a89';
@@ -1011,7 +1011,29 @@
     var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (x) { return '<button type="button" class="miaopt' + (c.figur === x ? ' on' : '') + '" data-mia="' + x + '" aria-label="' + (x === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(x, miaFor(), '') + '<span>' + (x === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
     var n = $('#mia-name'); if (n && document.activeElement !== n) n.value = (data.profil && data.profil.mia && data.profil.mia.name) || ''; if (n) n.placeholder = c.figur === 'm' ? 'Milo' : 'Mia';
     var ak = $('#mia-aktiv'); if (ak) ak.checked = !c.ruhig;
+    var sp = $('#mia-spricht'); if (sp) { sp.checked = !!c.spricht; $('#mia-vwrap').hidden = !c.spricht || !('speechSynthesis' in window); }
+    miaStimmenFuellen();
     if (!ui.miaPose) miaPose(c.ruhig || !miaNext() ? 'mouth' : '');
+  }
+  /* ---- Mia spricht (Stimmen des Geräts, nichts wird hochgeladen) ---- */
+  function miaStimmen() {
+    if (!('speechSynthesis' in window)) return [];
+    var lg = miaLang(), vs = speechSynthesis.getVoices().filter(function (v) { return v.lang.slice(0, 2).toLowerCase() === lg; });
+    function pkt(v) { return /natural|neural|enhanced|premium|online/i.test(v.name) ? 0 : (v.localService ? 2 : 1); }
+    return vs.sort(function (a, b) { return pkt(a) - pkt(b); });
+  }
+  function miaStimmenFuellen() {
+    var sel = $('#mia-stimme'); if (!sel) return; var vs = miaStimmen(), cur = (data.profil && data.profil.mia && data.profil.mia.stimme) || '';
+    var sig = vs.map(function (v) { return v.voiceURI; }).join('|') + '#' + cur + '#' + miaLang(); if (sel.dataset.sig === sig) return; sel.dataset.sig = sig;
+    sel.innerHTML = '<option value="">Automatisch</option>' + vs.map(function (v) { return '<option value="' + esc(v.voiceURI) + '"' + (v.voiceURI === cur ? ' selected' : '') + '>' + esc(v.name.replace(/^(Microsoft|Google)\s+/i, '')) + '</option>'; }).join('');
+    try { sel.dispatchEvent(new Event('sp-refresh')); } catch (e) { }
+  }
+  function miaSag(text, erzwingen) {
+    try {
+      var c = miaCfg(); if (!('speechSynthesis' in window) || !text || (!c.spricht && !erzwingen)) return;
+      var LG = miaLang(), tl = window.UI_LANGS && window.UI_LANGS[LG]; if (tl && tl[text]) text = tl[text]; speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = (MIA_LANGS[LG] || MIA_LANGS.de).sr;
+      var vs = miaStimmen(), id = (data.profil && data.profil.mia && data.profil.mia.stimme) || '', v = vs.filter(function (x) { return x.voiceURI === id; })[0] || vs[0]; if (v) u.voice = v; speechSynthesis.speak(u);
+    } catch (e) { }
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
@@ -1019,6 +1041,7 @@
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
+    miaSag($('#mia-text').textContent);
   }
   function miaClose(pose) {
     $('#mia-bubble').hidden = true; ui.miaPose = pose || null; miaPose(pose || 'mouth');
@@ -1045,6 +1068,10 @@
     on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
     on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
     on('#mia-name', 'input', function () { miaSet('name', this.value.slice(0, 20)); });
+    on('#mia-spricht', 'change', function () { miaSet('spricht', this.checked); if (this.checked) miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-stimme', 'change', function () { miaSet('stimme', this.value); miaSag('Hallo, so klinge ich.', true); });
+    on('#mia-probe', 'click', function () { miaSag('Hallo, so klinge ich.', true); });
+    try { if ('speechSynthesis' in window) speechSynthesis.addEventListener('voiceschanged', miaStimmenFuellen); } catch (e) { }
     on('#mia-aktiv', 'change', function () { miaSet('ruhig', !this.checked); });
   })();
 
