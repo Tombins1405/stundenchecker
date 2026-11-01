@@ -685,3 +685,8 @@ h3[data-ico="flag"]::before { background: #b0124f; }
 .abx-top, .abx-val { display: flex; gap: 8px; }
 .abx-top input, .abx-val input { flex: 1; min-width: 0; }
 .abx-val select { width: 80px; }
+
+.festrow { flex-wrap: wrap; }
+.festdates { flex: 1 1 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.festdates label { display: grid; gap: 4px; font-size: 14px; }
+.festdates { grid-column: 1 / -1; }

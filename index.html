@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261101190137">
+<link rel="stylesheet" href="style.css?v=20261101195658">
 </head>
 <body>
 
@@ -245,10 +245,10 @@
   <section id="v-konten" class="view" aria-label="Konto" hidden>
     <div class="card">
       <h3 data-ico="user">Mein Profil</h3>
+      <div class="field"><label for="s-foto">Profilbild (optional, bleibt nur auf diesem Handy)</label><div class="btns"><label class="btn" for="s-kamera">Foto aufnehmen</label><label class="btn" for="s-foto">Aus Galerie wählen</label></div><input type="file" id="s-kamera" accept="image/*" capture="user" hidden><input type="file" id="s-foto" accept="image/*" hidden><div id="s-fotobox"></div></div>
       <p class="hint">Aus dem Eintrittsdatum rechnet die App deinen Urlaubsanspruch aus und prüft ihn gegen den Lohnzettel.</p>
       <div class="grid2">
         <div class="field" id="k-blwrap" hidden><label for="k-bl">Bundesland (für die Feiertage)</label><select id="k-bl"></select></div>
-        <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"><small>Das Eintrittsdatum braucht die App für den Urlaub und für die Stufe in deinem Kollektivvertrag.</small></div>
         <div class="field"><label for="k-lztag">Lohnzettel kommt meist um den … des Monats</label><input type="number" id="k-lztag" inputmode="numeric" min="1" max="31" step="1" placeholder="10"><small>Mia fragt erst ab diesem Tag nach deinem Lohnzettel.</small></div>
         <div class="field"><label for="k-urlaubjahr">Urlaubstage pro Jahr</label><input type="number" id="k-urlaubjahr" inputmode="decimal" step="0.5" min="0" placeholder="25"><small>Wie viele Urlaubstage du pro Jahr hast, steht in deinem Dienstvertrag. Oft sind es 25 Arbeitstage.</small></div>
       </div>
@@ -344,8 +344,8 @@
       <div class="field"><label for="s-vorname">Vorname</label><input type="text" id="s-vorname" maxlength="40" autocomplete="given-name"></div>
       <div class="field"><label for="s-nachname">Nachname</label><input type="text" id="s-nachname" maxlength="60" autocomplete="family-name"></div>
       <div class="field"><label for="s-geb">Geburtsdatum (optional)</label><input type="date" id="s-geb"></div>
-      <div class="field"><label for="s-foto">Profilbild (freiwillig, bleibt nur auf diesem Handy)</label><div class="btns"><label class="btn" for="s-kamera">Foto aufnehmen</label><label class="btn" for="s-foto">Aus Galerie wählen</label></div><input type="file" id="s-kamera" accept="image/*" capture="user" hidden><input type="file" id="s-foto" accept="image/*" hidden><div id="s-fotobox"></div></div>
       <div class="field"><label for="s-firma">Meine Firma (steht auf den Berichten)</label><input type="text" id="s-firma" maxlength="80" autocomplete="organization" placeholder="zum Beispiel Musterfirma GmbH"></div>
+      <div class="field"><label for="k-eintritt">Eintritt in die Firma</label><input type="date" id="k-eintritt"><small>Das Eintrittsdatum braucht die App für den Urlaub und für die Stufe in deinem Kollektivvertrag.</small></div>
     </div>
 
     <div class="card" id="s-beruf">
@@ -513,7 +513,7 @@
 
     <div class="card" id="s-berichte">
       <h3 data-ico="doc">Berichte an die Firma</h3>
-      <div class="field"><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
+      <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
       <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
@@ -601,21 +601,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261101190137";</script>
-<script src="engine.js?v=20261101190137"></script>
+<script>window.APP_VERSION="20261101195658";</script>
+<script src="engine.js?v=20261101195658"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261101190137"></script>
-<script src="timepicker.js?v=20261101190137"></script>
-<script src="datepicker.js?v=20261101190137"></script>
-<script src="selectpicker.js?v=20261101190137"></script>
-<script src="pdf.js?v=20261101190137"></script>
-<script src="lzread.js?v=20261101190137"></script>
-<script src="app.js?v=20261101190137"></script>
-<script src="auth.js?v=20261101190137"></script>
-<script src="sync.js?v=20261101190137"></script>
-<script src="insights.js?v=20261101190137"></script>
+<script src="firebase-config.js?v=20261101195658"></script>
+<script src="timepicker.js?v=20261101195658"></script>
+<script src="datepicker.js?v=20261101195658"></script>
+<script src="selectpicker.js?v=20261101195658"></script>
+<script src="pdf.js?v=20261101195658"></script>
+<script src="lzread.js?v=20261101195658"></script>
+<script src="app.js?v=20261101195658"></script>
+<script src="auth.js?v=20261101195658"></script>
+<script src="sync.js?v=20261101195658"></script>
+<script src="insights.js?v=20261101195658"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

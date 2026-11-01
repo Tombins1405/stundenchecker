@@ -860,7 +860,7 @@
     while (d < bis) {
       if (!data.days[d]) {
         var wd = E.weekday(d), typ = E.dayTyp(d);
-        fl.forEach(function (r) { if (!data.days[d] && +r.wd === wd && typ !== 'sonntag' && typ !== 'feiertag' && E.STATUS[r.art]) { data.days[d] = { status: r.art, fest: true }; n++; } });
+        fl.forEach(function (r) { if (r.von && d < r.von) return; if (r.bis && d > r.bis) return; if (!data.days[d] && +r.wd === wd && typ !== 'sonntag' && typ !== 'feiertag' && E.STATUS[r.art]) { data.days[d] = { status: r.art, fest: true }; n++; } });
       }
       d = E.addDays(d, 1);
     }
@@ -952,12 +952,13 @@
     el.innerHTML = festListe().map(function (r, i) {
       return '<div class="festrow"><select data-fi="' + i + '" data-f="wd" aria-label="Wochentag">' + FEST_TAGE.map(function (x) { return '<option value="' + x[0] + '"' + (+r.wd === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
         '<select data-fi="' + i + '" data-f="art" aria-label="Art des Tages">' + artenListe().map(function (x) { return '<option value="' + x[0] + '"' + (r.art === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
-        '<button type="button" class="btn" data-fx="' + i + '" aria-label="Entfernen">×</button></div>';
+        '<button type="button" class="btn" data-fx="' + i + '" aria-label="Entfernen">×</button>' +
+        '<div class="festdates"><label>Gilt von (optional)<input type="date" data-fi="' + i + '" data-f="von" value="' + esc(r.von || '') + '"></label><label>Gilt bis (optional)<input type="date" data-fi="' + i + '" data-f="bis" value="' + esc(r.bis || '') + '"></label></div></div>';
     }).join('');
   }
   (function () {
     var el = $('#fest-list'); if (!el) return;
-    el.addEventListener('change', function (ev) { var s = ev.target.closest('select[data-fi]'); if (!s) return; var r = festListe()[+s.dataset.fi]; if (!r) return; r[s.dataset.f] = s.dataset.f === 'wd' ? +s.value : s.value; save(); });
+    el.addEventListener('change', function (ev) { var s = ev.target.closest('[data-fi]'); if (!s) return; var r = festListe()[+s.dataset.fi]; if (!r) return; if (s.dataset.f === 'von' || s.dataset.f === 'bis') { if (s.value) r[s.dataset.f] = s.value; else delete r[s.dataset.f]; delete r.ende; } else r[s.dataset.f] = s.dataset.f === 'wd' ? +s.value : s.value; save(); });
     el.addEventListener('click', function (ev) { var b = ev.target.closest('[data-fx]'); if (!b) return; festListe().splice(+b.dataset.fx, 1); save(); renderFest(); });
     $('#fest-add').addEventListener('click', function () { festListe().push({ wd: 2, art: 'schule' }); save(); renderFest(); });
     $('#e-mehr').addEventListener('click', mehrTage);
@@ -1100,7 +1101,7 @@
     if (has('bierkrug')) arm += '<path d="M92 38h16l-2 26H94z" fill="#fbbf24" stroke="#92400e" stroke-width="1.500"/><path d="M92 38q8-8 16 0" fill="#fff" stroke="#d1d5db"/><path d="M108 44q9 0 9 8t-9 8" fill="none" stroke="#92400e" stroke-width="3"/>';
     if (has('buch')) arm += '<rect x="94" y="40" width="22" height="24" rx="2" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.500"/><rect x="97" y="44" width="16" height="6" fill="#ede9fe"/><path d="M94 60h22" stroke="#4c1d95"/>';
     if (has('megafon')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><path d="M94 46l16-10v28l-16-10z" fill="#f97316" stroke="#9a3412" stroke-width="1.500"/><rect x="88" y="46" width="8" height="10" rx="2" fill="#374151"/><path d="M114 42q4 6 0 14" fill="none" stroke="#f97316" stroke-width="2"/></g>';
-    var armG = '<g transform="translate(9 5)"><g class="mia-arm"><rect x="82" y="78" width="32" height="13" rx="6.5" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-50 86 84)"/>' + arm + '</g></g>';
+    var armG = '<g transform="translate(9 5)"><g class="mia-arm"><rect x="82" y="78" width="32" height="13" rx="6.5" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-50 86 84)"/>' + (arm ? '<g transform="translate(86 56) scale(1.4) translate(-100 -56)">' + arm + '</g>' : '') + '</g></g>';
     if (has('hose_jeans')) s += '<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#2563eb"/><path d="M60 106v18" stroke="#1e3a8a" stroke-width="2"/>';
     if (has('hose_arbeit')) s += '<path d="M32 104h56v8q0 12-20 12H52q-20 0-20-12z" fill="#64748b"/><rect x="36" y="110" width="11" height="7" rx="1.500" fill="#475569"/><rect x="73" y="110" width="11" height="7" rx="1.500" fill="#475569"/><path d="M60 104v20" stroke="#334155" stroke-width="2"/>';
     if (has('hose_kurz')) s += '<path d="M32 113h56v1q0 10-20 10H52q-20 0-20-10z" fill="#0d9488"/><path d="M60 113v11" stroke="#115e59" stroke-width="2"/>';
@@ -1210,6 +1211,7 @@
     var ur = ueberRows().slice(-4), neg = ur.filter(function (x) { return x.diff < -1.5; }).length, pos = ur.filter(function (x) { return x.diff > 1.5; }).length;
     if (ur.length >= 3 && (neg >= 3 || pos >= 3)) out.push({ k: 'abweichung', pose: 'eyes', text: 'Deine Überstunden weichen in mehreren Monaten vom Lohnzettel ab. Schau bitte nach, ob diese Einstellungen stimmen: Überstunden-Modell, Betrieb geschlossen und Rundung.' });
     fristenMia(out);
+    festMia(out);
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
@@ -1221,6 +1223,7 @@
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'tag') { show('erfassen'); }
+    else if (k.indexOf('fest_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#fest-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
     else if (k.indexOf('frist_') === 0) { show('konten'); setTimeout(function () { var el = $('#fr-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lzlesen') { lzOpen('erlaubnis'); }
@@ -1487,7 +1490,7 @@
   }
   function assistSteps() {
     var all = assistBase(), first = all[0], last = all[all.length - 1], mid = all.slice(1, -1), E1 = 'einstellungen', f = '.field', k = 'label.check';
-    var g1 = ['#s-vorname', '#s-geb', '#s-firma', '#s-beruf', '#s-einst', '#s-lgbox', '#s-monat', '#s-monatstd', '#s-lohn'], g2 = ['#s-umodell', '#s-gleitbox', '#s-woche', '#s-tagsollfield', '#s-grenzefield', '#s-uzus', '#s-pauseauto', '#s-runan', '#s-zsa', '#s-praemien'];
+    var g1 = ['#s-vorname', '#s-geb', '#s-firma', '#k-eintritt', '#s-beruf', '#s-einst', '#s-lgbox', '#s-monat', '#s-monatstd', '#s-lohn'], g2 = ['#s-umodell', '#s-gleitbox', '#s-woche', '#s-tagsollfield', '#s-grenzefield', '#s-uzus', '#s-pauseauto', '#s-runan', '#s-zsa', '#s-praemien'];
     function pick(l) { return l.map(function (q) { return mid.filter(function (x) { return x.sel === q; })[0]; }).filter(Boolean); }
     var p3 = mid.filter(function (x) { return g1.indexOf(x.sel) < 0 && g2.indexOf(x.sel) < 0; });
     p3.push({ v: E1, sel: '#mia-aktiv', up: k, t: 'Soll ich mich von selbst melden, wenn etwas zu tun ist? Dann lass den Schalter an.' });
@@ -1495,6 +1498,7 @@
       [{ t: 'Teil 2 von 4: Arbeitszeit und Zuschläge. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 2 }], pick(g2),
       [{ t: 'Teil 3 von 4: Diäten, Berichte und Extras. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 3 }], p3,
       [{ t: 'Teil 4 von 4: Dein Profil mit mir und deinen Fristen. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 4 },
+        { v: 'konten', sel: '#s-foto', up: f, t: 'Optional: ein Profilbild. Du kannst es überspringen.' },
         { v: 'konten', sel: '#mia-choose', t: 'Hier wählst du, ob ich Mia oder Milo bin. Darunter kannst du mir auch einen eigenen Namen geben.' },
         { v: 'konten', sel: '#mia-spricht', up: k, t: 'Soll ich auch sprechen? Dann wähle danach eine Stimme aus.' },
         { v: 'konten', sel: '#fr-add', t: 'Hier legst du Ausweise, Kurse und Prüfungen mit Ablaufdatum an, zum Beispiel Code 95 oder Staplerschein. Ich erinnere dich rechtzeitig.' }], [last]);
@@ -1503,7 +1507,8 @@
     var E1 = 'einstellungen', f = '.field', k = 'label.check';
     return [{ t: 'Ich führe dich jetzt durch deine Einstellungen. Bei jedem Feld kannst du gleich etwas eintragen, dann tippst du auf Weiter. Was du nicht weißt, lässt du leer. Du kannst es später nachholen.' },
       { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
-      { v: E1, sel: '#s-geb', to: '#s-foto', up: f, t: 'Optional: Geburtsdatum und ein Profilbild. Du kannst beides überspringen.' },
+      { v: E1, sel: '#s-geb', up: f, t: 'Optional: dein Geburtsdatum. Du kannst es überspringen.' },
+      { v: E1, sel: '#k-eintritt', up: f, t: 'Seit wann bist du in deiner Firma? Das Eintrittsdatum braucht die App für den Urlaub. Weißt du es nicht, lass das Feld leer.' },
       { v: E1, sel: '#s-firma', up: f, t: 'Der Name deiner Firma. Er steht auf den Berichten. Weißt du ihn nicht auswendig, lass das Feld leer.' },
       { v: E1, sel: '#s-beruf', t: 'Hier steht dein Beruf. Stimmt das? Wenn nicht, ändere ihn hier. Sonst tippe auf Weiter.' },
       { v: E1, sel: '#s-umodell', up: f, t: 'Wie zählt deine Firma Überstunden? Wähle es aus. Weißt du es nicht, nimm „Pro Monat“ und frage später im Büro nach.' },
@@ -2560,6 +2565,14 @@
   function fristListe() { if (!data.profil) data.profil = {}; return data.profil.fristen || (data.profil.fristen = []); }
   function fristTage(f) { if (!f.ablauf) return null; var a = E.parseISO(f.ablauf), t = E.parseISO(todayISO()); return Math.round((Date.UTC(a.y, a.m - 1, a.d) - Date.UTC(t.y, t.m - 1, t.d)) / 86400000); }
   function fristenAm(datum) { return (data.profil && data.profil.fristen || []).filter(function (f) { return f.ablauf === datum; }).map(function (f) { return f.name || 'Frist'; }); }
+  function festMia(out) {
+    festListe().forEach(function (r, i) {
+      if (!r.bis || r.bis >= todayISO()) return;
+      if (!r.id) r.id = 'f' + Date.now().toString(36) + i;
+      var nm = (FEST_TAGE.filter(function (x) { return x[0] === +r.wd; })[0] || [0, ''])[1], art = E.STATUS[r.art] ? E.STATUS[r.art].name : '';
+      out.unshift({ k: 'fest_' + r.id, pose: 'eyes', text: art + ', ' + nm + ': Der Zeitraum ist abgelaufen. Gilt der feste Tag weiter, stell den Zeitraum neu ein. Gilt er nicht mehr, lösche ihn.' });
+    });
+  }
   function fristSpaet(id) { fristListe().forEach(function (f) { if (f.id === id) f.spaet = todayISO(); }); save(); }
   function fristenMia(out) {
     fristListe().forEach(function (f) {
@@ -2773,7 +2786,7 @@
       $('#rb-dbody').innerHTML = miaKopf() + '<p>Auf dem Bericht fehlt dein Name. Ohne Namen kann ihn niemand dir zuordnen.</p><div class="field"><label for="rb-dname">Vor- und Nachname</label><input type="text" id="rb-dname" maxlength="80" autocomplete="name"></div>';
       $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-dok">Weiter</button><button type="button" class="btn" id="rb-dohne">Ohne Namen weiter</button><button type="button" class="btn" id="rb-dx">Abbrechen</button>';
       $('#rb-dlg').hidden = false; $('#rb-dx').onclick = zu;
-      $('#rb-dok').onclick = function () { var v = $('#rb-dname').value.trim(); if (!v) { toast('Bitte gib deinen Namen ein.'); return; } $('#rb-name').value = v; merken(); weiter(); };
+      $('#rb-dok').onclick = function () { var v = $('#rb-dname').value.trim(); if (!v) { toast('Bitte gib deinen Namen ein.'); return; } var pr0 = data.profil || (data.profil = {}); if (!(pr0.vorname || pr0.nachname)) { var ix = v.lastIndexOf(' '); pr0.vorname = ix > 0 ? v.slice(0, ix) : v; pr0.nachname = ix > 0 ? v.slice(ix + 1) : ''; } $('#rb-name').value = v; merken(); weiter(); };
       $('#rb-dohne').onclick = function () { toast('Schreibe deinen Namen auf dem Bericht von Hand dazu.'); weiter(); };
     }
     $('#rb-dl').addEventListener('click', function () { merken(); frageName(function () { zu(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } }); });
@@ -2892,8 +2905,9 @@
       h.textContent = 'Eingelesene Lohnzetteldaten';
       var opts = [['', 'Nicht übernehmen']].concat(Object.keys(window.StundenLz.NAMEN).map(function (k) { return [k, window.StundenLz.NAMEN[k]]; }));
       b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + [ 'Monat wählen'].concat(MON).map(function (mn, k) { return '<option value="' + k + '"' + (k === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div><p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
-        (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<b>' + (z.unsicher ? esc(z.nums[0]) : fh(z.menge) + ' h') + '</b>') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>');
+        (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<input type="text" inputmode="decimal" class="lzv" data-lzv="' + i + '" value="' + esc(z.unsicher ? z.nums[0] : String(z.menge).replace('.', ',')) + '" aria-label="Wert">') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>') + (r.zeilen.length ? '<label class="check"><input type="checkbox" id="lz-stimmt"><span>Ich habe alle Werte mit meinem Lohnzettel verglichen. Alles stimmt.</span></label>' : '');
       bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
+      if ($('#lz-apply')) $('#lz-apply').disabled = true;
     }
   }
   function lzLabels(lines) {
@@ -2918,8 +2932,8 @@
     var key = mo.y + '-' + pad(mo.m), n = 0, sum = {};
     if (!data.abgleich) data.abgleich = {}; var cur = data.abgleich[key] || (data.abgleich[key] = {}); var lm = lzProfil().lzMap || (lzProfil().lzMap = {});
     items.forEach(function (it) {
-      var z = it.z, menge = z.menge;
-      if (z.nums) { menge = window.StundenLz.zahl(z.nums[it.pos]); if (it.key) { lm['#' + z.norm] = it.pos; lm['@' + z.norm] = z.nums.length; } }
+      var z = it.z, menge = it.edit != null ? it.edit : z.menge;
+      if (z.nums && it.edit == null) { menge = window.StundenLz.zahl(z.nums[it.pos]); if (it.key) { lm['#' + z.norm] = it.pos; lm['@' + z.norm] = z.nums.length; } }
       lm[z.norm] = it.key || '-'; if (it.key) sum[it.key] = (sum[it.key] || 0) + menge;
     });
     Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; }); if (n) cur.gelesen = true;
@@ -2962,6 +2976,7 @@
     dlg.addEventListener('change', function (ev) {
       var t = ev.target;
       if (t.id === 'lz-ok') { $('#lz-weiter').disabled = !t.checked; return; }
+      if (t.id === 'lz-stimmt') { $('#lz-apply').disabled = !t.checked; return; }
       if (t.id === 'lz-file' && t.files && t.files[0]) { var fl = Array.prototype.slice.call(t.files); t.value = ''; lzLese(fl); }
     });
     dlg.addEventListener('click', function (ev) {
@@ -2988,7 +3003,9 @@
       else if (t.id === 'lz-apply') {
         var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }; if (!mo.m) { toast('Bitte wähl zuerst den Monat.'); return; } var items = $$('#lz-body [data-lzz]').map(function (sl) {
           var ps = document.querySelector('#lz-body [data-lzp="' + sl.dataset.lzz + '"]'), z = r.zeilen[+sl.dataset.lzz];
-          return { z: z, key: sl.value, pos: ps ? +ps.value : (z.pos | 0) };
+          var vi = document.querySelector('#lz-body [data-lzv="' + sl.dataset.lzz + '"]'), ed = null;
+          if (vi && !ps) { var tx = String(vi.value).trim(); tx = tx.indexOf(',') >= 0 ? tx.replace(/\./g, '').replace(',', '.') : tx; var nv = parseFloat(tx); if (!isNaN(nv)) ed = nv; }
+          return { z: z, key: sl.value, pos: ps ? +ps.value : (z.pos | 0), edit: ed };
         });
         lzApply(r, mo, items); lzNext();
       }
