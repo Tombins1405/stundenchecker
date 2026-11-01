@@ -2638,7 +2638,14 @@
         try { var bl = new Blob([fristIcs(o.f)], { type: 'text/calendar' }), u = URL.createObjectURL(bl), a = document.createElement('a'); a.href = u; a.download = 'frist.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000); toast('Kalenderdatei geladen. Öffne sie und tippe auf Hinzufügen.'); } catch (e) { toast('Das hat nicht geklappt.'); }
       } else if (b.dataset.act === 'neu') {
         if (+o.f.laufzeit > 0) { var t0 = todayISO(), bs = o.f.ablauf && o.f.ablauf >= t0 ? o.f.ablauf : t0, p = E.parseISO(bs), d = new Date(p.y + (+o.f.laufzeit), p.m - 1, p.d); fertig(o.f, E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate())); }
-        else { toast('Trage das neue Ablaufdatum ein.'); var di = o.r.querySelector('[data-f="ablauf"]'); if (di) di.focus(); }
+        else {
+          var ff = o.f; $('#lz-h').textContent = 'Wie lange ist es jetzt gültig?';
+          $('#lz-body').innerHTML = miaKopf() + '<p>Schau auf deinem neuen Ausweis oder deiner Bestätigung nach, bis wann sie gilt. Dieses Datum trage ich dir ein.</p><div class="field"><label for="fr-neu-d">Neues Ablaufdatum</label><input type="date" id="fr-neu-d"></div>';
+          $('#lz-btns').innerHTML = '<button type="button" class="btn primary" id="fr-neu-ok">Speichern</button><button type="button" class="btn" id="fr-neu-x">Abbrechen</button>';
+          $('#lz-dlg').hidden = false;
+          $('#fr-neu-x').onclick = function () { $('#lz-dlg').hidden = true; };
+          $('#fr-neu-ok').onclick = function () { var v = $('#fr-neu-d').value; if (!v || v <= todayISO()) { toast('Bitte gib ein Datum in der Zukunft ein.'); return; } $('#lz-dlg').hidden = true; fertig(ff, v); };
+        }
       }
     });
     $('#fr-add').addEventListener('click', function () { var v = $('#fr-vorl'); v.hidden = !v.hidden; });

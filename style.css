@@ -45,7 +45,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: hidden; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 17px; line-height: 1.4;
@@ -192,6 +192,9 @@ details.how p { margin-top: 6px; }
 .cmp { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: .95rem; }
 .cmp th, .cmp td { text-align: right; padding: 6px 4px; border-bottom: 1px solid var(--line); }
 .cmp th:first-child, .cmp td:first-child { text-align: left; }
+.cmp th, .cmp td { overflow-wrap: anywhere; }
+#k-urlaub, #k-za, #k-ueber { overflow-x: auto; }
+#v-konten .cmp { font-size: .86rem; }
 .cmp .ok { color: var(--good); font-weight: 700; }
 .cmp .no { color: var(--bad); font-weight: 700; }
 .scroll { overflow-x: auto; }
