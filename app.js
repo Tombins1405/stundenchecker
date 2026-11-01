@@ -2329,6 +2329,12 @@
     sg.addEventListener('pointermove', function (ev) { if (!sDraw) return; var q = sgPos(ev); sx.lineTo(q[0], q[1]); sx.stroke(); ev.preventDefault(); });
     function sgEnd() { if (!sDraw) return; sDraw = false; try { localStorage.setItem('stundenchecker.sig', sg.toDataURL('image/png')); } catch (e) { } }
     sg.addEventListener('pointerup', sgEnd); sg.addEventListener('pointercancel', sgEnd);
+    var sfi = $('#rb-sigfile'); if (sfi) sfi.addEventListener('change', function () { // Bild der Unterschrift (zum Beispiel am Laptop)
+      var f = this.files && this.files[0]; if (!f) return; var u = URL.createObjectURL(f), im = new Image();
+      im.onload = function () { sgWhite(); sx.fillStyle = '#fff'; sx.fillRect(0, 0, sg.width, sg.height); var k = Math.min(sg.width / im.width, sg.height / im.height); sx.drawImage(im, (sg.width - im.width * k) / 2, (sg.height - im.height * k) / 2, im.width * k, im.height * k); sHas = true; try { localStorage.setItem('stundenchecker.sig', sg.toDataURL('image/png')); } catch (e) { } URL.revokeObjectURL(u); sfi.value = ''; toast('Unterschrift übernommen.'); };
+      im.onerror = function () { toast('Das Bild konnte nicht gelesen werden.'); URL.revokeObjectURL(u); };
+      im.src = u;
+    });
     $('#rb-sigclr').addEventListener('click', function () { sgWhite(); sHas = false; try { localStorage.removeItem('stundenchecker.sig'); } catch (e) { } });
     function sigImg() { if (!sHas || !$('#rb-sigon').checked) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
     function bauen() {
@@ -2405,15 +2411,19 @@
     });
     /* Auf jedem Gerät derselbe Ablauf: erst fertig melden, dann der Nutzer wählt. Das Teilen-Fenster des Geräts ist nur eine der Möglichkeiten. */
     function fertigHilfe(erg) {
-      var mail = $('#rb-mail').value.trim();
+      var mail = $('#rb-mail').value.trim(), flx = null; try { flx = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
+      var kannTeilen = !!(flx && navigator.share && (!navigator.canShare || navigator.canShare({ files: [flx] })));
+      var ohneSig = !(sHas && $('#rb-sigon').checked);
       $('#rb-dh').textContent = 'Dein Bericht ist fertig';
-      $('#rb-dbody').innerHTML = '<p><b>' + esc(erg.name) + '</b></p><p>Tippe auf „Senden“. Wenn sich nichts öffnet, tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>';
-      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-send">Senden</button><button type="button" class="btn" id="rb-sp">PDF speichern</button><button type="button" class="btn" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button><button type="button" class="btn" id="rb-zu">Fertig</button>';
+      $('#rb-dbody').innerHTML = '<p><b>' + esc(erg.name) + '</b></p>' + (kannTeilen ? '<p>Tippe auf „Senden“. Wenn sich nichts öffnet, tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>' : '<p>Auf diesem Gerät kann ich die Datei nicht selbst senden. Tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>') +
+        (ohneSig ? '<p>Auf dem Bericht steht noch keine Unterschrift. Du kannst sie in den Einstellungen unter „Berichte an die Firma“ hinterlegen.</p>' : '');
+      $('#rb-dbtns').innerHTML = (kannTeilen ? '<button type="button" class="btn primary" id="rb-send">Senden</button><button type="button" class="btn" id="rb-sp">PDF speichern</button>' : '<button type="button" class="btn primary" id="rb-sp">PDF speichern</button>') + '<button type="button" class="btn" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button>' + (ohneSig ? '<button type="button" class="btn" id="rb-sg">Unterschrift einrichten</button>' : '') + '<button type="button" class="btn" id="rb-zu">Fertig</button>';
       $('#rb-dlg').hidden = false;
+      if ($('#rb-sg')) $('#rb-sg').onclick = function () { $('#rb-dlg').hidden = true; show('einstellungen', true); setTimeout(function () { var el = $('#rb-sigon'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); };
       $('#rb-zu').onclick = function () { $('#rb-dlg').hidden = true; };
       $('#rb-sp').onclick = function () { speichern(erg); };
-      $('#rb-send').onclick = function () {
-        var fl = null; try { fl = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
+      if ($('#rb-send')) $('#rb-send').onclick = function () {
+        var fl = flx;
         if (fl && navigator.share) {
           var p; try { p = navigator.share({ files: [fl], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { p = null; }
           if (p && p.then) { p.then(function () { }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); }); return; }
