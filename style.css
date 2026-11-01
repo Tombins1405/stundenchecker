@@ -647,3 +647,10 @@ h3[data-ico="chart"]::before { background: #ff6f00; }
 #k-jahr-chart .jb { fill: var(--accent); }
 #k-jahr-chart .jb.cur { fill: #ff6f00; }
 #k-jahr-chart text { fill: var(--muted, #667); font-size: 11px; text-anchor: middle; }
+
+.lkmia { display: flex; align-items: flex-end; gap: 10px; }
+.lkfig { flex: 0 0 76px; }
+.lkfig svg { width: 76px; height: auto; display: block; }
+.lkbub { position: relative; background: var(--accent-soft); color: var(--ink); border-radius: 16px; padding: 10px 14px; flex: 1; line-height: 1.4; }
+.lkbub::before { content: ''; position: absolute; left: -7px; bottom: 18px; border: 7px solid transparent; border-left: 0; border-right-color: var(--accent-soft); }
+#lk-h .info { margin-left: 8px; vertical-align: middle; }

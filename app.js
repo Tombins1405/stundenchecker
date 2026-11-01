@@ -832,11 +832,18 @@
     function merken(tage) { if (!data.profil) data.profil = {}; var lk = data.profil.lkDone || (data.profil.lkDone = {}); tage.forEach(function (t) { lk[t] = 1; }); }
     function weiter() { runs.shift(); if (runs.length) zeigen(); else { zu(); toast('Eingetragen.'); try { renderMonat(); renderOpenDay(); } catch (e) { } } }
     function eintragen(tage, st) { tage.forEach(function (t) { if (!data.days[t]) data.days[t] = { status: st }; }); merken(tage); save(); ins('luecke_' + st); }
+    function kopf(t, info) {
+      var h = $('#lk-h'); h.textContent = t;
+      var sm = document.createElement('small'); sm.hidden = true; sm.textContent = info;
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'info'; b.setAttribute('aria-label', 'Info'); b._sm = sm; h.appendChild(b);
+    }
+    function mia(html) { var c = miaCfg(); setTimeout(function () { var el = $('#lk-bub'); if (el) miaSag(el.textContent); }, 50); return '<div class="lkmia"><div class="lkfig">' + miaSvg(c.figur, miaFor(), '') + '</div><div class="lkbub" id="lk-bub">' + html + '</div></div>'; }
     function zeigen() {
       var r = runs[0], a = r[0], z = r[r.length - 1];
-      $('#lk-h').textContent = 'Nichts eingetragen';
-      body.innerHTML = '<p><b>' + esc(r.length > 1 ? fmtShort(a) + ' – ' + fmtShort(z) : fmtShort(a)) + '</b></p>' + (r.length > 1 ? '<p class="hint"><b>' + r.length + '</b> <span>Arbeitstage</span></p>' : '') + '<p>Was war da?</p>' +
-        '<div class="wzlist">' + [['frei', 'Frei'], ['urlaub', 'Urlaub'], ['krank', 'Krankenstand'], ['za', 'Zeitausgleich'], ['pflege', 'Pflegefreistellung'], ['arbeit', 'Ich habe gearbeitet']].map(function (x) { return '<button type="button" class="btn wzopt" data-lk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+      kopf('Nichts eingetragen', 'Wähle, was an diesen Tagen war. Ich trage sie dann so ein. Wenn du gearbeitet hast, bringe ich dich zum ersten fehlenden Tag, damit du ihn nachtragen kannst.');
+      var arten = Object.keys(E.STATUS).filter(function (k) { return k !== 'arbeit' && k !== 'feiertag'; }).map(function (k) { return [k, E.STATUS[k].name]; }); arten.push(['arbeit', 'Ich habe gearbeitet']);
+      body.innerHTML = mia('<b>' + esc(r.length > 1 ? fmtShort(a) + ' – ' + fmtShort(z) : fmtShort(a)) + '</b>' + (r.length > 1 ? '<br><span class="hint"><b>' + r.length + '</b> <span>Arbeitstage</span></span>' : '') + '<br><span>Was war da?</span>') +
+        '<div class="wzlist">' + arten.map(function (x) { return '<button type="button" class="btn wzopt" data-lk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
       btns.innerHTML = '<button type="button" class="btn" id="lk-spaeter">Später</button>';
       dlg.hidden = false; $('#lk-spaeter').onclick = zu;
       body.querySelectorAll('[data-lk]').forEach(function (b) { b.onclick = function () { wahl(b.dataset.lk, b.textContent); }; });
@@ -845,8 +852,8 @@
       var r = runs[0];
       if (st === 'arbeit') { merken(r); save(); zu(); openEditor(r[0], 'erfassen'); toast('Hier kannst du den Tag nachtragen.'); return; }
       if (r.length === 1) { eintragen(r, st); weiter(); return; }
-      $('#lk-h').textContent = name;
-      body.innerHTML = '<p>Bis wann?</p><select id="lk-bis" aria-label="Bis wann?">' + r.map(function (t, i) { return '<option value="' + i + '"' + (i === r.length - 1 ? ' selected' : '') + '>' + esc(fmtShort(t)) + '</option>'; }).join('') + '</select><p class="hint"><b id="lk-n">' + r.length + '</b> <span>Tage</span></p>';
+      kopf(name, 'Wenn nur ein Teil der Tage so war, wähle den letzten Tag davon. Nach den übrigen Tagen frage ich gleich noch einmal.');
+      body.innerHTML = mia('<span>Bis wann?</span>') + '<select id="lk-bis" aria-label="Bis wann?">' + r.map(function (t, i) { return '<option value="' + i + '"' + (i === r.length - 1 ? ' selected' : '') + '>' + esc(fmtShort(t)) + '</option>'; }).join('') + '</select><p class="hint"><b id="lk-n">' + r.length + '</b> <span>Tage</span></p>';
       btns.innerHTML = '<button type="button" class="btn primary" id="lk-ok">Eintragen</button><button type="button" class="btn" id="lk-zur">Zurück</button>';
       $('#lk-bis').onchange = function () { $('#lk-n').textContent = (+this.value + 1); };
       $('#lk-zur').onclick = zeigen;
