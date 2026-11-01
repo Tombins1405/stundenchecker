@@ -11,6 +11,7 @@
     [/zs$/, null], // „Überstunden 50% ZS“: Zuschlag auf dieselben Stunden, zählt nicht noch einmal
     [/sonderurlaub/, 'sonder'],
     [/^uberstunden|^uberstd|^mehrarbeit|^ust/, 'ueber'],
+    [/feiertag\w*ds$|durchschnitt/, null], // „Feiertagsentgelt DS“: Zuschlag auf den Durchschnitt in Euro, keine Feiertagsstunden
     [/feiertag/, 'feiertag'],
     [/urlaub/, 'urlaub'],
     [/krank|entgeltfortzahlung|krst/, 'krank'],

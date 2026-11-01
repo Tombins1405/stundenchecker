@@ -305,6 +305,7 @@
     }
   }
 
+  function fixLohn() { var w = wAt(monthKey() + '-01'); return !!(w && +w.monatslohn > 0); }
   function monthKey() { return ui.y + '-' + pad(ui.m); }
   var AB_HINT = {
     gleit: 'Dein Gleitzeitsaldo für diesen Monat, so wie ihn deine Zeiterfassung oder dein Zeitnachweis zeigt (Plus oder Minus in Stunden).',
@@ -341,7 +342,7 @@
     $('#ab-spaeter').innerHTML = (spaeter && spaeter.length) ? '<div class="notice warn"><strong>Nicht mitgerechnet, weil später abgerechnet:</strong> ' + spaeter.map(function (x) { return esc(fmtShort(x.datum)) + ' (' + fh(x.std) + ' h)'; }).join(', ') + '. Merke dir diesen Tag. Er sollte auf einem späteren Lohnzettel auftauchen. Wenn nicht, reklamiere ihn.</div>' : '';
     if (summe.folge) $('#ab-spaeter').innerHTML += '<div class="notice">Diäten und Überstunden vergleicht die App mit deiner Aufzeichnung vom Vormonat.</div>';
     var lz = data.abgleich[monthKey()] || {};
-    var rows = E.abgleich(summe, lz, ui.abAlle);
+    var rows = E.abgleich(summe, lz, ui.abAlle, fixLohn());
     $('#ab-more').hidden = !!ui.abAlle;
     $('#ab-rows').innerHTML = rows.map(function (r) {
       var v = lz[r.key];
@@ -360,7 +361,7 @@
     paintAbgleich();
   }
   function paintAbgleich() {
-    var lz = data.abgleich[monthKey()] || {}, rows = E.abgleich(ui.summe, lz, ui.abAlle), given = 0, bad = [];
+    var lz = data.abgleich[monthKey()] || {}, rows = E.abgleich(ui.summe, lz, ui.abAlle, fixLohn()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);
     rows.forEach(function (r) {
       if (r.status === 'info') return;

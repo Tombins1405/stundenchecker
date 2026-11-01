@@ -746,7 +746,7 @@
     { key: 'sonder',   label: 'Sonderurlaub (aus Überstunden bezahlt)', pflicht: false, info: true, hole: function () { return null; } }
   ];
   function hasNum(v) { return !(v === null || v === undefined || v === '' || isNaN(+v)); }
-  function abgleich(summe, lz, alle) {
+  function abgleich(summe, lz, alle, fix) { // fix: Fixlohn (Monatsgehalt): Lohn, Feiertag, Urlaub, Krank und Pflege stehen dann ohne Stunden auf dem Lohnzettel
     if (summe && summe.gleit) { // Gleitzeit (Bundesdienst): ein Saldo statt Lohn und Überstunden
       var gv = lz && lz.gleit, gh = hasNum(gv), ga = r2(summe.ueberStd || 0), grow;
       if (!gh) grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: null, diff: null, status: 'offen', faktor: 0 };
@@ -760,6 +760,7 @@
         if (has || alle) rows.push({ key: z.key, label: z.label, app: null, lz: has ? +v : null, diff: null, status: 'info' });
         return;
       }
+      if (fix && !alle && !has && ['lohn', 'feiertag', 'urlaub', 'krank', 'pflege'].indexOf(z.key) >= 0) return;
       var app = r2(z.hole(summe) || 0);
       var eingetragenOhneApp = has && +v > 0 && app === 0;
       if ((!z.pflicht || (z.key === 'dStd' && app === 0)) && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
