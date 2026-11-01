@@ -654,3 +654,5 @@ h3[data-ico="chart"]::before { background: #ff6f00; }
 .lkbub { position: relative; background: var(--accent-soft); color: var(--ink); border-radius: 16px; padding: 10px 14px; flex: 1; line-height: 1.4; }
 .lkbub::before { content: ''; position: absolute; left: -7px; bottom: 18px; border: 7px solid transparent; border-left: 0; border-right-color: var(--accent-soft); }
 #lk-h .info { margin-left: 8px; vertical-align: middle; }
+
+.sp-opt[disabled] { background: transparent; border: 0; font-weight: 700; font-size: .8rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding-top: 14px; opacity: 1; }
