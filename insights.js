@@ -22,7 +22,7 @@
     count: function (name) { try { var s = stats(); s[name] = (s[name] || 0) + 1; wr(SK, JSON.stringify(s)); } catch (e) {} },
     push: function (force) {
       if (!ON) return; var u = user(); if (!u) return;
-      var last = +rd('stundenchecker.profpush') || 0; if (!force && Date.now() - last < 6 * 3600 * 1000) return;
+      var last = +rd('stundenchecker.profpush') || 0, gnow = ((app().info && app().info()) || {}).geraet || '', gold = rd('stundenchecker.profdev') || ''; if (!force && gnow === gold && Date.now() - last < 6 * 3600 * 1000) return;
       try {
         var a = app(), info = a.info ? a.info() : {};
         var doc = {
@@ -30,7 +30,7 @@
           lastSeen: stamp(), lang: info.lang || null, version: window.APP_VERSION || null, beruf: info.beruf || null, paket: info.paket || null, land: info.land || null,
           tage: info.tage || 0, geraet: info.geraet || null, features: stats(), consent: consent()
         };
-        db().collection('profiles').doc(u.uid).set(doc, { merge: true }).then(function () { wr('stundenchecker.profpush', String(Date.now())); }, function () {});
+        db().collection('profiles').doc(u.uid).set(doc, { merge: true }).then(function () { wr('stundenchecker.profpush', String(Date.now())); wr('stundenchecker.profdev', info.geraet || ''); }, function () {});
       } catch (e) {}
     },
     // Hinweis nur an den Admin (ntfy.sh, kostenlos). Enthält nie Texte, Beträge oder Namen von Nutzern.
