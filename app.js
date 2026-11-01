@@ -403,7 +403,7 @@
     var k = keys.length ? keys[keys.length - 1] : '', t = todayISO().slice(0, 7);
     return k > t ? k : t;
   }
-  function monKurz(y, m) { return MON[m - 1].slice(0, 3) + ' ' + String(y).slice(2); }
+  function monKurz(y, m) { return '<span>' + MON[m - 1].slice(0, 3) + '</span> ' + String(y).slice(2); }
   function numIn(id, val, ph) { return '<input type="number" class="kin" id="' + id + '" inputmode="decimal" step="0.01" value="' + (val == null ? '' : esc(val)) + '" placeholder="' + (ph || '') + '" aria-label="' + esc(ph || 'Wert') + '">'; }
   function renderJahr() { // Stunden je Monat des Jahres als Balken
     var box = $('#k-jahr-chart'); if (!box) return;
