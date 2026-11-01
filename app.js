@@ -390,7 +390,7 @@
     });
     el.addEventListener('click', function (ev) {
       var b = ev.target.closest('button'); if (!b) return;
-      if (b.id === 'abx-add') { abExtra(true).push({ name: '', wert: null, einheit: '€', senden: false }); save(); renderAbExtra(); var ii = el.querySelectorAll('.abx [data-f=name]'); if (ii.length) ii[ii.length - 1].focus(); }
+      if (b.id === 'abx-add') { abExtra(true).push({ name: '', wert: null, einheit: '€', senden: true }); save(); renderAbExtra(); var ii = el.querySelectorAll('.abx [data-f=name]'); if (ii.length) ii[ii.length - 1].focus(); }
       else if (b.dataset.act === 'x') { var r = b.closest('.abx'); abExtra().splice(+r.dataset.i, 1); abExtraClean(); save(); renderAbExtra(); }
     });
   })();
@@ -1468,7 +1468,7 @@
     s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
     s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
     s.push({ v: 'monat', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
-    s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Profil: deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
+    s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Profil: Fristen und Ausweise, mein Aussehen, deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
     s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
     return s;
   }
@@ -1485,6 +1485,20 @@
     return s;
   }
   function assistSteps() {
+    var all = assistBase(), first = all[0], last = all[all.length - 1], mid = all.slice(1, -1), E1 = 'einstellungen', f = '.field', k = 'label.check';
+    var g1 = ['#s-vorname', '#s-geb', '#s-firma', '#s-beruf', '#s-einst', '#s-lgbox', '#s-monat', '#s-monatstd', '#s-lohn'], g2 = ['#s-umodell', '#s-gleitbox', '#s-woche', '#s-tagsollfield', '#s-grenzefield', '#s-uzus', '#s-pauseauto', '#s-runan', '#s-zsa', '#s-praemien'];
+    function pick(l) { return l.map(function (q) { return mid.filter(function (x) { return x.sel === q; })[0]; }).filter(Boolean); }
+    var p3 = mid.filter(function (x) { return g1.indexOf(x.sel) < 0 && g2.indexOf(x.sel) < 0; });
+    p3.push({ v: E1, sel: '#mia-aktiv', up: k, t: 'Soll ich mich von selbst melden, wenn etwas zu tun ist? Dann lass den Schalter an.' });
+    return [first].concat(pick(g1),
+      [{ t: 'Teil 2 von 4: Arbeitszeit und Zuschläge. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 2 }], pick(g2),
+      [{ t: 'Teil 3 von 4: Diäten, Berichte und Extras. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 3 }], p3,
+      [{ t: 'Teil 4 von 4: Dein Profil mit mir und deinen Fristen. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 4 },
+        { v: 'konten', sel: '#mia-choose', t: 'Hier wählst du, ob ich Mia oder Milo bin. Darunter kannst du mir auch einen eigenen Namen geben.' },
+        { v: 'konten', sel: '#mia-spricht', up: k, t: 'Soll ich auch sprechen? Dann wähle danach eine Stimme aus.' },
+        { v: 'konten', sel: '#fr-add', t: 'Hier legst du Ausweise, Kurse und Prüfungen mit Ablaufdatum an, zum Beispiel Code 95 oder Staplerschein. Ich erinnere dich rechtzeitig.' }], [last]);
+  }
+  function assistBase() {
     var E1 = 'einstellungen', f = '.field', k = 'label.check';
     return [{ t: 'Ich führe dich jetzt durch deine Einstellungen. Bei jedem Feld kannst du gleich etwas eintragen, dann tippst du auf Weiter. Was du nicht weißt, lässt du leer. Du kannst es später nachholen.' },
       { v: E1, sel: '#s-vorname', to: '#s-nachname', up: f, t: 'Dein Vorname und Nachname. Beides kommt oben auf deine Berichte.' },
@@ -1567,6 +1581,7 @@
   function tourRender() {
     var T = TOUR; if (!T) return;
     var idx = T.i, st = T.s[idx], ov = $('#tour');
+    if (T.assist && st.kap) { if (!data.profil) data.profil = {}; data.profil.assistKap = st.kap; save(); }
     if (!ov) { ov = document.createElement('div'); ov.id = 'tour'; ov.className = 'tour' + (T.assist || T.live ? ' assist' : ''); document.body.appendChild(ov); }
     if (st.v && ui.view !== st.v) show(st.v, true);
     T.el = null; T.ready = false;
@@ -1601,7 +1616,7 @@
     window.removeEventListener('scroll', tourOnMove); window.removeEventListener('resize', tourOnMove);
     if (!data.profil) data.profil = {};
     if (tg) { save(); ins(done ? 'tagfuehrung_fertig' : 'tagfuehrung_abbruch'); return; }
-    if (as) { if (done) data.profil.assistDone = true; save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
+    if (as) { if (done) { data.profil.assistDone = true; delete data.profil.assistKap; } save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
     data.profil.tourDone = true; save();
     ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
     show('erfassen', true);
@@ -1612,6 +1627,7 @@
     ins(assist ? 'assistentin' : tag ? 'tagfuehrung' : 'rundgang');
     if (tag) { if (!data.profil) data.profil = {}; data.profil.tagGefuehrt = todayISO(); save(); }
     TOUR = { s: assist ? (intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir alles zusammen ein. Was du gerade nicht weißt, überspringst du mit Weiter und holst es später nach. Ich erinnere dich dann ab und zu.' }].concat(assistSteps().slice(1)) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
+    if (assist && !intro && data.profil && data.profil.assistKap > 1) { var ki = TOUR.s.map(function (x) { return x.kap; }).indexOf(data.profil.assistKap); if (ki > 0) TOUR.i = ki; }
     window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
     tourRender();
   }
@@ -2627,7 +2643,7 @@
     function art(r) { var d = data.days[r.datum] || {}; return r.leer ? (r.typ !== 'werktag' ? (r.feiertag || (r.typ === 'sonntag' ? 'Sonntag' : r.typ === 'samstag' ? 'Samstag' : 'frei')) : '') : (r.status === 'arbeit' ? (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Arbeit') : E.STATUS[r.status].name) + (r.feiertag ? ' (' + r.feiertag + ')' : ''); }
     function kopf(titel, zeitraum) {
       var nm = bName(), pr = data.profil || {};
-      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || ' ']].concat(pr.firma ? [['Firma', pr.firma]] : [], [[titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]]) }];
+      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || '____________________']].concat(pr.firma ? [['Firma', pr.firma]] : [], [[titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]]) }];
     }
     function tabelleTage(tage) {
       var sum = 0, rows = tage.map(function (r) {
@@ -2750,11 +2766,22 @@
       $('#rb-ja').onclick = function () { $('#rb-dlg').hidden = true; show('erfassen', true); vorgabe = s; card.open = false; card.open = true; setTimeout(function () { $('#rb-art').value = rh; $('#rb-datum').value = s; }, 0); setTimeout(function () { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150); };
     }
     window.berichtFrage = bFrage;
-    $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
+    function frageName(weiter) {
+      if (bName()) return weiter();
+      $('#rb-dh').textContent = 'Wie heißt du?';
+      $('#rb-dbody').innerHTML = '<p>Auf dem Bericht fehlt dein Name. Ohne Namen kann ihn niemand dir zuordnen.</p><div class="field"><label for="rb-dname">Vor- und Nachname</label><input type="text" id="rb-dname" maxlength="80" autocomplete="name"></div>';
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-dok">Weiter</button><button type="button" class="btn" id="rb-dohne">Ohne Namen weiter</button><button type="button" class="btn" id="rb-dx">Abbrechen</button>';
+      $('#rb-dlg').hidden = false; $('#rb-dx').onclick = zu;
+      $('#rb-dok').onclick = function () { var v = $('#rb-dname').value.trim(); if (!v) { toast('Bitte gib deinen Namen ein.'); return; } $('#rb-name').value = v; merken(); weiter(); };
+      $('#rb-dohne').onclick = function () { toast('Schreibe deinen Namen auf dem Bericht von Hand dazu.'); weiter(); };
+    }
+    $('#rb-dl').addEventListener('click', function () { merken(); frageName(function () { zu(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } }); });
     $('#rb-share').addEventListener('click', function () {
       merken(); var pr = data.profil || (data.profil = {});
-      if (pr.sigAn === true && sHas) return zeigeBericht(); // Unterschrift ist gespeichert: gleich anzeigen
-      frageUnterschrift();
+      frageName(function () {
+        if (pr.sigAn === true && sHas) return zeigeBericht(); // Unterschrift ist gespeichert: gleich anzeigen
+        frageUnterschrift();
+      });
     });
     function zu() { $('#rb-dlg').hidden = true; sigOv = undefined; }
     function kopieren(c) { var i = c.getContext('2d').getImageData(0, 0, c.width, c.height), g = new Uint8Array(c.width * c.height); for (var k = 0; k < g.length; k++) g[k] = i.data[k * 4]; return { w: c.width, h: c.height, data: g }; }
