@@ -2337,7 +2337,7 @@
       im.src = u;
     });
     $('#rb-sigclr').addEventListener('click', function () { sgWhite(); sHas = false; try { localStorage.removeItem('stundenchecker.sig'); } catch (e) { } });
-    function sigImg() { if (!sHas || !$('#rb-sigon').checked) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
+    var sigOv; function sigImg() { if (sigOv !== undefined) return sigOv; if (!sHas || !$('#rb-sigon').checked) return null; var id = sx.getImageData(0, 0, sg.width, sg.height), g = new Uint8Array(sg.width * sg.height); for (var i = 0; i < g.length; i++) g[i] = id.data[i * 4]; return { w: sg.width, h: sg.height, data: g }; }
     function bauen() {
       var typ = $('#rb-art').value, ds = $('#rb-datum').value || todayISO(), p = E.parseISO(ds), b, name;
       if (typ === 'tag') {
@@ -2378,11 +2378,11 @@
       an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
       toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
     }
-    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.sigAn = $('#rb-sigon').checked; p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
     function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
     fuellen();
     var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || (ui.edDate && /^\d{4}-\d{2}-\d{2}$/.test(ui.edDate) ? ui.edDate : todayISO()); vorgabe = null; });
-    $('#rb-sigon').addEventListener('change', function () { $('#rb-sigwrap').hidden = !this.checked; merken(); });
+    $('#rb-sigon').addEventListener('change', function () { $('#rb-sigwrap').hidden = !this.checked; (data.profil || (data.profil = {})).sigAn = this.checked; merken(); });
     $('#rb-name').addEventListener('change', merken); $('#rb-mail').addEventListener('change', merken);
     $('#rb-rhythmus').addEventListener('change', function () { merken(); var v = this.value; if (v !== 'nie') $('#rb-art').value = v; });
     $('#rb-art').addEventListener('change', function () { $('#rb-datum').value = $('#rb-datum').value || todayISO(); });
@@ -2407,32 +2407,62 @@
     window.berichtFrage = bFrage;
     $('#rb-dl').addEventListener('click', function () { merken(); try { speichern(bauen()); ins('bericht_' + $('#rb-art').value); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); } });
     $('#rb-share').addEventListener('click', function () {
-      merken(); var erg; try { erg = bauen(); } catch (e) { toast('Der Bericht konnte nicht erstellt werden.'); return; }
-      ins('bericht_' + erg.typ); fertigHilfe(erg);
+      merken(); var pr = data.profil || (data.profil = {});
+      if (pr.sigAn === true && sHas) return zeigeBericht(); // Unterschrift ist gespeichert: gleich anzeigen
+      frageUnterschrift();
     });
-    /* Auf jedem Gerät derselbe Ablauf: erst fertig melden, dann der Nutzer wählt. Das Teilen-Fenster des Geräts ist nur eine der Möglichkeiten. */
-    function fertigHilfe(erg) {
-      var mail = $('#rb-mail').value.trim(), flx = null; try { flx = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
-      var kannTeilen = !!(flx && navigator.share && (!navigator.canShare || navigator.canShare({ files: [flx] })));
-      var ohneSig = !(sHas && $('#rb-sigon').checked);
-      $('#rb-dh').textContent = 'Dein Bericht ist fertig';
-      $('#rb-dbody').innerHTML = '<p><b>' + esc(erg.name) + '</b></p>' + (kannTeilen ? '<p>Tippe auf „Senden“. Wenn sich nichts öffnet, tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>' : '<p>Auf diesem Gerät kann ich die Datei nicht selbst senden. Tippe auf „PDF speichern“. Die Datei liegt dann im Ordner „Downloads“. Hänge sie in WhatsApp oder in der E-Mail mit der Büroklammer an.</p>') +
-        (ohneSig ? '<p>Auf dem Bericht steht noch keine Unterschrift. Du kannst sie in den Einstellungen unter „Berichte an die Firma“ hinterlegen.</p>' : '');
-      $('#rb-dbtns').innerHTML = (kannTeilen ? '<button type="button" class="btn primary" id="rb-send">Senden</button><button type="button" class="btn" id="rb-sp">PDF speichern</button>' : '<button type="button" class="btn primary" id="rb-sp">PDF speichern</button>') + '<button type="button" class="btn" id="rb-wa">WhatsApp öffnen</button><button type="button" class="btn" id="rb-ml">E-Mail öffnen</button>' + (ohneSig ? '<button type="button" class="btn" id="rb-sg">Unterschrift einrichten</button>' : '') + '<button type="button" class="btn" id="rb-zu">Fertig</button>';
+    function zu() { $('#rb-dlg').hidden = true; sigOv = undefined; }
+    function kopieren(c) { var i = c.getContext('2d').getImageData(0, 0, c.width, c.height), g = new Uint8Array(c.width * c.height); for (var k = 0; k < g.length; k++) g[k] = i.data[k * 4]; return { w: c.width, h: c.height, data: g }; }
+    /* Schritt 1: unterschreiben (nur wenn nicht schon automatisch gespeichert) */
+    function frageUnterschrift() {
+      var pr = data.profil, erstes = pr.sigAn !== true && pr.sigAn !== false;
+      $('#rb-dh').textContent = 'Bitte unterschreiben';
+      $('#rb-dbody').innerHTML = '<canvas id="rb-dsig" width="600" height="240" style="width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none"></canvas>' +
+        '<p class="hint">Unterschreibe mit dem Finger oder der Maus. Wenn du lieber auf Papier unterschreibst, lass das Feld leer.</p>' +
+        (erstes ? '<label class="check"><input type="checkbox" id="rb-dauto"> Diese Unterschrift merken und künftig automatisch einsetzen</label>' : '');
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn" id="rb-dclr">Löschen</button><button type="button" class="btn primary" id="rb-dweiter">Weiter</button><button type="button" class="btn" id="rb-dx">Abbrechen</button>';
       $('#rb-dlg').hidden = false;
-      if ($('#rb-sg')) $('#rb-sg').onclick = function () { $('#rb-dlg').hidden = true; show('einstellungen', true); setTimeout(function () { var el = $('#rb-sigon'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); };
-      $('#rb-zu').onclick = function () { $('#rb-dlg').hidden = true; };
-      $('#rb-sp').onclick = function () { speichern(erg); };
-      if ($('#rb-send')) $('#rb-send').onclick = function () {
-        var fl = flx;
-        if (fl && navigator.share) {
-          var p; try { p = navigator.share({ files: [fl], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { p = null; }
-          if (p && p.then) { p.then(function () { }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); }); return; }
+      var c = $('#rb-dsig'), x = c.getContext('2d'), dr = false, has = false;
+      function weiss() { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.strokeStyle = '#111'; x.lineWidth = 3; x.lineCap = 'round'; x.lineJoin = 'round'; }
+      weiss();
+      function pos(ev) { var r = c.getBoundingClientRect(); return [(ev.clientX - r.left) * c.width / r.width, (ev.clientY - r.top) * c.height / r.height]; }
+      c.addEventListener('pointerdown', function (ev) { dr = true; has = true; var q = pos(ev); x.beginPath(); x.moveTo(q[0], q[1]); x.lineTo(q[0] + 0.1, q[1]); x.stroke(); try { c.setPointerCapture(ev.pointerId); } catch (e) { } ev.preventDefault(); });
+      c.addEventListener('pointermove', function (ev) { if (!dr) return; var q = pos(ev); x.lineTo(q[0], q[1]); x.stroke(); ev.preventDefault(); });
+      c.addEventListener('pointerup', function () { dr = false; }); c.addEventListener('pointercancel', function () { dr = false; });
+      $('#rb-dclr').onclick = function () { weiss(); has = false; };
+      $('#rb-dx').onclick = zu;
+      $('#rb-dweiter').onclick = function () {
+        var auto = !!($('#rb-dauto') && $('#rb-dauto').checked);
+        sigOv = has ? kopieren(c) : null;
+        if (erstes) {
+          pr.sigAn = auto && has;
+          if (auto && has) { sgWhite(); sx.drawImage(c, 0, 0, sg.width, sg.height); sHas = true; try { localStorage.setItem('stundenchecker.sig', sg.toDataURL('image/png')); } catch (e) { } $('#rb-sigon').checked = true; $('#rb-sigwrap').hidden = false; }
+          else if (!has) pr.sigAn = undefined; // ohne Unterschrift nichts festlegen, beim nächsten Mal wieder fragen
+          try { save(); } catch (e) { }
+        }
+        zeigeBericht(true);
+      };
+    }
+    /* Schritt 2: Bericht anzeigen, ein Knopf „Senden“ */
+    function zeigeBericht(mitOv) {
+      var erg; try { erg = bauen(); } catch (e) { zu(); toast('Der Bericht konnte nicht erstellt werden.'); return; }
+      sigOv = undefined; ins('bericht_' + erg.typ);
+      var flx = null; try { flx = new File([erg.bytes], erg.name, { type: 'application/pdf' }); } catch (e) { }
+      var kannTeilen = !!(flx && navigator.share && (!navigator.canShare || navigator.canShare({ files: [flx] })));
+      $('#rb-dh').textContent = 'Dein Bericht';
+      $('#rb-dbody').innerHTML = '<div id="rb-vor" style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff"><p class="hint" style="padding:12px">Bericht wird angezeigt …</p></div>';
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-send">' + (kannTeilen ? 'Senden' : 'Speichern') + '</button><button type="button" class="btn" id="rb-dx">Schließen</button>';
+      $('#rb-dlg').hidden = false;
+      $('#rb-dx').onclick = zu;
+      $('#rb-send').onclick = function () {
+        if (kannTeilen) {
+          var p; try { p = navigator.share({ files: [flx], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { p = null; }
+          if (p && p.then) { p.then(function () { zu(); }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); }); return; }
         }
         ins('bericht_share_fehlt'); speichern(erg);
       };
-      $('#rb-wa').onclick = function () { location.href = 'https://wa.me/?text=' + encodeURIComponent('Hallo, anbei mein Bericht.'); };
-      $('#rb-ml').onclick = function () { location.href = 'mailto:' + encodeURIComponent(mail) + '?subject=' + encodeURIComponent('Stundenbericht') + '&body=' + encodeURIComponent('Hallo, anbei mein Bericht. (Das PDF aus dem Ordner „Downloads“ bitte anhängen.)'); };
+      var vb = $('#rb-vor').clientWidth || 400;
+      try { window.StundenLz.zeigePdf(erg.bytes, $('#rb-vor'), vb).catch(function () { $('#rb-vor').innerHTML = '<p class="hint" style="padding:12px"><b>' + esc(erg.name) + '</b></p>'; }); } catch (e) { }
     }
   })();
   /* ---- Lohnzettel automatisch lesen (nur mit Zustimmung, nur auf dem Gerät) ---- */

@@ -105,6 +105,26 @@
       });
     });
   }
-  var api = { parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  // PDF-Seiten als Bilder in einen Behälter zeichnen (Vorschau). Auf jedem Gerät gleich, ohne das PDF-Fenster des Browsers.
+  function zeigePdf(bytes, behaelter, breite, basis) {
+    return ladeLib(basis).then(function (lib) {
+      return lib.getDocument({ data: bytes.slice(0) }).promise.then(function (doc) {
+        behaelter.innerHTML = '';
+        var chain = Promise.resolve(), n = Math.min(doc.numPages, 3);
+        for (var i = 1; i <= n; i++) (function (nr) {
+          chain = chain.then(function () {
+            return doc.getPage(nr).then(function (pg) {
+              var v0 = pg.getViewport({ scale: 1 }), sc = (breite / v0.width) * (window.devicePixelRatio > 1 ? 2 : 1.5), vp = pg.getViewport({ scale: sc });
+              var c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height); c.style.width = '100%'; c.style.height = 'auto'; c.style.display = 'block';
+              behaelter.appendChild(c);
+              return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+            });
+          });
+        })(i);
+        return chain;
+      });
+    });
+  }
+  var api = { zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
