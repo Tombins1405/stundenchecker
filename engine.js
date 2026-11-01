@@ -185,6 +185,7 @@
     urlaub:        { name: 'Urlaub',                  credit: true },
     krank:         { name: 'Krankenstand',            credit: true },
     pflege:        { name: 'Pflegefreistellung',      credit: true },
+    schule:        { name: 'Berufsschule',            credit: true },
     feiertag:      { name: 'Feiertag',                credit: true },
     betriebsurlaub:{ name: 'Betrieb geschlossen / Betriebsurlaub', credit: true },
     za:            { name: 'Zeitausgleich',           credit: false },
@@ -623,7 +624,7 @@
     if (heute) { var hq = parseISO(heute); live = hq.y === y && hq.m === m; }
     Object.keys(days).forEach(function (k) { if (days[k] && (!firstKey || k < firstKey)) firstKey = k; });
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
-      arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, za: 0, feiertageBezahlt: 0, zuschlagMin: 0,
+      arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, schule: 0, za: 0, feiertageBezahlt: 0, zuschlagMin: 0,
       feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
     var bauWochen = false, monatModell = false, gleitModell = false, anyEntry = false;
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
@@ -644,6 +645,7 @@
       if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urlaub++;
       if (r.status === 'krank') s.krank++;
       if (r.status === 'pflege') s.pflege++;
+      if (r.status === 'schule') s.schule++;
       if (r.status === 'za') s.za++;
       if (r.status === 'feiertag') { s.feiertageBezahlt++; s.feMin += r.creditMin; }
       if (r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Feiertagslohn gibt es auch, wenn man am Feiertag arbeitet (nur Anzeige, nicht in den Stunden)
@@ -720,7 +722,7 @@
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
-        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, za: s.za,
+        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
       },

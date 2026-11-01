@@ -166,6 +166,7 @@
     urlaub: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
     krank: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
     arzt: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
+    schule: '<path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5"/>',
     pflege: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.500-7 10-7 10z"/>',
     feiertag: '<path d="M12 3l2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/>',
     betriebsurlaub: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
@@ -180,6 +181,7 @@
     ['krank', 'Krankenstand', 'Du warst krank. Der Tag wird als bezahlte Abwesenheit gutgeschrieben.'],
     ['arzt', 'Frei wegen Arztbesuch', 'Frei für einen Arztbesuch. Ob er bezahlt wird, hängt von deiner Firma ab.'],
     ['pflege', 'Pflegefreistellung', 'Frei, um ein krankes Kind oder einen Angehörigen zu pflegen.'],
+    ['schule', 'Berufsschule', 'Berufsschultag für Lehrlinge. Der Tag zählt wie ein Arbeitstag mit Sollstunden.'],
     ['feiertag', 'Feiertag', 'Gesetzlicher Feiertag.'],
     ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
     ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
@@ -242,6 +244,7 @@
     if (s.urlaub) parts.push(s.urlaub + ' Urlaub');
     if (s.krank) parts.push(s.krank + ' Krankenstand');
     if (s.pflege) parts.push(s.pflege + ' Pflegefreistellung');
+    if (s.schule) parts.push(s.schule + ' Berufsschule');
     if (s.za) parts.push(s.za + ' Zeitausgleich');
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
@@ -811,10 +814,63 @@
     if (ch) { save(); anRender(); }
   });
   /* ---- Nachfrage zu Tagen ohne Eintrag: eine Frage für den ganzen Zeitraum ---- */
+  function lkKopf(t, info) {
+    var h = $('#lk-h'); h.textContent = t;
+    var sm = document.createElement('small'); sm.hidden = true; sm.textContent = info;
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'info'; b.setAttribute('aria-label', 'Info'); b._sm = sm; h.appendChild(b);
+  }
+  function lkMia(html) { var c = miaCfg(); setTimeout(function () { var el = $('#lk-bub'); if (el) miaSag(el.textContent); }, 50); return '<div class="lkmia"><div class="lkfig">' + miaSvg(c.figur, miaFor(), '') + '</div><div class="lkbub" id="lk-bub">' + html + '</div></div>'; }
+  function artenListe() { return Object.keys(E.STATUS).filter(function (k) { return k !== 'arbeit' && k !== 'feiertag'; }).map(function (k) { return [k, E.STATUS[k].name]; }); }
+  /* Feste freie Tage (z. B. Berufsschule jeden Dienstag): werden für Tage ohne Eintrag automatisch eingetragen */
+  function festeAnwenden(von, bis) {
+    var fl = (data.profil && data.profil.festTage) || []; if (!fl.length) return 0;
+    var n = 0, d = von;
+    while (d < bis) {
+      if (!data.days[d]) {
+        var wd = E.weekday(d), typ = E.dayTyp(d);
+        fl.forEach(function (r) { if (!data.days[d] && +r.wd === wd && typ !== 'sonntag' && typ !== 'feiertag' && E.STATUS[r.art]) { data.days[d] = { status: r.art, fest: true }; n++; } });
+      }
+      d = E.addDays(d, 1);
+    }
+    if (n) save();
+    return n;
+  }
+  function mehrTage() {
+    var dlg = $('#lk-dlg'), body = $('#lk-body'), btns = $('#lk-btns');
+    function zu() { dlg.hidden = true; }
+    function neu() {
+      lkKopf('Mehrere Tage eintragen', 'Trage Urlaub, Krankenstand und andere freie Tage für einen ganzen Zeitraum auf einmal ein, auch im Voraus. Tage, an denen schon etwas steht, sowie Sonntage und Feiertage bleiben unverändert.');
+      body.innerHTML = lkMia('<span>Was möchtest du eintragen?</span>') + '<div class="wzlist">' + artenListe().map(function (x) { return '<button type="button" class="btn wzopt" data-mt="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+      btns.innerHTML = '<button type="button" class="btn" id="lk-x">Abbrechen</button>';
+      dlg.hidden = false; $('#lk-x').onclick = zu;
+      body.querySelectorAll('[data-mt]').forEach(function (b) { b.onclick = function () { zeitraum(b.dataset.mt, b.textContent); }; });
+    }
+    function tage(a, z, st) {
+      var out = [], d = a, g = 0;
+      while (d <= z && g++ < 400) { var w = wAt(d), typ = E.dayTyp(d); if (!data.days[d] && typ !== 'sonntag' && typ !== 'feiertag' && E.istSollTag(w.ueberstunden, E.weekday(d))) out.push(d); d = E.addDays(d, 1); }
+      return out;
+    }
+    function zeitraum(st, name) {
+      lkKopf(name, 'Wähle den ersten und den letzten Tag. Die App trägt nur Arbeitstage ein, an denen noch nichts steht.');
+      body.innerHTML = lkMia('<span>Von wann bis wann?</span>') + '<div class="field"><label for="lk-von">Von</label><input type="date" id="lk-von" value="' + todayISO() + '"></div><div class="field"><label for="lk-bis">Bis</label><input type="date" id="lk-bis" value="' + todayISO() + '"></div><p class="hint"><b id="lk-n">1</b> <span>Tage</span></p>';
+      btns.innerHTML = '<button type="button" class="btn primary" id="lk-ok">Eintragen</button><button type="button" class="btn" id="lk-zur">Zurück</button>';
+      function neuZahl() { var a = $('#lk-von').value, z = $('#lk-bis').value; $('#lk-n').textContent = (a && z && a <= z) ? tage(a, z, st).length : 0; }
+      $('#lk-von').addEventListener('change', function () { if ($('#lk-bis').value < this.value) $('#lk-bis').value = this.value; neuZahl(); });
+      $('#lk-bis').addEventListener('change', neuZahl); neuZahl();
+      $('#lk-zur').onclick = neu;
+      $('#lk-ok').onclick = function () {
+        var a = $('#lk-von').value, z = $('#lk-bis').value; if (!a || !z || a > z) { toast('Bitte Von und Bis prüfen.'); return; }
+        var l = tage(a, z, st); if (!l.length) { toast('In diesem Zeitraum gibt es nichts einzutragen.'); return; }
+        l.forEach(function (t) { data.days[t] = { status: st }; }); save(); ins('mehrtage_' + st); zu(); toast('Eingetragen.'); try { renderMonat(); renderOpenDay(); } catch (e) { }
+      };
+    }
+    neu();
+  }
   function lueckenSuche(saved) {
     var ks = Object.keys(data.days).filter(function (k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }).sort();
     if (ks.length < 2 || ks[ks.length - 1] !== saved) return []; // nur wenn der neueste Tag gespeichert wurde
     var erster = ks[0], von = E.addDays(saved, -60); if (von <= erster) von = E.addDays(erster, 1);
+    festeAnwenden(von, saved);
     var lk = (data.profil && data.profil.lkDone) || {}, runs = [], cur = null, d = von;
     while (d < saved) {
       var w = wAt(d), wd = E.weekday(d), typ = E.dayTyp(d);
@@ -832,16 +888,11 @@
     function merken(tage) { if (!data.profil) data.profil = {}; var lk = data.profil.lkDone || (data.profil.lkDone = {}); tage.forEach(function (t) { lk[t] = 1; }); }
     function weiter() { runs.shift(); if (runs.length) zeigen(); else { zu(); toast('Eingetragen.'); try { renderMonat(); renderOpenDay(); } catch (e) { } } }
     function eintragen(tage, st) { tage.forEach(function (t) { if (!data.days[t]) data.days[t] = { status: st }; }); merken(tage); save(); ins('luecke_' + st); }
-    function kopf(t, info) {
-      var h = $('#lk-h'); h.textContent = t;
-      var sm = document.createElement('small'); sm.hidden = true; sm.textContent = info;
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'info'; b.setAttribute('aria-label', 'Info'); b._sm = sm; h.appendChild(b);
-    }
-    function mia(html) { var c = miaCfg(); setTimeout(function () { var el = $('#lk-bub'); if (el) miaSag(el.textContent); }, 50); return '<div class="lkmia"><div class="lkfig">' + miaSvg(c.figur, miaFor(), '') + '</div><div class="lkbub" id="lk-bub">' + html + '</div></div>'; }
+    var kopf = lkKopf, mia = lkMia;
     function zeigen() {
       var r = runs[0], a = r[0], z = r[r.length - 1];
       kopf('Nichts eingetragen', 'Wähle, was an diesen Tagen war. Ich trage sie dann so ein. Wenn du gearbeitet hast, bringe ich dich zum ersten fehlenden Tag, damit du ihn nachtragen kannst.');
-      var arten = Object.keys(E.STATUS).filter(function (k) { return k !== 'arbeit' && k !== 'feiertag'; }).map(function (k) { return [k, E.STATUS[k].name]; }); arten.push(['arbeit', 'Ich habe gearbeitet']);
+      var arten = artenListe(); arten.push(['arbeit', 'Ich habe gearbeitet']);
       body.innerHTML = mia('<b>' + esc(r.length > 1 ? fmtShort(a) + ' – ' + fmtShort(z) : fmtShort(a)) + '</b>' + (r.length > 1 ? '<br><span class="hint"><b>' + r.length + '</b> <span>Arbeitstage</span></span>' : '') + '<br><span>Was war da?</span>') +
         '<div class="wzlist">' + arten.map(function (x) { return '<button type="button" class="btn wzopt" data-lk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
       btns.innerHTML = '<button type="button" class="btn" id="lk-spaeter">Später</button>';
@@ -861,6 +912,24 @@
     }
     zeigen(); return true;
   }
+  /* ---- Feste freie Tage (Einstellungen) ---- */
+  var FEST_TAGE = [[1, 'Montag'], [2, 'Dienstag'], [3, 'Mittwoch'], [4, 'Donnerstag'], [5, 'Freitag'], [6, 'Samstag']];
+  function festListe() { if (!data.profil) data.profil = {}; return data.profil.festTage || (data.profil.festTage = []); }
+  function renderFest() {
+    var el = $('#fest-list'); if (!el) return;
+    el.innerHTML = festListe().map(function (r, i) {
+      return '<div class="festrow"><select data-fi="' + i + '" data-f="wd" aria-label="Wochentag">' + FEST_TAGE.map(function (x) { return '<option value="' + x[0] + '"' + (+r.wd === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
+        '<select data-fi="' + i + '" data-f="art" aria-label="Art des Tages">' + artenListe().map(function (x) { return '<option value="' + x[0] + '"' + (r.art === x[0] ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
+        '<button type="button" class="btn" data-fx="' + i + '" aria-label="Entfernen">×</button></div>';
+    }).join('');
+  }
+  (function () {
+    var el = $('#fest-list'); if (!el) return;
+    el.addEventListener('change', function (ev) { var s = ev.target.closest('select[data-fi]'); if (!s) return; var r = festListe()[+s.dataset.fi]; if (!r) return; r[s.dataset.f] = s.dataset.f === 'wd' ? +s.value : s.value; save(); });
+    el.addEventListener('click', function (ev) { var b = ev.target.closest('[data-fx]'); if (!b) return; festListe().splice(+b.dataset.fx, 1); save(); renderFest(); });
+    $('#fest-add').addEventListener('click', function () { festListe().push({ wd: 2, art: 'schule' }); save(); renderFest(); });
+    $('#e-mehr').addEventListener('click', mehrTage);
+  })();
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
@@ -967,7 +1036,7 @@
     if (has('karre')) arm += '<path d="M96 28v62" stroke="#475569" stroke-width="4" stroke-linecap="round"/><path d="M96 88h16" stroke="#475569" stroke-width="4" stroke-linecap="round"/><circle cx="104" cy="92" r="6" fill="#1f2937"/><rect x="99" y="58" width="16" height="14" fill="#d9954a" stroke="#8b5a2b" stroke-width="1.5"/><rect x="99" y="44" width="14" height="14" fill="#e3a860" stroke="#8b5a2b" stroke-width="1.5"/>';
     if (has('flasche')) arm += '<rect x="100" y="40" width="9" height="26" rx="3" fill="#15803d" stroke="#14532d" stroke-width="1.500"/><rect x="102" y="32" width="5" height="10" rx="1.500" fill="#15803d" stroke="#14532d" stroke-width="1.500"/><rect x="100" y="50" width="9" height="8" fill="#fef9c3"/>';
     if (has('glas')) arm += '<path d="M97 40h16l-3 24h-10z" fill="#e0f2fe" fill-opacity=".8" stroke="#0284c7" stroke-width="1.500"/><path d="M99 46h12l-1.500 14h-9z" fill="#fbbf24"/>';
-    if (has('teller')) arm += '<ellipse cx="104" cy="58" rx="14" ry="5" fill="#fff" stroke="#9ca3af" stroke-width="1.500"/><ellipse cx="104" cy="57" rx="8" ry="2.600" fill="#f3f4f6" stroke="#d1d5db"/><path d="M96 54q8-12 16 0z" fill="#d97706"/>';
+    if (has('teller')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><ellipse cx="104" cy="58" rx="14" ry="5" fill="#fff" stroke="#9ca3af" stroke-width="1.500"/><ellipse cx="104" cy="57" rx="8" ry="2.600" fill="#f3f4f6" stroke="#d1d5db"/><path d="M96 54q8-12 16 0z" fill="#d97706"/></g>';
     if (has('tablett_glas')) arm += '<ellipse cx="104" cy="58" rx="17" ry="4.500" fill="#b8c0cc" stroke="#6b7280" stroke-width="1.500"/><path d="M91 56l2-14h6l2 14zM102 56l2-16h6l2 16zM113 56l2-12h4l1 12z" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.200"/>';
     if (has('tablett_flasche')) arm += '<ellipse cx="104" cy="58" rx="17" ry="4.500" fill="#b8c0cc" stroke="#6b7280" stroke-width="1.500"/><rect x="99" y="32" width="9" height="24" rx="3" fill="#15803d" stroke="#14532d" stroke-width="1.500"/><rect x="101" y="24" width="5" height="9" rx="1.500" fill="#15803d" stroke="#14532d" stroke-width="1.500"/>';
     if (has('pfanne')) arm += '<ellipse cx="102" cy="48" rx="14" ry="6" fill="#374151" stroke="#111827" stroke-width="2"/><path d="M110 52l6 12" stroke="#111827" stroke-width="4" stroke-linecap="round"/>';
@@ -975,8 +1044,8 @@
     if (has('schneebesen')) arm += '<ellipse cx="104" cy="38" rx="6" ry="11" fill="none" stroke="#9ca3af" stroke-width="2"/><ellipse cx="104" cy="38" rx="2.500" ry="11" fill="none" stroke="#9ca3af" stroke-width="1.500"/><rect x="101.500" y="48" width="5" height="18" rx="2.500" fill="#374151"/>';
     if (has('scanner')) arm += '<path d="M96 40h18v10h-6v16h-8V50h-4z" fill="#374151" stroke="#111827" stroke-width="1.500"/><rect x="98" y="42" width="14" height="5" fill="#f87171"/>';
     if (has('korb')) arm += '<path d="M92 50h24l-3 16H95z" fill="#ef4444" stroke="#991b1b" stroke-width="1.500"/><path d="M96 50q8-14 16 0" fill="none" stroke="#991b1b" stroke-width="2.500"/>';
-    if (has('kiste')) arm += '<rect x="92" y="44" width="24" height="20" rx="2" fill="#a3e635" stroke="#4d7c0f" stroke-width="2"/><path d="M92 52h24M92 58h24" stroke="#4d7c0f" stroke-width="1.500"/>';
-    if (has('maulschluessel')) arm += '<rect x="103" y="42" width="5" height="26" rx="2.500" fill="#cbd5e1" stroke="#64748b" stroke-width="1.500"/><path d="M98 32q0-6 7-6t7 6l-3 4h-8z" fill="#cbd5e1" stroke="#64748b" stroke-width="1.500"/><rect x="102" y="26" width="6" height="8" fill="#fff" opacity=".0"/>';
+    if (has('kiste')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><rect x="92" y="44" width="24" height="20" rx="2" fill="#a3e635" stroke="#4d7c0f" stroke-width="2"/><path d="M92 52h24M92 58h24" stroke="#4d7c0f" stroke-width="1.500"/></g>';
+    if (has('maulschluessel')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><rect x="103" y="42" width="5" height="26" rx="2.500" fill="#cbd5e1" stroke="#64748b" stroke-width="1.500"/><path d="M98 32q0-6 7-6t7 6l-3 4h-8z" fill="#cbd5e1" stroke="#64748b" stroke-width="1.500"/><rect x="102" y="26" width="6" height="8" fill="#fff" opacity=".0"/></g>';
     if (has('hammer')) arm += '<rect x="103" y="38" width="5" height="30" rx="2" fill="#92400e" stroke="#451a03" stroke-width="1.200"/><rect x="94" y="30" width="22" height="10" rx="2" fill="#6b7280" stroke="#374151" stroke-width="1.500"/>';
     if (has('oelkanne')) arm += '<path d="M94 66V50q0-4 6-4h10q6 0 6 4v16z" fill="#f59e0b" stroke="#92400e" stroke-width="1.500"/><path d="M110 46l6-8" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round"/>';
     if (has('reifen')) arm += '<circle cx="104" cy="52" r="15" fill="#1f2937" stroke="#111827" stroke-width="2"/><circle cx="104" cy="52" r="7" fill="#9ca3af" stroke="#6b7280" stroke-width="1.500"/><circle cx="104" cy="52" r="2" fill="#374151"/>';
@@ -986,19 +1055,19 @@
     if (has('kelle')) arm += '<path d="M98 34l14 8-12 18z" fill="#9ca3af" stroke="#4b5563" stroke-width="1.500"/><rect x="103" y="58" width="5" height="10" rx="2" fill="#92400e"/>';
     if (has('warndreieck')) arm += '<path d="M104 30l13 24h-26z" fill="#fff" stroke="#dc2626" stroke-width="5" stroke-linejoin="round"/>';
     if (has('kaffeebecher')) arm += '<path d="M97 44h16l-2 22H99z" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.500"/><rect x="96" y="40" width="18" height="5" rx="2" fill="#475569"/><rect x="98" y="52" width="14" height="6" fill="#a16207"/><path d="M101 36q-3-5 0-8M108 36q-3-5 0-8" fill="none" stroke="#94a3b8" stroke-width="2"/>';
-    if (has('zapfpistole')) arm += '<path d="M96 46h18l4 6v6h-6v-4h-8v14h-8z" fill="#16a34a" stroke="#14532d" stroke-width="1.500"/><rect x="112" y="40" width="6" height="8" fill="#374151"/>';
+    if (has('zapfpistole')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><path d="M96 46h18l4 6v6h-6v-4h-8v14h-8z" fill="#16a34a" stroke="#14532d" stroke-width="1.500"/><rect x="112" y="40" width="6" height="8" fill="#374151"/></g>';
     if (has('laptop')) arm += '<rect x="95" y="38" width="20" height="14" rx="1.500" fill="#1f2937" stroke="#6b7280" stroke-width="1.500"/><rect x="97" y="40" width="16" height="10" fill="#60a5fa"/><path d="M91 54h28l-3 5H94z" fill="#cbd5e1" stroke="#64748b" stroke-width="1.500"/>';
     if (has('bildschirm')) arm += '<rect x="94" y="34" width="22" height="16" rx="2" fill="#111827" stroke="#6b7280" stroke-width="1.500"/><rect x="96" y="36" width="18" height="12" fill="#38bdf8"/><path d="M105 50v8M98 60h14" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>';
     if (has('ordner')) arm += '<rect x="96" y="32" width="16" height="34" rx="2" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.500"/><rect x="99" y="38" width="10" height="8" fill="#fff"/><ellipse cx="104" cy="32" rx="3" ry="2" fill="#93c5fd"/>';
     if (has('notizblock')) arm += '<rect x="95" y="38" width="18" height="26" rx="2" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.500"/><path d="M98 46h12M98 52h12M98 58h8" stroke="#a16207" stroke-width="1.300"/><rect x="109" y="28" width="3" height="26" rx="1.500" fill="#2563eb" transform="rotate(15 110 40)"/>';
     if (has('koffer')) arm += '<rect x="93" y="46" width="24" height="18" rx="3" fill="#7c4a1d" stroke="#451a03" stroke-width="2"/><path d="M101 46v-4h8v4" fill="none" stroke="#451a03" stroke-width="2.500"/><rect x="102" y="52" width="6" height="4" fill="#fbbf24"/>';
-    if (has('tablet')) arm += '<rect x="95" y="34" width="20" height="28" rx="3" fill="#111827" stroke="#9ca3af" stroke-width="1.500"/><rect x="98" y="38" width="14" height="20" fill="#a78bfa"/>';
+    if (has('tablet')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><rect x="95" y="34" width="20" height="28" rx="3" fill="#111827" stroke="#9ca3af" stroke-width="1.500"/><rect x="98" y="38" width="14" height="20" fill="#a78bfa"/></g>';
     if (has('kamera')) arm += '<rect x="93" y="42" width="24" height="16" rx="3" fill="#374151" stroke="#111827" stroke-width="1.500"/><circle cx="105" cy="50" r="6" fill="#9ca3af" stroke="#111827" stroke-width="1.500"/><circle cx="105" cy="50" r="2.500" fill="#1d4ed8"/><rect x="98" y="39" width="8" height="4" fill="#374151"/>';
     if (has('eishockey')) arm += '<path d="M108 28v36q0 4-4 4h-10" fill="none" stroke="#92400e" stroke-width="4" stroke-linecap="round"/><ellipse cx="112" cy="68" rx="5" ry="2.500" fill="#111827"/>';
     if (has('gitarre')) arm += '<ellipse cx="104" cy="58" rx="10" ry="9" fill="#d97706" stroke="#78350f" stroke-width="1.500"/><circle cx="104" cy="58" r="3" fill="#451a03"/><rect x="102" y="28" width="4" height="26" fill="#78350f"/><rect x="100" y="24" width="8" height="7" rx="1" fill="#451a03"/>';
     if (has('bierkrug')) arm += '<path d="M92 38h16l-2 26H94z" fill="#fbbf24" stroke="#92400e" stroke-width="1.500"/><path d="M92 38q8-8 16 0" fill="#fff" stroke="#d1d5db"/><path d="M108 44q9 0 9 8t-9 8" fill="none" stroke="#92400e" stroke-width="3"/>';
     if (has('buch')) arm += '<rect x="94" y="40" width="22" height="24" rx="2" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.500"/><rect x="97" y="44" width="16" height="6" fill="#ede9fe"/><path d="M94 60h22" stroke="#4c1d95"/>';
-    if (has('megafon')) arm += '<path d="M94 46l16-10v28l-16-10z" fill="#f97316" stroke="#9a3412" stroke-width="1.500"/><rect x="88" y="46" width="8" height="10" rx="2" fill="#374151"/><path d="M114 42q4 6 0 14" fill="none" stroke="#f97316" stroke-width="2"/>';
+    if (has('megafon')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><path d="M94 46l16-10v28l-16-10z" fill="#f97316" stroke="#9a3412" stroke-width="1.500"/><rect x="88" y="46" width="8" height="10" rx="2" fill="#374151"/><path d="M114 42q4 6 0 14" fill="none" stroke="#f97316" stroke-width="2"/></g>';
     var armG = '<g transform="translate(9 5)"><g class="mia-arm"><rect x="82" y="78" width="32" height="13" rx="6.5" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-50 86 84)"/>' + arm + '</g></g>';
     if (has('hose_jeans')) s += '<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#2563eb"/><path d="M60 106v18" stroke="#1e3a8a" stroke-width="2"/>';
     if (has('hose_arbeit')) s += '<path d="M32 104h56v8q0 12-20 12H52q-20 0-20-12z" fill="#64748b"/><rect x="36" y="110" width="11" height="7" rx="1.500" fill="#475569"/><rect x="73" y="110" width="11" height="7" rx="1.500" fill="#475569"/><path d="M60 104v20" stroke="#334155" stroke-width="2"/>';
@@ -1415,6 +1484,7 @@
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
+      { v: E1, sel: '#fest-add', up: k, t: 'Hast du jede Woche am gleichen Tag frei oder Berufsschule? Dann lege hier einen festen Tag an. Ich trage ihn dir dann ein.' },
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
       { v: E1, sel: '#s-luecke', up: k, t: 'Soll ich nachfragen, wenn Tage ohne Eintrag bleiben, zum Beispiel bei Urlaub oder Krankenstand? Dann lass den Schalter an.' },
       { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Setze die Haken nur, wenn du es willst.' },
@@ -1664,6 +1734,7 @@
     if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
   }
   function renderSettings() {
+    try { renderFest(); } catch (e) { }
     renderFeedback();
     var list = sortedSettings(), cur = list.length ? E.wertAt(list, todayISO()) : null;
     if (!curEntry() && list.length) ui.setKey = (cur || list[0]).gueltigAb;

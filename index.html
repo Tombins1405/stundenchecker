@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261101151448">
+<link rel="stylesheet" href="style.css?v=20261101154214">
 </head>
 <body>
 
@@ -149,6 +149,7 @@
         <div class="field"><label for="e-date">Datum</label><input type="date" id="e-date"></div>
         <div class="field"><label for="e-status">Art des Tages</label><select id="e-status"></select></div>
       </div>
+      <button type="button" class="linkbtn" id="e-mehr">Mehrere Tage auf einmal eintragen</button>
 
       <div id="e-work" class="view" style="gap:14px">
         <div class="grid2">
@@ -510,6 +511,13 @@
       <div class="field" id="rb-sigwrap" hidden><label for="rb-sig">Unterschreibe hier mit dem Finger oder der Maus</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><label class="btn" for="rb-sigfile" style="align-self:flex-start">Bild deiner Unterschrift wählen</label><input type="file" id="rb-sigfile" accept="image/*" hidden><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
     </div>
 
+    <div class="card" id="fest-card">
+      <h3 data-ico="repeat">Feste freie Tage</h3>
+      <p class="hint">Hast du jede Woche am gleichen Tag frei oder Berufsschule? Lege es hier einmal an. Die App trägt diese Tage für dich ein, wenn du weiter schreibst.</p>
+      <div id="fest-list"></div>
+      <button type="button" class="btn" id="fest-add">+ Fester Tag</button>
+    </div>
+
     <div class="card" id="assist-card">
       <button type="button" class="btn primary" id="assist-start">Mia hilft mir beim Einstellen</button>
       <p class="hint">Mia führt dich Schritt für Schritt durch alle Felder. Du trägst gleich mit ein.</p>
@@ -584,21 +592,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-conf" aria-hidden="true"></div><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261101151448";</script>
-<script src="engine.js?v=20261101151448"></script>
+<script>window.APP_VERSION="20261101154214";</script>
+<script src="engine.js?v=20261101154214"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261101151448"></script>
-<script src="timepicker.js?v=20261101151448"></script>
-<script src="datepicker.js?v=20261101151448"></script>
-<script src="selectpicker.js?v=20261101151448"></script>
-<script src="pdf.js?v=20261101151448"></script>
-<script src="lzread.js?v=20261101151448"></script>
-<script src="app.js?v=20261101151448"></script>
-<script src="auth.js?v=20261101151448"></script>
-<script src="sync.js?v=20261101151448"></script>
-<script src="insights.js?v=20261101151448"></script>
+<script src="firebase-config.js?v=20261101154214"></script>
+<script src="timepicker.js?v=20261101154214"></script>
+<script src="datepicker.js?v=20261101154214"></script>
+<script src="selectpicker.js?v=20261101154214"></script>
+<script src="pdf.js?v=20261101154214"></script>
+<script src="lzread.js?v=20261101154214"></script>
+<script src="app.js?v=20261101154214"></script>
+<script src="auth.js?v=20261101154214"></script>
+<script src="sync.js?v=20261101154214"></script>
+<script src="insights.js?v=20261101154214"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
