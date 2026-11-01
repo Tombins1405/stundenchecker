@@ -810,6 +810,50 @@
     });
     if (ch) { save(); anRender(); }
   });
+  /* ---- Nachfrage zu Tagen ohne Eintrag: eine Frage für den ganzen Zeitraum ---- */
+  function lueckenSuche(saved) {
+    var ks = Object.keys(data.days).filter(function (k) { return /^\d{4}-\d{2}-\d{2}$/.test(k); }).sort();
+    if (ks.length < 2 || ks[ks.length - 1] !== saved) return []; // nur wenn der neueste Tag gespeichert wurde
+    var erster = ks[0], von = E.addDays(saved, -60); if (von <= erster) von = E.addDays(erster, 1);
+    var lk = (data.profil && data.profil.lkDone) || {}, runs = [], cur = null, d = von;
+    while (d < saved) {
+      var w = wAt(d), wd = E.weekday(d), typ = E.dayTyp(d);
+      if (data.days[d]) cur = null;
+      else if (!lk[d] && typ !== 'sonntag' && typ !== 'feiertag' && E.istSollTag(w.ueberstunden, wd)) { if (!cur) { cur = []; runs.push(cur); } cur.push(d); }
+      d = E.addDays(d, 1);
+    }
+    return runs;
+  }
+  function lueckenFrage(saved) {
+    if (data.profil && data.profil.lueckenFrage === false) return false;
+    var runs = lueckenSuche(saved); if (!runs.length) return false;
+    var dlg = $('#lk-dlg'), body = $('#lk-body'), btns = $('#lk-btns'), n = 0;
+    function zu() { dlg.hidden = true; }
+    function merken(tage) { if (!data.profil) data.profil = {}; var lk = data.profil.lkDone || (data.profil.lkDone = {}); tage.forEach(function (t) { lk[t] = 1; }); }
+    function weiter() { runs.shift(); if (runs.length) zeigen(); else { zu(); toast('Eingetragen.'); try { renderMonat(); renderOpenDay(); } catch (e) { } } }
+    function eintragen(tage, st) { tage.forEach(function (t) { if (!data.days[t]) data.days[t] = { status: st }; }); merken(tage); save(); ins('luecke_' + st); }
+    function zeigen() {
+      var r = runs[0], a = r[0], z = r[r.length - 1];
+      $('#lk-h').textContent = 'Nichts eingetragen';
+      body.innerHTML = '<p><b>' + esc(r.length > 1 ? fmtShort(a) + ' – ' + fmtShort(z) : fmtShort(a)) + '</b></p>' + (r.length > 1 ? '<p class="hint"><b>' + r.length + '</b> <span>Arbeitstage</span></p>' : '') + '<p>Was war da?</p>' +
+        '<div class="wzlist">' + [['frei', 'Frei'], ['urlaub', 'Urlaub'], ['krank', 'Krankenstand'], ['za', 'Zeitausgleich'], ['pflege', 'Pflegefreistellung'], ['arbeit', 'Ich habe gearbeitet']].map(function (x) { return '<button type="button" class="btn wzopt" data-lk="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
+      btns.innerHTML = '<button type="button" class="btn" id="lk-spaeter">Später</button>';
+      dlg.hidden = false; $('#lk-spaeter').onclick = zu;
+      body.querySelectorAll('[data-lk]').forEach(function (b) { b.onclick = function () { wahl(b.dataset.lk, b.textContent); }; });
+    }
+    function wahl(st, name) {
+      var r = runs[0];
+      if (st === 'arbeit') { merken(r); save(); zu(); openEditor(r[0], 'erfassen'); toast('Hier kannst du den Tag nachtragen.'); return; }
+      if (r.length === 1) { eintragen(r, st); weiter(); return; }
+      $('#lk-h').textContent = name;
+      body.innerHTML = '<p>Bis wann?</p><select id="lk-bis" aria-label="Bis wann?">' + r.map(function (t, i) { return '<option value="' + i + '"' + (i === r.length - 1 ? ' selected' : '') + '>' + esc(fmtShort(t)) + '</option>'; }).join('') + '</select><p class="hint"><b id="lk-n">' + r.length + '</b> <span>Tage</span></p>';
+      btns.innerHTML = '<button type="button" class="btn primary" id="lk-ok">Eintragen</button><button type="button" class="btn" id="lk-zur">Zurück</button>';
+      $('#lk-bis').onchange = function () { $('#lk-n').textContent = (+this.value + 1); };
+      $('#lk-zur').onclick = zeigen;
+      $('#lk-ok').onclick = function () { var k = +$('#lk-bis').value + 1; eintragen(r.slice(0, k), st); var rest = r.slice(k); runs.shift(); if (rest.length) runs.unshift(rest); if (runs.length) zeigen(); else { zu(); toast('Eingetragen.'); try { renderMonat(); renderOpenDay(); } catch (e) { } } };
+    }
+    zeigen(); return true;
+  }
   function saveDay() {
     var d = ui.edDraft, st = d.status;
     if (st === 'arbeit') {
@@ -838,7 +882,7 @@
     ui.edBase = JSON.stringify(ui.edDraft);
     save();
     var saved = ui.edDate;
-    setTimeout(function () { try { if (window.berichtFrage) window.berichtFrage(saved); } catch (e) { } }, 400);
+    setTimeout(function () { try { if (lueckenFrage(saved)) return; if (window.berichtFrage) window.berichtFrage(saved); } catch (e) { } }, 400);
     toast(out.von && !out.bis ? 'Gespeichert. Das Ende trägst du später nach.' : 'Gespeichert: ' + fmtShort(saved));
     if (ui.edFrom === 'monat') { var p = E.parseISO(saved); ui.y = p.y; ui.m = p.m; show('monat'); }
     else openEditor(out.von && !out.bis ? saved : E.addDays(saved, 1), 'erfassen'); // nach dem Speichern zum nächsten Tag, außer der Dienst läuft noch (Ende fehlt)
@@ -1294,6 +1338,7 @@
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
+      { v: E1, sel: '#s-luecke', up: k, t: 'Soll ich nachfragen, wenn Tage ohne Eintrag bleiben, zum Beispiel bei Urlaub oder Krankenstand? Dann lass den Schalter an.' },
       { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Setze die Haken nur, wenn du es willst.' },
       { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
@@ -1521,6 +1566,7 @@
     }
     $('#s-fotobox').addEventListener('click', function (ev) { if (ev.target.id === 'foto-weg') { try { localStorage.removeItem('stundenchecker.foto'); } catch (e) { } fotoZeigen(); } });
     $('#s-ansichtsel').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.monatAnsicht = this.value; save(); });
+    $('#s-luecke').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.lueckenFrage = this.checked; save(); });
     $('#s-tagf').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.tagesfuehrung = this.checked; save(); });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
@@ -1566,7 +1612,7 @@
     [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
     $('#s-ansichtsel').value = (data.profil && data.profil.monatAnsicht) || 'liste';
-    fotoZeigen(); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
+    fotoZeigen(); $('#s-luecke').checked = !(data.profil && data.profil.lueckenFrage === false); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
