@@ -1226,6 +1226,7 @@
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist freiwillig.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Setze den Haken, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann setze den Haken.' },
+      { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist freiwillig. Setze die Haken nur, wenn du es willst.' },
       { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist freiwillig.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
@@ -1321,8 +1322,9 @@
   }
 
   function wzFinish() {
-    ins('assistent');
-    var w = ui.wiz, ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
+    var w = ui.wiz;
+    ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
+    var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
@@ -1335,7 +1337,9 @@
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; data.profil.vorname = String(w.vorname || '').trim().slice(0, 40); data.profil.nachname = String(w.nachname || '').trim().slice(0, 60); }
     if (String(w.paket).indexOf('de_') === 0 && w.bl) { if (!data.profil) data.profil = {}; data.profil.bl = w.bl; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
+    if (w.mode === 'start' && (w.cStat || w.cMia)) { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: !!w.cStat, miaFragen: !!w.cMia }; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
+    if (start && data.profil && data.profil.consent) { try { window.StundenInsights.push(true); } catch (e) {} }
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
     if (start) { show('einstellungen', true); setTimeout(function () { tourStart(true, true); }, 500); }
     else {
@@ -1405,6 +1409,7 @@
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
+        (w.mode === 'start' ? '<h4>Mithelfen (freiwillig)</h4><label class="check"><input type="checkbox" data-wfc="statistik"' + (w.cStat ? ' checked' : '') + '><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label><label class="check"><input type="checkbox" data-wfc="miaFragen"' + (w.cMia ? ' checked' : '') + '><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>' : '') +
         '<p class="hint">Alles Weitere kannst du später in den Einstellungen nachtragen.</p>';
     }
     var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn' || w.step === 'mia';
@@ -1430,7 +1435,7 @@
     });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
     ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
-    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
+    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
     $('#kv-send').addEventListener('click', function () {
       var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
       if (!f.name && !f.gruppe) { toast('Bitte trage mindestens den Kollektivvertrag oder die Einstufung ein.'); return; }
@@ -1461,6 +1466,7 @@
   function renderFeedback() {
     var c = $('#fb-card'); if (!c) return;
     c.hidden = !(window.StundenInsights && window.StundenInsights.on);
+    var sh = $('#s-help'); if (sh) sh.hidden = c.hidden;
     var co = (data.profil && data.profil.consent) || {};
     if ($('#c-stat')) $('#c-stat').checked = !!co.statistik;
     if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
@@ -2371,9 +2377,11 @@
   function lzLabels(lines) {
     var out = [], seen = {};
     (lines || []).forEach(function (ln) {
-      var t = String(ln).replace(/\d/g, '#').replace(/#+(?:[.,]#+)*/g, '#').replace(/\s+/g, ' ').trim();
-      if (!/\d[.,]\d\d(?!\d)/.test(String(ln)) || /iban|bic\b|@|tel\.|sv-?nr|sozialvers.*nummer|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b/i.test(t) || !/[A-Za-zÄÖÜäöüß]{3}/.test(t) || t.length > 48 || seen[t]) return;
-      seen[t] = 1; out.push(t);
+      var m = /^(.*?)\d[\d.]*[.,]\d\d(?!\d)/.exec(String(ln)); if (!m) return;
+      var t = m[1].replace(/^[\d\s.\-:]+/, '').replace(/\s+/g, ' ').trim();
+      if (!/[A-Za-zÄÖÜäöüß]{3}/.test(t) || /\d/.test(t) || t.length > 40 || t.split(' ').length > 5 || seen[t.toLowerCase()]) return;
+      if (/iban|bic\b|@|tel\.|sv-?nr|sozialvers|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b|gmbh|\bkg\b|\bag\b|wien|graz|linz|salzburg|innsbruck|klagenfurt|bregenz|eisenstadt|st\. pölten/i.test(t)) return;
+      seen[t.toLowerCase()] = 1; out.push(t);
     });
     return out.slice(0, 60);
   }
