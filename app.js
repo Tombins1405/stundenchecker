@@ -2878,13 +2878,13 @@
   /* ---- Lohnzettel automatisch lesen (nur mit Zustimmung, nur auf dem Gerät) ---- */
   var lzUi = { step: '', res: null, buf: null, pwOk: null };
   function lzProfil() { if (!data.profil) data.profil = {}; return data.profil; }
-  function miaKopf() { try { return '<div style="width:64px;margin:0 auto">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { return ''; } }
+  function miaKopf() { try { return '<div class="lzfig">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { return ''; } }
   function lzOpen(step) { lzUi.step = step || (lzProfil().lzLesen === true ? 'datei' : 'erlaubnis'); lzRender(); $('#lz-dlg').hidden = false; }
   function lzClose() { $('#lz-dlg').hidden = true; lzUi.buf = null; lzUi.pwOk = null; lzUi.pwMem = null; lzUi.queue = []; }
   function lzBtn(txt, id, cls) { return '<button type="button" class="btn' + (cls ? ' ' + cls : '') + '" id="' + id + '">' + txt + '</button>'; }
   function lzRender() {
     var h = $('#lz-h'), b = $('#lz-body'), bt = $('#lz-btns'), s = lzUi.step, svg = '';
-    try { svg = '<div style="width:64px;margin:0 auto">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { }
+    try { svg = '<div class="lzfig">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div>'; } catch (e) { }
     if (s === 'erlaubnis') {
       h.textContent = 'Darf ich dir das Abtippen abnehmen?';
       b.innerHTML = svg + '<p>Wenn du magst, lese ich künftig deinen Lohnzettel für dich ab. Dann musst du die Stunden nicht mehr von Hand eintragen, und ich vergleiche sie gleich mit deiner Aufzeichnung.</p>' +

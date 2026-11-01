@@ -694,3 +694,12 @@ h3[data-ico="flag"]::before { background: #b0124f; }
 .festdates { flex: 1 1 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
 .festdates label { display: grid; gap: 4px; font-size: 14px; }
 .festdates { grid-column: 1 / -1; }
+
+/* Mia in Fenstern (Lohnzettel, Fristen, Bericht): Figur links, Sprechblase wie im Eintragen-Fenster */
+#lz-body, #rb-dbody { display: flow-root; }
+.lzfig { width: 76px; margin: 0 auto 8px; }
+.lzfig svg { width: 100%; height: auto; display: block; }
+.lzfig:has(+ p) { float: left; margin: 0 12px 6px 0; }
+.lzfig + p { position: relative; display: flow-root; margin: 0; background: var(--accent-soft); color: var(--ink); border-radius: 16px; padding: 10px 14px; line-height: 1.4; min-height: 64px; }
+.lzfig:has(+ p) + p::before { content: ''; position: absolute; left: -7px; bottom: 18px; border: 7px solid transparent; border-left: 0; border-right-color: var(--accent-soft); }
+.lzfig + p + * { clear: both; margin-top: 12px; }
