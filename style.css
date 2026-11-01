@@ -578,6 +578,7 @@ h3[data-ico="cloud"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www
 .mgrid .mg-c.rest { background: var(--bg-soft, rgba(128,128,128,.08)); }
 .mgrid .mg-c.today { border-color: var(--accent); border-width: 2px; }
 .mgrid .mg-c .d-ico { width: 20px; height: 20px; }
+.mgrid .mg-c .mg-ic { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; }
 .mgrid .mg-c .d-ico svg { width: 14px; height: 14px; }
 .mgrid .mg-e { visibility: hidden; border: 0; }
 

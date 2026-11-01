@@ -304,8 +304,11 @@
       cm.tage.forEach(function (r) {
         var d = data.days[r.datum] || {}, ik = r.leer ? '' : (r.status === 'arbeit' && r.swMin && !r.nettoMin ? 'sw' : r.status), v = '';
         if (!r.leer) { if (r.status === 'arbeit' && r.nettoMin > 0) v = fh(r.nettoMin / 60); else if (r.creditMin) v = fh(r.creditMin / 60); }
-        var ic = ik && ik !== 'arbeit' ? '<span class="d-ico">' + dayIco(ik) + '</span>' : '', dd = E.parseISO(r.datum).d;
-        g += '<button type="button" class="mg-c' + (r.typ !== 'werktag' ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '') + '" data-date="' + r.datum + '" aria-label="' + esc(fmtShort(r.datum)) + '"><b>' + dd + '</b>' + ic + (v ? '<small>' + v + '</small>' : '') + '</button>';
+        var gdn = false; if (!r.leer && d.dienste) Object.keys(d.dienste).forEach(function (q) { if (+d.dienste[q] > 0) gdn = true; });
+        if (!ik && r.feiertag) ik = 'feiertag';
+        var gfr = fristenAm(r.datum).length > 0;
+        var ic = (ik && ik !== 'arbeit' ? '<span class="d-ico">' + dayIco(ik) + '</span>' : '') + (gdn ? '<span class="d-ico st-dienst-i">' + dayIco('dienst') + '</span>' : '') + (gfr ? '<span class="d-ico st-frist-i">' + dayIco('frist') + '</span>' : ''), dd = E.parseISO(r.datum).d;
+        g += '<button type="button" class="mg-c' + (r.typ !== 'werktag' ? ' rest' : '') + (r.datum === today ? ' today' : '') + (ik ? ' st-' + ik : '') + '" data-date="' + r.datum + '" aria-label="' + esc(fmtShort(r.datum) + (r.feiertag ? ', ' + r.feiertag : '')) + '"><b>' + dd + '</b><span class="mg-ic">' + ic + '</span>' + (v ? '<small>' + v + '</small>' : '') + '</button>';
       });
       $('#m-grid').innerHTML = g;
     }
