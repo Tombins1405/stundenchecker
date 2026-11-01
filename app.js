@@ -1510,14 +1510,19 @@
     var g1 = ['#s-vorname', '#s-geb', '#s-firma', '#k-eintritt', '#s-beruf', '#s-einst', '#s-lgbox', '#s-monat', '#s-monatstd', '#s-lohn'], g2 = ['#s-umodell', '#s-gleitbox', '#s-woche', '#s-tagsollfield', '#s-grenzefield', '#s-uzus', '#s-pauseauto', '#s-runan', '#s-zsa', '#s-praemien'];
     function pick(l) { return l.map(function (q) { return mid.filter(function (x) { return x.sel === q; })[0]; }).filter(Boolean); }
     var p3 = mid.filter(function (x) { return g1.indexOf(x.sel) < 0 && g2.indexOf(x.sel) < 0; });
-    p3.push({ v: E1, sel: '#mia-aktiv', up: k, t: 'Soll ich mich von selbst melden, wenn etwas zu tun ist? Dann lass den Schalter an.' });
+    var ti = p3.map(function (x) { return x.sel; }).indexOf('#s-tagf'); if (ti < 0) ti = p3.length;
+    p3.splice(ti, 0, { v: E1, sel: '#mia-aktiv', up: k, t: 'Soll ich mich von selbst melden, wenn etwas zu tun ist? Dann lass den Schalter an.' });
     return [first].concat(pick(g1),
       [{ t: 'Teil 2 von 4: Arbeitszeit und Zuschläge. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 2 }], pick(g2),
       [{ t: 'Teil 3 von 4: Diäten, Berichte und Extras. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 3 }], p3,
-      [{ t: 'Teil 4 von 4: Dein Profil mit mir und deinen Fristen. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 4 },
+      [{ ask: true, kap: 4, t: 'Deine Einstellungen sind durch. Möchtest du jetzt auch gleich dein Profil mit mir durchgehen? Dort kannst du mich verkleiden, mir einen Namen und eine Stimme geben und deine Ausweise mit Ablaufdatum anlegen.' },
+        { t: 'Teil 4 von 4: Dein Profil mit mir und deinen Fristen. Du kannst jederzeit auf Beenden tippen. Ich merke mir, wo wir waren.', kap: 4 },
         { v: 'konten', sel: '#s-foto', up: f, t: 'Optional: ein Profilbild. Du kannst es überspringen.' },
-        { v: 'konten', sel: '#mia-choose', t: 'Hier wählst du, ob ich Mia oder Milo bin. Darunter kannst du mir auch einen eigenen Namen geben.' },
-        { v: 'konten', sel: '#mia-spricht', up: k, t: 'Soll ich auch sprechen? Dann wähle danach eine Stimme aus.' },
+        { v: 'konten', sel: '#mia-choose', t: 'Hier wählst du, ob ich Mia oder Milo bin.' },
+        { v: 'konten', sel: '#mia-name', up: f, t: 'Wenn du magst, gib mir einen eigenen Namen. Sonst bleibe ich Mia oder Milo.' },
+        { v: 'konten', sel: '#mia-eigen', up: k, t: 'Schalte ein, wenn du mein Aussehen selbst zusammenstellen willst: Kopf, Oberteil, Unterteil und Zubehör.' },
+        { v: 'konten', sel: '#mia-spricht', up: k, t: 'Soll ich auch sprechen? Wenn du es einschaltest, kannst du danach meine Stimme einstellen.' },
+        { v: 'konten', sel: '#mia-vwrap', t: 'Hier wählst du meine Stimme und den Klang. Mit den Reglern mache ich höher oder tiefer, schneller oder langsamer. Tippe unten auf „Probe hören“.' },
         { v: 'konten', sel: '#fr-add', t: 'Hier legst du Ausweise, Kurse und Prüfungen mit Ablaufdatum an, zum Beispiel Code 95 oder Staplerschein. Ich erinnere dich rechtzeitig.' }], [last]);
   }
   function assistBase() {
@@ -1611,7 +1616,7 @@
     ov.innerHTML = '<div class="tour-hl" id="tour-hl" hidden></div><div class="tour-box" id="tour-box"></div>';
     var last = idx === T.s.length - 1, first = idx === 0;
     $('#tour-box').innerHTML = '<div class="tour-mia">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div><div class="tour-body"><p></p><div class="tour-btns">' +
-      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (last ? 'Fertig' : (first && (T.assist || T.tag) ? 'Los geht’s' : 'Weiter')) + '</button><button type="button" class="linkbtn" data-tour="end">Beenden</button></div></div>';
+      (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (st.ask ? 'Ja, gleich' : last ? 'Fertig' : (first && (T.assist || T.tag) ? 'Los geht’s' : 'Weiter')) + '</button>' + (st.ask ? '<button type="button" class="btn" data-tour="later">Später</button><button type="button" class="btn" data-tour="nein">Nein danke</button>' : '<button type="button" class="linkbtn" data-tour="end">Beenden</button>') + '</div></div>';
     $('#tour-box p').textContent = st.t;
     $('#tour-box').style.top = (T.assist || T.live) ? '8px' : '30%'; $('#tour-box').style.bottom = 'auto';
     setTimeout(function () {
@@ -2069,7 +2074,7 @@
   /* ============================================================ Ereignisse */
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
-    if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else tourEnd(false); return; }
+    if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else if (t.dataset.tour === 'nein') tourEnd(true); else tourEnd(false); return; }
     if (t.id === 'tour-start') { tourStart(); return; }
     if (t.id === 'assist-start') { tourStart(true); return; }
     if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }

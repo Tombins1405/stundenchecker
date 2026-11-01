@@ -369,6 +369,8 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .miabubble2 { background: #fff; color: #1f2937; border: 2px solid #1e6fd9; border-radius: 16px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.2); }
 .miabubble2 p { margin: 0 0 10px; }
 .miabubble2 .btns { display: flex; gap: 8px; }
+.miabubble2 .linkbtn { text-align: center; text-decoration: none; display: block; width: 100%; margin: 8px 0 0; padding: 10px 14px; border: 1px solid #1e6fd9; border-radius: 12px; background: #fff; box-shadow: 0 2px 0 rgba(30,111,217,.25); }
+.miabubble2 #mia-assist { margin-top: 14px; }
 .miabubble2[hidden] { display: none; }
 body { padding-bottom: 100px; }
 .hand { opacity: 0; transition: opacity .25s; }
