@@ -677,3 +677,11 @@ h3[data-ico="repeat"]::before { background: #bf360c; }
 .frchips { display: flex; flex-wrap: wrap; gap: 8px; }
 h3[data-ico="flag"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 3v18M6 4h12l-2.500 4L18 12H6%22/%3E%3C/svg%3E"); }
 h3[data-ico="flag"]::before { background: #b0124f; }
+
+/* Weitere Lohnzettel-Zeilen */
+#ab-extra { display: grid; gap: 10px; margin-top: 8px; }
+.abx-h { margin: 8px 0 0; }
+.abx { border: 1px solid var(--line, #cfd8dc); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+.abx-top, .abx-val { display: flex; gap: 8px; }
+.abx-top input, .abx-val input { flex: 1; min-width: 0; }
+.abx-val select { width: 80px; }

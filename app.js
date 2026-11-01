@@ -364,8 +364,36 @@
         '<div class="abapp">Deine Aufzeichnung<br><b>' + (isE ? eur.format(r.app) : fh(r.app) + ' h') + '</b></div>' +
         '<span class="chip" data-chip="' + r.key + '"></span></div></div>';
     }).join('');
+    renderAbExtra();
     paintAbgleich();
   }
+  /* ---- Weitere Zeilen vom Lohnzettel (frei benannt) ---- */
+  function abExtra(neu) { var k = monthKey(), o = data.abgleich[k]; if (!o && !neu) return []; if (!o) o = data.abgleich[k] = {}; if (!o.extra && neu) o.extra = []; return o.extra || []; }
+  function abExtraClean() { var k = monthKey(), o = data.abgleich[k]; if (!o) return; if (o.extra && !o.extra.length) delete o.extra; if (!Object.keys(o).some(function (q) { return q !== 'test' && o[q] != null; })) delete data.abgleich[k]; }
+  function renderAbExtra() {
+    var el = $('#ab-extra'); if (!el) return;
+    el.innerHTML = '<h4 class="abx-h">Weitere Zeilen vom Lohnzettel</h4>' + abExtra().map(function (x, i) {
+      return '<div class="abx" data-i="' + i + '"><div class="abx-top"><input type="text" data-f="name" maxlength="50" value="' + esc(x.name || '') + '" placeholder="Name der Zeile, wie auf dem Lohnzettel" aria-label="Name der Zeile"><button type="button" class="btn" data-act="x" aria-label="Entfernen">×</button></div>' +
+        '<div class="abx-val"><input type="number" data-f="wert" inputmode="decimal" step="0.01" value="' + (x.wert == null ? '' : esc(x.wert)) + '" placeholder="Wert" aria-label="Wert"><select data-f="einheit" aria-label="Einheit"><option value="€"' + (x.einheit !== 'h' ? ' selected' : '') + '>€</option><option value="h"' + (x.einheit === 'h' ? ' selected' : '') + '>h</option></select></div>' +
+        '<label class="check"><input type="checkbox" data-f="senden"' + (x.senden ? ' checked' : '') + '><span>Bezeichnung an die Entwickler schicken (ohne Betrag)</span></label></div>';
+    }).join('') + '<button type="button" class="btn" id="abx-add">+ Weitere Zeile</button>' + (abExtra().length ? '<p class="hint">Diese Zeilen kann die App noch nicht prüfen. Sie sind für dich notiert.</p>' : '');
+  }
+  (function () {
+    var el = $('#ab-extra'); if (!el) return;
+    function sendName(x) { if (!x.senden || !x.name || x.gesendet === x.name + '|' + x.einheit) return; try { window.StundenInsights.feedback('wunsch', '[Lohnzettel-Zeile fehlt] ' + x.name + ' (' + x.einheit + ')', null).then(function () { x.gesendet = x.name + '|' + x.einheit; save(); toast('Danke! Die Bezeichnung ist bei den Entwicklern angekommen.'); }, function () { }); } catch (e) { } }
+    el.addEventListener('change', function (ev) {
+      var t = ev.target, r = t.closest('.abx'); if (!r || !t.dataset.f) return; var x = abExtra()[+r.dataset.i]; if (!x) return;
+      if (t.dataset.f === 'wert') { var n = parseFloat(String(t.value).replace(',', '.')); x.wert = isNaN(n) ? null : n; }
+      else if (t.dataset.f === 'senden') x.senden = t.checked;
+      else x[t.dataset.f] = t.value;
+      delete data.abgleich[monthKey()].test; save(); sendName(x); renderAbExtra();
+    });
+    el.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b) return;
+      if (b.id === 'abx-add') { abExtra(true).push({ name: '', wert: null, einheit: '€', senden: false }); save(); renderAbExtra(); var ii = el.querySelectorAll('.abx [data-f=name]'); if (ii.length) ii[ii.length - 1].focus(); }
+      else if (b.dataset.act === 'x') { var r = b.closest('.abx'); abExtra().splice(+r.dataset.i, 1); abExtraClean(); save(); renderAbExtra(); }
+    });
+  })();
   function paintAbgleich() {
     var lz = data.abgleich[monthKey()] || {}, rows = E.abgleich(ui.summe, lz, ui.abAlle, fixLohn()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);

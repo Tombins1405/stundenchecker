@@ -55,7 +55,7 @@
     if (mode === 'register' && pw !== $('#a-pw2').value) { say('Die beiden Passwörter sind nicht gleich. Bitte noch einmal eintippen.'); return; }
     say(''); busy(true);
     var p = mode === 'register'
-      ? auth.createUserWithEmailAndPassword(mail, pw).then(function (c) { return c.user.sendEmailVerification().catch(function () {}); })
+      ? auth.createUserWithEmailAndPassword(mail, pw).then(function (c) { try { if (window.StundenInsights) window.StundenInsights.admin('Neue Registrierung'); } catch (e) { } return c.user.sendEmailVerification().catch(function () {}); })
       : auth.signInWithEmailAndPassword(mail, pw);
     p.catch(function (e) { say(msg(e)); }).then(function () { busy(false); });
   }
