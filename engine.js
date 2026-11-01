@@ -292,8 +292,9 @@
 
   // Lohngruppen laut Kollektivvertrag als Vorschlag für den Stundenlohn (Arbeiter, 2026). Quelle: wko.at Lohnordnungen.
   var STUFEN_AT = ['bis 5 Jahre im Betrieb', 'über 5 bis 10 Jahre', 'über 10 bis 15 Jahre', 'über 15 bis 20 Jahre', 'über 20 Jahre'];
+  var STUFEN_HANDEL = ['Berufsjahr 1 bis 3', 'Berufsjahr 4 bis 6', 'Berufsjahr 7 bis 9', 'Berufsjahr 10 bis 12', 'ab Berufsjahr 13'];
   var LOHNGRUPPEN = {
-    gueter: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, gruppen: [
+    gueter: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, eintritt: true, gruppen: [
       { id: '1', name: 'Gruppe 1: Hilfsarbeiter, Garage, Mitfahrer, Lkw bis 3,5 t, Stapler', l: [12.34, 12.63, 12.96, 13.27, 13.60] },
       { id: '2', name: 'Gruppe 2: Lkw über 3,5 t, bis 3 Achsen', l: [12.59, 12.92, 13.23, 13.63, 13.94] },
       { id: '3', name: 'Gruppe 3: Lkw über 3,5 t, mehr als 3 Achsen', l: [12.78, 13.07, 13.44, 13.79, 14.12] },
@@ -304,7 +305,17 @@
       { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', l: [13.63, 13.94, 14.27, 14.59, 14.92] },
       { id: '7', name: 'Gruppe 7: Tankstellenbelieferung (Treibstoff, Heizöl)', l: [13.94, 14.27, 14.60, 14.92, 15.22] }
     ] },
-    klein: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, gruppen: [
+    handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
+      { id: 'A', name: 'Beschäftigungsgruppe A (Angestellte, Gehalt ÷ 158)', l: [13.23, 13.56, 13.88, null, null] },
+      { id: 'B', name: 'Beschäftigungsgruppe B (Angestellte, Gehalt ÷ 158)', l: [13.65, 14.06, 14.46, null, null] },
+      { id: 'C', name: 'Beschäftigungsgruppe C (Angestellte, Gehalt ÷ 158)', l: [14.25, 14.77, 15.52, 16.23, 17.01] },
+      { id: 'D', name: 'Beschäftigungsgruppe D (Angestellte, Gehalt ÷ 158)', l: [14.95, 15.88, 16.94, 17.99, 19.06] },
+      { id: 'E', name: 'Beschäftigungsgruppe E (Angestellte, Gehalt ÷ 158)', l: [16.04, 17.47, 18.90, 20.34, 21.75] },
+      { id: 'F', name: 'Beschäftigungsgruppe F (Angestellte, Gehalt ÷ 158)', l: [18.22, 20.38, 22.53, 24.70, 26.86] },
+      { id: 'G', name: 'Beschäftigungsgruppe G (Angestellte, Gehalt ÷ 158)', l: [22.53, 24.91, 27.30, 29.68, 32.06] },
+      { id: 'H', name: 'Beschäftigungsgruppe H (Angestellte, Gehalt ÷ 158)', l: [27.72, 30.32, 32.93, 35.52, 38.11] }
+    ] },
+    klein: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, eintritt: true, gruppen: [
       { id: '1', name: 'Kraftfahrer bis 3,5 t und sonstige Arbeiter (Kleintransportgewerbe)', l: [11.20, 11.56, 11.80, 12.27, 12.87] }
     ] },
     bau: { stand: 'ab 1.5.2026', stufen: null, gruppen: [

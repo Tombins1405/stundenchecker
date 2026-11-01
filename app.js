@@ -401,7 +401,18 @@
   }
   function monKurz(y, m) { return MON[m - 1].slice(0, 3) + ' ' + String(y).slice(2); }
   function numIn(id, val, ph) { return '<input type="number" class="kin" id="' + id + '" inputmode="decimal" step="0.01" value="' + (val == null ? '' : esc(val)) + '" placeholder="' + (ph || '') + '" aria-label="' + esc(ph || 'Wert') + '">'; }
+  function renderJahr() { // Stunden je Monat des Jahres als Balken
+    var box = $('#k-jahr-chart'); if (!box) return;
+    var y = ui.y, hh = [], mx = 0, i;
+    for (i = 1; i <= 12; i++) { var v = 0; try { v = E.calcMonth(data, y, i, todayISO(), { ohneSpaeter: true }).summe.istStd || 0; } catch (e) { } hh.push(v); if (v > mx) mx = v; }
+    if (!mx) { box.parentNode.hidden = true; return; }
+    box.parentNode.hidden = false;
+    var W = 340, H = 150, bw = 20, g = (W - 12 * bw) / 13, o = '<svg viewBox="0 0 ' + W + ' ' + (H + 22) + '" role="img" aria-label="' + y + '">';
+    hh.forEach(function (v, k) { var bh = Math.round(v / mx * (H - 18)), bx = g + k * (bw + g); o += '<rect class="jb' + (k + 1 === ui.m ? ' cur' : '') + '" x="' + bx + '" y="' + (H - bh) + '" width="' + bw + '" height="' + bh + '" rx="3"/>' + (v ? '<text x="' + (bx + bw / 2) + '" y="' + (H - bh - 4) + '">' + Math.round(v) + '</text>' : '') + '<text x="' + (bx + bw / 2) + '" y="' + (H + 15) + '">' + (k + 1) + '</text>'; });
+    box.innerHTML = o + '</svg>';
+  }
   function renderKonten() {
+    renderJahr();
     anRender();
     renderMia();
     var p = data.profil || {};
@@ -1658,7 +1669,7 @@
     var h = '<div class="field"><label for="s-lg">Lohngruppe laut Kollektivvertrag (' + esc(lg.stand) + ')</label><select id="s-lg"><option value="">Nicht gewählt</option>' +
       lg.gruppen.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
     if (g && lg.stufen) {
-      var ls = en.ls == null || en.ls === '' ? stufeAusEintritt(en.gueltigAb) : en.ls;
+      var ls = en.ls == null || en.ls === '' ? (lg.eintritt ? stufeAusEintritt(en.gueltigAb) : '') : en.ls;
       h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
       en._lsVor = ls;
     }
@@ -2444,6 +2455,10 @@
       h.textContent = 'Das kann ich nicht lesen';
       b.innerHTML = svg + '<p>In dieser Datei steckt nur ein Bild und kein Text. Das passiert, wenn man sie ausdruckt oder mit „Als PDF drucken“ neu speichert. Nimm bitte die ursprüngliche PDF-Datei deiner Firma. Wenn du nur ein Foto oder die Papierversion hast, tippe die Zeilen im Abgleich einfach ab.</p>';
       bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Bezeichnungen eintippen', 'lz-hand') + lzBtn('Schließen', 'lz-cancel');
+    } else if (s === 'ergebnis') {
+      h.textContent = 'Das habe ich übernommen';
+      b.innerHTML = svg + '<ul class="legende">' + (lzUi.erg || []).filter(function (x) { return x.n && data.abgleich[x.y + '-' + pad(x.m)]; }).map(function (x) { return '<li><span style="flex:1"><strong>' + MON[x.m - 1] + ' ' + x.y + '</strong></span><button type="button" class="btn" data-lzdel="' + x.y + '-' + pad(x.m) + '">Löschen</button></li>'; }).join('') + '</ul>';
+      bt.innerHTML = lzBtn('Fertig', 'lz-done', 'primary');
     } else if (s === 'fehler') {
       h.textContent = 'Das hat nicht geklappt';
       b.innerHTML = svg + '<p>Ich konnte die Datei nicht öffnen. Prüfe bitte deine Internetverbindung, sie wird beim ersten Mal kurz gebraucht, um das Lesemodul zu laden. Du kannst die Zeilen auch von Hand im Abgleich eintragen.</p>';
@@ -2498,11 +2513,18 @@
     return n;
   }
   function lzFertig() {
-    var e = lzUi.erg || []; lzClose();
+    var e = lzUi.erg || [];
+    if (e.length > 1 && e.some(function (x) { return x.n; })) { lzUi.queue = []; lzUi.step = 'ergebnis'; lzRender(); return; } // mehrere Monate: Liste mit Löschknopf je Monat
+    lzClose();
     if (!e.length) return;
     var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
     var txt = e.some(function (x) { return x.n; }) ? 'Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.' : 'Nichts übernommen.';
     toast(txt, 7000);
+    setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
+  }
+  function lzFertig2(e) {
+    lzClose(); var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
+    toast('Übernommen. Unter „Stimmt mein Lohnzettel?“ siehst du das Ergebnis.', 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
   function lzNext() {
@@ -2543,6 +2565,8 @@
         try { window.StundenInsights.feedback('wunsch', '[Lohnzettel-Vorlage] ' + sel.join(' | ').slice(0, 1800), null).then(function () { toast('Danke! Ich lerne diesen Lohnzettel kennen.', 5000); ins('lz_vorlage'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
         lzClose();
       }
+      else if (t.dataset && t.dataset.lzdel) { delete data.abgleich[t.dataset.lzdel]; save(); lzRender(); }
+      else if (t.id === 'lz-done') { lzUi.step = 'x'; lzUi.queue = []; var e2 = (lzUi.erg || []).filter(function (x) { return data.abgleich[x.y + '-' + pad(x.m)]; }); lzUi.erg = e2.length ? e2.map(function (x) { return { y: x.y, m: x.m, n: 1 }; }) : []; if (e2.length) lzFertig2(e2); else lzClose(); }
       else if (t.id === 'lz-nein') { lzProfil().lzLesen = false; save(); lzClose(); renderSettings(); }
       else if (t.id === 'lz-weiter') { lzProfil().lzLesen = true; save(); ins('lz_erlaubt'); lzUi.step = 'datei'; lzRender(); renderSettings(); }
       else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }

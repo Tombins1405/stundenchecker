@@ -640,3 +640,10 @@ h3[data-ico="scan"]::before { background: #00838f; }
 .legende li { display: flex; gap: 12px; align-items: flex-start; font-size: .95rem; }
 .legende .d-ico { flex: none; }
 #m-legende { margin: 14px 0 6px; }
+
+h3[data-ico="chart"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M4%2020V10M10%2020V4M16%2020v-7M22%2020H2%22/%3E%3C/svg%3E"); }
+h3[data-ico="chart"]::before { background: #ff6f00; }
+#k-jahr-chart svg { width: 100%; height: auto; display: block; }
+#k-jahr-chart .jb { fill: var(--accent); }
+#k-jahr-chart .jb.cur { fill: #ff6f00; }
+#k-jahr-chart text { fill: var(--muted, #667); font-size: 11px; text-anchor: middle; }
