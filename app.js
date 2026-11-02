@@ -1043,7 +1043,7 @@
     while (d < bis) {
       if (!data.days[d]) {
         var wd = E.weekday(d), typ = E.dayTyp(d);
-        fl.forEach(function (r) { if (r.von && d < r.von) return; if (r.bis && d > r.bis) return; if (!data.days[d] && +r.wd === wd && typ !== 'sonntag' && typ !== 'feiertag' && E.STATUS[r.art]) { data.days[d] = { status: r.art, fest: true }; n++; } });
+        fl.forEach(function (r) { if (r.von && d < r.von) return; if (r.bis && d > r.bis) return; if (!data.days[d] && +r.wd === wd && typ !== 'feiertag' && E.STATUS[r.art]) { data.days[d] = { status: r.art, fest: true }; n++; } });
       }
       d = E.addDays(d, 1);
     }
@@ -1128,7 +1128,7 @@
     zeigen(); return true;
   }
   /* ---- Feste freie Tage (Einstellungen) ---- */
-  var FEST_TAGE = [[1, 'Montag'], [2, 'Dienstag'], [3, 'Mittwoch'], [4, 'Donnerstag'], [5, 'Freitag'], [6, 'Samstag']];
+  var FEST_TAGE = [[1, 'Montag'], [2, 'Dienstag'], [3, 'Mittwoch'], [4, 'Donnerstag'], [5, 'Freitag'], [6, 'Samstag'], [0, 'Sonntag']];
   function festListe() { if (!data.profil) data.profil = {}; return data.profil.festTage || (data.profil.festTage = []); }
   function renderFest() {
     var el = $('#fest-list'); if (!el) return;
