@@ -797,6 +797,47 @@
     });
     return rows;
   }
+
+  // Nachzahlungen und Korrekturen: Einträge auf einem späteren Lohnzettel, die zu einem früheren Monat gehören.
+  // lzAlle = data.abgleich. Liefert die Lohnzettel-Werte von Monat key inklusive Nachzahlung (plus) und Rückverrechnung (minus).
+  function korrEuroZeile(k) { return k === 'dEuro' || String(k).indexOf('pr_') === 0 || String(k).indexOf('ds_') === 0; }
+  function lzMitKorr(lzAlle, key) {
+    var lz = {}, base = (lzAlle && lzAlle[key]) || {}, nach = {};
+    Object.keys(base).forEach(function (k) { lz[k] = base[k]; });
+    Object.keys(lzAlle || {}).sort().forEach(function (zk) {
+      ((lzAlle[zk] && lzAlle[zk].korr) || []).forEach(function (e) {
+        if (!e || e.bezug !== key || (e.art !== 'nach' && e.art !== 'rueck') || !e.zeile || e.zeile === 'sonst' || !hasNum(e.wert)) return;
+        var euro = korrEuroZeile(e.zeile);
+        if ((euro ? '€' : 'h') !== (e.einheit || (euro ? '€' : 'h'))) return;
+        var w = (e.art === 'rueck' ? -1 : 1) * +e.wert;
+        lz[e.zeile] = r2((hasNum(lz[e.zeile]) ? +lz[e.zeile] : 0) + w);
+        var n = nach[e.zeile] || (nach[e.zeile] = { sum: 0, n: 0 }); n.sum = r2(n.sum + w); n.n++;
+      });
+    });
+    return { lz: lz, nach: nach };
+  }
+  // Stundenlohn aufgerollt: Unterschied je Stunde mal Stunden. Überstunden zählen mit Zuschlag.
+  // monate: [{ monat, normalStd, ueberStd, alt, neu }], zuschlagPct (Standard 50)
+  function aufrollSumme(monate, zuschlagPct) {
+    var zus = zuschlagPct == null || isNaN(+zuschlagPct) ? 50 : +zuschlagPct, summe = 0, zeilen = [];
+    (monate || []).forEach(function (m) {
+      var d = r2((+m.neu || 0) - (+m.alt || 0)), n = +m.normalStd || 0, u = +m.ueberStd || 0;
+      var e1 = r2(n * d), e2 = r2(u * d * (1 + zus / 100)), e = r2(e1 + e2);
+      summe = r2(summe + e);
+      zeilen.push({ monat: m.monat, delta: d, normalStd: n, ueberStd: u, normalEuro: e1, ueberEuro: e2, euro: e });
+    });
+    return { summe: summe, zeilen: zeilen, zuschlagPct: zus };
+  }
+  // Sonderzahlungen (13./14. Gehalt, Urlaubszuschuss, Weihnachtsgeld): Soll = Jahresbetrag mal Anteil des Jahres. Anteil: Eintritt im selben Jahr, sonst 1.
+  function sonderAnteil(eintritt, jahr) {
+    if (!eintritt || !/^\d{4}-\d{2}-\d{2}$/.test(eintritt)) return 1;
+    var y = +eintritt.slice(0, 4), m = +eintritt.slice(5, 7), d = +eintritt.slice(8, 10);
+    if (y < jahr) return 1; if (y > jahr) return 0;
+    var rest = 12 - m + 1 - (d > 1 ? (d - 1) / daysInMonth(y, m) : 0);
+    return Math.max(0, Math.min(1, Math.round(rest / 12 * 10000) / 10000));
+  }
+  function sonderSoll(betrag, anteil) { return hasNum(betrag) ? r2(+betrag * (anteil == null ? 1 : anteil)) : null; }
+
   // Wert der Unterschiede in Euro (brutto, grobe Schätzung). Positiv = dir fehlt Geld, negativ = zu viel bezahlt.
   // Braucht den Stundenlohn aus den Einstellungen. Überstunden zählen mit Zuschlag (Standard 50 %), Diäten mit dem Satz je Stunde.
   function abgleichEuro(rows, w) {
@@ -817,7 +858,7 @@
   }
 
   return {
-    abgleich: abgleich, abgleichEuro: abgleichEuro, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
+    abgleich: abgleich, abgleichEuro: abgleichEuro, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,

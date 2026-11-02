@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261102134651">
+<link rel="stylesheet" href="style.css?v=20261102140939">
 </head>
 <body>
 
@@ -124,6 +124,8 @@
       <p class="hint">Schau auf deinen Lohnzettel und tippe die Stunden ab, so wie sie dort stehen. Jede Zeile hier heißt wie auf dem Lohnzettel. Du musst nicht alle Zeilen ausfüllen.</p>
       <div id="ab-spaeter"></div>
       <div id="ab-rows"></div>
+      <div id="ab-satzwrap"></div>
+      <div id="ab-korr"></div>
       <div id="ab-extra"></div>
       <button type="button" class="linkbtn" id="ab-more" style="align-self:flex-start">Mein Lohnzettel hat noch andere Zeilen (Feiertag, Urlaub, Krankenstand)</button>
       <div id="ab-result" aria-live="polite"></div>
@@ -310,6 +312,17 @@
       <h3 data-ico="swap">Zeitausgleich-Konto</h3>
       <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Wie viele Stunden in diesem Monat aufs Konto gebucht oder abgebaut wurden, trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“). „Konto neu“ ist dein Stand danach.</p>
       <div id="k-za"></div>
+    </div>
+    <div class="card">
+      <h3 data-ico="receipt">Nachzahlungen und Korrekturen</h3>
+      <p class="hint">Alles, was die Firma später nachgezahlt oder zurückverrechnet hat. Eintragen kannst du es im Monatsabgleich beim Lohnzettel.</p>
+      <div id="k-nach"></div>
+    </div>
+    <div class="card">
+      <h3 data-ico="stack">Sonderzahlungen</h3>
+      <p class="hint">Urlaubszuschuss, Weihnachtsgeld, 13. und 14. Gehalt. Ob du Anspruch hast und wie hoch er ist, steht im Kollektivvertrag oder Arbeitsvertrag. In Österreich ist es oft ein Monatsgehalt, im Eintrittsjahr anteilig. In Deutschland gibt es keinen allgemeinen gesetzlichen Anspruch, er kommt aus Tarifvertrag, Arbeitsvertrag oder betrieblicher Übung. Trage den Jahresbetrag laut Vertrag ein, die App rechnet den Anteil für das Eintrittsjahr dazu.</p>
+      <div id="k-sonder"></div>
+      <button type="button" class="btn" id="snd-add">+ Sonderzahlung</button>
     </div>
     <div class="card" id="k-jahr">
       <h3 data-ico="chart">Stunden im Jahr</h3>
@@ -613,21 +626,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261102134651";</script>
-<script src="engine.js?v=20261102134651"></script>
+<script>window.APP_VERSION="20261102140939";</script>
+<script src="engine.js?v=20261102140939"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261102134651"></script>
-<script src="timepicker.js?v=20261102134651"></script>
-<script src="datepicker.js?v=20261102134651"></script>
-<script src="selectpicker.js?v=20261102134651"></script>
-<script src="pdf.js?v=20261102134651"></script>
-<script src="lzread.js?v=20261102134651"></script>
-<script src="app.js?v=20261102134651"></script>
-<script src="auth.js?v=20261102134651"></script>
-<script src="sync.js?v=20261102134651"></script>
-<script src="insights.js?v=20261102134651"></script>
+<script src="firebase-config.js?v=20261102140939"></script>
+<script src="timepicker.js?v=20261102140939"></script>
+<script src="datepicker.js?v=20261102140939"></script>
+<script src="selectpicker.js?v=20261102140939"></script>
+<script src="pdf.js?v=20261102140939"></script>
+<script src="lzread.js?v=20261102140939"></script>
+<script src="app.js?v=20261102140939"></script>
+<script src="auth.js?v=20261102140939"></script>
+<script src="sync.js?v=20261102140939"></script>
+<script src="insights.js?v=20261102140939"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
