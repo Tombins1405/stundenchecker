@@ -2922,11 +2922,7 @@
         b = [{ t: 'h1', text: 'Tagesbericht' }].concat(fi ? [{ t: 'p', text: fi, size: 12, bold: true }] : []);
         b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 3 }, { w: 2 }, { w: 1.4 }, { w: 1.4 }], head: ['Name', 'KFZ-Kennzeichen', 'Type', 'Datum'], rows: [[nm, fz.map(function (f) { return f.kfz; }).join(', '), '', fmtDate(ds)]] });
         b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 1.4 }, { w: 1.4 }, { w: 1 }, { w: 1 }, { w: 1 }], head: ['Anfangs-km-Stand', 'End-km-Stand', 'Diesel l', 'AdBlue l', 'Motoröl l'], rows: [[kmA, kmE, zs(fz, 'diesel'), zs(fz, 'adblue'), zs(fz, 'oel')]] });
-        var zl = [];
-        (d.kunden || []).forEach(function (k) { var ts = (k.taet && k.taet.length ? k.taet : [{ tat: '', von: '', bis: '' }]); ts.forEach(function (t) { zl.push({ von: t.von || '', bis: t.bis || '', k: k.name || '', t: t.tat || '' }); }); });
-        (d.pausen || []).forEach(function (p) { if (p.von && p.bis) zl.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); });
-        if (!zl.some(function (z) { return z.t !== 'Pause'; }) && (d.von || d.bis)) zl.push({ von: d.von || '', bis: d.bis || '', k: '', t: '' });
-        zl.sort(function (x, y) { return (x.von || '99').localeCompare(y.von || '99'); });
+        var zl = E.tagesZeilen(d);
         var tr = zl.map(function (z) { return [z.von, z.bis, z.k, z.t]; }); while (tr.length < 8) tr.push(['', '', '', '']);
         b.push({ t: 'table', fs: 12, minRow: 26, fill: true, reserve: 112, cols: [{ w: 1 }, { w: 1 }, { w: 4 }, { w: 4 }], head: ['Uhrzeit von', 'Uhrzeit bis', 'Kunde, Baustelle', 'Tätigkeit'], rows: tr });
         b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 2 }, { w: 4 }, { w: 4 }], head: ['Gesamtstd.', 'Unterschrift Fahrer', 'Unterschrift Büro'], rows: [{ cells: [r.nettoMin ? fh(r.nettoMin / 60) : '', ' ', ' '], minH: 64, img: sigImg(), col: 1 }] });

@@ -798,6 +798,35 @@
     return rows;
   }
 
+
+  // Zeilen für den Tagesbericht: Kunde von bis, Pause, danach derselbe Kunde ab Pausenende. Alte und neue Form der Kunden werden verstanden.
+  function tagesZeilen(day) {
+    day = day || {};
+    var segs = [], pausen = (day.pausen || []).filter(function (p) { return p && p.von && p.bis; }).map(function (p) { return { von: p.von, bis: p.bis, used: false }; });
+    (day.kunden || []).forEach(function (k) {
+      var ts = k.taet && k.taet.length ? k.taet : [{ tat: k.tat || '', von: k.von || '', bis: k.bis || '' }];
+      ts.forEach(function (t) { segs.push({ von: t.von || '', bis: t.bis || '', k: (k.name || '').trim(), t: t.tat || '' }); });
+    });
+    if (!segs.length && !(day.notiz && !day.kunden) && (day.von || day.bis)) segs.push({ von: '', bis: '', k: '', t: '' });
+    if (!segs.length && day.notiz && !day.kunden) segs.push({ von: '', bis: '', k: String(day.notiz).trim(), t: '' });
+    if (segs.length === 1 && !segs[0].von && !segs[0].bis) { segs[0].von = day.von || ''; segs[0].bis = day.bis || ''; }
+    segs.sort(function (a, b) { return (a.von || '99:99').localeCompare(b.von || '99:99'); });
+    var out = [];
+    segs.forEach(function (sg) {
+      var cur = sg.von, hat = sg.von && sg.bis;
+      if (hat) {
+        pausen.filter(function (p) { return !p.used && p.von >= sg.von && p.bis <= sg.bis; }).sort(function (a, b) { return a.von.localeCompare(b.von); }).forEach(function (p) {
+          if (p.von > cur) out.push({ von: cur, bis: p.von, k: sg.k, t: sg.t });
+          out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); p.used = true; cur = p.bis;
+        });
+        if (cur < sg.bis || cur === sg.von) out.push({ von: cur, bis: sg.bis, k: sg.k, t: sg.t });
+      } else out.push({ von: sg.von, bis: sg.bis, k: sg.k, t: sg.t });
+    });
+    pausen.forEach(function (p) { if (!p.used) out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); });
+    out.sort(function (a, b) { return (a.von || '99:99').localeCompare(b.von || '99:99'); });
+    return out;
+  }
+
   // Nachzahlungen und Korrekturen: Einträge auf einem späteren Lohnzettel, die zu einem früheren Monat gehören.
   // lzAlle = data.abgleich. Liefert die Lohnzettel-Werte von Monat key inklusive Nachzahlung (plus) und Rückverrechnung (minus).
   function korrEuroZeile(k) { return k === 'dEuro' || String(k).indexOf('pr_') === 0 || String(k).indexOf('ds_') === 0; }
@@ -858,7 +887,7 @@
   }
 
   return {
-    abgleich: abgleich, abgleichEuro: abgleichEuro, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
+    abgleich: abgleich, abgleichEuro: abgleichEuro, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
