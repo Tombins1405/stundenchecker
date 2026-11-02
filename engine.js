@@ -189,6 +189,7 @@
     feiertag:      { name: 'Feiertag',                credit: true },
     betriebsurlaub:{ name: 'Betrieb geschlossen / Betriebsurlaub', credit: true },
     za:            { name: 'Zeitausgleich',           credit: false },
+    ersatzruhe:    { name: 'Ersatzruhetag',           credit: false },
     arzt:          { name: 'Frei wegen Arztbesuch',   credit: false },
     frei:          { name: 'Frei',                    credit: false }
   };
@@ -454,6 +455,7 @@
 
     // Betrieb geschlossen: je nach Firma als Urlaub bezahlt oder aus den Überstunden (dann keine Gutschrift in den Stunden).
     var credit = STATUS[status].credit && !(status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden');
+    if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
     if (credit) { res.creditMin = sollMin; return res; }
     if (status !== 'arbeit') return res;
 

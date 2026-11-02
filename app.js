@@ -188,6 +188,7 @@
     feiertag: '<path d="M12 3l2.700 5.600 6.100.9-4.400 4.300 1 6.100L12 17l-5.400 2.900 1-6.100L3.200 9.500l6.100-.9z"/>',
     betriebsurlaub: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
     za: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+    ersatzruhe: '<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/>',
     frei: '<path d="M20 14.500A8 8 0 1 1 9.500 4 6.500 6.500 0 0 0 20 14.500z"/>',
     sw: '<path d="M7 15a4 4 0 0 1 .5-8 5.500 5.500 0 0 1 10.500 1.500A3.500 3.500 0 0 1 17.500 15zM9 18l-1 2M13 18l-1 2M17 18l-1 2"/>',
     dienst: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'
@@ -203,6 +204,7 @@
     ['feiertag', 'Feiertag', 'Gesetzlicher Feiertag.'],
     ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
     ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
+    ['ersatzruhe', 'Ersatzruhetag', 'Ein freier Tag als Ausgleich für Arbeit am Wochenende oder zu viele Arbeitstage hintereinander. Ob und wie die Firma ihn bezahlt, trägst du beim Tag ein.'],
     ['frei', 'Frei', 'Ein freier Tag ohne Bezahlung und ohne Stunden.'],
     ['sw', 'Ausfall / Schlechtwetter', 'Du wurdest heimgeschickt, weil es keine Arbeit gab oder das Wetter schlecht war.'],
     ['dienst', 'Bereitschaft / Dienst', 'An diesem Tag hattest du Bereitschaft oder Notdienst.']
@@ -710,6 +712,7 @@
     $('#e-diaeten').value = (d.diaeten === null || d.diaeten === undefined) ? '' : d.diaeten;
     if (d.swOn === undefined && +d.sw > 0) { d.swOn = true; d.swAuto = false; } // alte Einträge: Wert nicht überschreiben
     $('#e-sw').value = d.sw ? d.sw : ''; $('#e-swon').checked = !!d.swOn; $('#e-swgrund').value = d.swGrund || ''; $('#e-swbox').hidden = !d.swOn;
+    $('#e-erx').value = d.status === 'ersatzruhe' && d.extra ? d.extra : ''; $('#e-erbox').hidden = d.status !== 'ersatzruhe';
     $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra; $('#e-extra-box').hidden = !d.extra;
     renderAn();
     var seen = {}, opts = '';
@@ -806,7 +809,7 @@
   }
 
   /* ---- Notiz zum Tag: Text, wie es zu dem Tag kam, und Zeitstempel (damit man Monate später noch weiß, was war) ---- */
-  function anBraucht(d) { return ['urlaub', 'za', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
+  function anBraucht(d) { return ['urlaub', 'za', 'ersatzruhe', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
   function fmtStamp(iso) { var x = new Date(iso); if (isNaN(x)) return ''; return x.toLocaleDateString('de-AT') + ' um ' + x.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }); }
   function renderAn() {
     var d = ui.edDraft, an = d.an || {};
@@ -2248,10 +2251,11 @@
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
       case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
-      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; renderPraemienTag(); anChips(); updatePreview(); return;
+      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
+      case 'e-erx': { var ev2 = parseFloat(String(t.value).replace(',', '.')); if (ev2 > 0) ui.edDraft.extra = ev2; else delete ui.edDraft.extra; updatePreview(); return; }
       case 'e-extra': { var xv = parseFloat(String(t.value).replace(',', '.')); if (xv > 0) ui.edDraft.extra = xv; else delete ui.edDraft.extra; updatePreview(); return; }
       case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; ui.edDraft.swAuto = false; anChips(); updatePreview(); return;
       case 'e-swon': ui.edDraft.swOn = t.checked; if (t.checked) ui.edDraft.swAuto = true; else { ui.edDraft.sw = 0; $('#e-sw').value = ''; } $('#e-swbox').hidden = !t.checked; anChips(); updatePreview(); return;
