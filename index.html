@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261102142102">
+<link rel="stylesheet" href="style.css?v=20261102145931">
 </head>
 <body>
 
@@ -60,6 +60,7 @@
   <div class="wrap">
     <button type="button" class="tab" data-view="erfassen"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Erfassen</button>
     <button type="button" class="tab" data-view="monat"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Übersicht</button>
+    <button type="button" class="tab" data-view="lohn"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg>Lohnzettel</button>
     <button type="button" class="tab" data-view="konten"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Profil</button>
     <button type="button" class="tab" data-view="einstellungen"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Einstellungen</button>
   </div>
@@ -110,6 +111,11 @@
       </div>
     </div>
 
+    <div class="seg" id="m-seg" role="group" aria-label="Ansicht">
+      <button type="button" class="segb" data-seg="monat" aria-pressed="true">Monat</button>
+      <button type="button" class="segb" data-seg="konten" aria-pressed="false">Jahr und Konten</button>
+    </div>
+    <div id="m-pane-monat">
     <div class="monthnav">
       <button type="button" class="iconbtn" id="m-prev" aria-label="Vorheriger Monat"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div style="text-align:center"><h2 id="m-title"></h2><button type="button" class="linkbtn" id="m-today">Zum aktuellen Monat</button></div>
@@ -119,6 +125,35 @@
     <div id="m-summary"></div>
     <p id="m-counts" class="counts"></p>
     <p id="m-ab" class="hint" hidden></p>
+    <div id="m-grid" class="mgrid" hidden></div>
+    <ul id="m-days" class="days"></ul>
+    <button type="button" class="linkbtn" id="m-legende">Legende: Was bedeuten die Symbole?</button>
+    </div>
+    <div id="m-pane-konten" hidden>
+    <div class="card" id="k-jahr">
+      <h3 data-ico="chart">Stunden im Jahr</h3>
+      <div id="k-jahr-chart"></div>
+    </div>
+    <div class="card">
+      <h3 data-ico="sun">Urlaubskartei</h3>
+      <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, letzte Zahl „Endsaldo“ = Resturlaub). Dann siehst du sofort, ob es passt.</p>
+      <div id="k-urlaub"></div>
+    </div>
+    <div class="card">
+      <h3 data-ico="swap">Zeitausgleich-Konto</h3>
+      <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Wie viele Stunden in diesem Monat aufs Konto gebucht oder abgebaut wurden, trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“). „Konto neu“ ist dein Stand danach.</p>
+      <div id="k-za"></div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ============ LOHNZETTEL ============ -->
+  <section id="v-lohn" class="view" aria-label="Lohnzettel" hidden>
+    <div class="monthnav">
+      <button type="button" class="iconbtn" id="lm-prev" aria-label="Vorheriger Monat"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div style="text-align:center"><h2 id="lm-title"></h2><button type="button" class="linkbtn" id="lm-today">Zum aktuellen Monat</button></div>
+      <button type="button" class="iconbtn" id="lm-next" aria-label="Nächster Monat"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
     <div id="m-abgleich" class="card">
       <h3 data-ico="check">Stimmt mein Lohnzettel?</h3>
       <p class="hint">Schau auf deinen Lohnzettel und tippe die Stunden ab, so wie sie dort stehen. Jede Zeile hier heißt wie auf dem Lohnzettel. Du musst nicht alle Zeilen ausfüllen.</p>
@@ -134,9 +169,22 @@
         <p>Die App zählt alle Stunden des Monats zusammen, auch bezahlten Urlaub, Krankenstand und Feiertage. Davon zieht sie die Sollstunden ab: alle deine Arbeitstage (Standard Montag bis Freitag) mal Tagessoll. Was darüber liegt, sind die Überstunden. Den Rest teilt sie auf die Zeilen „Lohn“, „Feiertagslohn“, „Urlaub“ und „Krankenstand“ auf, so wie es auch dein Lohnzettel macht. Das passt, wenn in den Einstellungen „Pro Monat“ gewählt ist.</p>
       </details>
     </div>
-    <div id="m-grid" class="mgrid" hidden></div>
-    <ul id="m-days" class="days"></ul>
-    <button type="button" class="linkbtn" id="m-legende">Legende: Was bedeuten die Symbole?</button>
+    <div class="card">
+      <h3 data-ico="receipt">Nachzahlungen und Korrekturen</h3>
+      <p class="hint">Alles, was die Firma später nachgezahlt oder zurückverrechnet hat. Eintragen kannst du es im Monatsabgleich beim Lohnzettel.</p>
+      <div id="k-nach"></div>
+    </div>
+    <div class="card">
+      <h3 data-ico="stack">Sonderzahlungen</h3>
+      <p class="hint">Urlaubszuschuss, Weihnachtsgeld, 13. und 14. Gehalt. Ob du Anspruch hast und wie hoch er ist, steht im Kollektivvertrag oder Arbeitsvertrag. In Österreich ist es oft ein Monatsgehalt, im Eintrittsjahr anteilig. In Deutschland gibt es keinen allgemeinen gesetzlichen Anspruch, er kommt aus Tarifvertrag, Arbeitsvertrag oder betrieblicher Übung. Trage den Jahresbetrag laut Vertrag ein, die App rechnet den Anteil für das Eintrittsjahr dazu.</p>
+      <div id="k-sonder"></div>
+      <button type="button" class="btn" id="snd-add">+ Sonderzahlung</button>
+    </div>
+    <div class="card">
+      <h3 data-ico="clock">Überstunden im Überblick</h3>
+      <p class="hint">Was du aufgeschrieben hast, was ausbezahlt wurde und was aufs Zeitausgleich-Konto ging.</p>
+      <div id="k-ueber"></div>
+    </div>
   </section>
 
   <!-- ============ ERFASSEN ============ -->
@@ -303,36 +351,6 @@
       <div id="fr-vorl" hidden></div>
     </div>
 
-    <div class="card">
-      <h3 data-ico="sun">Urlaubskartei</h3>
-      <p class="hint">Anspruch pro Monat, genommene Tage und Stand. Trage rechts den Stand ein, den dein Lohnzettel zeigt (Abschnitt „Urlaub – Verbrauch“, letzte Zahl „Endsaldo“ = Resturlaub). Dann siehst du sofort, ob es passt.</p>
-      <div id="k-urlaub"></div>
-    </div>
-    <div class="card">
-      <h3 data-ico="swap">Zeitausgleich-Konto</h3>
-      <p class="hint">Überstunden, die nicht ausbezahlt, sondern aufs Konto gebucht werden. Du sammelst sie zum Beispiel für den Winter. Wie viele Stunden in diesem Monat aufs Konto gebucht oder abgebaut wurden, trägst du im Monatsabgleich ein (Zeile „Zeitausgleich-Konto“). „Konto neu“ ist dein Stand danach.</p>
-      <div id="k-za"></div>
-    </div>
-    <div class="card">
-      <h3 data-ico="receipt">Nachzahlungen und Korrekturen</h3>
-      <p class="hint">Alles, was die Firma später nachgezahlt oder zurückverrechnet hat. Eintragen kannst du es im Monatsabgleich beim Lohnzettel.</p>
-      <div id="k-nach"></div>
-    </div>
-    <div class="card">
-      <h3 data-ico="stack">Sonderzahlungen</h3>
-      <p class="hint">Urlaubszuschuss, Weihnachtsgeld, 13. und 14. Gehalt. Ob du Anspruch hast und wie hoch er ist, steht im Kollektivvertrag oder Arbeitsvertrag. In Österreich ist es oft ein Monatsgehalt, im Eintrittsjahr anteilig. In Deutschland gibt es keinen allgemeinen gesetzlichen Anspruch, er kommt aus Tarifvertrag, Arbeitsvertrag oder betrieblicher Übung. Trage den Jahresbetrag laut Vertrag ein, die App rechnet den Anteil für das Eintrittsjahr dazu.</p>
-      <div id="k-sonder"></div>
-      <button type="button" class="btn" id="snd-add">+ Sonderzahlung</button>
-    </div>
-    <div class="card" id="k-jahr">
-      <h3 data-ico="chart">Stunden im Jahr</h3>
-      <div id="k-jahr-chart"></div>
-    </div>
-    <div class="card">
-      <h3 data-ico="clock">Überstunden im Überblick</h3>
-      <p class="hint">Was du aufgeschrieben hast, was ausbezahlt wurde und was aufs Zeitausgleich-Konto ging.</p>
-      <div id="k-ueber"></div>
-    </div>
       <div class="card"><button type="button" class="btn" id="tour-start">Rundgang mit Mia starten</button></div>
     <div class="card">
       <details id="an-card"><summary><strong>Notizen zu den Tagen</strong> (Aufstellung für ein Beratungsgespräch)</summary>
@@ -626,21 +644,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261102142102";</script>
-<script src="engine.js?v=20261102142102"></script>
+<script>window.APP_VERSION="20261102145931";</script>
+<script src="engine.js?v=20261102145931"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261102142102"></script>
-<script src="timepicker.js?v=20261102142102"></script>
-<script src="datepicker.js?v=20261102142102"></script>
-<script src="selectpicker.js?v=20261102142102"></script>
-<script src="pdf.js?v=20261102142102"></script>
-<script src="lzread.js?v=20261102142102"></script>
-<script src="app.js?v=20261102142102"></script>
-<script src="auth.js?v=20261102142102"></script>
-<script src="sync.js?v=20261102142102"></script>
-<script src="insights.js?v=20261102142102"></script>
+<script src="firebase-config.js?v=20261102145931"></script>
+<script src="timepicker.js?v=20261102145931"></script>
+<script src="datepicker.js?v=20261102145931"></script>
+<script src="selectpicker.js?v=20261102145931"></script>
+<script src="pdf.js?v=20261102145931"></script>
+<script src="lzread.js?v=20261102145931"></script>
+<script src="app.js?v=20261102145931"></script>
+<script src="auth.js?v=20261102145931"></script>
+<script src="sync.js?v=20261102145931"></script>
+<script src="insights.js?v=20261102145931"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

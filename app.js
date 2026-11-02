@@ -147,9 +147,10 @@
   function show(view, force) {
     if (!force && ui.view === 'erfassen' && view !== 'erfassen' && isDirty()) { askLeave(function () { show(view, true); }); return; }
     ui.view = view; ins('ansicht_' + view);
-    ['monat', 'erfassen', 'konten', 'einstellungen'].forEach(function (v) { $('#v-' + v).hidden = v !== view; });
+    ['monat', 'lohn', 'erfassen', 'konten', 'einstellungen'].forEach(function (v) { $('#v-' + v).hidden = v !== view; });
     $$('.tab').forEach(function (b) { if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-    if (view === 'monat') renderMonat();
+    if (view === 'monat') { renderMonat(); if (ui.mseg === 'konten') renderKonten(); }
+    if (view === 'lohn') renderLohn();
     if (view === 'erfassen') renderEditor();
     if (view === 'konten') renderKonten();
     if (view === 'einstellungen') { renderPraemienSettings(); renderDiensteSettings(); renderSettings(); fillBackup(); renderCheck(); }
@@ -269,7 +270,6 @@
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
     $('#m-ab').hidden = true;
-    renderAbgleich(cm.spaeter.length ? E.calcMonth(data, ui.y, ui.m, todayISO(), { ohneSpaeter: true }).summe : s, cm.spaeter);
 
     var today = todayISO();
     $('#m-days').innerHTML = cm.tage.map(function (r) {
@@ -353,6 +353,21 @@
       var s = abSumme(E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, y, m), app = Math.max(0, s.ueberStd), paid = +E.lzMitKorr(data.abgleich, k).lz.ueber, konto = +lz.zaKonto || 0;
       return { y: y, m: m, app: app, paid: paid, konto: konto, diff: Math.round((paid + konto - app) * 100) / 100 };
     });
+  }
+  /* ============================================================ LOHNZETTEL (eigener Reiter) */
+  function renderLohn() {
+    $('#lm-title').textContent = MON[ui.m - 1] + ' ' + ui.y;
+    var cm = E.calcMonth(data, ui.y, ui.m, todayISO()), s = cm.summe;
+    renderAbgleich(cm.spaeter.length ? E.calcMonth(data, ui.y, ui.m, todayISO(), { ohneSpaeter: true }).summe : s, cm.spaeter);
+    renderKonten();
+  }
+  function neuZeichnen() { if (ui.view === 'lohn') renderLohn(); else renderMonat(); }
+  function setSeg(seg) {
+    ui.mseg = seg === 'konten' ? 'konten' : 'monat';
+    $('#m-pane-monat').hidden = ui.mseg !== 'monat'; $('#m-pane-konten').hidden = ui.mseg !== 'konten';
+    $$('#m-seg .segb').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.seg === ui.mseg ? 'true' : 'false'); });
+    if (ui.mseg === 'konten') renderKonten();
+    window.scrollTo(0, 0);
   }
   function abSumme(summe, y, m) {
     var wm = wAt(y + '-' + (m < 10 ? '0' : '') + m + '-01');
@@ -1396,7 +1411,7 @@
     else if (k === 'praemien') { show('einstellungen'); setTimeout(function () { var el = $('#s-praemien'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'lzlesen') { lzOpen('erlaubnis'); }
     else if (k === 'lohnzettel' && data.profil && data.profil.lzLesen === true) { lzOpen('datei'); }
-    else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('monat'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
+    else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('lohn'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
   }
   function miaPose(p) { var b = $('#mia-btn'); if (b && $('#mia-float')) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
   function renderMia() {
@@ -1498,7 +1513,7 @@
     tr: { q: 'Sorun', go: 'Tamam', read: 'Sesli oku', ask: 'Bana sor', unk: 'Bunu henüz bilmiyorum. Aşağıdaki konulardan birine dokun ya da başka sözcüklerle sor.', mic: 'Mikrofon şu an çalışmıyor. Tarayıcıda izin ver ya da sorunu yaz.' }
   };
   var MIA_TR = {
-    en: [["Entering hours", "Open Erfassen (Log). Enter Start (Beginn) and End (Ende), add your breaks (Pausen) and tap Speichern (Save). \"Jetzt\" (Now) fills in the current time.", "hour enter log time work start end save"], ["Adding a bonus", "Go to Einstellungen (Settings), then Prämien (Bonuses), and add your bonus, for example per hour, per day or per piece. Then you enter it on the day. The app calculates it and compares it with your payslip.", "bonus premium allowance extra"], ["Checking my payslip", "Open Übersicht (Overview) and scroll to \"Stimmt mein Lohnzettel?\". Type the hours and amounts from your payslip. The app shows what matches and where a difference remains in hours or euros. You do not have to fill in every line.", "payslip check match compare wage slip"], ["Overtime and surcharges", "In Einstellungen you find weekly hours, the overtime model and surcharges. They come from your collective agreement (Kollektivvertrag). Your payslip shows whether they are right. You can change them at any time, also from a date onwards.", "overtime surcharge sunday saturday holiday night"], ["Daily allowance (Diäten)", "Diäten is the daily allowance, extra money paid per day. In Einstellungen, Diäten, you set whether it is paid per hour or per day in steps. You find the amount on your payslip.", "allowance diaeten diat per diem expenses meal"], ["Changing pay or job", "In Einstellungen you can change your wage or job from a date onwards. Old days stay calculated with the old values.", "wage change job raise salary"], ["Holiday or sick leave", "In Erfassen choose, at \"Art des Tages\" (Type of day), for example Urlaub (holiday), Krankenstand (sick leave) or Zeitausgleich (time off in lieu). Then you do not need to enter times.", "holiday vacation sick leave off"], ["My data", "Your entries are on your phone. With your account they are also stored on a secured server in Frankfurt so nothing gets lost. Technically the operator of the app could view them. Encryption that rules this out is being worked on. You type in your payslip numbers yourself.", "data privacy safe secure account personal"], ["Backup", "Under Profil you find \"Sicherung speichern oder teilen\". It saves a file with all your data. With it you can restore everything on a new phone.", "backup restore lost save file new phone"], ["Installing the app", "Open the page in the browser and tap \"App installieren\" (menu, top right). If Android warns you, tap \"Trotzdem installieren\" (install anyway). The app is safe, it is just this website.", "install icon home screen app"], ["Speech and reading aloud", "At the question field tap the microphone and speak. With the read button I read my answer aloud. The microphone needs internet and your permission in the browser.", "speech voice microphone read language"], ["Quieting Mia", "Tap \"Mia ruhig stellen\" and I will not speak up by myself. Under Profil you can switch me on again and change the figure and name.", "mia milo quiet silence name figure"], ["Deadlines and licences", "Open Profil (Profile) and scroll to \"Fristen und Ausweise\" (Deadlines and licences). Add Code 95, driver card, forklift licence or your own deadlines with an expiry date. I will remind you in time, and the date can go into your phone calendar if you like.", "deadline deadlines licence license code 95 driver card forklift crane expiry course training reminder"], ["Back payments, retroactive wage, special payments", "If the company paid something later or charged it back, enter it in the monthly check under “Nachzahlungen und Korrekturen” (back payments and corrections): which month, which line and how much. The app adds it to the earlier month. For “Stundenlohn aufgerollt” (hourly wage back-calculated) it shows you the calculation and whether the amount fits. Enter holiday bonus, Christmas bonus, 13th and 14th salary in the profile under “Sonderzahlungen” (special payments).", "back payment nachzahlung retroactive aufroll correction christmas holiday bonus 13th 14th special hourly wage"]],
+    en: [["Entering hours", "Open Erfassen (Log). Enter Start (Beginn) and End (Ende), add your breaks (Pausen) and tap Speichern (Save). \"Jetzt\" (Now) fills in the current time.", "hour enter log time work start end save"], ["Adding a bonus", "Go to Einstellungen (Settings), then Prämien (Bonuses), and add your bonus, for example per hour, per day or per piece. Then you enter it on the day. The app calculates it and compares it with your payslip.", "bonus premium allowance extra"], ["Checking my payslip", "Open Übersicht (Overview) and scroll to \"Stimmt mein Lohnzettel?\". Type the hours and amounts from your payslip. The app shows what matches and where a difference remains in hours or euros. You do not have to fill in every line.", "payslip check match compare wage slip"], ["Overtime and surcharges", "In Einstellungen you find weekly hours, the overtime model and surcharges. They come from your collective agreement (Kollektivvertrag). Your payslip shows whether they are right. You can change them at any time, also from a date onwards.", "overtime surcharge sunday saturday holiday night"], ["Daily allowance (Diäten)", "Diäten is the daily allowance, extra money paid per day. In Einstellungen, Diäten, you set whether it is paid per hour or per day in steps. You find the amount on your payslip.", "allowance diaeten diat per diem expenses meal"], ["Changing pay or job", "In Einstellungen you can change your wage or job from a date onwards. Old days stay calculated with the old values.", "wage change job raise salary"], ["Holiday or sick leave", "In Erfassen choose, at \"Art des Tages\" (Type of day), for example Urlaub (holiday), Krankenstand (sick leave) or Zeitausgleich (time off in lieu). Then you do not need to enter times.", "holiday vacation sick leave off"], ["My data", "Your entries are on your phone. With your account they are also stored on a secured server in Frankfurt so nothing gets lost. Technically the operator of the app could view them. Encryption that rules this out is being worked on. You type in your payslip numbers yourself.", "data privacy safe secure account personal"], ["Backup", "Under Profil you find \"Sicherung speichern oder teilen\". It saves a file with all your data. With it you can restore everything on a new phone.", "backup restore lost save file new phone"], ["Installing the app", "Open the page in the browser and tap \"App installieren\" (menu, top right). If Android warns you, tap \"Trotzdem installieren\" (install anyway). The app is safe, it is just this website.", "install icon home screen app"], ["Speech and reading aloud", "At the question field tap the microphone and speak. With the read button I read my answer aloud. The microphone needs internet and your permission in the browser.", "speech voice microphone read language"], ["Quieting Mia", "Tap \"Mia ruhig stellen\" and I will not speak up by myself. Under Profil you can switch me on again and change the figure and name.", "mia milo quiet silence name figure"], ["Deadlines and licences", "Open Profil (Profile) and scroll to \"Fristen und Ausweise\" (Deadlines and licences). Add Code 95, driver card, forklift licence or your own deadlines with an expiry date. I will remind you in time, and the date can go into your phone calendar if you like.", "deadline deadlines licence license code 95 driver card forklift crane expiry course training reminder"], ["Back payments, retroactive wage, special payments", "If the company paid something later or charged it back, enter it in the monthly check under “Nachzahlungen und Korrekturen” (back payments and corrections): which month, which line and how much. The app adds it to the earlier month. For “Stundenlohn aufgerollt” (hourly wage back-calculated) it shows you the calculation and whether the amount fits. Enter holiday bonus, Christmas bonus, 13th and 14th salary in the “Lohnzettel” tab under “Sonderzahlungen” (special payments).", "back payment nachzahlung retroactive aufroll correction christmas holiday bonus 13th 14th special hourly wage"]],
     pl: [
       ['Wpisywanie godzin', 'Otwórz Erfassen (wpisywanie). Wpisz początek (Beginn) i koniec (Ende), dodaj przerwy (Pausen) i dotknij Speichern (zapisz). Przyciskiem "Jetzt" wstawisz aktualną godzinę.', 'godzin godzine wpis czas praca poczatek koniec zapis'],
       ['Dodanie premii', 'Wejdź w Einstellungen (ustawienia), potem Prämien (premie) i dodaj swoją premię, np. za godzinę, dzień lub sztukę. Potem wpisujesz ją w danym dniu. Aplikacja ją policzy i porówna z paskiem wypłaty.', 'premi dodatek bonus'],
@@ -1513,7 +1528,7 @@
       ['Mowa i czytanie', 'Przy pytaniu dotknij mikrofonu i mów. Przyciskiem czytania przeczytam odpowiedź na głos. Mikrofon potrzebuje internetu i Twojej zgody w przeglądarce.', 'mow mikrofon glos czyta jezyk'],
       ['Wyciszenie Mii', 'Dotknij "Mia ruhig stellen", a nie będę się odzywać sama. W Profil możesz mnie znów włączyć i zmienić postać oraz imię.', 'mia milo cisz wylacz imie postac'],
       ['Terminy i uprawnienia', 'Otwórz Profil i przewiń do "Fristen und Ausweise" (Terminy i uprawnienia). Dodaj Code 95, kartę kierowcy, uprawnienia na wózek lub własne terminy z datą ważności. Przypomnę ci na czas, a termin może trafić do kalendarza w telefonie.', 'termin terminy uprawnienia code 95 karta kierowcy wozek dzwig waznosc kurs szkolenie przypomnienie'],
-      ["Dopłaty, wyrównanie stawki, wypłaty specjalne", "Jeśli firma później coś dopłaciła lub cofnęła, wpisz to w miesięcznym sprawdzeniu w „Nachzahlungen und Korrekturen” (dopłaty i korekty): za który miesiąc, który wiersz i ile. Aplikacja doliczy to do wcześniejszego miesiąca. Przy „Stundenlohn aufgerollt” (stawka przeliczona wstecz) pokaże obliczenie i czy kwota się zgadza. Ekwiwalent urlopowy, premię świąteczną, 13. i 14. pensję wpisz w Profilu w „Sonderzahlungen” (wypłaty specjalne).", "doplata nachzahlung wyrownanie stawki korekta swiateczna urlopowy 13 14 specjalne stawka"],
+      ["Dopłaty, wyrównanie stawki, wypłaty specjalne", "Jeśli firma później coś dopłaciła lub cofnęła, wpisz to w miesięcznym sprawdzeniu w „Nachzahlungen und Korrekturen” (dopłaty i korekty): za który miesiąc, który wiersz i ile. Aplikacja doliczy to do wcześniejszego miesiąca. Przy „Stundenlohn aufgerollt” (stawka przeliczona wstecz) pokaże obliczenie i czy kwota się zgadza. Ekwiwalent urlopowy, premię świąteczną, 13. i 14. pensję wpisz w zakładce „Lohnzettel” w „Sonderzahlungen” (wypłaty specjalne).", "doplata nachzahlung wyrownanie stawki korekta swiateczna urlopowy 13 14 specjalne stawka"],
     ],
     hu: [
       ['Órák rögzítése', 'Nyisd meg az Erfassen (rögzítés) részt. Írd be a kezdést (Beginn) és a végét (Ende), add meg a szüneteket (Pausen), és koppints a Speichern (mentés) gombra. A "Jetzt" gombbal a pontos idő kerül be.', 'ora rogzit ido munka kezdes vege mentes'],
@@ -1529,7 +1544,7 @@
       ['Beszéd és felolvasás', 'A kérdésmezőnél koppints a mikrofonra, és beszélj. A felolvasás gombbal hangosan felolvasom a választ. A mikrofonhoz internet és a böngészőben engedély kell.', 'beszed mikrofon hang felolvas nyelv'],
       ['Mia elnémítása', 'Koppints a "Mia ruhig stellen" gombra, és nem szólok magamtól. A Profil részben újra bekapcsolhatsz, és ott módosíthatod az alakot és a nevet.', 'mia milo nemit kikapcsol nev alak'],
       ['Határidők és igazolványok', 'Nyisd meg a Profilt, és görgess a "Fristen und Ausweise" (Határidők és igazolványok) részhez. Vedd fel a Code 95-öt, a sofőrkártyát, a targoncavezetői igazolványt vagy saját határidőket lejárati dátummal. Időben emlékeztetlek, és az időpont kérésre a telefon naptárába is kerül.', 'hatarido igazolvany code 95 sofor kartya targonca daru lejarat tanfolyam kepzes emlekezteto'],
-      ["Utólagos kifizetés, visszamenőleges órabér, különleges kifizetések", "Ha a cég később fizetett vagy visszaszámolt valamit, add meg a havi ellenőrzésnél a „Nachzahlungen und Korrekturen” (utólagos kifizetések és javítások) alatt: melyik hónapra, melyik sorra és mennyit. Az app hozzáadja a korábbi hónaphoz. A „Stundenlohn aufgerollt” (visszamenőleg átszámolt órabér) esetén megmutatja a számítást és hogy stimmel-e az összeg. A szabadságpénzt, karácsonyi pénzt, 13. és 14. havi fizetést a Profilban a „Sonderzahlungen” (különleges kifizetések) alatt add meg.", "utolagos nachzahlung visszamenoleges orber javitas karacsonyi szabadsagpenz 13 14 kulonleges"],
+      ["Utólagos kifizetés, visszamenőleges órabér, különleges kifizetések", "Ha a cég később fizetett vagy visszaszámolt valamit, add meg a havi ellenőrzésnél a „Nachzahlungen und Korrekturen” (utólagos kifizetések és javítások) alatt: melyik hónapra, melyik sorra és mennyit. Az app hozzáadja a korábbi hónaphoz. A „Stundenlohn aufgerollt” (visszamenőleg átszámolt órabér) esetén megmutatja a számítást és hogy stimmel-e az összeg. A szabadságpénzt, karácsonyi pénzt, 13. és 14. havi fizetést a „Lohnzettel” fülön a „Sonderzahlungen” (különleges kifizetések) alatt add meg.", "utolagos nachzahlung visszamenoleges orber javitas karacsonyi szabadsagpenz 13 14 kulonleges"],
     ],
     tr: [
       ['Saat girmek', 'Erfassen (kayıt) bölümünü aç. Başlangıcı (Beginn) ve bitişi (Ende) yaz, molaları (Pausen) ekle ve Speichern (kaydet) düğmesine dokun. "Jetzt" ile şu anki saat girilir.', 'saat gir kayit calisma baslangic bitis kaydet'],
@@ -1545,7 +1560,7 @@
       ['Konuşma ve sesli okuma', 'Soru alanında mikrofona dokun ve konuş. Sesli okuma düğmesiyle cevabı yüksek sesle okurum. Mikrofon için internet ve tarayıcıda izin gerekir.', 'konus mikrofon ses oku dil'],
       ['Mia’yı susturmak', '"Mia ruhig stellen" düğmesine dokun, kendiliğimden konuşmam. Profil bölümünden beni tekrar açabilir, figürü ve adı değiştirebilirsin.', 'mia milo sustur kapat isim figur'],
       ['Süreler ve belgeler', 'Profil bölümünü aç ve "Fristen und Ausweise" (Süreler ve belgeler) kısmına kaydır. Code 95, sürücü kartı, forklift belgesi veya kendi sürelerini bitiş tarihiyle ekle. Seni zamanında uyarırım, tarih istersen telefon takvimine de girer.', 'sure belge code 95 surucu karti forklift vinc bitis kurs egitim hatirlatma'],
-      ["Sonradan ödeme, geriye dönük ücret, özel ödemeler", "Şirket sonradan bir şey ödediyse veya geri aldıysa, bunu aylık kontrolde „Nachzahlungen und Korrekturen“ (sonradan ödemeler ve düzeltmeler) altına gir: hangi ay, hangi satır ve ne kadar. Uygulama bunu önceki aya ekler. „Stundenlohn aufgerollt“ (saatlik ücret geriye dönük hesaplandı) için hesabı ve tutarın uyup uymadığını gösterir. Tatil parasını, Noel ikramiyesini, 13. ve 14. maaşı Profil'de „Sonderzahlungen“ (özel ödemeler) altına gir.", "sonradan odeme nachzahlung geriye donuk aufroll duzeltme noel tatil ikramiye 13 14 ozel saatlik ucret"],
+      ["Sonradan ödeme, geriye dönük ücret, özel ödemeler", "Şirket sonradan bir şey ödediyse veya geri aldıysa, bunu aylık kontrolde „Nachzahlungen und Korrekturen“ (sonradan ödemeler ve düzeltmeler) altına gir: hangi ay, hangi satır ve ne kadar. Uygulama bunu önceki aya ekler. „Stundenlohn aufgerollt“ (saatlik ücret geriye dönük hesaplandı) için hesabı ve tutarın uyup uymadığını gösterir. Tatil parasını, Noel ikramiyesini, 13. ve 14. maaşı „Lohnzettel“ sekmesinde „Sonderzahlungen“ (özel ödemeler) altına gir.", "sonradan odeme nachzahlung geriye donuk aufroll duzeltme noel tatil ikramiye 13 14 ozel saatlik ucret"],
     ]
   };
   function miaLang() { return uiLang(); }
@@ -1568,7 +1583,7 @@
     { t: 'Sprache und Vorlesen', k: ['sprache', 'sprechen', 'mikrofon', 'diktier', 'vorlesen', 'deutsch'], a: 'Tippe bei deiner Frage an mich auf das Mikrofon und sprich. Mit "Vorlesen" lese ich dir meine Antwort vor. Das Mikrofon braucht Internet und deine Erlaubnis im Browser.' },
     { t: 'Mia ruhig stellen', k: ['mia', 'milo', 'ruhig', 'weg', 'nervt', 'ausschalten', 'figur', 'name'], a: 'Tippe auf "Mia ruhig stellen", dann melde ich mich nicht mehr von selbst. Du kannst mich unter Profil wieder aktivieren, und dort auch Figur und Namen ändern.' },
     { t: 'Fristen und Ausweise', k: ['frist', 'code 95', 'code95', 'fahrerkarte', 'staplerschein', 'kranschein', 'ablauf', 'ausweis', 'erinnerung', 'schulung', 'kurs'], a: 'Öffne Profil und scrolle zu "Fristen und Ausweise". Lege Code 95, Fahrerkarte, Staplerschein oder eigene Fristen mit Ablaufdatum an. Ich erinnere dich rechtzeitig, und der Termin kommt auf Wunsch in den Kalender deines Handys.' },
-    { t: 'Nachzahlung, Aufrollung, Sonderzahlungen', k: ['nachzahlung', 'nachzahlen', 'aufroll', 'rückverrechnung', 'rueckverrechnung', 'korrektur', 'weihnachtsgeld', 'urlaubszuschuss', 'urlaubsgeld', 'sonderzahlung', '13.', '14.', 'remuneration', 'stundenlohn'], a: 'Hat die Firma später etwas nachgezahlt oder zurückverrechnet, trägst du es im Monatsabgleich bei „Nachzahlungen und Korrekturen“ ein: für welchen Monat, welche Zeile und wie viel. Die App rechnet es dem früheren Monat zu. Bei „Stundenlohn aufgerollt“ zeigt sie dir den Rechengang und ob der Betrag passt. Urlaubszuschuss, Weihnachtsgeld, 13. und 14. Gehalt trägst du im Profil bei „Sonderzahlungen“ ein.' }
+    { t: 'Nachzahlung, Aufrollung, Sonderzahlungen', k: ['nachzahlung', 'nachzahlen', 'aufroll', 'rückverrechnung', 'rueckverrechnung', 'korrektur', 'weihnachtsgeld', 'urlaubszuschuss', 'urlaubsgeld', 'sonderzahlung', '13.', '14.', 'remuneration', 'stundenlohn'], a: 'Hat die Firma später etwas nachgezahlt oder zurückverrechnet, trägst du es im Monatsabgleich bei „Nachzahlungen und Korrekturen“ ein: für welchen Monat, welche Zeile und wie viel. Die App rechnet es dem früheren Monat zu. Bei „Stundenlohn aufgerollt“ zeigt sie dir den Rechengang und ob der Betrag passt. Urlaubszuschuss, Weihnachtsgeld, 13. und 14. Gehalt trägst du im Reiter „Lohnzettel“ bei „Sonderzahlungen“ ein.' }
   ];
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/ł/g, 'l').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
@@ -1657,7 +1672,7 @@
     if (b === 'bagger') s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Baustellen mit deiner Tätigkeit. Das braucht die App für Prämien und Zulagen.' });
     s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
     s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
-    s.push({ v: 'monat', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
+    s.push({ v: 'lohn', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
     s.push({ v: 'konten', sel: '[data-view=konten]', t: 'Unter Profil: Fristen und Ausweise, mein Aussehen, deine Notizen zu den Tagen, die Rückmeldung an den Entwickler und die Sicherung.' });
     s.push({ sel: '#mia-btn', t: 'Und ich bin immer hier unten. Tippe auf mich, wenn du etwas wissen willst. Viel Erfolg!' });
     return s;
@@ -2244,6 +2259,7 @@
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
     if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else if (t.dataset.tour === 'nein') tourEnd(true); else tourEnd(false); return; }
+    if (t.dataset.seg && t.classList.contains('segb')) { setSeg(t.dataset.seg); return; }
     if (t.id === 'tour-start') { tourStart(); return; }
     if (t.id === 'assist-start') { tourStart(true); return; }
     if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }
@@ -2271,6 +2287,9 @@
       case 'm-prev': ui.abAlle = false; ui.m--; if (ui.m < 1) { ui.m = 12; ui.y--; } renderMonat(); return;
       case 'm-next': ui.abAlle = false; ui.m++; if (ui.m > 12) { ui.m = 1; ui.y++; } renderMonat(); return;
       case 'm-today': ui.y = now.getFullYear(); ui.m = now.getMonth() + 1; renderMonat(); return;
+      case 'lm-prev': ui.abAlle = false; ui.m--; if (ui.m < 1) { ui.m = 12; ui.y--; } renderLohn(); return;
+      case 'lm-next': ui.abAlle = false; ui.m++; if (ui.m > 12) { ui.m = 1; ui.y++; } renderLohn(); return;
+      case 'lm-today': ui.y = now.getFullYear(); ui.m = now.getMonth() + 1; renderLohn(); return;
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
@@ -2337,7 +2356,7 @@
         return;
       }
       case 'b-restore': arm(t, 'Daten wirklich ersetzen?', function () { restoreFrom($('#b-text').value); }); return;
-      case 'ab-clear': arm(t, 'Wirklich alle löschen?', function () { var key = ui.y + '-' + pad(ui.m); if (data.abgleich) delete data.abgleich[key]; save(); renderMonat(); toast('Die Eingaben dieses Monats sind gelöscht.'); }); return;
+      case 'ab-clear': arm(t, 'Wirklich alle löschen?', function () { var key = ui.y + '-' + pad(ui.m); if (data.abgleich) delete data.abgleich[key]; save(); neuZeichnen(); toast('Die Eingaben dieses Monats sind gelöscht.'); }); return;
       case 'b-wipe': arm(t, 'Wirklich alles löschen?', function () { data = { version: 1, settings: [], days: {}, abgleich: {}, profil: {} }; save(); ui.setKey = null; ui.edDate = null; toast('Alle Daten gelöscht.'); show('monat'); }); return;
       case 't-load': loadTest(); return;
       case 't-remove': removeTest(); return;
@@ -3140,13 +3159,13 @@
     if (e.length > 1 && e.some(function (x) { return x.n; })) { lzUi.queue = []; lzUi.step = 'ergebnis'; lzRender(); return; } // mehrere Monate: Liste mit Löschknopf je Monat
     lzClose();
     if (!e.length) return;
-    var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
+    var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('lohn');
     var txt = e.some(function (x) { return x.n; }) ? 'Übernommen. Bitte prüfe die Zahlen mit deinem Lohnzettel. Das Ergebnis siehst du unter „Stimmt mein Lohnzettel?“.' : 'Nichts übernommen.';
     toast(txt, 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
   function lzFertig2(e) {
-    lzClose(); var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('monat'); renderMonat();
+    lzClose(); var l = e[e.length - 1]; ui.y = l.y; ui.m = l.m; show('lohn');
     toast('Übernommen. Bitte prüfe die Zahlen mit deinem Lohnzettel. Das Ergebnis siehst du unter „Stimmt mein Lohnzettel?“.', 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
