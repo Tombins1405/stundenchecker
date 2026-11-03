@@ -6,7 +6,7 @@
 :root{--bg:#f6f7f9;--fg:#1c2330;--mut:#5b6678;--card:#fff;--line:#d9dee7;--ac:#1f5fa8}
 @media (prefers-color-scheme:dark){:root{--bg:#121820;--fg:#e8edf4;--mut:#9aa7ba;--card:#1a222d;--line:#2c3746;--ac:#7db3f0}}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;padding:16px}
-main{max-width:900px;margin:0 auto;display:grid;gap:14px}
+main{max-width:900px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}#dash{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.card{min-width:0;overflow-wrap:anywhere}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
 h1{font-size:1.3rem;margin:0}h2{font-size:1.05rem;margin:0 0 8px}
 input,button{font:inherit;padding:9px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
@@ -14,29 +14,35 @@ button{background:var(--ac);color:#fff;border:0;cursor:pointer}
 table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .mut{color:var(--mut)}.fb{border-bottom:1px solid var(--line);padding:8px 0}.fb img{max-width:100%;max-height:260px;border-radius:6px;margin-top:6px}
 .scroll{overflow-x:auto}.flt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.flt .mut{margin-left:4px}.ok{color:#2e7d32;font-weight:700}.todo{color:#b45309;font-weight:700}button.sm{padding:5px 9px;font-size:.82rem}button.alt{background:var(--bg);color:var(--fg);border:1px solid var(--line)}[hidden]{display:none!important}
+.kc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:grid;gap:6px}
+.kc .kt{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}.kc .km{font-weight:700;word-break:break-all}
+.kc .ki{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.88rem}.kc .ki span{white-space:nowrap}.kc .ks{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.kc .kg{font-size:.82rem;color:var(--mut)}
+details.hilfe{margin:0 0 10px;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;font-size:.88rem}details.hilfe summary{cursor:pointer;color:var(--ac);font-weight:600}details.hilfe p{margin:6px 0}
+@media (max-width:600px){body{padding:10px}.card{padding:12px}h2{font-size:1rem}button{min-height:40px}button.sm{min-height:36px}}
 </style></head><body><main>
 <div class="card"><h1>Verwaltung</h1><p class="mut" id="who">Nicht angemeldet.</p>
 <form id="lf" style="display:grid;gap:8px;max-width:340px"><input type="email" id="m" placeholder="E-Mail" autocomplete="username"><input type="password" id="p" placeholder="Passwort" autocomplete="current-password"><button>Anmelden</button><small class="mut" id="msg"></small></form>
 <button id="gl" style="margin-top:8px">Mit Google anmelden</button>
-<p id="ver" class="mut"></p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button id="inst" hidden>Als App auf den Desktop legen</button></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="vs" hidden>Bestätigungsmail senden</button><button id="vr" hidden>Neu prüfen</button><button id="out" hidden>Abmelden</button></div></div>
+<p id="ver" class="mut"></p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button id="inst" hidden>Als App installieren</button></div><details class="hilfe"><summary>Als App auf Handy oder Laptop legen</summary><p><b>Handy (Android, Chrome):</b> Oben rechts auf die drei Punkte tippen, dann „Zum Startbildschirm hinzufügen“ oder „App installieren“. Das Symbol liegt danach auf dem Startbildschirm, nicht auf einem Desktop.</p><p><b>Laptop (Chrome oder Edge):</b> Diese Seite öffnen. Rechts in der Adresszeile erscheint ein kleines Installieren-Symbol (Monitor mit Pfeil). Darauf klicken, dann „Installieren“. Alternativ Menü mit den drei Punkten, dann „Speichern und teilen“ und „Als App installieren“.</p></details><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="vs" hidden>Bestätigungsmail senden</button><button id="vr" hidden>Neu prüfen</button><button id="out" hidden>Abmelden</button></div></div>
 <div id="dash" hidden>
 <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="rf">Jetzt aktualisieren</button><button id="ca">Alles Offene an Claude kopieren</button><span class="mut" id="rfm">Aktualisiert sich alle 2 Minuten von selbst.</span></div>
-<div class="card"><h2>Verlauf: wer hat was gemacht?</h2><p class="mut">Registrierungen, Anmeldungen, Rückmeldungen und anonyme Meldungen, neueste zuerst.</p><div id="vl"></div></div>
-<div class="card" id="einl"><h2>Einladungen</h2>
-<p class="mut">Neue Tester brauchen einen persönlichen Code. Er gilt einmal und 14 Tage. Wer den Link weiterleitet, hilft nichts: Nur der Erste, der den Code einlöst, kommt hinein. Bestehende Konten brauchen keinen Code.</p>
+<div class="card"><h2>🕒 Verlauf: wer hat was gemacht?</h2><p class="mut">Registrierungen, Anmeldungen, Rückmeldungen und anonyme Meldungen, neueste zuerst.</p><div id="vl"></div></div>
+<div class="card" id="einl"><h2>✉️ Einladungen</h2>
+<details class="hilfe"><summary>Wozu ist das?</summary><p>So lädst du jemanden ein: Name bei „Für wen?“ eintragen, „Code erzeugen“ tippen, dann „Text kopieren“ und per WhatsApp oder SMS einfügen. Jeder Code gilt einmal und 14 Tage. „Sperren“ macht einen offenen Code unbrauchbar, „Entfernen“ löscht einen benutzten oder abgelaufenen aus der Liste.</p></details><p class="mut">Neue Tester brauchen einen persönlichen Code. Er gilt einmal und 14 Tage. Wer den Link weiterleitet, hilft nichts: Nur der Erste, der den Code einlöst, kommt hinein. Bestehende Konten brauchen keinen Code.</p>
 <label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="ei-an" style="width:20px;height:20px"> <b>Einladungscode ist Pflicht</b></label>
 <div class="flt"><input type="text" id="ei-fuer" placeholder="Für wen? (zum Beispiel Birgit)" maxlength="60" style="flex:1;min-width:180px"><button id="ei-neu">Code erzeugen</button><span class="mut" id="ei-m"></span></div>
 <div id="ei-neubox" class="fb" hidden></div>
 <div class="scroll" id="ei-l"></div></div>
-<div class="card"><h2>Überblick</h2><div id="ov"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cp">Alles kopieren</button><button id="dl">Als Textdatei speichern</button></div><small class="mut" id="cpm"></small></div>
-<div class="card"><h2>Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
-<div class="card"><h2>Mia</h2><div id="mi"></div></div>
-<div class="card"><h2>Rückmeldungen</h2><div id="fbf" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button type="button" data-f="offen">Offen</button><button type="button" data-f="erledigt">Erledigt</button><button type="button" data-f="alle">Alle</button></div><p class="mut" id="fbm"></p><div id="fbl"></div></div>
-<div class="card"><h2>Anmeldungen (neueste zuerst)</h2><div class="scroll" id="an"></div></div>
-<div class="card"><h2>Konten</h2><div class="flt" data-g="pr"></div><div class="scroll" id="pl"></div></div>
-<div class="card"><h2>Was hat wer ausgelöst? (je Konto)</h2><div id="wk"></div></div>
-<div class="card"><h2>Fragen, die Mia nicht beantworten konnte</h2><div class="flt" data-g="mo"></div><div id="mo"></div></div>
-<div class="card"><h2>Abweichungen (anonym, nur mit Einwilligung)</h2><div class="flt" data-g="st"></div><div class="scroll" id="st"></div></div>
+<div class="card"><h2>📋 Überblick</h2><div id="ov"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cp">Alles kopieren</button><button id="dl">Als Textdatei speichern</button></div><small class="mut" id="cpm"></small></div>
+<div class="card"><h2>🧩 Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
+<div class="card"><h2>🐒 Mia</h2><div id="mi"></div></div>
+<div class="card"><h2>💬 Rückmeldungen</h2><details class="hilfe"><summary>Wozu ist das?</summary><p>Was Tester aus der App geschickt haben, mit Bild von ihrem Bildschirm, wenn sie es mitgeschickt haben.</p><p><b>Offen / Erledigt:</b> Dein Merkzettel. „Offen“ heißt: noch nicht bearbeitet. Wenn du es gelesen und erledigt oder beantwortet hast, tippst du auf „Erledigt“. Es verschwindet aus „Offen“. Der Tester sieht davon nichts.</p><p><b>An Claude übertragen:</b> Kopiert die Rückmeldung, damit du sie bei Claude einfügen kannst.</p></details><div id="fbf" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button type="button" data-f="offen">Offen</button><button type="button" data-f="erledigt">Erledigt</button><button type="button" data-f="alle">Alle</button></div><p class="mut" id="fbm"></p><div id="fbl"></div></div>
+<div class="card"><h2>🔑 Anmeldungen (neueste zuerst)</h2><div class="scroll" id="an"></div></div>
+<div class="card"><h2>👥 Konten</h2><details class="hilfe"><summary>Wozu ist das?</summary><p>Hier siehst du jeden, der sich in der App registriert hat: Beruf, wie viele Tage er schon eingetragen hat, wann er zuletzt da war und mit welchem Gerät.</p><p><b>Symbole:</b> 📅 erfasste Tage · 🔥 aktive Tage in den letzten 7 / 30 Tagen · 💬 Rückmeldungen · 🖱️ Aktionen in der App · 🤝 hilft mit (anonyme Statistik) · 🌐 Sprache · 🕒 zuletzt in der App · 📱 Gerät</p><p><b>Neu / Gesehen:</b> Das ist nur dein persönlicher Merkzettel. Neue Konten stehen auf „Neu“. Wenn du dir ein Konto angesehen hast (zum Beispiel den Tester angeschrieben), tippst du auf „Als gesehen markieren“. Dann verschwindet es aus der Liste „Neu“ und du behältst den Überblick. Am Konto selbst ändert sich nichts, der Tester merkt nichts. Mit „Gesehen“ oder „Alle“ oben holst du es jederzeit zurück, mit „Wieder auf neu“ stellst du es zurück.</p><p><b>An Claude kopieren:</b> Kopiert die Daten dieses Kontos. Du fügst sie im Chat bei Claude ein, damit er sich das Konto ansieht.</p></details><div class="flt" data-g="pr"></div><div class="scroll" id="pl"></div></div>
+<div class="card"><h2>🔍 Was hat wer ausgelöst? (je Konto)</h2><div id="wk"></div></div>
+<div class="card"><h2>🐒 Fragen, die Mia nicht beantworten konnte</h2><details class="hilfe"><summary>Wozu ist das?</summary><p>Fragen von Nutzern an Mia, auf die sie keine Antwort hatte. Anonym, ohne Namen. Daran siehst du, was in der FAQ noch fehlt. Wenn du die Frage in die FAQ aufnehmen lässt oder sie sich erledigt hat, tippst du auf „Als erledigt markieren“.</p></details><div class="flt" data-g="mo"></div><div id="mo"></div></div>
+<div class="card"><h2>📊 Abweichungen (anonym, nur mit Einwilligung)</h2><details class="hilfe"><summary>Wozu ist das?</summary><p>Wenn ein Tester einwilligt, meldet die App anonym, wie stark sein Lohnzettel von der Aufzeichnung abweicht (nur Beruf und Zahlen, kein Name). So siehst du, ob die App bei einem Beruf oder KV oft danebenliegt. „Erledigt“ ist wieder nur dein Merkzettel.</p></details><div class="flt" data-g="st"></div><div class="scroll" id="st"></div></div>
 </div>
 </main>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -74,7 +80,7 @@ function st(x){return x.status||LOCAL[x._id]||'offen'}
 function gst(g,x){return x.status||LOCAL[GC[g]+'/'+x._id]||'offen'}
 function gOk(g,x){return gst(g,x)==='erledigt'}
 function gBar(g){var L=GS[g],no=L.filter(function(x){return !gOk(g,x)}).length,el=document.querySelector('.flt[data-g="'+g+'"]');if(!el)return;el.innerHTML=['offen','erledigt','alle'].map(function(k){return '<button type="button" class="sm" data-gf="'+g+'|'+k+'" style="opacity:'+(GF[g]===k?'1':'.55')+'">'+(k==='offen'?gW(g)[0]:k==='erledigt'?gW(g)[1]:'Alle')+'</button>'}).join('')+'<span class="mut">'+no+' '+gW(g)[0].toLowerCase()+', '+(L.length-no)+' '+gW(g)[1].toLowerCase()+'</span>'}
-function gW(g){return g==='pr'?['Neu','Betreut','Wieder auf neu','Betreut']:['Offen','Erledigt','Wieder öffnen','Erledigt']}
+function gW(g){return g==='pr'?['Neu','Gesehen','Wieder auf neu','Als gesehen markieren']:['Offen','Erledigt','Wieder öffnen','Als erledigt markieren']}
 function gBtn(g,x){var e=gOk(g,x),w=gW(g);return '<b class="'+(e?'ok':'todo')+'">'+(e?w[1]:w[0])+'</b> <button type="button" class="sm'+(e?' alt':'')+'" data-gs="'+g+'|'+esc(x._id)+'">'+(e?w[2]:w[3])+'</button> <button type="button" class="sm alt" data-gc="'+g+'|'+esc(x._id)+'">An Claude kopieren</button>'}
 function gText(g,x){
  if(g==='mo')return 'FRAGE AN MIA, DIE SIE NICHT BEANTWORTEN KONNTE\nAm: '+fmt(x.t)+', Sprache: '+(x.lang||'?')+'\n\n'+(x.text||'');
@@ -106,9 +112,13 @@ document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.targe
   drawFb();db.collection('feedback').doc(y._id).update({status:neu}).catch(function(){$('#fbm').textContent+=' (Status nur in diesem Browser gespeichert)'});}
 });
 function gDraw(){var P=GS.pr,S=GS.st,F=FB;['pr','mo','st'].forEach(gBar);
-  $('#pl').innerHTML='<table><tr><th>E-Mail</th><th>Beruf</th><th>Erfasste Tage</th><th>Aktive Tage (letzte 7 / 30)</th><th>Sprache</th><th>Registriert am</th><th>Zuletzt in der App</th><th>Gerät</th><th>Mithelfen</th><th>Rückmeldungen</th><th>Aktionen</th><th>Status</th></tr>'+gList('pr').map(function(x){var c=x.consent||{},nf=F.filter(function(y){return y.email&&y.email===x.email}).length,f=x.features||{},na=Object.keys(f).reduce(function(a,k){return a+(typeof f[k]==='number'?f[k]:0)},0);return '<tr><td>'+esc(x.email)+'</td><td>'+esc(x.beruf||'noch nicht eingerichtet')+'</td><td>'+esc(x.tage)+'</td><td>'+aktiv(x,7)+' / '+aktiv(x,30)+'</td><td>'+esc(x.lang)+'</td><td>'+fmt(x.created)+'</td><td>'+fmt(x.lastSeen)+'</td><td>'+esc(x.geraet||'unbekannt')+'</td><td>'+(c.statistik&&c.miaFragen?'Ja':(c.statistik||c.miaFragen?'teilweise':'Nein'))+'</td><td>'+nf+'</td><td>'+na+'</td><td>'+gBtn('pr',x)+'</td></tr>'}).join('')+'</table>';
+  $('#pl').innerHTML=gList('pr').length?gList('pr').map(function(x){var c=x.consent||{},nf=F.filter(function(y){return y.email&&y.email===x.email}).length,f=x.features||{},na=Object.keys(f).reduce(function(a,k){return a+(typeof f[k]==='number'?f[k]:0)},0);
+   return '<div class="kc"><div class="kt"><span class="km">'+esc(x.email||'ohne E-Mail')+'</span><span class="kg">'+esc(x.beruf||'noch nicht eingerichtet')+'</span></div>'+
+   '<div class="ki"><span title="Erfasste Tage">📅 '+esc(x.tage||0)+' Tage</span><span title="Aktive Tage letzte 7 / 30">🔥 '+aktiv(x,7)+' / '+aktiv(x,30)+'</span><span title="Rückmeldungen">💬 '+nf+'</span><span title="Aktionen in der App">🖱️ '+na+'</span><span title="Hilft mit (anonyme Statistik)">🤝 '+(c.statistik&&c.miaFragen?'Ja':(c.statistik||c.miaFragen?'teilweise':'Nein'))+'</span><span title="Sprache">🌐 '+esc(x.lang||'?')+'</span></div>'+
+   '<div class="kg">🕒 Zuletzt: '+fmt(x.lastSeen)+' · Registriert: '+fmt(x.created)+'</div><div class="kg">📱 '+esc(x.geraet||'unbekannt')+'</div>'+
+   '<div class="ks">'+gBtn('pr',x)+'</div></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
   $('#mo').innerHTML=gList('mo').length?gList('mo').map(function(x){return '<div class="fb">'+esc(x.text)+' <span class="mut">('+esc(x.lang||'')+', '+fmt(x.t)+')</span> '+gBtn('mo',x)+'</div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
-  $('#st').innerHTML=gList('st').length?'<table><tr><th>Zeitpunkt</th><th>Monat</th><th>Beruf</th><th>Zeilen</th><th>Status</th></tr>'+gList('st').map(function(x){return '<tr><td>'+fmt(x.t)+'</td><td>'+esc(x.monat)+'</td><td>'+esc(x.beruf||x.paket)+'</td><td>'+esc((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', '))+'</td><td>'+gBtn('st',x)+'</td></tr>'}).join('')+'</table>':'<p class="mut">Noch keine.</p>';
+  $('#st').innerHTML=gList('st').length?gList('st').map(function(x){return '<div class="kc"><div class="kt"><span class="km">'+esc(x.monat)+' · '+esc(x.beruf||x.paket||'?')+'</span><span class="kg">'+fmt(x.t)+'</span></div><div class="kg">'+esc((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')||'–')+'</div><div class="ks">'+gBtn('st',x)+'</div></div>'}).join(''):'<p class="mut">Noch keine.</p>';
 }
 function run(){
  Promise.all([load('profiles','lastSeen'),load('feedback','t'),load('miaOffen','t'),load('statistik','t')]).then(function(r){
@@ -128,7 +138,7 @@ function run(){
   $('#vl').innerHTML=V.length?'<table>'+V.map(function(e){return '<tr><td style="white-space:nowrap" class="mut">'+fmt(e[0])+'</td><td>'+e[1]+'</td></tr>'}).join('')+'</table>':'<p class="mut">Noch nichts.</p>';
   $('#rfm').textContent='Stand: '+new Date().toLocaleTimeString('de-AT')+'. Aktualisiert sich alle 2 Minuten von selbst.';
   var byReg=P.slice().sort(function(a,b){return String(b.created||'')<String(a.created||'')?-1:1});
-  $('#an').innerHTML='<table><tr><th>E-Mail</th><th>Registriert am</th><th>Letzte Anmeldung</th><th>Zuletzt in der App</th><th>Version</th><th>Gerät</th></tr>'+byReg.map(function(x){return '<tr><td>'+esc(x.email)+'</td><td>'+fmt(x.created)+'</td><td>'+fmt(x.lastLogin)+'</td><td>'+fmt(x.lastSeen)+'</td><td>'+esc(x.version)+'</td><td>'+esc(x.geraet||'unbekannt')+'</td></tr>'}).join('')+'</table>';
+  $('#an').innerHTML=byReg.map(function(x){return '<div class="kc"><div class="kt"><span class="km">'+esc(x.email||'ohne E-Mail')+'</span><span class="kg">Version '+esc(x.version||'?')+'</span></div><div class="kg">📝 Registriert: '+fmt(x.created)+'</div><div class="kg">🔑 Letzte Anmeldung: '+fmt(x.lastLogin)+'</div><div class="kg">🕒 Zuletzt in der App: '+fmt(x.lastSeen)+' · 📱 '+esc(x.geraet||'unbekannt')+'</div></div>'}).join('')||'<p class="mut">Noch keine.</p>';
   $('#wk').innerHTML=P.map(function(x){var f=x.features||{},o={};Object.keys(f).forEach(function(k){if(typeof f[k]==='number')o[k]=f[k]});var n=Object.keys(o).reduce(function(a,k){return a+o[k]},0);return '<details style="border-bottom:1px solid var(--line);padding:6px 0"><summary><b>'+esc(x.email||'ohne E-Mail')+'</b> <span class="mut">· '+esc(x.beruf||x.paket||'')+' · '+n+' Aktionen</span></summary>'+lst(o)+'</details>'}).join('')||'<p class="mut">Noch keine.</p>';
   GS.mo=M;GS.st=S;GS.pr=P;gDraw();
  REPORT=report(P,F,M,S,fun,mm,mia);
