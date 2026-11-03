@@ -513,14 +513,14 @@
       return Math.max(0, min);
     }
     var rows = [];
-    ((day && day.kunden) || []).forEach(function (k) {
+    ((day && day.kunden) || []).forEach(function (k, ki) {
       if (!k) return;
       var tl = k.taet || ((k.tat || k.von || k.bis) ? [{ tat: k.tat, von: k.von, bis: k.bis }] : []);
-      tl = tl.filter(function (t) { return (t.tat || '').trim() || t.von || t.bis; });
+      tl = tl.map(function (t, j) { return { t: t, j: j }; }).filter(function (o) { return (o.t.tat || '').trim() || o.t.von || o.t.bis; });
       if (!(k.name || '').trim() && !tl.length) return;
-      var taet = tl.map(function (t) { return { tat: (t.tat || '').trim(), min: dauer(t.von, t.bis) }; });
+      var taet = tl.map(function (o) { return { tat: (o.t.tat || '').trim(), min: dauer(o.t.von, o.t.bis), j: o.j }; });
       var min = null; taet.forEach(function (t) { if (t.min !== null) min = (min || 0) + t.min; });
-      rows.push({ name: (k.name || '').trim(), taet: taet, min: min });
+      rows.push({ name: (k.name || '').trim(), taet: taet, min: min, ki: ki });
     });
     // Nur ein Kunde und keine Zeiten: es zählt die Arbeitszeit des Tages.
     if (rows.length === 1 && rows[0].min === null) {

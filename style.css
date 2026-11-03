@@ -737,3 +737,8 @@ h3[data-ico="stack"]::before { background: #00897b; }
 .fbfloat { position: fixed; left: 10px; bottom: 10px; z-index: 49; display: flex; align-items: center; gap: 6px; padding: 10px 14px; min-height: 44px; border: 2px solid #e65100; border-radius: 999px; background: #fff3e0; color: #bf360c; font-weight: 700; font-size: .85rem; box-shadow: 0 4px 14px rgba(0,0,0,.2); cursor: pointer; }
 .fbfloat[hidden] { display: none; }
 .fbfloat svg { width: 18px; height: 18px; fill: none; stroke: #e65100; stroke-width: 2.2; stroke-linejoin: round; }
+
+.kzlink { background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.kzlink:focus-visible { outline: 2px solid #1e6fd9; outline-offset: 2px; }
+.kzflash { animation: kzflash 1.8s ease-out; }
+@keyframes kzflash { 0%, 40% { background: #fff3b0; box-shadow: 0 0 0 6px #fff3b0; } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }

@@ -924,8 +924,8 @@
       if (kz.rows.some(function (x) { return x.min !== null; })) {
         kh += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
         kz.rows.forEach(function (x) {
-          kh += line('<strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
-          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) kh += line('<span class="kz-sub">' + esc(y.tat || 'Tätigkeit') + '</span>', y.min === null ? '–' : hm(y.min) + ' h'); });
+          kh += line('<button type="button" class="kzlink" data-kz="' + x.ki + '"><strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong></button>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
+          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) kh += line('<button type="button" class="kzlink kz-sub" data-kz="' + x.ki + '" data-kj="' + y.j + '">' + esc(y.tat || 'Tätigkeit') + '</button>', y.min === null ? '–' : hm(y.min) + ' h'); });
         });
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
@@ -2267,6 +2267,11 @@
     var t = ev.target.closest('button'); if (!t) return;
     if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else if (t.dataset.tour === 'nein') tourEnd(true); else tourEnd(false); return; }
     if (t.dataset.seg && t.classList.contains('segb')) { setSeg(t.dataset.seg); return; }
+    if (t.dataset.kz !== undefined && t.classList.contains('kzlink')) {
+      var kid = t.dataset.kj !== undefined ? 'k-t' + t.dataset.kz + '-' + t.dataset.kj : 'k-n' + t.dataset.kz, ke = document.getElementById(kid) || document.getElementById('k-n' + t.dataset.kz);
+      if (ke) { var kb = ke.closest('.taet') || ke.closest('.kunde2') || ke; ke.scrollIntoView({ behavior: 'smooth', block: 'center' }); kb.classList.add('kzflash'); setTimeout(function () { kb.classList.remove('kzflash'); }, 1800); }
+      return;
+    }
     if (t.id === 'tour-start') { tourStart(); return; }
     if (t.id === 'assist-start') { tourStart(true); return; }
     if (t.id === 'an-share') { var tx = anText(); if (navigator.share) { navigator.share({ text: tx }).catch(function () {}); } else if (navigator.clipboard) { navigator.clipboard.writeText(tx).then(function () { toast('Kopiert.'); }, function () { toast('Kopieren hat nicht geklappt.'); }); } return; }
