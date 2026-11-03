@@ -638,6 +638,7 @@
     renderJahr();
     anRender();
     renderMia();
+    renderNews();
     var p = data.profil || {};
     var kbl = $('#k-bl'), pkc = E.PAKETE[wAt(todayISO()).paket];
     if (kbl) { $('#k-blwrap').hidden = !(pkc && pkc.land === 'DE'); kbl.innerHTML = '<option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (p.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join(''); }
@@ -1385,6 +1386,29 @@
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
+  /* ---------------- Neuigkeiten (Mia) ---------------- */
+  var NEWS = [
+    { id: 'n5', d: '2026-11-03', text: 'Neu: Mehrarbeit bei Teilzeit wird erkannt, und sie ist ohne Zuschlag, wenn du sie im selben Quartal 1:1 als Zeitausgleich nimmst.' },
+    { id: 'n4', d: '2026-11-03', text: 'Neu: Karenz, Mutterschutz und Papamonat gibt es als Tagesart, für alle Berufe.' },
+    { id: 'n3', d: '2026-11-03', text: 'Neu: Kollektivverträge für Büro-Angestellte in Gewerbe, Metall-Industrie und Bau. Fehlt deiner, kannst du ihn melden.' },
+    { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
+    { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
+  ];
+  function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
+  function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }
+  function newsUnseen() { var g = newsCfg().gelesen; return NEWS.filter(function (x) { return g.indexOf(x.id) < 0; }); }
+  function newsDue() {
+    var c = newsCfg(); if (c.an !== true || !newsUnseen().length || c.gesehen === todayISO()) return false;
+    if (c.freq === 'sofort' || !c.gesehen) return true;
+    var tage = Math.round((new Date(todayISO()) - new Date(c.gesehen)) / 86400000);
+    return tage >= (c.freq === 'woche' ? 7 : 30);
+  }
+  function renderNews() {
+    var c = newsCfg(), an = $('#news-an'); if (!an) return;
+    an.checked = c.an === true; $('#news-opt').hidden = c.an !== true;
+    $$('#news-freq .segb').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.nf === c.freq)); });
+    $('#news-list').innerHTML = NEWS.map(function (x) { var neu = c.gelesen.indexOf(x.id) < 0; return '<div class="newsli' + (neu ? ' neu' : '') + '"><strong>' + esc(x.text) + '</strong>' + (neu ? '<span class="nbadge">Neu!</span>' : '') + '<small>' + fmtDate(x.d) + '</small></div>'; }).join('');
+  }
   function mitHelfenFaellig() {
     var co = (data.profil && data.profil.consent) || {};
     return !!(window.StundenInsights && window.StundenInsights.on) && !!data.settings.length && !co.statistik && !co.miaFragen && !(data.profil && data.profil.mithelfenNein);
@@ -1407,12 +1431,16 @@
     fristenMia(out);
     festMia(out);
     if (mitHelfenFaellig()) out.unshift({ k: 'mithelfen', text: 'Du testest die App gratis. Hilfst du mit, sie besser zu machen? Ich melde nur anonym, in welchem Beruf du bist und wie stark Lohnzettel und Aufzeichnung abweichen, dazu Fragen, die ich nicht beantworten kann. Keine Namen, keine Beträge. Du kannst es jederzeit im Profil ausschalten.' });
+    if (newsCfg().an === undefined && !mitHelfenFaellig() && (data.profil && data.profil.tourDone) && Object.keys(data.days).length >= 3) out.push({ k: 'newsfrage', text: 'Soll ich dir Neuigkeiten zur App sagen, zum Beispiel neue Funktionen oder was sich Tester gewünscht haben? Wie oft, kannst du jederzeit im Profil ändern.' });
+    if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
-    return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
+    return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
+    if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
+    if (k.indexOf('news_') === 0) { newsSet('gelesen', NEWS.map(function (x) { return x.id; })); show('konten'); renderNews(); setTimeout(function () { var el = $('#news-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); return; }
     if (k === 'rundgang') { tourStart(); }
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true); }
@@ -1467,7 +1495,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = nx.k === 'mithelfen' ? 'Ja, bitte' : 'Zeig mir'; miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -2517,11 +2545,13 @@
     });
     function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; data.profil.mithelfenNein = !data.profil.consent.statistik && !data.profil.consent.miaFragen; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
     on2('#fb-float', 'click', function () { show('konten'); var d = $('#fb-det'); if (d) d.open = true; setTimeout(function () { var c = $('#fb-card'); if (c) c.scrollIntoView({ block: 'start' }); }, 50); });
+    on2('#news-an', 'change', function () { newsSet('an', this.checked); if (this.checked && !newsCfg().gesehen) newsSet('gesehen', ''); renderNews(); });
+    on2('#news-freq', 'click', function (ev) { var b = ev.target.closest('[data-nf]'); if (!b) return; newsSet('freq', b.dataset.nf); renderNews(); });
     on2('#c-stat', 'change', cons('statistik'));
     on2('#c-mia', 'change', cons('miaFragen'));
     try { renderFeedback(); } catch (e) { }
   })();
-  setTimeout(function () { try { if (mitHelfenFaellig() && !miaCfg().ruhig && (miaCfg().skip.mithelfen || 0) < 2) { ui.miaAuto = true; if (!ui.wiz && !TOUR) miaOpen(true); } } catch (e) { } }, 2500);
+  setTimeout(function () { try { if (((mitHelfenFaellig() && (miaCfg().skip.mithelfen || 0) < 2) || (newsDue() && (miaNext() || {}).k && miaNext().k.indexOf('news_') === 0)) && !miaCfg().ruhig) { ui.miaAuto = true; if (!ui.wiz && !TOUR) miaOpen(true); } } catch (e) { } }, 2500);
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 
 

@@ -746,3 +746,9 @@ h3[data-ico="stack"]::before { background: #00897b; }
 .day.st-mutterschutz { border-left-color: #8e24aa; } .st-mutterschutz .d-ico { background: #f3e5f5; color: #8e24aa; }
 .day.st-karenz { border-left-color: #00838f; } .st-karenz .d-ico { background: #e0f7fa; color: #00838f; }
 .day.st-papamonat { border-left-color: #f57c00; } .st-papamonat .d-ico { background: #fff3e0; color: #e65100; }
+
+h3[data-ico="news"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M4%205h13v14H6a2%202%200%200%201-2-2zM17%209h3v8a2%202%200%200%201-2%202M7%209h7M7%2013h7%22/%3E%3C/svg%3E"); }
+h3[data-ico="news"]::before { background: #6a1b9a; }
+.newsli { padding: 8px 0; border-top: 1px solid var(--line, #ddd); }
+.newsli small { display: block; opacity: .7; }
+.newsli .nbadge { color: #6a1b9a; font-size: .8em; font-weight: 700; margin-left: 6px; }

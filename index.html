@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261103135309">
+<link rel="stylesheet" href="style.css?v=20261103135932">
 </head>
 <body>
 
@@ -344,6 +344,18 @@
         <input type="file" id="icon-file" accept="image/*" hidden>
       </div>
     </div>
+    <div class="card" id="news-card">
+      <h3 data-ico="news">Neuigkeiten</h3>
+      <label class="check" for="news-an"><input type="checkbox" id="news-an"><span>Mia sagt mir Neuigkeiten</span></label>
+      <div id="news-opt" hidden>
+        <div class="seg" id="news-freq" role="group" aria-label="Wie oft">
+          <button type="button" class="segb" data-nf="sofort" aria-pressed="false">Sofort</button>
+          <button type="button" class="segb" data-nf="woche" aria-pressed="false">Wöchentlich</button>
+          <button type="button" class="segb" data-nf="monat" aria-pressed="false">Monatlich</button>
+        </div>
+      </div>
+      <div id="news-list"></div>
+    </div>
     <div class="card" id="fr-card">
       <h3 data-ico="flag">Fristen und Ausweise</h3>
       <div class="field"><label>Meine Fristen</label><small>Lege Ausweise, Kurse und Prüfungen mit Ablaufdatum an. Trage das Datum von deinem Dokument ein, die Vorschläge sind nur Beispiele. Die Kalenderdatei legt den Termin mit Erinnerungen in den Handy-Kalender. Ändert sich das Datum, lade sie neu.</small></div>
@@ -648,21 +660,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261103135309";</script>
-<script src="engine.js?v=20261103135309"></script>
+<script>window.APP_VERSION="20261103135932";</script>
+<script src="engine.js?v=20261103135932"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261103135309"></script>
-<script src="timepicker.js?v=20261103135309"></script>
-<script src="datepicker.js?v=20261103135309"></script>
-<script src="selectpicker.js?v=20261103135309"></script>
-<script src="pdf.js?v=20261103135309"></script>
-<script src="lzread.js?v=20261103135309"></script>
-<script src="app.js?v=20261103135309"></script>
-<script src="auth.js?v=20261103135309"></script>
-<script src="sync.js?v=20261103135309"></script>
-<script src="insights.js?v=20261103135309"></script>
+<script src="firebase-config.js?v=20261103135932"></script>
+<script src="timepicker.js?v=20261103135932"></script>
+<script src="datepicker.js?v=20261103135932"></script>
+<script src="selectpicker.js?v=20261103135932"></script>
+<script src="pdf.js?v=20261103135932"></script>
+<script src="lzread.js?v=20261103135932"></script>
+<script src="app.js?v=20261103135932"></script>
+<script src="auth.js?v=20261103135932"></script>
+<script src="sync.js?v=20261103135932"></script>
+<script src="insights.js?v=20261103135932"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
