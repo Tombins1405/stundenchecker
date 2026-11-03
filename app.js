@@ -1378,6 +1378,10 @@
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
+  function mitHelfenFaellig() {
+    var co = (data.profil && data.profil.consent) || {};
+    return !!(window.StundenInsights && window.StundenInsights.on) && !!data.settings.length && !co.statistik && !co.miaFragen && !(data.profil && data.profil.mithelfenNein);
+  }
   function miaNext() {
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
@@ -1395,11 +1399,13 @@
     if (ur.length >= 3 && (neg >= 3 || pos >= 3)) out.push({ k: 'abweichung', pose: 'eyes', text: 'Deine Überstunden weichen in mehreren Monaten vom Lohnzettel ab. Schau bitte nach, ob diese Einstellungen stimmen: Überstunden-Modell, Betrieb geschlossen und Rundung.' });
     fristenMia(out);
     festMia(out);
+    if (mitHelfenFaellig()) out.unshift({ k: 'mithelfen', text: 'Du testest die App gratis. Hilfst du mit, sie besser zu machen? Ich melde nur anonym, in welchem Beruf du bist und wie stark Lohnzettel und Aufzeichnung abweichen, dazu Fragen, die ich nicht beantworten kann. Keine Namen, keine Beträge. Du kannst es jederzeit im Profil ausschalten.' });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
   }
   function miaGo(k) {
+    if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
     if (k === 'rundgang') { tourStart(); }
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true); }
@@ -1454,7 +1460,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = nx.k === 'mithelfen' ? 'Ja, bitte' : 'Zeig mir'; miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -2481,12 +2487,13 @@
         $('#fb-text').value = ''; $('#fb-img').value = ''; $('#fb-prev').hidden = true; img = null; msg('Danke! Deine Rückmeldung ist angekommen.'); b.disabled = false;
       }, function () { msg('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
     });
-    function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
+    function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; data.profil.mithelfenNein = !data.profil.consent.statistik && !data.profil.consent.miaFragen; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
     on2('#fb-float', 'click', function () { show('konten'); var d = $('#fb-det'); if (d) d.open = true; setTimeout(function () { var c = $('#fb-card'); if (c) c.scrollIntoView({ block: 'start' }); }, 50); });
     on2('#c-stat', 'change', cons('statistik'));
     on2('#c-mia', 'change', cons('miaFragen'));
     try { renderFeedback(); } catch (e) { }
   })();
+  setTimeout(function () { try { if (mitHelfenFaellig() && !miaCfg().ruhig && (miaCfg().skip.mithelfen || 0) < 2) { ui.miaAuto = true; if (!ui.wiz && !TOUR) miaOpen(true); } } catch (e) { } }, 2500);
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 
 
