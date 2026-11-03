@@ -120,6 +120,45 @@
         schlechtwetter: false
       }
     },
+    it_ang: {
+      name: 'Büro: Informationstechnologie / IT (Angestellte)',
+      hinweis: 'KV Informationstechnologie (Dienstleistungen in der automatischen Datenverarbeitung und Informationstechnik), Angestellte, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche, Überstunden 50 %, nachts (20 bis 6 Uhr) sowie Sonntag und Feiertag 100 %. Grundstunde 1/143 des Monatsgehalts. Mehrarbeit bei Teilzeit ist zuschlagsfrei, wenn sie innerhalb von vier Monaten 1:1 mit Zeitausgleich abgegolten wird (die App rechnet nach dem Gesetz mit dem Kalendervierteljahr). Es gibt auch einen Gleitzeitkonto-Zuschlag von 65 % auf Gutstunden, den die App nicht kennt. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    banken_ang: {
+      name: 'Büro: Banken und Bankiers (Angestellte)',
+      hinweis: 'KV Banken und Bankiers, Angestellte, ab 2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden 50 % bis 20 Uhr, zwischen 20 und 6 Uhr sowie Sonn- und Feiertag 100 %. Grundstunde 1/150 des Monatsbezugs. Mehrarbeit bei Teilzeit bis zur vollen Normalarbeitszeit: Stundenlohn plus 16,67 % (das bildet den Anteil von 13. und 14. Gehalt ab). Der Samstagszuschlag hängt von der Fünf-Tage-Woche ab, stelle ihn bei Bedarf selbst ein. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, mehrPct: 16.67, zaAusgleich: false },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    versicherung_ang: {
+      name: 'Büro: Versicherungen, Innendienst (Angestellte)',
+      hinweis: 'KV Versicherungsunternehmen, Innendienst, Stand 1.3.2026 (Quelle: wko.at): 38,5 Stunden/Woche, Überstunden 50 %, Grundstunde 1/143 des Bruttomonatsbezugs. Zuschläge für Nacht, Sonntag und Feiertag konnte ich in der Quelle nicht finden, die Feiertagsarbeit ist gesetzlich doppelt bezahlt. Stelle Nacht und Sonntag bei Bedarf selbst ein. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     gewerbe_ang: {
       name: 'Büro: Gewerbe, Handwerk und Dienstleistung (Angestellte)',
       hinweis: 'KV Gewerbe, Handwerk und Dienstleistung, Angestellte, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr sowie an Sonn- und Feiertagen 100 %. Grundstunde 1/150 des Monatsgehalts. Mehrarbeit bei Teilzeit ist zuschlagsfrei, wenn sie 1:1 mit Zeitausgleich abgegolten wird (laut KV innerhalb von vier Monaten, die App rechnet nach dem Gesetz mit dem Kalendervierteljahr). Bitte vergleiche mit deinem Dienstzettel.',
@@ -426,7 +465,7 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -435,7 +474,7 @@
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
