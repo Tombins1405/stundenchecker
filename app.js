@@ -248,7 +248,7 @@
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd) + '<small>h</small></dd>') + '</div>') +
+      (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd - (s.mehrStd || 0)) + '<small>h</small></dd>') + '</div>' + (!laufend && s.mehrStd > 0 ? '<div><dt>Mehrarbeit</dt><dd class="hl">' + fh(s.mehrStd) + '<small>h</small></dd></div>' : '')) +
       (w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>') +
       (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
@@ -1868,6 +1868,7 @@
     else if (set.diaeten.modell === 'aus') { set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell; if (set.diaeten.modell === 'aus') { set.diaeten.modell = 'stunde'; set.diaeten.maxStd = 12; } }
     var lo = parseFloat(String(w.lohn).replace(',', '.')); set.stundenlohn = isNaN(lo) ? null : lo;
     var wo = parseFloat(String(w.wochen).replace(',', '.')); if (wo > 0) set.ueberstunden.wochenStd = wo;
+    var vzp = E.PAKETE[w.paket].werte.ueberstunden.wochenStd; if (wo > 0 && vzp > wo && String(w.paket).indexOf('de_') !== 0 && set.ueberstunden.modell !== 'bau') set.ueberstunden.vollzeitStd = vzp;
     var mo = parseFloat(String(w.monat || '').replace(',', '.'));
     if (mo > 0) { var wsd = set.ueberstunden.wochenStd > 0 ? set.ueberstunden.wochenStd : 38.5; set.monatslohn = mo; set.monatsStd = Math.round(wsd * 52 / 12 * 100) / 100; set.stundenlohn = Math.round(mo / set.monatsStd * 100) / 100; set.lgAuto = false; }
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
@@ -2138,6 +2139,7 @@
     $('#s-d-tag').hidden = dm !== 'tag';
     $('#s-d-vorschlag').hidden = dm === 'aus';
     $('#s-grenzefield').hidden = um !== 'bau';
+    var vzh = um !== 'monat' || String(en.paket).indexOf('de_') === 0; $('#s-vollzeitfield').hidden = vzh; $('#s-mehrfield').hidden = vzh || !(+en.ueberstunden.vollzeitStd > E.wochenStd(en.ueberstunden));
     $('#s-gleitbox').hidden = um !== 'gleit';
     if (!en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var sat = en.diaeten.satz || 0, wo = E.wochenStd(en.ueberstunden), soll = E.tagesSoll(en.ueberstunden), gr = en.ueberstunden.tagesGrenze || 9;
@@ -2204,6 +2206,10 @@
     if (inp.dataset.path === 'monatslohn' || inp.dataset.path === 'monatsStd') {
       var ms = en.monatsStd > 0 ? en.monatsStd : 173;
       if (en.monatslohn > 0) { en.stundenlohn = Math.round(en.monatslohn / ms * 100) / 100; var sl = $('#s-lohn'); if (sl) sl.value = en.stundenlohn; }
+    }
+    if (inp.dataset.path === 'ueberstunden.wochenStd' && en.ueberstunden.vollzeitStd == null && String(en.paket).indexOf('de_') !== 0) {
+      var pkw = E.PAKETE[en.paket] && E.PAKETE[en.paket].werte.ueberstunden.wochenStd;
+      if (pkw > en.ueberstunden.wochenStd && en.ueberstunden.wochenStd > 0) { en.ueberstunden.vollzeitStd = pkw; var vz = $('#s-vollzeit'); if (vz) vz.value = pkw; }
     }
     delete en.test;
     save();
