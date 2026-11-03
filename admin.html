@@ -20,7 +20,7 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left
 <button id="gl" style="margin-top:8px">Mit Google anmelden</button>
 <p id="ver" class="mut"></p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button id="inst" hidden>Als App auf den Desktop legen</button></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="vs" hidden>Bestätigungsmail senden</button><button id="vr" hidden>Neu prüfen</button><button id="out" hidden>Abmelden</button></div></div>
 <div id="dash" hidden>
-<div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="rf">Jetzt aktualisieren</button><span class="mut" id="rfm">Aktualisiert sich alle 2 Minuten von selbst.</span></div>
+<div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="rf">Jetzt aktualisieren</button><button id="ca">Alles Offene an Claude kopieren</button><span class="mut" id="rfm">Aktualisiert sich alle 2 Minuten von selbst.</span></div>
 <div class="card"><h2>Verlauf: wer hat was gemacht?</h2><p class="mut">Registrierungen, Anmeldungen, Rückmeldungen und anonyme Meldungen, neueste zuerst.</p><div id="vl"></div></div>
 <div class="card"><h2>Überblick</h2><div id="ov"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cp">Alles kopieren</button><button id="dl">Als Textdatei speichern</button></div><small class="mut" id="cpm"></small></div>
 <div class="card"><h2>Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
@@ -69,7 +69,15 @@ function gst(g,x){return x.status||LOCAL[GC[g]+'/'+x._id]||'offen'}
 function gOk(g,x){return gst(g,x)==='erledigt'}
 function gBar(g){var L=GS[g],no=L.filter(function(x){return !gOk(g,x)}).length,el=document.querySelector('.flt[data-g="'+g+'"]');if(!el)return;el.innerHTML=['offen','erledigt','alle'].map(function(k){return '<button type="button" class="sm" data-gf="'+g+'|'+k+'" style="opacity:'+(GF[g]===k?'1':'.55')+'">'+(k==='offen'?gW(g)[0]:k==='erledigt'?gW(g)[1]:'Alle')+'</button>'}).join('')+'<span class="mut">'+no+' '+gW(g)[0].toLowerCase()+', '+(L.length-no)+' '+gW(g)[1].toLowerCase()+'</span>'}
 function gW(g){return g==='pr'?['Neu','Betreut','Wieder auf neu','Betreut']:['Offen','Erledigt','Wieder öffnen','Erledigt']}
-function gBtn(g,x){var e=gOk(g,x),w=gW(g);return '<b class="'+(e?'ok':'todo')+'">'+(e?w[1]:w[0])+'</b> <button type="button" class="sm'+(e?' alt':'')+'" data-gs="'+g+'|'+esc(x._id)+'">'+(e?w[2]:w[3])+'</button>'}
+function gBtn(g,x){var e=gOk(g,x),w=gW(g);return '<b class="'+(e?'ok':'todo')+'">'+(e?w[1]:w[0])+'</b> <button type="button" class="sm'+(e?' alt':'')+'" data-gs="'+g+'|'+esc(x._id)+'">'+(e?w[2]:w[3])+'</button> <button type="button" class="sm alt" data-gc="'+g+'|'+esc(x._id)+'">An Claude kopieren</button>'}
+function gText(g,x){
+ if(g==='mo')return 'FRAGE AN MIA, DIE SIE NICHT BEANTWORTEN KONNTE\nAm: '+fmt(x.t)+', Sprache: '+(x.lang||'?')+'\n\n'+(x.text||'');
+ if(g==='st')return 'ANONYME ABWEICHUNGSMELDUNG\nAm: '+fmt(x.t)+'\nMonat: '+(x.monat||'?')+', Beruf: '+(x.beruf||x.paket||'?')+'\nZeilen: '+((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')||'–');
+ var c=x.consent||{};return 'KONTO\nE-Mail: '+(x.email||'?')+'\nBeruf: '+(x.beruf||x.paket||'noch nicht eingerichtet')+'\nErfasste Tage: '+(x.tage||0)+', aktiv letzte 7/30 Tage: '+aktiv(x,7)+'/'+aktiv(x,30)+'\nSprache: '+(x.lang||'?')+', Gerät: '+(x.geraet||'unbekannt')+', Version: '+(x.version||'?')+'\nRegistriert: '+fmt(x.created)+', zuletzt in der App: '+fmt(x.lastSeen)+'\nMithelfen: Statistik '+(c.statistik?'ja':'nein')+', Mia-Fragen '+(c.miaFragen?'ja':'nein')}
+function gAlles(){var L=['STUNDEN-CHECKER: ALLES, WAS NOCH OFFEN IST, Stand '+new Date().toLocaleString('de-AT'),''];
+ var f=FB.filter(function(x){return st(x)!=='erledigt'});L.push('RÜCKMELDUNGEN ('+f.length+')');f.forEach(function(x){L.push(fbText(x),'---')});
+ [['mo','FRAGEN AN MIA'],['st','ABWEICHUNGEN'],['pr','NEUE KONTEN']].forEach(function(p){var l=GS[p[0]].filter(function(x){return !gOk(p[0],x)});L.push('',p[1]+' ('+l.length+')');l.forEach(function(x){L.push(gText(p[0],x),'---')})});
+ return L.join('\n')}
 function gList(g){return GS[g].filter(function(x){return GF[g]==='alle'||gOk(g,x)===(GF[g]==='erledigt')})}
 function fbText(x){return 'RÜCKMELDUNG AUS DEM STUNDEN-CHECKER\nArt: '+art(x)+'\nVon: '+(x.email||'ohne Konto')+'\nAm: '+fmt(x.t)+'\nAnsicht: '+(x.view||'?')+', Gerät: '+(x.geraet||'unbekannt')+', Sprache: '+(x.lang||'?')+', Version: '+(x.version||'?')+'\n\n'+(x.text||'')+(x.img?'\n\n(mit Bild, hier nicht enthalten)':'')}
 function drawFb(){
@@ -79,9 +87,11 @@ function drawFb(){
  $('#fbm').textContent=no+' offen, '+(FB.length-no)+' erledigt';
  $('#fbl').innerHTML=L.length?L.map(function(x){var e=st(x)==='erledigt';return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span> · <b style="color:'+(e?'#2e7d32':'#b45309')+'">'+(e?'Erledigt':'Noch offen')+'</b><div class="mut">Gerät: '+esc(x.geraet||'unbekannt')+'</div><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" data-cl="'+esc(x._id)+'">An Claude übertragen</button><button type="button" data-st="'+esc(x._id)+'">'+(e?'Wieder offen':'Erledigt')+'</button></div></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
 }
-function copyText(t,msg){function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');$('#fbm').textContent=msg}catch(e){$('#fbm').textContent='Kopieren nicht möglich.'}a.remove()}
- if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$('#fbm').textContent=msg},fb);else fb()}
+function copyText(t,msg){function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');$('#fbm').textContent=msg;$('#rfm').textContent=msg}catch(e){$('#fbm').textContent='Kopieren nicht möglich.'}a.remove()}
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$('#fbm').textContent=msg;$('#rfm').textContent=msg},fb);else fb()}
 document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('button');if(!b)return;
+ if(b.id==='ca'){copyText(gAlles(),'Alles Offene kopiert. Jetzt im Chat einfügen.');return}
+ if(b.dataset.gc){var q3=b.dataset.gc.split('|'),y3=GS[q3[0]].filter(function(z){return z._id===q3[1]})[0];if(y3)copyText(gText(q3[0],y3),'Kopiert. Jetzt im Chat einfügen.');return}
  if(b.dataset.gf){var q=b.dataset.gf.split('|');GF[q[0]]=q[1];gDraw();return}
  if(b.dataset.gs){var q2=b.dataset.gs.split('|'),g=q2[0],y2=GS[g].filter(function(z){return z._id===q2[1]})[0];if(!y2)return;var neu2=gOk(g,y2)?'offen':'erledigt';y2.status=neu2;LOCAL[GC[g]+'/'+y2._id]=neu2;try{localStorage.setItem('sc.fbstatus',JSON.stringify(LOCAL))}catch(e){}gDraw();db.collection(GC[g]).doc(y2._id).update({status:neu2}).catch(function(){});return}
  if(b.dataset.f){FILT=b.dataset.f;drawFb();return}
