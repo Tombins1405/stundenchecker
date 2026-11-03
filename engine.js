@@ -107,6 +107,19 @@
         schlechtwetter: false
       }
     },
+    gleit_buero: {
+      name: 'Büro mit Gleitzeit (Saldo statt Überstunden)',
+      hinweis: 'Bei Gleitzeit zählt die App Plus- und Minusstunden auf einem Gleitzeitkonto statt Überstunden. Du stellst die Sollzeit je Wochentag ein, optional ein Startsaldo und eine Übertragungsgrenze: Was am Quartalsende darüber liegt, verfällt oder wird laut Gleitzeitvereinbarung als Überstunde bezahlt. Überstunden gibt es erst, wenn deine Firma sie anordnet; trage sie dann als Prämie oder in der Zeile „Überstunden“ ein. Gesetzliche Grundlage: § 4b Arbeitszeitgesetz (Gleitzeitvereinbarung). Bitte vergleiche mit deiner Gleitzeitvereinbarung.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'gleit', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, sollProTag: {} },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 0 },
+        schlechtwetter: false
+      }
+    },
     gewerbe_ang: {
       name: 'Büro: Gewerbe, Handwerk und Dienstleistung (Angestellte)',
       hinweis: 'KV Gewerbe, Handwerk und Dienstleistung, Angestellte, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr sowie an Sonn- und Feiertagen 100 %. Grundstunde 1/150 des Monatsgehalts. Mehrarbeit bei Teilzeit ist zuschlagsfrei, wenn sie 1:1 mit Zeitausgleich abgegolten wird (laut KV innerhalb von vier Monaten, die App rechnet nach dem Gesetz mit dem Kalendervierteljahr). Bitte vergleiche mit deinem Dienstzettel.',
@@ -413,16 +426,16 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
-    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
         schlosser: { name: 'Schlosser / Schweißer', b: { fahrzeug: false, kunden: false, praemien: false } },
         leiter: { name: 'Werkstattleiter / Meister', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
-    bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -669,10 +682,28 @@
   function gleitQuartal(data, y, m, heute, opts) {
     var q0 = 3 * Math.floor((m - 1) / 3) + 1, sum = 0;
     for (var mm = q0; mm <= m; mm++) {
-      var o = { noQ: true, noZa: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
+      var o = { noQ: true, noZa: true, noK: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
       sum += calcMonth(data, y, mm, heute, o).summe.ueberStd;
     }
     return Math.round(sum * 100) / 100;
+  }
+  // Gleitzeitkonto: Startsaldo plus alle Monatssalden seit dem ersten Eintrag. Ist eine Übertragungsgrenze (Plus) eingestellt, verfällt am Quartalsende, was darüber liegt.
+  function gleitKonto(data, y, m, heute, opts) {
+    var days = data.days || {}, first = null;
+    Object.keys(days).forEach(function (k) { if (days[k] && (!first || k < first)) first = k; });
+    if (!first) return { konto: 0, verfall: 0 };
+    var f = parseISO(first); if (f.y > y || (f.y === y && f.m > m)) return { konto: 0, verfall: 0 };
+    var w0 = wertAt(data.settings || [], first).ueberstunden || {};
+    var sum = w0.gleitStart != null && w0.gleitStart !== '' && !isNaN(+w0.gleitStart) ? +w0.gleitStart * 60 : 0, verfall = 0, yy = f.y, mm = f.m, live = false;
+    if (heute) { var hq = parseISO(heute); live = hq.y === y && hq.m === m; }
+    while (yy < y || (yy === y && mm <= m)) {
+      var o = { noQ: true, noZa: true, noK: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
+      sum += Math.round(calcMonth(data, yy, mm, heute, o).summe.ueberStd * 60);
+      var wl = wertAt(data.settings || [], iso(yy, mm, 1)).ueberstunden || {};
+      if (mm % 3 === 0 && !(yy === y && mm === m && live) && wl.gleitMax != null && wl.gleitMax !== '' && !isNaN(+wl.gleitMax) && sum > +wl.gleitMax * 60) { verfall += sum - Math.round(+wl.gleitMax * 60); sum = Math.round(+wl.gleitMax * 60); }
+      mm++; if (mm > 12) { mm = 1; yy++; }
+    }
+    return { konto: Math.round(sum / 60 * 100) / 100, verfall: Math.round(verfall / 60 * 100) / 100 };
   }
   function calcMonth(data, y, m, heute, opts) {
     var settings = data.settings || [], days = data.days || {};
@@ -812,7 +843,7 @@
     return {
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
-        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrFreiStd: h2(s.mehrFreiMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
+        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrFreiStd: h2(s.mehrFreiMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null, gleitKontoStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).konto : null, gleitVerfallStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).verfall : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,

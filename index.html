@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261103150157">
+<link rel="stylesheet" href="style.css?v=20261103151441">
 </head>
 <body>
 
@@ -460,6 +460,11 @@
           <label for="s-sg4">Donnerstag<input type="number" id="s-sg4" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.sollProTag.4" data-type="numnull"></label>
           <label for="s-sg5">Freitag<input type="number" id="s-sg5" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.sollProTag.5" data-type="numnull"></label>
         </div>
+        <div class="grid2" style="margin-top:8px">
+          <label for="s-gstart">Startsaldo (Stunden, optional)<input type="number" id="s-gstart" inputmode="decimal" step="0.25" data-path="ueberstunden.gleitStart" data-type="numnull"></label>
+          <label for="s-gmax">Übertragungsgrenze Plus (Stunden, optional)<input type="number" id="s-gmax" inputmode="decimal" step="1" min="0" data-path="ueberstunden.gleitMax" data-type="numnull"></label>
+        </div>
+        <small id="s-gleit-k">Startsaldo: dein Gleitzeitkonto am Tag deines ersten Eintrags (Plus oder Minus). Übertragungsgrenze: Was am Quartalsende über dieser Zahl liegt, verfällt oder wird laut Gleitzeitvereinbarung bezahlt. Beides steht meist auf deinem Zeitnachweis.</small>
         <small id="s-gleit-h">Leer lassen: Wochenstunden geteilt durch Arbeitstage. Zum Beispiel Montag bis Donnerstag 8,5 und Freitag 6.</small></div>
       <div class="field"><label for="s-einst">Einstufung auf deinem Lohnzettel</label><input type="text" id="s-einst" maxlength="60" data-path="einstufung" data-type="text" placeholder="zum Beispiel Kraftfahrer 3a oder LG 1/A"></div>
       <div id="s-lgbox"></div>
@@ -662,21 +667,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261103150157";</script>
-<script src="engine.js?v=20261103150157"></script>
+<script>window.APP_VERSION="20261103151441";</script>
+<script src="engine.js?v=20261103151441"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261103150157"></script>
-<script src="timepicker.js?v=20261103150157"></script>
-<script src="datepicker.js?v=20261103150157"></script>
-<script src="selectpicker.js?v=20261103150157"></script>
-<script src="pdf.js?v=20261103150157"></script>
-<script src="lzread.js?v=20261103150157"></script>
-<script src="app.js?v=20261103150157"></script>
-<script src="auth.js?v=20261103150157"></script>
-<script src="sync.js?v=20261103150157"></script>
-<script src="insights.js?v=20261103150157"></script>
+<script src="firebase-config.js?v=20261103151441"></script>
+<script src="timepicker.js?v=20261103151441"></script>
+<script src="datepicker.js?v=20261103151441"></script>
+<script src="selectpicker.js?v=20261103151441"></script>
+<script src="pdf.js?v=20261103151441"></script>
+<script src="lzread.js?v=20261103151441"></script>
+<script src="app.js?v=20261103151441"></script>
+<script src="auth.js?v=20261103151441"></script>
+<script src="sync.js?v=20261103151441"></script>
+<script src="insights.js?v=20261103151441"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
