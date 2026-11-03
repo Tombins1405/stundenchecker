@@ -100,7 +100,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 165 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 0, ft: 100 },
@@ -126,7 +126,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -139,7 +139,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, mehrPct: 16.67, zaAusgleich: false },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 150, mehrPct: 16.67, zaAusgleich: false },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -152,7 +152,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 0, ft: 100 },
@@ -165,7 +165,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 150 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -178,7 +178,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -191,7 +191,7 @@
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
-        ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50 },
+        ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 146 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -1033,6 +1033,12 @@
   function abgleichEuro(rows, w) {
     var lohn = w && w.stundenlohn != null && !isNaN(+w.stundenlohn) ? +w.stundenlohn : null;
     var zus = w && w.ueberstunden && w.ueberstunden.zuschlagPct != null ? +w.ueberstunden.zuschlagPct : 50;
+    // Überstunden-Grundlohn laut Kollektivvertrag: Monatsgehalt durch den Teiler des KV (zum Beispiel 1/143), bei Teilzeit auf Vollzeit hochgerechnet.
+    var lohnUeber = lohn;
+    if (w && w.ueberstunden && +w.ueberstunden.ueberTeiler > 0 && +w.monatslohn > 0) {
+      var wo = wochenStd(w.ueberstunden), vz = +w.ueberstunden.vollzeitStd > wo ? +w.ueberstunden.vollzeitStd : wo;
+      lohnUeber = Math.round(+w.monatslohn / (+w.ueberstunden.ueberTeiler * (wo > 0 ? wo / vz : 1)) * 10000) / 10000;
+    }
     var out = { ok: true, fehltStundenlohn: false, summe: 0, zeilen: {} };
     rows.forEach(function (r) {
       if (r.key === 'gleit' || r.status === 'info' || r.status === 'offen' || r.status === 'gleich' || r.diff === null) return;
@@ -1040,7 +1046,7 @@
       if (f === 'euro') eur = -r.diff;
       else if (f === 'diaeten') { if (w && w.diaeten && w.diaeten.modell === 'stunde' && w.diaeten.satz) eur = -r.diff * w.diaeten.satz; }
       else if (lohn === null) { out.fehltStundenlohn = true; return; }
-      else eur = -r.diff * lohn * (f === 'ueber' ? 1 + zus / 100 : f === 'mehr' ? 1 + (w && w.ueberstunden && w.ueberstunden.mehrPct != null ? +w.ueberstunden.mehrPct : 25) / 100 : f);
+      else eur = -r.diff * (f === 'ueber' ? lohnUeber : lohn) * (f === 'ueber' ? 1 + zus / 100 : f === 'mehr' ? 1 + (w && w.ueberstunden && w.ueberstunden.mehrPct != null ? +w.ueberstunden.mehrPct : 25) / 100 : f);
       if (eur === null) return;
       eur = Math.round(eur * 100) / 100; out.zeilen[r.key] = eur; out.summe = Math.round((out.summe + eur) * 100) / 100;
     });
