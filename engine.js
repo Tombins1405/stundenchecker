@@ -94,6 +94,19 @@
         schlechtwetter: false
       }
     },
+    gueter_ang: {
+      name: 'Büro: Güterbeförderung / Transport (Angestellte)',
+      hinweis: 'KV Güterbeförderungsgewerbe, Angestellte, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche ohne Pausen, Durchrechnung bis 32 Wochen möglich, Überstunden 50 %, nachts (22 bis 5 Uhr) 100 %. Grundstunde 1/165 des Monatsgehalts. Feiertagsarbeit: ab zwei Stunden 50 % Zuschlag, laut KV in Freizeit. Für Sonntag verweist der KV nur auf das Arbeitsruhegesetz, die App rechnet Sonntag ohne Zuschlag, stelle ihn bei Bedarf selbst ein. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     gewerbe_ang: {
       name: 'Büro: Gewerbe, Handwerk und Dienstleistung (Angestellte)',
       hinweis: 'KV Gewerbe, Handwerk und Dienstleistung, Angestellte, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr sowie an Sonn- und Feiertagen 100 %. Grundstunde 1/150 des Monatsgehalts. Mehrarbeit bei Teilzeit ist zuschlagsfrei, wenn sie 1:1 mit Zeitausgleich abgegolten wird (laut KV innerhalb von vier Monaten, die App rechnet nach dem Gesetz mit dem Kalendervierteljahr). Bitte vergleiche mit deinem Dienstzettel.',
@@ -393,10 +406,10 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
