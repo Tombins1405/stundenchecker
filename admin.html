@@ -22,6 +22,12 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left
 <div id="dash" hidden>
 <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="rf">Jetzt aktualisieren</button><button id="ca">Alles Offene an Claude kopieren</button><span class="mut" id="rfm">Aktualisiert sich alle 2 Minuten von selbst.</span></div>
 <div class="card"><h2>Verlauf: wer hat was gemacht?</h2><p class="mut">Registrierungen, Anmeldungen, Rückmeldungen und anonyme Meldungen, neueste zuerst.</p><div id="vl"></div></div>
+<div class="card" id="einl"><h2>Einladungen</h2>
+<p class="mut">Neue Tester brauchen einen persönlichen Code. Er gilt einmal und 14 Tage. Wer den Link weiterleitet, hilft nichts: Nur der Erste, der den Code einlöst, kommt hinein. Bestehende Konten brauchen keinen Code.</p>
+<label style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><input type="checkbox" id="ei-an" style="width:20px;height:20px"> <b>Einladungscode ist Pflicht</b></label>
+<div class="flt"><input type="text" id="ei-fuer" placeholder="Für wen? (zum Beispiel Birgit)" maxlength="60" style="flex:1;min-width:180px"><button id="ei-neu">Code erzeugen</button><span class="mut" id="ei-m"></span></div>
+<div id="ei-neubox" class="fb" hidden></div>
+<div class="scroll" id="ei-l"></div></div>
 <div class="card"><h2>Überblick</h2><div id="ov"></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button id="cp">Alles kopieren</button><button id="dl">Als Textdatei speichern</button></div><small class="mut" id="cpm"></small></div>
 <div class="card"><h2>Nutzung der Funktionen (Anzahl, alle Konten)</h2><div id="fe"></div></div>
 <div class="card"><h2>Mia</h2><div id="mi"></div></div>
@@ -128,6 +134,31 @@ function run(){
  REPORT=report(P,F,M,S,fun,mm,mia);
  },function(e){$('#ov').textContent='Kein Zugriff oder noch nicht eingerichtet ('+(e&&e.code||e)+').'});
 }
+
+/* ---- Einladungen ---- */
+var EI=[];
+function eiCode(){var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',s='TC-';var r=new Uint8Array(6);(window.crypto||window.msCrypto).getRandomValues(r);for(var i=0;i<6;i++)s+=A[r[i]%A.length];return s}
+function eiText(c,f){return 'Hallo'+(f?' '+f:'')+'! Hier ist deine Einladung zum Stunden-Checker.\n1) Öffne https://tombins1405.github.io/stundenchecker/\n2) Tippe auf „Neu hier“.\n3) Trage E-Mail, Passwort und diesen Einladungscode ein: '+c+'\nDer Code gilt 14 Tage und nur für dich. Bitte nicht weitergeben.'}
+function eiStat(x){if(x.genutzt)return '<span class="ok">benutzt von '+esc(x.genutztVon||'?')+'</span> <span class="mut">('+fmt(x.genutztAm)+')</span>';if(x.bis&&x.bis<Date.now())return '<span class="mut">abgelaufen</span>';return '<span class="todo">offen</span> <span class="mut">bis '+fmt(x.bis)+'</span>'}
+function eiDraw(){var L=EI.slice().sort(function(a,b){return (b.erstellt||0)-(a.erstellt||0)});
+ $('#ei-l').innerHTML=L.length?'<table><tr><th>Code</th><th>Für</th><th>Stand</th><th></th></tr>'+L.map(function(x){var off=!x.genutzt&&!(x.bis&&x.bis<Date.now());return '<tr><td><b>'+esc(x._id)+'</b></td><td>'+esc(x.fuer||'')+'</td><td>'+eiStat(x)+'</td><td>'+(off?'<button class="sm" data-ec="'+esc(x._id)+'">Text kopieren</button> ':'')+'<button class="sm" data-ed="'+esc(x._id)+'">'+(off?'Sperren':'Entfernen')+'</button></td></tr>'}).join('')+'</table>':'<p class="mut">Noch keine Einladung erzeugt.</p>'}
+function eiLoad(){
+ db.collection('einladung').doc('config').get().then(function(s){$('#ei-an').checked=!!(s.exists&&s.data().pflicht)},function(){});
+ db.collection('einladungen').get().then(function(s){EI=s.docs.map(function(d){var x=d.data();x._id=d.id;return x});eiDraw()},function(e){$('#ei-l').innerHTML='<p class="mut">Kein Zugriff ('+esc(e&&e.code||e)+'). Die Regeln in Firebase müssen noch ergänzt werden.</p>'})}
+function eiCopy(t,msgEl){function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');msgEl.textContent='Kopiert.'}catch(e){msgEl.textContent='Kopieren ging nicht.'}document.body.removeChild(a)}
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){msgEl.textContent='Kopiert.'},fb);else fb()}
+$('#ei-an').addEventListener('change',function(){var v=this.checked;db.collection('einladung').doc('config').set({pflicht:v}).then(function(){$('#ei-m').textContent=v?'Code ist jetzt Pflicht.':'Code ist jetzt nicht mehr Pflicht.'},function(){$('#ei-m').textContent='Speichern ging nicht (Regeln?).';$('#ei-an').checked=!v})});
+$('#ei-neu').addEventListener('click',function(){
+ var offen=EI.filter(function(x){return !x.genutzt&&!(x.bis&&x.bis<Date.now())}).length;
+ if(offen>=20){$('#ei-m').textContent='Es sind schon 20 Einladungen offen. Bitte erst welche sperren oder einlösen lassen.';return}
+ var f=$('#ei-fuer').value.trim();if(!f){$('#ei-m').textContent='Bitte schreib, für wen der Code ist.';return}
+ var c=eiCode(),d={fuer:f,erstellt:Date.now(),bis:Date.now()+14*86400000,genutzt:false};
+ db.collection('einladungen').doc(c).set(d).then(function(){d._id=c;EI.push(d);eiDraw();$('#ei-fuer').value='';$('#ei-m').textContent='';
+  var tx=eiText(c,f);$('#ei-neubox').hidden=false;$('#ei-neubox').innerHTML='<b>'+esc(c)+'</b> für '+esc(f)+'<br><pre style="white-space:pre-wrap;margin:6px 0">'+esc(tx)+'</pre><button class="sm" id="ei-cp">Einladungstext kopieren</button> <span class="mut" id="ei-cm"></span>';
+  $('#ei-cp').onclick=function(){eiCopy(tx,$('#ei-cm'))}},function(){$('#ei-m').textContent='Speichern ging nicht (Regeln?).'})});
+$('#ei-l').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+ if(b.dataset.ec){var x=EI.filter(function(z){return z._id===b.dataset.ec})[0];if(x){eiCopy(eiText(x._id,x.fuer),$('#ei-m'))}}
+ if(b.dataset.ed){db.collection('einladungen').doc(b.dataset.ed).delete().then(function(){EI=EI.filter(function(z){return z._id!==b.dataset.ed});eiDraw()},function(){$('#ei-m').textContent='Löschen ging nicht.'})}});
 auth.onAuthStateChanged(function(u){
  $('#who').textContent=u?('Angemeldet als '+u.email):'Nicht angemeldet.';
  $('#lf').hidden=!!u;$('#gl').hidden=!!u;$('#out').hidden=!u;
@@ -135,7 +166,7 @@ auth.onAuthStateChanged(function(u){
  $('#ver').textContent=u?(ok?'E-Mail-Adresse ist bestätigt.':'E-Mail-Adresse ist noch NICHT bestätigt. Tippe auf „Bestätigungsmail senden“, öffne die Mail, tippe den Link an und dann hier auf „Neu prüfen“.'):'';
  $('#vs').hidden=!u||ok;$('#vr').hidden=!u||ok;
  $('#dash').hidden=!ok;
- if(ok)run();
+ if(ok){run();eiLoad()}
 });
 $('#lf').addEventListener('submit',function(e){e.preventDefault();$('#msg').textContent='';auth.signInWithEmailAndPassword($('#m').value.trim(),$('#p').value).catch(function(){$('#msg').textContent='E-Mail oder Passwort stimmt nicht.'})});
 $('#gl').addEventListener('click',function(){$('#msg').textContent='';auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(){$('#msg').textContent='Die Anmeldung mit Google hat nicht geklappt.'})});

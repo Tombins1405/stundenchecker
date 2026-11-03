@@ -29,11 +29,43 @@
     'auth/popup-blocked': 'Dein Browser hat das Google-Fenster blockiert. Bitte Pop-ups für diese Seite erlauben.',
     'auth/unauthorized-domain': 'Diese Webseite ist für die Anmeldung nicht freigegeben.',
     'auth/admin-restricted-operation': 'Neue Konten sind im Moment nicht erlaubt.',
-    'auth/operation-not-allowed': 'Diese Anmeldeart ist noch nicht eingeschaltet.'
+    'auth/operation-not-allowed': 'Diese Anmeldeart ist noch nicht eingeschaltet.',
+    'einladung/leer': 'Bitte den Einladungscode eintragen. Du hast ihn mit deiner Einladung bekommen.',
+    'einladung/falsch': 'Diesen Einladungscode gibt es nicht. Bitte noch einmal prüfen.',
+    'einladung/benutzt': 'Dieser Einladungscode wurde schon benutzt. Bitte bei Thomas einen neuen anfragen.',
+    'einladung/abgelaufen': 'Dieser Einladungscode ist abgelaufen. Bitte bei Thomas einen neuen anfragen.',
+    'einladung/neu': 'Für ein neues Konto brauchst du einen Einladungscode. Tippe oben auf „Neu hier“.'
   };
   function msg(e) { return FEHLER[e && e.code] || ('Das hat leider nicht geklappt. Bitte noch einmal probieren. (Fehlercode: ' + ((e && e.code) || (e && e.message) || 'unbekannt') + ')'); }
   function say(t, ok) { var m = $('#a-msg'); m.textContent = t || ''; m.className = 'a-msg' + (ok ? ' ok' : ''); m.hidden = !t; }
   function busy(on) { ['a-go', 'a-google', 'a-forgot'].forEach(function (i) { var b = document.getElementById(i); if (b) b.disabled = on; }); }
+
+  /* Einladungscodes: Ist "pflicht" in einladung/config eingeschaltet, braucht ein neues Konto einen gültigen Code (einmal verwendbar, mit Ablaufdatum).
+     Lässt sich die Einstellung nicht lesen, bleibt die Registrierung offen (damit niemand ausgesperrt wird). */
+  function fehler(c) { var e = new Error(c); e.code = c; return e; }
+  function gate() { try { return firebase.firestore().collection('einladung').doc('config').get().then(function (s) { return !!(s.exists && s.data().pflicht === true); }, function () { return false; }); } catch (e) { return Promise.resolve(false); } }
+  function codeNorm() { return ($('#a-code').value || '').toUpperCase().replace(/[^A-Z0-9-]/g, ''); }
+  function codePruefen(code) {
+    if (!code) return Promise.reject(fehler('einladung/leer'));
+    return firebase.firestore().collection('einladungen').doc(code).get().then(function (s) {
+      if (!s.exists) throw fehler('einladung/falsch');
+      var d = s.data();
+      if (d.genutzt) throw fehler('einladung/benutzt');
+      if (d.bis && d.bis < Date.now()) throw fehler('einladung/abgelaufen');
+    }, function () { throw fehler('einladung/falsch'); });
+  }
+  function codeEinloesen(code, mail) {
+    var db = firebase.firestore(), ref = db.collection('einladungen').doc(code);
+    return db.runTransaction(function (tx) { return tx.get(ref).then(function (s) {
+      if (!s.exists || s.data().genutzt) throw fehler('einladung/benutzt');
+      tx.update(ref, { genutzt: true, genutztVon: mail || '', genutztAm: firebase.firestore.FieldValue.serverTimestamp() });
+    }); });
+  }
+  // Konto wurde angelegt: Code einlösen. Klappt das nicht (zum Beispiel gleichzeitig von jemand anderem benutzt), wird das Konto wieder entfernt.
+  function nachAnlage(user, code, req) {
+    if (!req) return Promise.resolve();
+    return codeEinloesen(code, user.email).catch(function (e) { return user.delete().catch(function () { }).then(function () { throw e; }); });
+  }
 
   function paintMode() {
     var reg = mode === 'register';
@@ -44,6 +76,8 @@
     $('#a-forgot').hidden = reg;
     $('#a-pwhint').hidden = !reg;
     $('#a-pw2box').hidden = !reg;
+    $('#a-codebox').hidden = true;
+    if (reg) gate().then(function (r) { if (mode === 'register') $('#a-codebox').hidden = !r; });
     if (!reg) $('#a-pw2').value = '';
     say('');
   }
@@ -54,9 +88,20 @@
     if (!pw) { say('Bitte das Passwort eintragen.'); return; }
     if (mode === 'register' && pw !== $('#a-pw2').value) { say('Die beiden Passwörter sind nicht gleich. Bitte noch einmal eintippen.'); return; }
     say(''); busy(true);
-    var p = mode === 'register'
-      ? auth.createUserWithEmailAndPassword(mail, pw).then(function (c) { try { if (window.StundenInsights) window.StundenInsights.admin('Neue Registrierung'); } catch (e) { } return c.user.sendEmailVerification().catch(function () {}); })
-      : auth.signInWithEmailAndPassword(mail, pw);
+    var p;
+    if (mode === 'register') {
+      var code = codeNorm();
+      p = gate().then(function (req) {
+        return (req ? codePruefen(code) : Promise.resolve()).then(function () {
+          return auth.createUserWithEmailAndPassword(mail, pw);
+        }).then(function (c) {
+          return nachAnlage(c.user, code, req).then(function () {
+            try { if (window.StundenInsights) window.StundenInsights.admin('Neue Registrierung'); } catch (e) { }
+            return c.user.sendEmailVerification().catch(function () { });
+          });
+        });
+      });
+    } else p = auth.signInWithEmailAndPassword(mail, pw);
     p.catch(function (e) { say(msg(e)); }).then(function () { busy(false); });
   }
 
@@ -69,7 +114,15 @@
     else if (id === 'a-go') { ev.preventDefault(); go(); }
     else if (id === 'a-google') {
       say(''); busy(true);
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (e) { say(msg(e)); }).then(function () { busy(false); });
+      var gcode = codeNorm(), greq = false;
+      gate().then(function (req) { greq = req; return (req && mode === 'register') ? codePruefen(gcode) : null; })
+        .then(function () { return auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); })
+        .then(function (r) {
+          if (!(r && r.additionalUserInfo && r.additionalUserInfo.isNewUser && greq)) return;
+          if (mode !== 'register') return r.user.delete().catch(function () { }).then(function () { return auth.signOut(); }).then(function () { throw fehler('einladung/neu'); });
+          return nachAnlage(r.user, gcode, true).catch(function (e) { return auth.signOut().then(function () { throw e; }); });
+        })
+        .catch(function (e) { say(msg(e)); }).then(function () { busy(false); });
     }
     else if (id === 'a-forgot') {
       var mail = $('#a-mail').value.trim();
