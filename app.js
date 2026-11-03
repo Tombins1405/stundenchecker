@@ -191,6 +191,9 @@
     za: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
     ersatzruhe: '<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/>',
     frei: '<path d="M20 14.500A8 8 0 1 1 9.500 4 6.500 6.500 0 0 0 20 14.500z"/>',
+    mutterschutz: '<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',
+    karenz: '<circle cx="8" cy="19" r="1.500"/><circle cx="17" cy="19" r="1.500"/><path d="M4 5h3l2 9h9a5 5 0 0 0-5-6H8"/>',
+    papamonat: '<circle cx="12" cy="12" r="8"/><path d="M9 10h.01M15 10h.01M9 15c1.500 1.200 4.500 1.200 6 0"/>',
     sw: '<path d="M7 15a4 4 0 0 1 .5-8 5.500 5.500 0 0 1 10.500 1.500A3.500 3.500 0 0 1 17.500 15zM9 18l-1 2M13 18l-1 2M17 18l-1 2"/>',
     dienst: '<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/>'
   };
@@ -206,6 +209,9 @@
     ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
     ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
     ['ersatzruhe', 'Ersatzruhetag', 'Ein freier Tag als Ausgleich für Arbeit am Wochenende oder zu viele Arbeitstage hintereinander. Ob und wie die Firma ihn bezahlt, trägst du beim Tag ein.'],
+    ['mutterschutz', 'Mutterschutz / Wochengeld', 'Zeit vor und nach der Geburt. Die Firma zahlt in dieser Zeit keinen Lohn, das Wochengeld kommt von der Krankenkasse. Es zählen keine Stunden.'],
+    ['karenz', 'Karenz', 'Elternkarenz für Mütter und Väter. Die Firma zahlt in dieser Zeit keinen Lohn. Es zählen keine Stunden.'],
+    ['papamonat', 'Papamonat', 'Frühkarenz für Väter nach der Geburt. Die Firma zahlt in dieser Zeit keinen Lohn. Es zählen keine Stunden.'],
     ['frei', 'Frei', 'Ein freier Tag ohne Bezahlung und ohne Stunden.'],
     ['sw', 'Ausfall / Schlechtwetter', 'Du wurdest heimgeschickt, weil es keine Arbeit gab oder das Wetter schlecht war.'],
     ['dienst', 'Bereitschaft / Dienst', 'An diesem Tag hattest du Bereitschaft oder Notdienst.']
@@ -2514,6 +2520,11 @@
     ['bagger', 'Bagger', '<rect x="14" y="62" width="48" height="12" rx="6" fill="#f3f4f6"/><rect x="22" y="44" width="28" height="18" rx="3" fill="#64b5f6"/><path d="M48 50L66 28l14 12" fill="none" stroke="#f3f4f6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M76 40l8 10-12 2z" fill="#64b5f6"/>'],
     ['kran', 'Kran', '<rect x="14" y="62" width="40" height="11" rx="3" fill="#f3f4f6"/><rect x="20" y="48" width="16" height="14" rx="2" fill="#64b5f6"/><path d="M34 52L78 20" stroke="#f3f4f6" stroke-width="6" stroke-linecap="round"/><path d="M78 20v26" stroke="#64b5f6" stroke-width="4"/><rect x="73" y="46" width="10" height="8" rx="2" fill="#64b5f6"/>'],
     ['euro', 'Euro', '<circle cx="48" cy="48" r="30" fill="#64b5f6"/><text x="48" y="61" font-size="40" font-weight="700" text-anchor="middle" fill="#1f2937" font-family="Arial,sans-serif">€</text>'],
+    ['laptop', 'Laptop', '<rect x="22" y="26" width="52" height="34" rx="4" fill="#64b5f6"/><path d="M12 66h72l-6 8H18z" fill="#f3f4f6"/>'],
+    ['ordner', 'Ordner', '<path d="M14 28h24l8 8h36v38H14z" fill="#64b5f6"/><rect x="14" y="44" width="68" height="30" rx="3" fill="#f3f4f6"/>'],
+    ['wagen', 'Einkaufswagen', '<path d="M12 26h12l8 32h38l8-24H28" fill="none" stroke="#f3f4f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="70" r="6" fill="#64b5f6"/><circle cx="64" cy="70" r="6" fill="#64b5f6"/>'],
+    ['schluessel', 'Schraubenschlüssel', '<path d="M64 18a18 18 0 0 0-16 26L18 74l6 6 30-30a18 18 0 0 0 26-16l-11 11-9-2-2-9z" fill="#64b5f6"/>'],
+    ['haube', 'Kochhaube', '<path d="M28 58V46a14 14 0 0 1 4-27 18 18 0 0 1 32 0 14 14 0 0 1 4 27v12z" fill="#f3f4f6"/><rect x="28" y="62" width="40" height="12" rx="3" fill="#64b5f6"/>'],
     ['stern', 'Stern', '<path d="M48 16l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z" fill="#fbbf24"/>']
   ];
   function iconSvg(key) {

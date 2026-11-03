@@ -179,6 +179,7 @@
     werte: deWerte({ ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 0 } })
   };
 
+  var UNBEZAHLT_FREI = ['frei', 'mutterschutz', 'karenz', 'papamonat']; // kein Lohn von der Firma, keine Sollstunden
   // Status eines Tages. credit = Tag wird mit den Sollstunden gutgeschrieben (bezahlte Abwesenheit).
   var STATUS = {
     arbeit:        { name: 'Arbeit',                  credit: false },
@@ -191,6 +192,9 @@
     za:            { name: 'Zeitausgleich',           credit: false },
     ersatzruhe:    { name: 'Ersatzruhetag',           credit: false },
     arzt:          { name: 'Frei wegen Arztbesuch',   credit: false },
+    mutterschutz:  { name: 'Mutterschutz / Wochengeld', credit: false },
+    karenz:        { name: 'Karenz',                  credit: false },
+    papamonat:     { name: 'Papamonat',               credit: false },
     frei:          { name: 'Frei',                    credit: false }
   };
 
@@ -675,7 +679,7 @@
       var ab = 1; if (live && firstKey) { var fp = parseISO(firstKey); if (fp.y === y && fp.m === m) ab = fp.d; else if (fp.y > y || (fp.y === y && fp.m > m)) ab = n + 1; }
       for (var q = ab; q <= bis; q++) {
         var dq = iso(y, m, q), wq = weekday(dq);
-        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && days[dq].status === 'frei')) sollMin += Math.round(sollFuer(wertAt(settings, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
+        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && UNBEZAHLT_FREI.indexOf(days[dq].status) >= 0)) sollMin += Math.round(sollFuer(wertAt(settings, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
       s.ueberMin = s.lohnMin + s.swMin - sollMin;
       s.sollMin = sollMin; s.sollAb = ab;

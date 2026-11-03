@@ -742,3 +742,7 @@ h3[data-ico="stack"]::before { background: #00897b; }
 .kzlink:focus-visible { outline: 2px solid #1e6fd9; outline-offset: 2px; }
 .kzflash { animation: kzflash 1.8s ease-out; }
 @keyframes kzflash { 0%, 40% { background: #fff3b0; box-shadow: 0 0 0 6px #fff3b0; } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
+
+.day.st-mutterschutz { border-left-color: #8e24aa; } .st-mutterschutz .d-ico { background: #f3e5f5; color: #8e24aa; }
+.day.st-karenz { border-left-color: #00838f; } .st-karenz .d-ico { background: #e0f7fa; color: #00838f; }
+.day.st-papamonat { border-left-color: #f57c00; } .st-papamonat .d-ico { background: #fff3e0; color: #e65100; }
