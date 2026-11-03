@@ -833,13 +833,20 @@
       return '<div class="field"><label for="pd-' + esc(p.id) + '">' + lab + '</label><input type="number" id="pd-' + esc(p.id) + '" data-pd="' + esc(p.id) + '" inputmode="numeric" min="0" step="1" value="' + (v > 0 ? esc(v) : '') + '"></div>';
     }).join('');
   }
+  // Tätigkeiten aus deinen Prämien zum Antippen, damit kein Tippfehler die Prämie verpasst
+  function tatChips(cur, sfx) {
+    var c = String(cur || '').trim().toLowerCase(), seen = {};
+    return praemienListe().filter(function (p) { return p.einheit === 'taet' && p.name && (p.taet || '').trim(); }).filter(function (p) {
+      var kw = p.taet.trim().toLowerCase(); if (seen[kw]) return false; seen[kw] = 1; return c.indexOf(kw) < 0;
+    }).map(function (p) { return '<button type="button" class="chip" data-tchip="' + esc(p.taet.trim()) + '" data-tcs="' + sfx + '">' + esc(p.taet.trim()) + '</button>'; }).join('');
+  }
   function renderKunden() {
     var tour = E.istTour(wAt(ui.edDate || todayISO()));
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
       var rows = (k.taet || []).map(function (t, j) {
         var sfx = i + '-' + j;
         return '<div class="taet">' +
-          '<div class="field kn"><label for="k-t' + sfx + '">Tätigkeit' + (k.taet.length > 1 ? ' ' + (j + 1) : '') + '</label><input type="text" id="k-t' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(t.tat || '') + '"></div>' +
+          '<div class="field kn"><label for="k-t' + sfx + '">Tätigkeit' + (k.taet.length > 1 ? ' ' + (j + 1) : '') + '</label><input type="text" id="k-t' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="tat" maxlength="120" list="e-tat-list" autocomplete="off" value="' + esc(t.tat || '') + '"><div class="chips tchips" data-tc="' + sfx + '">' + tatChips(t.tat, sfx) + '</div></div>' +
           '<div class="field"><label for="k-v' + sfx + '">von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-v' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="von" value="' + esc(t.von || '') + '"></div>' +
           '<div class="field"><label for="k-b' + sfx + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-b' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="bis" value="' + esc(t.bis || '') + '"></div>' +
           (k.taet.length > 1 ? '<button type="button" class="rm" data-rmt="' + i + '-' + j + '" aria-label="Tätigkeit ' + (j + 1) + ' entfernen">×</button>' : '<span></span>') + '</div>';
@@ -889,6 +896,7 @@
     Object.keys(seen).sort(function (x, y) { return seen[y] - seen[x] || (x < y ? -1 : 1); }).slice(0, 30).forEach(function (n) { opts += '<option value="' + esc(n) + '">'; });
     var ts = {}, ks = {}, topt = '', kopt = '';
     Object.keys(data.days).forEach(function (k) { var dd = data.days[k]; (dd.kunden || []).forEach(function (x) { (x.taet || [x]).forEach(function (y) { if (y.tat) ts[y.tat] = (ts[y.tat] || 0) + 1; }); }); fahrzeugeVon(dd).forEach(function (f) { if (f.kfz) ks[f.kfz] = (ks[f.kfz] || 0) + 1; }); });
+    praemienListe().forEach(function (p) { if (p.einheit === 'taet' && (p.taet || '').trim()) { topt += '<option value="' + esc(p.taet.trim()) + '">'; delete ts[p.taet.trim()]; } });
     Object.keys(ts).sort(function (x, y) { return ts[y] - ts[x]; }).slice(0, 30).forEach(function (n) { topt += '<option value="' + esc(n) + '">'; });
     Object.keys(ks).sort(function (x, y) { return ks[y] - ks[x]; }).slice(0, 10).forEach(function (n) { kopt += '<option value="' + esc(n) + '">'; });
     if (!$('#e-tat-list')) { var dl = document.createElement('datalist'); dl.id = 'e-tat-list'; $('#e-kunden').parentNode.appendChild(dl); }
@@ -2440,6 +2448,7 @@
     if (t.dataset.dsneu) { dsNeu(t.dataset.dsneu, t.textContent); return; }
     if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
+    if (t.dataset.tchip !== undefined) { var tp = String(t.dataset.tcs).split('-'), tk = ui.edDraft.kunden[+tp[0]]; if (tk && tk.taet[+tp[1]]) { tk.taet[+tp[1]].tat = t.dataset.tchip; var ti2 = $('#k-t' + t.dataset.tcs); if (ti2) ti2.value = t.dataset.tchip; var tc2 = $('#e-kunden [data-tc="' + t.dataset.tcs + '"]'); if (tc2) tc2.innerHTML = tatChips(t.dataset.tchip, t.dataset.tcs); updatePreview(); } return; }
     if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
     if (t.dataset.rmt !== undefined) { var pr = t.dataset.rmt.split('-'); ui.edDraft.kunden[+pr[0]].taet.splice(+pr[1], 1); renderKunden(); updatePreview(); return; }
     if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); updatePreview(); return; }
@@ -2486,7 +2495,7 @@
       }
       return;
     }
-    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { var ko = ui.edDraft.kunden[+t.dataset.k]; if (t.dataset.j !== undefined) ko.taet[+t.dataset.j][t.dataset.f] = t.value; else ko[t.dataset.f] = t.value; updatePreview(); return; }
+    if (t.dataset && t.dataset.k !== undefined && t.closest('#e-kunden')) { var ko = ui.edDraft.kunden[+t.dataset.k]; if (t.dataset.j !== undefined) { ko.taet[+t.dataset.j][t.dataset.f] = t.value; if (t.dataset.f === 'tat') { var tc = $('#e-kunden [data-tc="' + t.dataset.k + '-' + t.dataset.j + '"]'); if (tc) tc.innerHTML = tatChips(t.value, t.dataset.k + '-' + t.dataset.j); } } else ko[t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.i !== undefined && t.closest('#e-pausen')) { ui.edDraft.pausen[+t.dataset.i][t.dataset.f] = t.value; updatePreview(); return; }
     if (t.dataset && t.dataset.si !== undefined) { var en = curEntry(); var v = parseFloat(String(t.value).replace(',', '.')); en.diaeten.stufen[+t.dataset.si][t.dataset.sf] = isNaN(v) ? 0 : v; delete en.test; save(); return; }
     if (id && id.indexOf('s-wd-') === 0) { var ew = curEntry(); if (ew) { var set = E.sollTage(ew.ueberstunden), wdn = +id.slice(5), ix = set.indexOf(wdn); if (t.checked && ix < 0) set.push(wdn); if (!t.checked && ix >= 0) set.splice(ix, 1); ew.ueberstunden.sollTage = set.sort(function (x, y) { return x - y; }); delete ew.test; save(); settingsVisibility(ew); } return; }
