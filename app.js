@@ -248,7 +248,7 @@
     var html = '<div class="panel">' +
       '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
-      (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd - (s.mehrStd || 0)) + '<small>h</small></dd>') + '</div>' + (!laufend && s.mehrStd > 0 ? '<div><dt>Mehrarbeit</dt><dd class="hl">' + fh(s.mehrStd) + '<small>h</small></dd></div>' : '')) +
+      (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd - (s.mehrStd || 0)) + '<small>h</small></dd>') + '</div>' + (!laufend && s.mehrStd > 0 ? '<div><dt>Mehrarbeit</dt><dd class="hl">' + fh(s.mehrStd) + '<small>h</small></dd></div>' : '') + (!laufend && s.mehrFreiStd > 0 ? '<div><dt>Mehrarbeit ohne Zuschlag</dt><dd class="hl">' + fh(s.mehrFreiStd) + '<small>h</small></dd></div>' : '')) +
       (w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>') +
       (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
@@ -1931,6 +1931,7 @@
       var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen'], cp = E.PAKETE[w.paket];
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
         kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
+        '<details class="wzfehlt"><summary>Mein Kollektivvertrag ist nicht dabei</summary><div class="field"><label for="wz-kvf">Ich brauche bitte den Kollektivvertrag für …</label><input type="text" id="wz-kvf" maxlength="120" autocomplete="off"></div><button type="button" class="btn" data-wkf="1">An den Entwickler schicken</button></details>' +
         (cp && cp.pruefen && w.paket !== 'eigen' ? '<p class="hint"><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte vergleiche die Werte später mit deinem Lohnzettel.</p>' : '') +
         (String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-bl">Bundesland (für die Feiertage)</label><select id="wz-bl" data-wf="bl"><option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (w.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join('') + '</select></div>' : '') +
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
@@ -1964,6 +1965,12 @@
       if (t.dataset.wbf) {
         var bf = ($('#wz-bf') && $('#wz-bf').value || '').trim(); if (bf.length < 3) { toast('Bitte schreib kurz, welcher Beruf fehlt.'); return; }
         try { window.StundenInsights.feedback('wunsch', '[Mein Beruf fehlt] ' + bf, null).then(function () { toast('Danke! Wir melden uns, sobald es deinen Beruf gibt.'); if ($('#wz-bf')) $('#wz-bf').value = ''; ins('beruf_fehlt'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
+        return;
+      }
+      if (t.dataset.wkf) {
+        var kf = ($('#wz-kvf') && $('#wz-kvf').value || '').trim(); if (kf.length < 3) { toast('Bitte schreib kurz, welcher Kollektivvertrag fehlt.'); return; }
+        var kb = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].name) || '';
+        try { window.StundenInsights.feedback('wunsch', '[Mein Kollektivvertrag] Kollektivvertrag: ' + kf + ' | Beruf: ' + kb, null).then(function () { toast('Danke! Wir prüfen deinen Kollektivvertrag und melden uns.'); if ($('#wz-kvf')) $('#wz-kvf').value = ''; ins('kv_gemeldet'); }, function () { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }); } catch (e) { toast('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.'); }
         return;
       }
       if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
@@ -2054,7 +2061,7 @@
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
-      if (inp.type === 'checkbox') inp.checked = !!v;
+      if (inp.type === 'checkbox') inp.checked = inp.dataset.path === 'ueberstunden.zaAusgleich' ? v !== false : !!v;
       else inp.value = (v === null || v === undefined) ? '' : v;
     });
     
@@ -2139,7 +2146,7 @@
     $('#s-d-tag').hidden = dm !== 'tag';
     $('#s-d-vorschlag').hidden = dm === 'aus';
     $('#s-grenzefield').hidden = um !== 'bau';
-    var vzh = um !== 'monat' || String(en.paket).indexOf('de_') === 0; $('#s-vollzeitfield').hidden = vzh; $('#s-mehrfield').hidden = vzh || !(+en.ueberstunden.vollzeitStd > E.wochenStd(en.ueberstunden));
+    var vzh = um !== 'monat' || String(en.paket).indexOf('de_') === 0; $('#s-vollzeitfield').hidden = vzh; $('#s-mehrfield').hidden = vzh || !(+en.ueberstunden.vollzeitStd > E.wochenStd(en.ueberstunden)); $('#s-zaafield').hidden = $('#s-mehrfield').hidden;
     $('#s-gleitbox').hidden = um !== 'gleit';
     if (!en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var sat = en.diaeten.satz || 0, wo = E.wochenStd(en.ueberstunden), soll = E.tagesSoll(en.ueberstunden), gr = en.ueberstunden.tagesGrenze || 9;

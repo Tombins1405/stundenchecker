@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261103133044">
+<link rel="stylesheet" href="style.css?v=20261103135309">
 </head>
 <body>
 
@@ -456,6 +456,7 @@
         <div class="field"><label for="s-woche">Wochenstunden</label><input type="number" id="s-woche" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.wochenStd" data-type="num"><small id="s-sollinfo">Normale Stunden pro Woche, zum Beispiel 40 (im Bau 39).</small></div>
         <div class="field" id="s-vollzeitfield"><label for="s-vollzeit">Vollzeit laut Kollektivvertrag (Std pro Woche)</label><input type="number" id="s-vollzeit" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.vollzeitStd" data-type="numnull"><small>Nur für Teilzeit. Stunden über deine vereinbarten Wochenstunden bis zu dieser Grenze sind Mehrarbeit, erst darüber Überstunden. Leer lassen, wenn du Vollzeit arbeitest.</small></div>
         <div class="field" id="s-mehrfield"><label for="s-mehr">Zuschlag auf Mehrarbeit (%)</label><input type="number" id="s-mehr" inputmode="decimal" step="1" min="0" data-path="ueberstunden.mehrPct" data-type="numnull" placeholder="25"><small>Gesetzlich 25 % in Österreich. Kein Zuschlag, wenn du die Mehrarbeit innerhalb von 3 Monaten 1:1 als Zeitausgleich nimmst. Dein Kollektivvertrag kann es anders regeln.</small></div>
+        <label class="check" for="s-zaa" id="s-zaafield"><input type="checkbox" id="s-zaa" data-path="ueberstunden.zaAusgleich" data-type="bool"><span>Zeitausgleich 1:1 im Quartal berücksichtigen</span></label>
         <div class="field" id="s-tagsollfield"><label for="s-tagsoll">Stunden pro Arbeitstag (Tagessoll)</label><input type="number" id="s-tagsoll" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.tagesSollStd" data-type="numnull"><small id="s-tagsollinfo">Leer lassen: die App teilt die Wochenstunden durch deine Arbeitstage.</small></div>
         <div class="field" id="s-grenzefield"><label for="s-grenze">Tagesgrenze (Std)</label><input type="number" id="s-grenze" inputmode="decimal" step="0.5" min="0" data-path="ueberstunden.tagesGrenze" data-type="numnull"><small>Ab mehr Stunden pro Tag zählt jede weitere als Überstunde, zum Beispiel 9.</small></div>
       </div>
@@ -647,21 +648,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261103133044";</script>
-<script src="engine.js?v=20261103133044"></script>
+<script>window.APP_VERSION="20261103135309";</script>
+<script src="engine.js?v=20261103135309"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261103133044"></script>
-<script src="timepicker.js?v=20261103133044"></script>
-<script src="datepicker.js?v=20261103133044"></script>
-<script src="selectpicker.js?v=20261103133044"></script>
-<script src="pdf.js?v=20261103133044"></script>
-<script src="lzread.js?v=20261103133044"></script>
-<script src="app.js?v=20261103133044"></script>
-<script src="auth.js?v=20261103133044"></script>
-<script src="sync.js?v=20261103133044"></script>
-<script src="insights.js?v=20261103133044"></script>
+<script src="firebase-config.js?v=20261103135309"></script>
+<script src="timepicker.js?v=20261103135309"></script>
+<script src="datepicker.js?v=20261103135309"></script>
+<script src="selectpicker.js?v=20261103135309"></script>
+<script src="pdf.js?v=20261103135309"></script>
+<script src="lzread.js?v=20261103135309"></script>
+<script src="app.js?v=20261103135309"></script>
+<script src="auth.js?v=20261103135309"></script>
+<script src="sync.js?v=20261103135309"></script>
+<script src="insights.js?v=20261103135309"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

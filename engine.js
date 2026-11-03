@@ -82,12 +82,51 @@
       }
     },
     buero: {
-      name: 'Büro (Angestellte)',
+      name: 'Büro (Angestellte), allgemeiner Vorschlag',
       hinweis: 'Für Büroangestellte gibt es keinen einzigen Kollektivvertrag: Er hängt von der Branche deines Betriebs ab (zum Beispiel Handel, Gewerbe, Industrie, IT oder Transport). Die Vorgaben hier sind nur ein Vorschlag nach dem Angestellten-KV Handel 2026 (38,5 Stunden/Woche, Überstunden 50 %, Sonn- und Feiertag 100 %). Den KV deiner Firma findest du auf dem Lohnzettel oder Dienstzettel. Passe die Werte dann an.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    gewerbe_ang: {
+      name: 'Büro: Gewerbe, Handwerk und Dienstleistung (Angestellte)',
+      hinweis: 'KV Gewerbe, Handwerk und Dienstleistung, Angestellte, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr sowie an Sonn- und Feiertagen 100 %. Grundstunde 1/150 des Monatsgehalts. Mehrarbeit bei Teilzeit ist zuschlagsfrei, wenn sie 1:1 mit Zeitausgleich abgegolten wird (laut KV innerhalb von vier Monaten, die App rechnet nach dem Gesetz mit dem Kalendervierteljahr). Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    industrie_ang: {
+      name: 'Büro: Metalltechnische Industrie (Angestellte)',
+      hinweis: 'KV Metalltechnische Industrie, Angestellte, 2025/2026 (Quelle: metalltechnischeindustrie.at): 38,5 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr 100 %, ebenso die dritte und jede weitere Überstunde am Tag. Sonntag über der Wochennormalarbeitszeit 100 %. Grundstunde 1/143 des Monatsgehalts (Normalstunde 1/167). Zeitausgleich nach § 5 Abs. 3c. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    bau_ang: {
+      name: 'Büro: Baugewerbe und Bauindustrie (Angestellte)',
+      hinweis: 'KV Baugewerbe und Bauindustrie, Angestellte, ab 2026 (Quelle: wko.at): 39 Stunden/Woche (die 40. Stunde bei Verteilung ist Mehrarbeit mit 50 %), Überstunden 50 %, zwischen 20 und 5 Uhr sowie Sonntag 100 %. Grundstunde 1/146 des Monatsgehalts. Bitte vergleiche mit deinem Dienstzettel.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 100, ft: 100 },
@@ -354,10 +393,10 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['buero', 'handel', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -581,14 +620,16 @@
     var saldo = +profil.urlaubStart || 0, out = [], y = p.y, m = p.m, settings = data.settings || [], days = data.days || {};
     while (y < bisY || (y === bisY && m <= bisM)) {
       var tage = (y === p.y && m === p.m) ? Math.min(30, daysInMonth(y, m) - p.d + 1) : 30;
-      var anspruch = r2(jahr / 12 * tage / 30), genommen = 0;
+      var anspruch = r2(jahr / 12 * tage / 30), genommen = 0, kTage = 0;
       for (var d = 1; d <= daysInMonth(y, m); d++) {
         var ds = iso(y, m, d), day = days[ds];
         if (!day) continue;
+        if (day.status === 'karenz') kTage++; // § 15f MSchG: Karenz kürzt den Urlaub anteilig (Mutterschutz-Schutzfrist nicht)
         if (day.status === 'urlaub' || (day.status === 'betriebsurlaub' && wertAt(settings, ds).betriebFrei !== 'ueberstunden')) genommen++;
       }
+      if (kTage) anspruch = r2(anspruch * (1 - Math.min(kTage, daysInMonth(y, m)) / daysInMonth(y, m)));
       saldo = r2(saldo + anspruch - genommen);
-      out.push({ jahr: y, monat: m, anspruch: anspruch, genommen: genommen, saldo: saldo });
+      out.push({ jahr: y, monat: m, anspruch: anspruch, genommen: genommen, saldo: saldo, karenzTage: kTage });
       m++; if (m > 12) { m = 1; y++; }
     }
     return out;
@@ -602,7 +643,7 @@
   function gleitQuartal(data, y, m, heute, opts) {
     var q0 = 3 * Math.floor((m - 1) / 3) + 1, sum = 0;
     for (var mm = q0; mm <= m; mm++) {
-      var o = { noQ: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
+      var o = { noQ: true, noZa: true }; if (opts && opts.ohneSpaeter) o.ohneSpaeter = true;
       sum += calcMonth(data, y, mm, heute, o).summe.ueberStd;
     }
     return Math.round(sum * 100) / 100;
@@ -685,7 +726,23 @@
       s.sollMin = sollMin; s.sollAb = ab;
       // Teilzeit (AT, § 19d AZG): Stunden über das vereinbarte Ausmaß bis zur Vollzeit-Grenze des Kollektivvertrags sind Mehrarbeit, erst darüber Überstunden.
       var wzm = wertAt(settings, iso(y, m, n)).ueberstunden, woz = wochenStd(wzm), vzz = wzm.vollzeitStd != null ? +wzm.vollzeitStd : 0;
-      if (s.ueberMin > 0 && vzz > woz && woz > 0) { s.mehrMin = Math.min(s.ueberMin, Math.round(sollMin * (vzz / woz - 1))); s.mehrPct = wzm.mehrPct != null ? +wzm.mehrPct : 25; }
+      if (s.ueberMin > 0 && vzz > woz && woz > 0) {
+        s.mehrMin = Math.min(s.ueberMin, Math.round(sollMin * (vzz / woz - 1))); s.mehrPct = wzm.mehrPct != null ? +wzm.mehrPct : 25;
+        // 1:1-Zeitausgleich im Kalendervierteljahr (§ 19d AZG): Wird die Mehrarbeit im selben Quartal durch Minusstunden ausgeglichen, entfällt der Zuschlag (anteilig).
+        if (wzm.zaAusgleich !== false && !(opts && opts.noZa)) {
+          var q0z = 3 * Math.floor((m - 1) / 3) + 1, qSum = 0, qMehr = 0;
+          for (var mz = q0z; mz < q0z + 3; mz++) {
+            if (mz === m) { qSum += s.ueberMin; qMehr += s.mehrMin; continue; }
+            var pre = y + '-' + (mz < 10 ? '0' : '') + mz + '-', hat = Object.keys(days).some(function (k) { return k.indexOf(pre) === 0 && days[k]; });
+            if (!hat) continue; // Monat ohne Einträge (noch nicht begonnen): zählt nicht als Minus
+            var oz = { noQ: true, noZa: true }; if (opts && opts.ohneSpaeter) oz.ohneSpaeter = true;
+            var cz = calcMonth(data, y, mz, heute, oz);
+            qSum += Math.round(cz.summe.ueberStd * 60); qMehr += Math.round(cz.summe.mehrStd * 60);
+          }
+          var offs = Math.min(qMehr, Math.max(0, qMehr - Math.max(0, qSum)));
+          if (offs > 0 && qMehr > 0) { s.mehrFreiMin = Math.round(s.mehrMin * offs / qMehr); s.mehrMin -= s.mehrFreiMin; }
+        }
+      }
     }
 
     // Modell "bau": Überstunden je Woche (Montag bis Sonntag), die Woche zählt in dem Monat, in dem ihr Sonntag liegt.
@@ -712,7 +769,7 @@
 
     // Aufteilung wie auf dem Lohnzettel: Lohn = alle Stunden minus Überstunden minus Feiertag, Urlaub, Krankenstand, Pflege.
     var credMin = s.feMin + s.urMin + s.krMin + s.pfMin;
-    var normalMin = Math.max(0, s.lohnMin - Math.max(0, s.ueberMin) - credMin);
+    var normalMin = Math.max(0, s.lohnMin - Math.max(0, s.ueberMin) - credMin) + (s.mehrFreiMin || 0);
     // Dienste (Bereitschaft, Notdienst, frei benannt): zählen an jedem Tagestyp, auch ohne Arbeitszeit. Die Bezahlung legt der Nutzer fest.
     var dList = (data.profil && data.profil.dienste) || [], dSum = {};
     for (var dd = 1; dd <= n; dd++) {
@@ -729,7 +786,7 @@
     return {
       jahr: y, monat: m, tage: tage, spaeter: spaeter,
       summe: {
-        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
+        istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrFreiStd: h2(s.mehrFreiMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
@@ -743,7 +800,7 @@
   // diff = Lohnzettel minus App. Negativ heißt: Der Lohnzettel hat weniger als deine Aufzeichnung.
   var AB_ZEILEN = [
     { key: 'lohn',     label: 'Lohn',          pflicht: true,  faktor: 1, hole: function (s) { return s.normalStd; } },
-    { key: 'ueber',    label: 'Überstunden',   pflicht: true,  faktor: 'ueber', hole: function (s) { return Math.max(0, s.ueberStd - (s.mehrStd || 0)); } },
+    { key: 'ueber',    label: 'Überstunden',   pflicht: true,  faktor: 'ueber', hole: function (s) { return Math.max(0, s.ueberStd - (s.mehrStd || 0) - (s.mehrFreiStd || 0)); } },
     { key: 'mehr',     label: 'Mehrarbeit (Teilzeit)', pflicht: false, faktor: 'mehr', hole: function (s) { return s.mehrStd || 0; } },
     { key: 'feiertag', label: 'Feiertagslohn', pflicht: false, faktor: 1, hole: function (s) { return s.feiertagStd; } },
     { key: 'urlaub',   label: 'Urlaub',        pflicht: false, faktor: 1, hole: function (s) { return s.urlaubStd; } },
