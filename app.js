@@ -2564,7 +2564,91 @@
       }, function () { msg('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
     });
     function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; data.profil.mithelfenNein = !data.profil.consent.statistik && !data.profil.consent.miaFragen; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
-    on2('#fb-float', 'click', function () { show('konten'); var d = $('#fb-det'); if (d) d.open = true; setTimeout(function () { var c = $('#fb-card'); if (c) c.scrollIntoView({ block: 'start' }); }, 50); });
+    /* Rückmeldung direkt von der Seite: Bild vom Bildschirm machen, Fenster darüber öffnen, Text darunter schreiben */
+    function shotSeite() {
+      return new Promise(function (res) {
+        try {
+          var W = window.innerWidth, H = window.innerHeight, sx = window.scrollX, sy = window.scrollY;
+          var wrap = document.createElement('div'); wrap.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+          wrap.style.cssText = 'position:absolute;left:' + (-sx) + 'px;top:' + (-sy) + 'px;width:' + document.documentElement.scrollWidth + 'px;';
+          var bodyCs = getComputedStyle(document.body), bg = bodyCs.backgroundColor;
+          function kopie(o) {
+            if (o.nodeType === 3) return o.cloneNode(false);
+            if (o.nodeType !== 1) return null;
+            var tag = o.tagName.toLowerCase();
+            if (tag === 'script' || tag === 'style' || tag === 'link' || tag === 'noscript' || tag === 'iframe' || tag === 'video') return null;
+            var cs = getComputedStyle(o);
+            if (cs.display === 'none' || o.hidden) return null;
+            var c;
+            if (tag === 'canvas') { c = document.createElement('img'); try { c.setAttribute('src', o.toDataURL('image/png')); } catch (e) { } }
+            else c = o.cloneNode(false);
+            var css = '', i;
+            for (i = 0; i < cs.length; i++) css += cs[i] + ':' + cs.getPropertyValue(cs[i]) + ';';
+            c.setAttribute('style', css);
+            c.removeAttribute('id'); c.removeAttribute('class');
+            if (tag === 'input') { if (o.type === 'checkbox' || o.type === 'radio') { if (o.checked) c.setAttribute('checked', 'checked'); else c.removeAttribute('checked'); } else c.setAttribute('value', o.value); }
+            if (tag === 'textarea') c.textContent = o.value;
+            if (tag === 'select') { for (i = 0; i < o.options.length; i++) { /* nur gewählte Option zeigen */ } var t = document.createElement('span'); t.setAttribute('style', css); t.textContent = o.options[o.selectedIndex] ? o.options[o.selectedIndex].text : ''; return t; }
+            if (tag === 'canvas') return c;
+            for (var ch = o.firstChild; ch; ch = ch.nextSibling) { var k = kopie(ch); if (k) c.appendChild(k); }
+            return c;
+          }
+          var b = kopie(document.body); if (!b) { res(null); return; }
+          b.style.margin = '0'; b.style.position = 'static'; b.style.minHeight = '0';
+          wrap.appendChild(b);
+          var holder = document.createElement('div'); holder.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+          holder.setAttribute('style', 'position:relative;overflow:hidden;width:' + W + 'px;height:' + H + 'px;background:' + (bg && bg !== 'rgba(0, 0, 0, 0)' ? bg : '#fff') + ';');
+          holder.appendChild(wrap);
+          var xml = new XMLSerializer().serializeToString(holder);
+          var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '"><foreignObject x="0" y="0" width="100%" height="100%">' + xml + '</foreignObject></svg>';
+          var im = new Image();
+          var fertig = false, to = setTimeout(function () { if (!fertig) { fertig = true; res(null); } }, 6000);
+          im.onload = function () {
+            if (fertig) return;
+            try {
+              var z = Math.min(1, 900 / Math.max(W, H)), cv = document.createElement('canvas'); cv.width = Math.round(W * z); cv.height = Math.round(H * z);
+              var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(im, 0, 0, cv.width, cv.height);
+              var q = 0.75, d = cv.toDataURL('image/jpeg', q);
+              while (d.length > 600000 && q > 0.3) { q -= 0.1; d = cv.toDataURL('image/jpeg', q); }
+              fertig = true; clearTimeout(to); res(d.length > 700000 ? null : d);
+            } catch (e) { fertig = true; clearTimeout(to); res(null); }
+          };
+          im.onerror = function () { if (!fertig) { fertig = true; clearTimeout(to); res(null); } };
+          im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        } catch (e) { res(null); }
+      });
+    }
+    var sheet = null, sheetImg = null;
+    function sheetBauen() {
+      sheet = document.createElement('div'); sheet.id = 'fb-sheet'; sheet.className = 'cropov fbov'; sheet.hidden = true;
+      sheet.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="fs-h"><h3 id="fs-h">Rückmeldung an den Entwickler</h3>' +
+        '<div id="fs-bildbox"><img id="fs-prev" alt="" style="width:100%;max-height:200px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><label class="check" for="fs-mit"><input type="checkbox" id="fs-mit" checked><span>Bild dieser Seite mitschicken</span></label><p class="hint">Bitte keine Beträge, Namen oder Sozialversicherungsnummer auf dem Bild.</p></div>' +
+        '<div class="field"><label for="fs-art">Worum geht es?</label><select id="fs-art"><option value="fehler">Etwas stimmt nicht</option><option value="wunsch">Das fehlt mir</option><option value="frage">Ich habe eine Frage</option><option value="lob">Das gefällt mir</option></select></div>' +
+        '<div class="field"><label for="fs-text">Deine Nachricht</label><textarea id="fs-text" rows="4" maxlength="4000"></textarea></div>' +
+        '<p id="fs-msg" class="hint" hidden></p>' +
+        '<div class="btns"><button type="button" class="btn" id="fs-x">Schließen</button><button type="button" class="btn primary" id="fs-send">Senden</button></div></div>';
+      document.body.appendChild(sheet);
+      function m(t, bad) { var e = $('#fs-msg'); e.textContent = t; e.hidden = !t; e.style.color = bad ? 'var(--bad, #b3261e)' : ''; }
+      $('#fs-x').addEventListener('click', function () { sheet.hidden = true; });
+      $('#fs-send').addEventListener('click', function () {
+        var tx = ($('#fs-text').value || '').trim(), mit = sheetImg && $('#fs-mit').checked ? sheetImg : null;
+        if (!tx && !mit) { m('Bitte schreib etwas oder hänge ein Bild an.', true); return; }
+        var b = this; b.disabled = true;
+        window.StundenInsights.feedback($('#fs-art').value, tx, mit).then(function () {
+          $('#fs-text').value = ''; b.disabled = false; sheet.hidden = true; toast('Danke! Deine Rückmeldung ist angekommen.');
+        }, function () { m('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
+      });
+    }
+    on2('#fb-float', 'click', function () {
+      if (!window.StundenInsights || !window.StundenInsights.on) return;
+      if (!sheet) sheetBauen();
+      var ff = $('#fb-float'); ff.hidden = true;
+      shotSeite().then(function (d) {
+        ff.hidden = false; sheetImg = d;
+        $('#fs-bildbox').hidden = !d; if (d) { $('#fs-prev').src = d; $('#fs-mit').checked = true; }
+        $('#fs-msg').hidden = true; sheet.hidden = false; setTimeout(function () { var t = $('#fs-text'); if (t) t.focus(); }, 100);
+      });
+    });
     on2('#news-an', 'change', function () { newsSet('an', this.checked); if (this.checked && !newsCfg().gesehen) newsSet('gesehen', ''); renderNews(); });
     on2('#news-alle', 'change', function () { newsSet('alle', this.checked); renderNews(); });
     on2('#news-freq', 'click', function (ev) { var b = ev.target.closest('[data-nf]'); if (!b) return; newsSet('freq', b.dataset.nf); renderNews(); });

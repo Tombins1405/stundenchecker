@@ -752,3 +752,6 @@ h3[data-ico="news"]::before { background: #6a1b9a; }
 .newsli { padding: 8px 0; border-top: 1px solid var(--line, #ddd); }
 .newsli small { display: block; opacity: .7; }
 .newsli .nbadge { color: #6a1b9a; font-size: .8em; font-weight: 700; margin-left: 6px; }
+.fbov { background: rgba(0,0,0,.45); align-items: flex-end; }
+.fbov .lzbox { max-height: 92vh; }
+.fbov .lzbox select { max-width: 100%; }
