@@ -1991,6 +1991,7 @@
     var c = $('#fb-card'); if (!c) return;
     c.hidden = !(window.StundenInsights && window.StundenInsights.on);
     var sh = $('#s-help'); if (sh) sh.hidden = c.hidden;
+    var ff = $('#fb-float'); if (ff) ff.hidden = c.hidden;
     var co = (data.profil && data.profil.consent) || {};
     if ($('#c-stat')) $('#c-stat').checked = !!co.statistik;
     if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
@@ -2481,8 +2482,10 @@
       }, function () { msg('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
     });
     function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
+    on2('#fb-float', 'click', function () { show('konten'); var d = $('#fb-det'); if (d) d.open = true; setTimeout(function () { var c = $('#fb-card'); if (c) c.scrollIntoView({ block: 'start' }); }, 50); });
     on2('#c-stat', 'change', cons('statistik'));
     on2('#c-mia', 'change', cons('miaFragen'));
+    try { renderFeedback(); } catch (e) { }
   })();
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe
 
