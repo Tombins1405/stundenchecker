@@ -1531,6 +1531,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir deine Einstellungen gemeinsam durchgehen? Ich führe dich Feld für Feld, du trägst gleich mit ein.' });
+    if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
@@ -1558,6 +1559,7 @@
     if (k === 'rundgang') { tourStart(); }
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true); }
+    else if (k === 'assistmehr') { tourStart(true); }
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'tag') { show('erfassen'); }
@@ -1858,6 +1860,12 @@
     s.push({ v: V, sel: '#e-save', t: 'Tippe jetzt auf „Speichern“. Danach bist du für heute fertig.' });
     return s;
   }
+  function assistKurz() { // Erster Durchgang: nur das Wichtigste, der Rest später
+    var all = assistBase(), sels = ['#s-vorname', '#k-eintritt', '#s-umodell', '#s-lohn'];
+    var s = sels.map(function (q) { return all.filter(function (x) { return x.sel === q; })[0]; }).filter(Boolean);
+    s.push({ t: 'Das Wichtigste ist erledigt. Die genaueren Einstellungen (Zuschläge, Pausen, Diäten, Prämien) kannst du jederzeit in den Einstellungen machen. Oder tippe unten auf mich und dann auf die Einstellungshilfe. Bis dahin rechnet die App mit den Werten deines Kollektivvertrags.' });
+    return s;
+  }
   function assistSteps() {
     var all = assistBase(), first = all[0], last = all[all.length - 1], mid = all.slice(1, -1), E1 = 'einstellungen', f = '.field', k = 'label.check';
     var g1 = ['#s-vorname', '#s-geb', '#s-firma', '#k-eintritt', '#s-beruf', '#s-einst', '#s-lgbox', '#s-monat', '#s-monatstd', '#s-lohn'], g2 = ['#s-umodell', '#s-gleitbox', '#s-woche', '#s-tagsollfield', '#s-grenzefield', '#s-uzus', '#s-pauseauto', '#s-runan', '#s-zsa', '#s-praemien'];
@@ -1995,11 +2003,11 @@
     tourRender();
   }
   function tourEnd(done) {
-    var as = TOUR && TOUR.assist, tg = TOUR && TOUR.tag; TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
+    var as = TOUR && TOUR.assist, tg = TOUR && TOUR.tag, ku = TOUR && TOUR.kurz; TOUR = null; var ov = $('#tour'); if (ov) ov.remove();
     window.removeEventListener('scroll', tourOnMove); window.removeEventListener('resize', tourOnMove);
     if (!data.profil) data.profil = {};
     if (tg) { save(); ins(done ? 'tagfuehrung_fertig' : 'tagfuehrung_abbruch'); return; }
-    if (as) { if (done) { data.profil.assistDone = true; delete data.profil.assistKap; } save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
+    if (as) { if (done) { data.profil.assistDone = true; delete data.profil.assistKap; if (ku) data.profil.assistKurz = true; else data.profil.assistLang = true; } save(); ins(done ? 'assistentin_fertig' : 'assistentin_abbruch'); if (done) toast('Deine Einstellungen sind durch. Du kannst sie jederzeit ändern.'); window.scrollTo(0, 0); return; }
     data.profil.tourDone = true; save();
     ins(done ? 'rundgang_fertig' : 'rundgang_abbruch');
     show('erfassen', true);
@@ -2009,7 +2017,8 @@
     var tag = assist === 'tag'; assist = assist === true;
     ins(assist ? 'assistentin' : tag ? 'tagfuehrung' : 'rundgang');
     if (tag) { if (!data.profil) data.profil = {}; data.profil.tagGefuehrt = todayISO(); save(); }
-    TOUR = { s: assist ? (intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir alles zusammen ein. Was du gerade nicht weißt, überspringst du mit Weiter und holst es später nach. Ich erinnere dich dann ab und zu.' }].concat(assistSteps().slice(1)) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
+    TOUR = { s: assist ? (intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir nur das Wichtigste ein, das dauert etwa eine Minute. Was du gerade nicht weißt, überspringst du mit Weiter. Alles Weitere machen wir später, wenn du magst.' }].concat(assistKurz()) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
+    if (assist && intro) TOUR.kurz = true;
     if (assist && !intro && data.profil && data.profil.assistKap > 1) { var ki = TOUR.s.map(function (x) { return x.kap; }).indexOf(data.profil.assistKap); if (ki > 0) TOUR.i = ki; }
     window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
     tourRender();
