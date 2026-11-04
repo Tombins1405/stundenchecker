@@ -1,6 +1,8 @@
 /* Speicherung im Konto (Firebase Firestore, Frankfurt). Die Daten bleiben zusätzlich in diesem Browser (auch ohne Internet). */
 (function () {
   'use strict';
+  try { if (localStorage.getItem('stundenchecker.probe.dev') === '1' && localStorage.getItem('stundenchecker.probe.active') === '1') { // Ausprobier-Modus: keine Verbindung zum Konto
+    window.StundenSync = { changed: function () {}, beforeLogout: function () { return Promise.resolve(false); } }; return; } } catch (e) { }
   var cfg = window.FIREBASE_CONFIG;
   if (!cfg || !cfg.apiKey || /HIER/.test(cfg.apiKey) || !window.firebase || !firebase.firestore || !firebase.apps.length) return;
 

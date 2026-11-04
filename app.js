@@ -4,7 +4,14 @@
 (function () {
   'use strict';
   var E = window.Engine;
-  var KEY = 'stundenchecker.v1';
+  /* Ausprobier-Modus: eigener Speicher, getrennt von den echten Daten (nur für Geräte mit Freischaltung ?ausprobieren) */
+  var PROBE_DEV = false, PROBE = false;
+  try {
+    if (/[?&]ausprobieren(=|&|$)/.test(location.search)) { localStorage.setItem('stundenchecker.probe.dev', '1'); history.replaceState(null, '', location.pathname + location.hash); }
+    PROBE_DEV = localStorage.getItem('stundenchecker.probe.dev') === '1';
+    PROBE = PROBE_DEV && localStorage.getItem('stundenchecker.probe.active') === '1';
+  } catch (e) { }
+  var KEY = PROBE ? 'stundenchecker.probe.v1' : 'stundenchecker.v1';
 
   /* ------------------------------------------------------------ Hilfen */
   function $(s, r) { return (r || document).querySelector(s); }
@@ -59,6 +66,20 @@
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
   }
   var data = load();
+  function probeUmschalten(an) {
+    try {
+      if (an) { localStorage.removeItem('stundenchecker.probe.v1'); localStorage.setItem('stundenchecker.probe.active', '1'); }
+      else { localStorage.removeItem('stundenchecker.probe.active'); localStorage.removeItem('stundenchecker.probe.v1'); }
+    } catch (e) { return; }
+    location.reload();
+  }
+  (function probeInit() {
+    var box = $('#s-probe'); if (box) box.hidden = !PROBE_DEV;
+    var go = $('#s-probe-go'); if (go) { go.hidden = PROBE; go.addEventListener('click', function () { probeUmschalten(true); }); }
+    var back = $('#s-probe-back'); if (back) { back.hidden = !PROBE; back.addEventListener('click', function () { probeUmschalten(false); }); }
+    var bn = $('#probe-banner'); if (bn) bn.hidden = !PROBE;
+    var bb = $('#probe-banner-back'); if (bb) bb.addEventListener('click', function () { probeUmschalten(false); });
+  })();
   if (!data.abgleich) data.abgleich = {};
   if (!data.profil) data.profil = {};
   // Ältere gespeicherte Wertesätze kannten Tagessoll und Normalwoche; jetzt gibt es nur die Wochenstunden.
