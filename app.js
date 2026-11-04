@@ -350,18 +350,41 @@
     }
   }
 
+  // Wie steht der bezahlte Krankenstand, Urlaub und Feiertag auf dem Lohnzettel? In eigenen Zeilen oder alles in der Zeile "Lohn" (zum Beispiel RZL-Lohnzettel)?
+  function uzSoll(v) { // Urlaubszuschuss vom Lohnzettel gegen die Sonderzahlung im Profil
+    var p = data.profil || {}, l = (p.sonder || []).filter(function (x) { return x.art === 'urlaub' && +x.jahr === ui.y; })[0];
+    if (!l) return '<small class="abhint">Noch keine Sonderzahlung „Urlaubszuschuss“ im Profil eingetragen. Dann kann die App den Betrag vergleichen.</small>';
+    var soll = E.sonderSoll(l.voll, E.sonderAnteil(p.eintritt, +l.jahr));
+    if (soll === null) return '';
+    var h = '<small class="abhint">Soll laut Profil: <b>' + eur.format(soll) + '</b>';
+    if (hasN(v)) { var d = Math.round((+v - soll) * 100) / 100; h += Math.abs(d) < 0.5 ? ' – passt.' : d < 0 ? ' – es fehlen ' + eur.format(-d) + '.' : ' – es sind ' + eur.format(d) + ' mehr.'; }
+    return h + '</small>';
+  }
+  function lzAlles() { return !!(data.profil && data.profil.lzAlles === true); }
+  function renderAbArt() {
+    var el = $('#ab-art'); if (!el) return;
+    var c = miaCfg(), fig = '<div class="lkfig">' + miaSvg(c.figur, miaFor(), '') + '</div>', pr = data.profil || {};
+    if (pr.lzAlles === undefined) {
+      el.innerHTML = '<div class="lkmia">' + fig + '<div class="lkbub"><span>Wie stehen Krankenstand, Urlaub und Feiertag auf deinem Lohnzettel? Steht bei „Lohn“ zum Beispiel 168 Stunden für den ganzen Monat, dann steckt alles in dieser Zeile.</span></div></div>' +
+        '<div class="chips"><button type="button" class="chip pick" id="ab-art-a" aria-pressed="false">In eigenen Zeilen</button><button type="button" class="chip pick" id="ab-art-b" aria-pressed="false">Alles steckt in der Zeile „Lohn“</button></div>';
+    } else {
+      el.innerHTML = '<div class="chips"><button type="button" class="chip pick" id="ab-art-a" aria-pressed="' + (!pr.lzAlles) + '">Krankenstand, Urlaub, Feiertag in eigenen Zeilen</button><button type="button" class="chip pick" id="ab-art-b" aria-pressed="' + (!!pr.lzAlles) + '">Alles steckt in der Zeile „Lohn“</button></div>';
+    }
+  }
   function fixLohn() { var w = wAt(monthKey() + '-01'); return !!(w && +w.monatslohn > 0); }
   function monthKey() { return ui.y + '-' + pad(ui.m); }
   var AB_HINT = {
     gleit: 'Dein Gleitzeitsaldo für diesen Monat, so wie ihn deine Zeiterfassung oder dein Zeitnachweis zeigt (Plus oder Minus in Stunden).',
     lohn: 'Zeile „Lohn“, Spalte „Menge“. Das sind die normalen Stunden, ohne Überstunden und ohne Feiertag.',
-    ueber: 'Zeile „Überstunden Grundlohn“. Nicht die Zeile „Zuschlag“.',
+    lohnAlles: 'Zeile „Lohn“, Spalte „Menge“. Hier steckt alles drin: normale Stunden, Feiertag, Urlaub und Krankenstand.',
+    ueber: 'Zeile „Überstunden Grundlohn“. Nicht die Zeile mit „Zuschlag“ oder „Zusch.“.',
     feiertag: 'Zeile „Feiertagslohn“.',
     urlaub: 'Zeile „Urlaubslohn“.',
     krank: 'Zeile „Krankenstand“ oder „Entgeltfortzahlung“.',
     pflege: 'Zeile „Pflegefreistellung“.',
     dStd: 'Zeile „Diäten“ oder „Aufwandsentschädigung“, Menge in Stunden.',
     sonder: 'Nur wenn dein Lohnzettel eine Zeile „Sonderurlaub“ hat und die Firma diesen Tag aus deinen Überstunden bezahlt hat. Trage hier die Stunden ein. Sie werden zur Zeile „Lohn“ dazugezählt.',
+    urlaubszuschuss: 'Nur wenn dein Lohnzettel eine Zeile „Urlaubszuschuss“ hat. Meist steht dort nur ein Bruttobetrag. Trage ihn in Euro ein.',
     zaKonto: 'Nur wenn dein Lohnzettel ein Zeitausgleich-Konto zeigt: der Zuwachs in diesem Monat. Diese Stunden wurden nicht ausbezahlt, sondern aufs Konto gebucht. Sie werden zu den Überstunden dazugezählt.'
   };
   // Firmen, die Diäten und Überstunden erst im Folgemonat abrechnen: der Lohnzettel von Monat N zeigt die Aufzeichnung von Monat N-1.
@@ -403,18 +426,19 @@
     if (summe.folge) $('#ab-spaeter').innerHTML += '<div class="notice">Diäten und Überstunden vergleicht die App mit deiner Aufzeichnung vom Vormonat.</div>';
     var lz = data.abgleich[monthKey()] || {};
     var le = E.lzMitKorr(data.abgleich, monthKey());
-    var rows = E.abgleich(summe, le.lz, ui.abAlle, fixLohn());
+    var rows = E.abgleich(summe, le.lz, ui.abAlle, fixLohn(), lzAlles());
+    renderAbArt();
     $('#ab-more').hidden = !!ui.abAlle;
     $('#ab-rows').innerHTML = rows.map(function (r) {
       var v = lz[r.key];
       if (r.status === 'info') return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(r.key.indexOf('ds_') === 0 ? 'Steht dafür eine Zeile auf dem Lohnzettel? Dann trage den Betrag in Euro ein.' : AB_HINT[r.key]) + '</small>' +
-        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="0.25" value="' + (v == null ? '' : esc(v)) + '" placeholder="' + (r.key.indexOf('ds_') === 0 ? 'Betrag' : 'Zuwachs') + '"><span>' + (r.key.indexOf('ds_') === 0 ? '€' : 'h') + '</span></div></div></div>';
+        '<small class="abhint">' + esc(r.key.indexOf('ds_') === 0 ? 'Steht dafür eine Zeile auf dem Lohnzettel? Dann trage den Betrag in Euro ein.' : AB_HINT[r.key]) + '</small>' + (r.key === 'urlaubszuschuss' ? uzSoll(v) : '') +
+        '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="' + (r.unit === '€' ? '0.01' : '0.25') + '" value="' + (v == null ? '' : esc(v)) + '" placeholder="' + (r.unit === '€' ? 'Betrag' : 'Zuwachs') + '"><span>' + (r.unit === '€' ? '€' : 'h') + '</span></div></div></div>';
       var isE = r.unit === '€';
       return '<div class="abrow">' +
         '<label class="what" for="ab-' + r.key + '">' + esc(r.label) + '</label>' +
-        '<small class="abhint">' + esc(isE ? (r.key === 'dEuro' ? 'Der Betrag bei Diäten auf dem Lohnzettel, in Euro.' : (r.key.indexOf('ds_') === 0 ? 'Betrag in Euro, so wie auf dem Lohnzettel.' : 'Prämie in Euro, so wie auf dem Lohnzettel.')) : AB_HINT[r.key]) + '</small>' +
+        '<small class="abhint">' + esc(isE ? (r.key === 'dEuro' ? 'Der Betrag bei Diäten auf dem Lohnzettel, in Euro.' : (r.key.indexOf('ds_') === 0 ? 'Betrag in Euro, so wie auf dem Lohnzettel.' : 'Prämie in Euro, so wie auf dem Lohnzettel.')) : (r.key === 'lohn' && lzAlles() ? AB_HINT.lohnAlles : AB_HINT[r.key])) + '</small>' +
         '<div class="abline"><div class="abin"><input type="number" id="ab-' + r.key + '" inputmode="decimal" step="' + (isE ? '0.01' : '0.25') + '" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>' + (isE ? '€' : 'h') + '</span></div>' +
         '<div class="abapp">Deine Aufzeichnung<br><b>' + (isE ? eur.format(r.app) : fh(r.app) + ' h') + '</b></div>' +
         '<span class="chip" data-chip="' + r.key + '"></span></div></div>';
@@ -639,7 +663,7 @@
       (todo.length ? '<ul style="margin:0;padding-left:20px">' + todo.join('') + '</ul>' : '<p style="margin:0"><span>Nichts zu klären. Alles stimmt mit deiner Aufzeichnung überein.</span></p>') + '</div>';
   }
   function paintAbgleich() {
-    var lz = data.abgleich[monthKey()] || {}, le = E.lzMitKorr(data.abgleich, monthKey()), rows = E.abgleich(ui.summe, le.lz, ui.abAlle, fixLohn()), given = 0, bad = [];
+    var lz = data.abgleich[monthKey()] || {}, le = E.lzMitKorr(data.abgleich, monthKey()), rows = E.abgleich(ui.summe, le.lz, ui.abAlle, fixLohn(), lzAlles()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);
     rows.forEach(function (r) {
       if (r.status === 'info') return;
@@ -847,6 +871,10 @@
     de_gastro: [['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale', 'monat', 'einmal pro Monat']],
     bau: [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Tieflader-Zulage', 'tag', 'Einsatztage mit Tieflader, Betrag laut Lohnzettel'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']]
   };
+  PR_VOR.holzbau = [['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus, mit Nachweis'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.tischler = [['Montagezulage', 'stunde', 'Stunden auf Montage'], ['Erschwerniszulage', 'stunde', 'Stunden mit erschwerten Bedingungen'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.maler = [['Schmutz- und Erschwerniszulage (10 % oder 20 %)', 'stunde', 'Stunden mit Erschwernis, zum Beispiel ab 4 m Standhöhe, Betrag laut Lohnzettel'], ['Aufsichtszulage', 'stunde', 'Stunden mit Aufsicht über mehrere Mitarbeiter'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 10], ['Lenkzeitvergütung Mannschaftstransporter', 'stunde', 'Stunden am Steuer des Mannschaftstransporters', 15.42], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.metall = [['Montagezulage', 'stunde', 'Stunden auf Montage (mindestens 1,155 € laut KV, nicht für Lehrlinge)', 1.155], ['Entfernungszulage über 6 Stunden', 'tag', 'Einsatztage mit mehr als 6 Stunden Abwesenheit', 11.94], ['Entfernungszulage über 11 Stunden', 'tag', 'Einsatztage mit mehr als 11 Stunden Abwesenheit', 30], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 22.05], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   function renderPrVor() {
     var w = wAt(todayISO()), k = w && PR_VOR[w.paket] ? w.paket : null, box = $('#pr-vor'), h = $('#pr-vorh');
     if (!box) return;
@@ -1315,6 +1343,7 @@
   var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
     bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], lager: ['weste', 'paket'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
     'gastro:service': ['schuerze', 'tablett_glas'], 'gastro:kueche': ['kochhaube', 'schuerze', 'pfanne'], 'gastro:chef': ['kochhaube', 'schuerze', 'messer'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
+    handwerk: ['helm', 'weste'], 'handwerk:maurer': ['helm', 'weste', 'kelle'], 'handwerk:zimmerer': ['helm', 'weste', 'hammer'], 'handwerk:elektro': ['helm', 'overall', 'maulschluessel'], 'handwerk:tischler': ['kappe', 'overall', 'hammer'], 'handwerk:maler': ['kappe', 'overall', 'eimer'], 'handwerk:anderes': ['helm', 'weste', 'wasserwaage'], 'handwerk:lehrling': ['helm', 'weste', 'hammer'],
     'handel:verkauf': ['schuerze', 'scanner'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
   var MIA_TEILE = {
@@ -1505,7 +1534,7 @@
     { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
-  var NEWS_B = { n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
+  var NEWS_B = { n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
   function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }); }
   function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, alle: n.alle, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
   function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }
@@ -1733,6 +1762,8 @@
   Object.keys(MIA_X4).forEach(function (L) { if (MIA_TR[L]) MIA_TR[L].push(MIA_X4[L]); });
   var MIA_X5 = {"en": ["Where do I find this on my payslip?", "At the top of your payslip there is usually your name, the company, the month and often your grading, pay group and collective agreement (sometimes abbreviated “KV”). You find your hourly wage in the line “Lohn” or “Stundenlohn”, the hours next to it in the column “Menge”. Overtime is often on its own lines with 50 % or 100 %, time off in lieu on a line like “Zeitausgleich” or “Zeitkonto”, leave often as “Resturlaub”. Weekly hours are in your employment contract. If something is not on it, ask the office or payroll. If you do not know something, leave the field empty in the app. Until then the app calculates with the values of your collective agreement.", "payslip where find grading pay group collective agreement kv"], "pl": ["Gdzie to znajdę na pasku wypłaty?", "U góry paska wypłaty zwykle jest twoje imię, firma, miesiąc i często zaszeregowanie, grupa płacowa i układ zbiorowy (czasem skrót „KV”). Stawkę godzinową znajdziesz w wierszu „Lohn” lub „Stundenlohn”, godziny obok w kolumnie „Menge”. Nadgodziny często mają osobne wiersze z 50 % lub 100 %, czas wolny wiersz typu „Zeitausgleich” lub „Zeitkonto”, urlop często jako „Resturlaub”. Godziny tygodniowo są w umowie o pracę. Jeśli czegoś nie ma, zapytaj w biurze lub w księgowości płac. Jeśli czegoś nie wiesz, zostaw pole puste w aplikacji. Do tego czasu aplikacja liczy z wartościami z układu zbiorowego.", "pasek wyplaty gdzie znalezc zaszeregowanie grupa platnicza uklad zbiorowy kv"], "hu": ["Hol találom ezt a bérjegyzéken?", "A bérjegyzék tetején általában a neved, a cég, a hónap és gyakran a besorolás, a bércsoport és a kollektív szerződés áll (néha „KV” rövidítéssel). Az órabért a „Lohn” vagy „Stundenlohn” sorban találod, mellette az órákat a „Menge” oszlopban. A túlóra gyakran külön sorokban van 50 % vagy 100 %, a szabadidő egy „Zeitausgleich” vagy „Zeitkonto” jellegű sorban, a szabadság gyakran „Resturlaub” néven. A heti óraszám a munkaszerződésben áll. Ha valami nincs rajta, kérdezd meg az irodát vagy a bérszámfejtést. Amit nem tudsz, hagyd üresen az alkalmazásban. Addig az alkalmazás a kollektív szerződésed értékeivel számol.", "berjegyzek hol talalom besorolas bercsoport kollektiv szerzodes kv"], "tr": ["Bunu maaş bordrosunda nerede bulurum?", "Maaş bordrosunun üstünde genellikle adın, şirket, ay ve çoğu zaman sınıflandırma, ücret grubu ve toplu sözleşme yazar (bazen „KV“ kısaltmasıyla). Saatlik ücreti „Lohn“ veya „Stundenlohn“ satırında, yanındaki saatleri „Menge“ sütununda bulursun. Fazla mesai çoğu zaman 50 % veya 100 % ile ayrı satırlarda, izin „Zeitausgleich“ veya „Zeitkonto“ gibi bir satırda, yıllık izin çoğu zaman „Resturlaub“ olarak görünür. Haftalık saatler iş sözleşmesindedir. Bir şey yoksa ofise veya bordro birimine sor. Bir şeyi bilmiyorsan uygulamada alanı boş bırak. O zamana kadar uygulama toplu sözleşmenin değerleriyle hesaplar.", "bordro nerede bulurum siniflandirma ucret grubu toplu sozlesme kv"]};
   Object.keys(MIA_X5).forEach(function (L) { if (MIA_TR[L]) MIA_TR[L].push(MIA_X5[L]); });
+  var MIA_X6 = {"en": [["I am an apprentice", "As an apprentice you get an apprentice's pay, usually a fixed monthly amount per year of training. In the settings, under “My job”, choose the type “Apprentice”. The app then shows only the training years of your collective agreement under the pay group, and with “Use minimum pay from the collective agreement” it enters the amount. If your training contract says a different amount, enter it under “Fixed monthly pay”. Vocational school counts as working time: enter the day as “Training / vocational school”, and a fixed school day every week under “Fixed days off”. Under 18 the youth employment law applies, as a rule at most 8 hours a day and 40 a week. The Chamber of Labour (Arbeiterkammer) helps with questions.", "apprentice trainee vocational school apprenticeship pay"], ["Allowances in construction and trades", "In construction and trades your payslip often shows allowances: dirt, hardship and danger allowance, daily allowance or distance allowance for work away from home, overnight allowance and assembly allowance. Create them under Settings, Bonuses; Mia gives you suggestions. In bad weather in construction and timber construction the BUAK pays part of the wage, and the app keeps bad-weather hours separate. In the painters’ trade you get 60 % of your pay when work is cancelled by weather. The amounts differ by collective agreement, please compare them with your payslip.", "allowance construction trade bad weather overnight assembly buak"]], "pl": [["Jestem uczniem (praktykantem)", "Jako uczeń dostajesz wynagrodzenie ucznia, zwykle stałą kwotę miesięczną za rok nauki. W ustawieniach w „Mój zawód” wybierz rodzaj „Uczeń”. Aplikacja pokaże wtedy przy grupie płacowej tylko lata nauki Twojego układu zbiorowego, a po wybraniu „Użyj płacy minimalnej z układu zbiorowego” wpisze kwotę. Jeśli w umowie o naukę jest inna kwota, wpisz ją w „Stała płaca miesięczna”. Szkoła zawodowa liczy się jako czas pracy: wpisz ten dzień jako „Szkolenie / szkoła zawodowa”, stały dzień szkolny w każdym tygodniu w „Stałe dni wolne”. Poniżej 18 lat obowiązuje ustawa o ochronie młodzieży, zasadniczo najwyżej 8 godzin dziennie i 40 tygodniowo. W razie pytań pomoże Izba Pracy (Arbeiterkammer).", "uczen praktykant szkola zawodowa nauka wynagrodzenie"], ["Dodatki w budownictwie i rzemiośle", "W budownictwie i rzemiośle na pasku wypłaty często są dodatki: za brudną, uciążliwą i niebezpieczną pracę, dieta lub dodatek za odległość przy pracy poza domem, dodatek za nocleg i za montaż. Dodaj je w Ustawienia, Premie, Mia podpowie Ci pasujące. Przy złej pogodzie w budownictwie i budownictwie drewnianym część płacy wypłaca BUAK, aplikacja prowadzi godziny złej pogody osobno. W malarstwie przy odwołaniu pracy z powodu pogody dostaje się 60 % płacy. Kwoty są różne w zależności od układu zbiorowego, porównaj je z paskiem wypłaty.", "dodatek budownictwo rzemioslo zla pogoda nocleg montaz buak"]], "hu": [["Tanuló vagyok", "Tanulóként tanulói juttatást kapsz, általában tanévenként fix havi összeget. A beállításokban a „Szakmám” alatt válaszd a „Tanuló” típust. Az app ekkor a bérkategóriánál csak a kollektív szerződésed tanéveit mutatja, a „Kollektív szerződés szerinti minimálbér használata” gombbal pedig beírja az összeget. Ha a tanszerződésedben más összeg áll, írd be a „Fix havi bér” mezőbe. A szakiskola munkaidőnek számít: a napot „Képzés / szakiskola” néven írd be, a heti fix iskolanapot a „Fix szabadnapok” alatt. 18 év alatt az ifjúságvédelmi törvény érvényes, főszabály szerint legfeljebb napi 8 és heti 40 óra. Kérdés esetén az Arbeiterkammer segít.", "tanulo tanonc szakiskola kepzes juttatas"], ["Pótlékok az építőiparban és a kisiparban", "Az építőiparban és a kisiparban a bérjegyzéken gyakran szerepelnek pótlékok: piszok-, megterhelési és veszélyességi pótlék, napidíj vagy távolsági pótlék házon kívüli munkánál, szállásdíj és szerelési pótlék. Vedd fel őket a Beállítások, Prémiumok alatt, Mia javaslatokat tesz. Rossz időben az építőiparban és a faépítésben a BUAK fizeti a bér egy részét, az app a rossz idő óráit külön vezeti. A festőiparban időjárás miatti kiesésnél a bér 60 %-a jár. Az összegek kollektív szerződésenként eltérnek, hasonlítsd össze őket a bérjegyzékeddel.", "potlek epitoipar kisipar rossz ido szallas szereles buak"]], "tr": [["Çırağım (stajyer)", "Çırak olarak çıraklık ücreti alırsın, genelde öğrenim yılı başına sabit aylık tutar. Ayarlarda „Mesleğim“ altında „Çırak“ türünü seç. Uygulama ücret grubunda yalnızca toplu sözleşmenin öğrenim yıllarını gösterir ve „Toplu sözleşmedeki asgari ücreti kullan“ ile tutarı kendisi yazar. Çıraklık sözleşmende başka bir tutar varsa „Sabit aylık ücret“ alanına yaz. Meslek okulu çalışma süresi sayılır: günü „Eğitim / meslek okulu“ olarak gir, her hafta sabit okul gününü „Sabit boş günler“ altına gir. 18 yaşın altında gençlik koruma yasası geçerlidir, kural olarak günde en fazla 8 ve haftada 40 saat. Sorularda Arbeiterkammer yardımcı olur.", "cirak stajyer meslek okulu egitim ucret"], ["İnşaat ve zanaatta ödenekler", "İnşaat ve zanaatta maaş bordrosunda çoğu zaman ödenekler olur: kir, zorluk ve tehlike ödeneği, evden uzak çalışmada gündelik veya mesafe ödeneği, konaklama ve montaj ödeneği. Bunları Ayarlar, Primler altında ekle, Mia sana uygun öneriler yapar. İnşaat ve ahşap yapıda kötü havada ücretin bir kısmını BUAK öder, uygulama kötü hava saatlerini ayrı tutar. Boyacılıkta hava nedeniyle iş iptalinde ücretin %60’ı ödenir. Tutarlar toplu sözleşmeye göre değişir, lütfen maaş bordronla karşılaştır.", "odenek insaat zanaat kotu hava konaklama montaj buak"]]};
+  Object.keys(MIA_X6).forEach(function (L) { if (MIA_TR[L]) MIA_X6[L].forEach(function (e) { MIA_TR[L].push(e); }); });
   /* ---- Mia beantwortet Fragen (feste Antworten, kein Server) + Spracheingabe + Vorlesen ---- */
   var MIA_FAQ = [
     { t: 'Was die App kann', k: ['kann', 'alles', 'funktion', 'macht', 'leistet', 'wofuer', 'nutzen', 'ueberblick', 'was ist', 'hilfe'], a: 'Die App rechnet deine Arbeitszeit, Pausen, Überstunden, Diäten und Prämien aus und vergleicht alles mit deinem Lohnzettel. Du kannst Urlaub, Krankenstand und Zeitausgleich eintragen, Notizen zu Tagen schreiben, die App in 13 Sprachen nutzen und mich alles fragen. Tippe unten auf ein Thema, wenn du Genaueres wissen willst.' },
@@ -1756,7 +1787,9 @@
     { t: 'Gleitzeit', k: ['gleitzeit','gleittag','gleitzeitkonto','saldo','plusstunden','minusstunden','kernzeit'], a: 'Bei Gleitzeit zählt die App Plus- und Minusstunden auf einem Gleitzeitkonto. Wähle beim Einrichten „Büro mit Gleitzeit“ oder in Einstellungen das Überstunden-Modell „Gleitzeit“. Dort trägst du die Sollzeit je Wochentag ein, optional Startsaldo und Übertragungsgrenze. Ein Gleittag (Zeitausgleich) zieht die Sollzeit vom Konto ab, Urlaub und Krankenstand nicht.' },
     { t: 'Keine Arbeit / Freistellung', k: ['freistellung', 'freigestellt', 'keine arbeit', 'heimgeschickt', 'nach hause', 'auftragsmangel', 'zeitausgleich geschickt'], a: 'Wähle in Erfassen bei "Art des Tages" „Keine Arbeit (von der Firma freigestellt)“, wenn dich die Firma wegen fehlender Arbeit heimschickt. Die Notiz zum Tag setzt sich automatisch. Wie die Firma den Tag verrechnet, stellst du in den Einstellungen unter „Freistellung (keine Arbeit)“ ein: Firma zahlt weiter, Abzug vom Zeitausgleich oder unbezahlt. Weißt du es nicht, zieht die App nichts ab. So sieht es auch die AK als Grundregel: Wer arbeitsbereit ist und heimgeschickt wird, behält den Lohn. Auf deinem Lohnzettel siehst du, ob es stimmt.' },
     { t: 'Zeitausgleich: 1:1,5 oder 1:1?', k: ['zeitausgleich', 'zeitausgleich 1:1', 'überstundenzuschlag', 'ueberstundenzuschlag', '1:1,5', '1,5', 'freizeitausgleich', 'zuschlag', 'verhältnis', 'verhaeltnis'], a: 'Das Arbeitszeitgesetz (§ 10) sagt: Der Überstundenzuschlag ist beim Zeitausgleich zu berücksichtigen oder gesondert auszuzahlen. Bei 50 % Zuschlag also entweder 1 Überstunde = 1,5 Stunden Zeitausgleich oder 1:1 und der Zuschlag kommt auf den Lohnzettel. Dein Kollektivvertrag kann es anders regeln. Stell es in Einstellungen unter „Wie schreibt deine Firma Überstunden als Zeitausgleich gut?“ ein. Beim Freinehmen wird der Zeitausgleich Stunde für Stunde abgezogen. In Deutschland gibt es kein gesetzliches Verhältnis, es gilt dein Vertrag.' },
-    { t: 'Wo finde ich das auf dem Lohnzettel?', k: ['lohnzettel', 'wo finde', 'wo steht', 'einstufung', 'lohngruppe', 'kollektivvertrag', 'kv', 'abrechnung', 'gehaltszettel', 'finde ich'], a: 'Oben auf dem Lohnzettel stehen meist dein Name, die Firma, der Monat und oft Einstufung, Lohngruppe und Kollektivvertrag (manchmal mit „KV“ abgekürzt). Den Stundenlohn findest du in der Zeile „Lohn“ oder „Stundenlohn“, die Stunden daneben in der Spalte „Menge“. Überstunden stehen oft in eigenen Zeilen mit 50 % oder 100 %, Zeitausgleich in einer Zeile wie „Zeitausgleich“ oder „Zeitkonto“, der Urlaub oft als „Resturlaub“. Die Wochenstunden stehen im Dienstvertrag. Steht etwas nicht drauf, frag im Büro oder in der Lohnverrechnung. Weißt du etwas nicht, lass das Feld in der App leer. Bis dahin rechnet die App mit den Werten deines Kollektivvertrags.' }
+    { t: 'Wo finde ich das auf dem Lohnzettel?', k: ['lohnzettel', 'wo finde', 'wo steht', 'einstufung', 'lohngruppe', 'kollektivvertrag', 'kv', 'abrechnung', 'gehaltszettel', 'finde ich'], a: 'Oben auf dem Lohnzettel stehen meist dein Name, die Firma, der Monat und oft Einstufung, Lohngruppe und Kollektivvertrag (manchmal mit „KV“ abgekürzt). Den Stundenlohn findest du in der Zeile „Lohn“ oder „Stundenlohn“, die Stunden daneben in der Spalte „Menge“. Überstunden stehen oft in eigenen Zeilen mit 50 % oder 100 %, Zeitausgleich in einer Zeile wie „Zeitausgleich“ oder „Zeitkonto“, der Urlaub oft als „Resturlaub“. Die Wochenstunden stehen im Dienstvertrag. Steht etwas nicht drauf, frag im Büro oder in der Lohnverrechnung. Weißt du etwas nicht, lass das Feld in der App leer. Bis dahin rechnet die App mit den Werten deines Kollektivvertrags.' },
+    { t: 'Ich bin Lehrling', k: ['lehrling', 'lehrjahr', 'berufsschule', 'lehrlingsentschädigung', 'lehrlingsentschaedigung', 'lehrlingseinkommen', 'lehre', 'lehrvertrag', 'azubi', 'ausbildung'], a: 'Als Lehrling bekommst du eine Lehrlingsentschädigung, meist als fester Monatsbetrag je Lehrjahr. Wähle in den Einstellungen bei „Mein Beruf“ die Art „Lehrling“. Dann zeigt dir die App bei der Lohngruppe nur die Lehrjahre deines Kollektivvertrags, und mit „Mindestlohn laut Kollektivvertrag verwenden“ trägt sie den Betrag ein. Steht in deinem Lehrvertrag ein anderer Betrag, trage ihn bei „Fixer Monatslohn“ ein. Die Berufsschule zählt als Arbeitszeit: Trage den Tag als „Schulung / Berufsschule“ ein, einen festen Schultag jede Woche bei „Feste freie Tage“. Unter 18 gilt das Jugendschutzgesetz, in der Regel höchstens 8 Stunden am Tag und 40 in der Woche. Bei Fragen hilft dir die Arbeiterkammer.' },
+    { t: 'Zulagen am Bau und im Handwerk', k: ['bau', 'handwerk', 'zulage', 'zulagen', 'schlechtwetter', 'taggeld', 'montage', 'montagezulage', 'erschwernis', 'schmutzzulage', 'buak', 'nächtigung', 'naechtigung', 'maurer', 'zimmerer', 'tischler', 'maler', 'elektriker', 'installateur'], a: 'Am Bau und im Handwerk stehen auf dem Lohnzettel oft Zulagen: Schmutz-, Erschwernis- und Gefahrenzulage, Taggeld oder Entfernungszulage bei Arbeit außer Haus, Nächtigungsgeld und Montagezulage. Lege sie unter Einstellungen, Prämien an, Mia macht dir passende Vorschläge. Bei Schlechtwetter am Bau und im Holzbau zahlt die BUAK einen Teil des Lohns, die App führt die Schlechtwetterstunden getrennt. Im Malergewerbe gibt es bei Wetterausfall 60 % des Lohns. Die Beträge sind je Kollektivvertrag verschieden, bitte vergleiche sie mit deinem Lohnzettel.' }
   ];
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/ł/g, 'l').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
@@ -1775,8 +1808,8 @@
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
     function paintAsk() {
       var L = miaLang(), u = MIA_UI[L] || MIA_UI.de, chips = $('#mia-chips');
-      var gl = false; try { var ww = wAt(todayISO()); gl = !!(ww && ww.ueberstunden && ww.ueberstunden.modell === 'gleit'); } catch (e) { }
-      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return (e.t === 'Gleitzeit' && !gl) ? '' : '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
+      var gl = false, le = false, hw = false; try { var ww = wAt(todayISO()); gl = !!(ww && ww.ueberstunden && ww.ueberstunden.modell === 'gleit'); le = !!(ww && ww.art === 'lehrling'); hw = !!(ww && (['bau', 'holzbau', 'maler', 'tischler', 'metall', 'de_bau', 'de_metall'].indexOf(ww.paket) >= 0 || ww.beruf === 'handwerk')); } catch (e) { }
+      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return ((e.t === 'Gleitzeit' && !gl) || (e.t === 'Ich bin Lehrling' && !le) || (e.t === 'Zulagen am Bau und im Handwerk' && !hw)) ? '' : '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
       $('#mia-q').placeholder = u.q; $('#mia-send').textContent = u.go; $('#mia-read').textContent = u.read; $('#mia-askbtn').textContent = u.ask;
       var sel = $('#mia-lang'); if (sel) sel.value = L;
     }
@@ -1844,7 +1877,7 @@
       { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
       { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
     if (b === 'lkw' || b === 'klein') s.push({ v: 'erfassen', sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Kunden oder Baustellen mit dem, was du dort gemacht hast. Das braucht die App für Prämien und Zulagen.' });
-    if (b === 'bagger') s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Baustellen mit deiner Tätigkeit. Das braucht die App für Prämien und Zulagen.' });
+    if (b === 'bagger' || (b === 'handwerk' && w.schlechtwetter)) s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Baustellen mit deiner Tätigkeit. Das braucht die App für Prämien und Zulagen.' });
     s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
     s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
     s.push({ v: 'lohn', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
@@ -1860,7 +1893,7 @@
       { v: V, sel: '#e-bis', t: 'Das Ende trägst du ein, wenn du fertig bist. Noch nicht so weit? Dann lass es leer und trage es später nach.' },
       { v: V, sel: '#e-addpause', t: 'Hattest du eine Pause? Tippe auf „+ Pause hinzufügen“ und trage sie ein. Sonst tippe auf Weiter.' }];
     if (b === 'lkw' || b === 'klein') s.push({ v: V, sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
-    if (b === 'lkw' || b === 'klein' || b === 'bagger') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist optional.' });
+    if (b === 'lkw' || b === 'klein' || b === 'bagger' || b === 'handwerk') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist optional.' });
     s.push({ v: V, sel: '#e-save', t: 'Tippe jetzt auf „Speichern“. Danach bist du für heute fertig.' });
     return s;
   }
@@ -2047,6 +2080,9 @@
     var vzp = E.PAKETE[w.paket].werte.ueberstunden.wochenStd; if (wo > 0 && vzp > wo && String(w.paket).indexOf('de_') !== 0 && set.ueberstunden.modell !== 'bau') set.ueberstunden.vollzeitStd = vzp;
     var mo = parseFloat(String(w.monat || '').replace(',', '.'));
     if (mo > 0) { var wsd = set.ueberstunden.wochenStd > 0 ? set.ueberstunden.wochenStd : 38.5; set.monatslohn = mo; set.monatsStd = Math.round(wsd * 52 / 12 * 100) / 100; set.stundenlohn = Math.round(mo / set.monatsStd * 100) / 100; set.lgAuto = false; }
+    var lgW = E.LOHNGRUPPEN[w.paket], gW = lgW && w.lg ? lgW.gruppen.filter(function (x) { return x.id === w.lg; })[0] : null;
+    set.lg = gW ? gW.id : null; set.ls = gW && lgW.stufen && gW.l.length > 1 && w.ls !== '' && w.ls != null ? +w.ls : null;
+    if (gW) { var iW = set.ls != null ? set.ls : 0, vW = gW.l[iW]; if (vW != null && (gW.m ? mo === vW : (!(mo > 0) && lo === vW))) set.lgAuto = true; }
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
     data.settings = data.settings.filter(function (e) { return e.gueltigAb !== ab; }); data.settings.push(set);
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; data.profil.vorname = String(w.vorname || '').trim().slice(0, 40); data.profil.nachname = String(w.nachname || '').trim().slice(0, 60); }
@@ -2064,19 +2100,24 @@
       renderSettings();
     }
   }
+  // Lohngruppen für die Auswahl: Lehrlinge sehen nur Lehrlingsstufen, alle anderen nur die Lohngruppen der Beschäftigten (die schon gewählte bleibt immer sichtbar).
+  function lgListe(lg, art, wahl, beruf) { return lg.gruppen.filter(function (x) { return x.id === wahl || (!!x.lehrling === (art === 'lehrling') && (!x.nur || x.nur.indexOf(beruf) >= 0)); }); }
+  function lgTeiler(lg, wochenStd) { return lg.teiler || Math.round((+wochenStd > 0 ? +wochenStd : 38.5) * 52 / 12 * 100) / 100; }
   function lohnGruppenHtml(w) {
     var lg = E.LOHNGRUPPEN[w.paket]; if (!lg) return '';
+    var gl = lgListe(lg, w.art, w.lg, w.beruf); if (!gl.length) return '';
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0];
-    var h = '<div class="field"><label for="wz-lg">Lohngruppe laut Kollektivvertrag (' + esc(lg.stand) + ')</label><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
-      lg.gruppen.map(function (x) { return '<option value="' + esc(x.id) + '"' + (w.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
-    if (g && lg.stufen) h += '<div class="field"><label for="wz-ls">Stufe</label><select id="wz-ls" data-wf="ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(w.ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
+    var h = '<div class="field"><label for="wz-lg">' + (w.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
+      gl.map(function (x) { return '<option value="' + esc(x.id) + '"' + (w.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
+    if (g && lg.stufen && g.l.length > 1) h += '<div class="field"><label for="wz-ls">Stufe</label><select id="wz-ls" data-wf="ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(w.ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
     return h;
   }
   function lohnVorschlag(w) {
     var lg = E.LOHNGRUPPEN[w.paket]; if (!lg) return;
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0]; if (!g) return;
-    var i = lg.stufen ? (w.ls === '' || w.ls == null ? -1 : +w.ls) : 0; if (i < 0 || g.l[i] == null) return;
-    w.lohn = g.l[i];
+    var i = lg.stufen && g.l.length > 1 ? (w.ls === '' || w.ls == null ? -1 : +w.ls) : 0; if (i < 0 || g.l[i] == null) return;
+    if (g.m) { w.monat = g.l[i]; w.monatAuto = true; w.lohn = Math.round(g.l[i] / lgTeiler(lg, w.wochen) * 100) / 100; }
+    else { if (w.monatAuto) { w.monat = ''; w.monatAuto = false; } w.lohn = g.l[i]; }
   }
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
@@ -2102,9 +2143,12 @@
         '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + (E.istTour({ beruf: w.beruf, art: w.art }) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten') + '</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
-        ('<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>' + (w.paket === 'bau' || w.paket === 'de_bau' ? 'Schlechtwetter (Bau)' : 'Ausfallstunden (Firma schickt mich heim)') + '</span></label>');
+        ('<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>' + (E.istBau({ paket: w.paket }) ? 'Schlechtwetter (Bau)' : 'Ausfallstunden (Firma schickt mich heim)') + '</span></label>');
     } else if (w.step === 'kv') {
-      var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen']; if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) w.paket = kvs[0]; var cp = E.PAKETE[w.paket];
+      var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen']).slice(), ak = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten && w.art && E.BERUFE[w.beruf].arten[w.art] && E.BERUFE[w.beruf].arten[w.art].kv;
+      if (ak && kvs.indexOf(ak) > 0) { kvs.splice(kvs.indexOf(ak), 1); kvs.unshift(ak); }
+      if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
+      var cp = E.PAKETE[w.paket];
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
         kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Auf deinem Lohnzettel oder im Dienstvertrag, meist oben unter „Kollektivvertrag“ oder „KV“. Sonst frag im Büro. Weißt du es nicht, nimm „Weiß ich nicht“. Du kannst es später ändern, nichts geht verloren.</p></details>' +
@@ -2123,7 +2167,7 @@
       html += '<h3>Dein Lohn</h3>' +
         lohnGruppenHtml(w) +
         '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
-        ((E.BERUFE[w.beruf] || {}).einfach ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
+        ((E.BERUFE[w.beruf] || {}).einfach || w.monat ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
@@ -2152,7 +2196,7 @@
         return;
       }
       if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
-      if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; wzNext(); return; }
+      if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; wzNext(); return; }
       if (t.dataset.wm) { w.mia = t.dataset.wm; wzRender(); return; }
       if (t.dataset.wk) { w.paket = t.dataset.wk; w.kvGewaehlt = true; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
       if (t.id === 'wz-next') { wzNext(); return; }
@@ -2364,22 +2408,36 @@
   }
   function renderLgBox(en) {
     var box = $('#s-lgbox'); if (!box) return;
-    var lg = E.LOHNGRUPPEN[en.paket]; if (!lg) { box.innerHTML = ''; var tk0 = $('#s-lgtake'); if (tk0) tk0.innerHTML = ''; return; }
+    var lg = E.LOHNGRUPPEN[en.paket], gl = lg ? lgListe(lg, en.art, en.lg, en.beruf) : [];
+    if (!lg || !gl.length) { box.innerHTML = ''; box.dataset.val = ''; var tk0 = $('#s-lgtake'); if (tk0) tk0.innerHTML = ''; return; }
     var g = lg.gruppen.filter(function (x) { return x.id === en.lg; })[0];
-    var h = '<div class="field"><label for="s-lg">Lohngruppe laut Kollektivvertrag (' + esc(lg.stand) + ')</label><select id="s-lg"><option value="">Nicht gewählt</option>' +
-      lg.gruppen.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
-    if (g && lg.stufen) {
+    var h = '<div class="field"><label for="s-lg">' + (en.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><select id="s-lg"><option value="">Nicht gewählt</option>' +
+      gl.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
+    var stuf = !!(g && lg.stufen && g.l.length > 1);
+    if (stuf) {
       var ls = en.ls == null || en.ls === '' ? (lg.eintritt ? stufeAusEintritt(en.gueltigAb) : '') : en.ls;
       h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
       en._lsVor = ls;
     }
-    var i = lg.stufen ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null;
+    var i = stuf ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null, mon = !!(g && g.m);
     delete en._lsVor;
-    box.innerHTML = h; box.dataset.val = val != null ? val : '';
-    var on = val != null && (en.lgAuto === true || (en.lgAuto === undefined && en.stundenlohn != null && Math.abs(en.stundenlohn - val) < 0.005));
-    if (on && en.stundenlohn !== val) { en.stundenlohn = val; en.lgAuto = true; save(); }
-    var tk = $('#s-lgtake'); if (tk) tk.innerHTML = val != null ? '<label class="check" for="s-lg-take"><input type="checkbox" id="s-lg-take"' + (on ? ' checked' : '') + '><span>Mindestlohn laut Kollektivvertrag verwenden: ' + esc(eur.format(val)) + '</span></label>' : '';
-    var sl = $('#s-lohn'); if (sl) { sl.disabled = on; if (on) sl.value = val; }
+    box.innerHTML = h; box.dataset.val = val != null ? val : ''; box.dataset.m = mon ? '1' : '';
+    var ist = mon ? en.monatslohn : en.stundenlohn;
+    var on = val != null && (en.lgAuto === true || (en.lgAuto === undefined && ist != null && Math.abs(ist - val) < 0.005));
+    if (on) lgNehmen(en, val, mon, true);
+    var tk = $('#s-lgtake'); if (tk) tk.innerHTML = val != null ? '<label class="check" for="s-lg-take"><input type="checkbox" id="s-lg-take"' + (on ? ' checked' : '') + '><span>' + ((mon ? 'Monatslohn' : 'Mindestlohn') + ' laut Kollektivvertrag verwenden: ' + esc(eur.format(val))) + '</span></label>' : '';
+    var sl = $('#s-lohn'); if (sl) { sl.disabled = on; if (on) sl.value = en.stundenlohn; }
+    var sm = $('#s-monat'); if (sm) { sm.disabled = on && mon; if (on && mon) sm.value = val; }
+  }
+  // Mindestlohn laut Kollektivvertrag übernehmen: Stundenlohn, bei Monatslöhnen (Lehrlinge, Metall) Monatslohn und Teiler dazu
+  function lgNehmen(en, val, mon, still) {
+    var lg = E.LOHNGRUPPEN[en.paket], ch = false;
+    if (mon) {
+      var ms = lgTeiler(lg, en.ueberstunden && en.ueberstunden.wochenStd), sh = Math.round(val / ms * 100) / 100;
+      if (en.monatslohn !== val || en.monatsStd !== ms || en.stundenlohn !== sh) { en.monatslohn = val; en.monatsStd = ms; en.stundenlohn = sh; ch = true; }
+    } else if (en.stundenlohn !== val) { en.stundenlohn = val; ch = true; }
+    if (en.lgAuto !== true) { en.lgAuto = true; ch = true; }
+    if (ch && still !== undefined) save();
   }
   function renderStufen(en) {
     $('#s-stufen').innerHTML = (en.diaeten.stufen || []).map(function (s, i) {
@@ -2495,7 +2553,7 @@
     }
     if (t.id === 's-lg-take') {
       var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
-      if (enx && !isNaN(vx)) { if (t.checked) { enx.stundenlohn = vx; enx.lgAuto = true; } else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
+      if (enx && !isNaN(vx)) { if (t.checked) lgNehmen(enx, vx, !!$('#s-lgbox').dataset.m); else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
       return;
     }
     if (t.classList.contains('tab')) {
@@ -2515,6 +2573,7 @@
       case 'lm-next': ui.abAlle = false; ui.m++; if (ui.m > 12) { ui.m = 1; ui.y++; } renderLohn(); return;
       case 'lm-today': ui.y = now.getFullYear(); ui.m = now.getMonth() + 1; renderLohn(); return;
       case 'ab-more': ui.abAlle = true; renderAbgleich(ui.summe); return;
+      case 'ab-art-a': case 'ab-art-b': if (!data.profil) data.profil = {}; data.profil.lzAlles = t.id === 'ab-art-b'; save(); renderAbgleich(ui.summe); return;
       case 'e-prev': openEditor(E.addDays(ui.edDate, -1), ui.edFrom); return;
       case 'e-next': openEditor(E.addDays(ui.edDate, 1), ui.edFrom); return;
       case 'ds-add': dsNeu('eigen', ''); var dn = $('#ds-n' + (diensteListe().length - 1)); if (dn) dn.focus(); return;
@@ -2672,7 +2731,7 @@
     var t = ev.target;
     if (t.id === 's-lg-take') {
       var enx = curEntry(), vx = parseFloat(($('#s-lgbox') || {}).dataset && $('#s-lgbox').dataset.val);
-      if (enx && !isNaN(vx)) { if (t.checked) { enx.stundenlohn = vx; enx.lgAuto = true; } else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
+      if (enx && !isNaN(vx)) { if (t.checked) lgNehmen(enx, vx, !!$('#s-lgbox').dataset.m); else enx.lgAuto = false; delete enx.test; save(); renderSettings(); }
       return;
     }
     if (t.id === 's-lg' || t.id === 's-ls') {

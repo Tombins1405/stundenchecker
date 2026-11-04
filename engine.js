@@ -30,7 +30,7 @@
     },
     bau: {
       name: 'Bau (Baugewerbe/Bauindustrie, Maschinist, Bagger)',
-      hinweis: 'KV Baugewerbe und Bauindustrie, Arbeiter, ab 1.5.2026: 39-Stunden-Woche (die 40. Stunde ist Mehrarbeit), Überstunde ab mehr als 9 Stunden pro Tag, Zuschlag 50 % (nachts 100 %), Sonntag 100 %, Taggeld pro Tag mit Stufen, Schlechtwetter über die BUAK. Verteilung der Normalarbeitszeit (kurze/lange Woche) ist noch nicht abgebildet.',
+      hinweis: 'KV Baugewerbe und Bauindustrie, Arbeiter, ab 1.5.2026: 39-Stunden-Woche (die 40. Stunde ist Mehrarbeit), Überstunde ab mehr als 9 Stunden pro Tag, Zuschlag 50 % (nachts 100 %), Sonntag 100 %, Taggeld pro Tag mit Stufen, Schlechtwetter über die BUAK. Verteilung der Normalarbeitszeit (kurze/lange Woche) ist noch nicht abgebildet. Lehrlinge: Stufen VI a bis VI e der Lohntafel (Hochbau, Tiefbau, Beton); Zimmerer haben einen eigenen Kollektivvertrag (Holzbau).',
       pruefen: true,
       werte: {
         diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit',
@@ -198,9 +198,48 @@
         schlechtwetter: false
       }
     },
+    holzbau: {
+      name: 'Holzbau (Zimmerer, Dachstuhl)',
+      hinweis: 'KV Holzbau-Meistergewerbe (Zimmerer), Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, Überstunde ab mehr als 9 Stunden pro Tag, Zuschlag 50 % (20 bis 5 Uhr: 100 %), Sonntag 100 %, Feiertag 50 %, Taggeld 12,10 € je Arbeitstag bei mehr als 3 Stunden und täglicher Heimkehr, 30 € bei auswärtiger Übernachtung. Zeitausgleich in ganzen Tagen. Schlechtwetter über die BUAK. Verteilung der Normalarbeitszeit (kurze/lange Woche) ist noch nicht abgebildet.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 12.10 }] },
+        ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 50 },
+        schlechtwetter: true
+      }
+    },
+    tischler: {
+      name: 'Tischler und Holzgestalter (Gewerbe)',
+      hinweis: 'KV Tischler und Holzgestalter, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): 40 Stunden/Woche auf 5 Tage, Überstunden mit 50 % Zuschlag (6 bis 20 Uhr) und 100 % (20 bis 6 Uhr). Sonntag und Feiertag sind in der Quelle nicht angegeben, bitte laut Lohnzettel einstellen. Zeitausgleich und Gleitzeit nur nach Vereinbarung. Die Regeln stammen aus der Fassung 2019, bitte mit dem aktuellen KV vergleichen.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    maler: {
+      name: 'Maler, Lackierer und Schilderhersteller',
+      hinweis: 'KV Maler, Lackierer und Schilderhersteller, Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, höchstens 9 Stunden pro Tag, Überstunden 50 %, nachts (20 bis 6 Uhr) und Sonntag 100 %. Schmutz- und Erschwerniszulagen 10 % oder 20 % des Stundenlohns (zum Beispiel ab 4 m Standhöhe oder Dächer ab 20° Neigung), Taggeld 30 € bei auswärtiger Arbeit, 8,30 € je Arbeitstag auf Baustellen mit täglicher Heimkehr. Bei Wetterausfall 60 % des Lohns. Die Berufsschule zählt als Arbeitszeit.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 8.30 }] },
+        ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     metall: {
       name: 'Metallgewerbe / Mechaniker',
-      hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden mit 50 % oder 100 % Zuschlag, Zeitausgleich 1:1,5 bei 50 % und 1:2 bei 100 %. Welche Zuschläge nachts, am Samstag und am Sonntag gelten, konnte ich nicht belegen. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt), steht auf deinem Lohnzettel.',
+      hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden mit 50 % oder 100 % Zuschlag, Zeitausgleich 1:1,5 bei 50 % und 1:2 bei 100 %. Welche Zuschläge nachts, am Samstag und am Sonntag gelten, konnte ich nicht belegen. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt, Elektro, Installation, Spengler), steht auf deinem Lohnzettel. Die Mindestgrundlöhne und Lehrlingseinkommen 2026 sind als Lohngruppe hinterlegt. Montagezulage mindestens 1,155 € je Stunde (nicht für Lehrlinge), Entfernungszulage 11,94 € bei mehr als 6 Stunden und 30,00 € bei mehr als 11 Stunden Abwesenheit, Nächtigungsgeld 22,05 €: lege sie bei Bedarf als Prämie an.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -415,9 +454,9 @@
       { id: '3', name: 'Gruppe 3: Lkw über 3,5 t, mehr als 3 Achsen', l: [12.78, 13.07, 13.44, 13.79, 14.12] },
       { id: '4', name: 'Gruppe 4: Zug, Sattelzug, selbstfahrende Arbeitsmaschine, Partieführer', l: [12.92, 13.23, 13.63, 13.94, 14.27] },
       { id: '5a', name: 'Gruppe 5a: Gefahrgut-Einsatztage oder Kran ab 10 Metertonnen', l: [13.23, 13.63, 13.94, 14.27, 14.58] },
-      { id: '6.1', name: 'Gruppe 6.1: Berufskraftfahrer (Lehre), Lkw bis 3 Achsen', l: [12.92, 13.23, 13.63, 13.94, 14.27] },
-      { id: '6.2', name: 'Gruppe 6.2: Berufskraftfahrer (Lehre), Lkw mehr als 3 Achsen', l: [13.29, 13.56, 13.94, 14.29, 14.58] },
-      { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', l: [13.63, 13.94, 14.27, 14.59, 14.92] },
+      { id: '6.1', name: 'Gruppe 6.1: Berufskraftfahrer (Lehre), Lkw bis 3 Achsen', lehrling: true, nur: ['lkw', 'klein'], l: [12.92, 13.23, 13.63, 13.94, 14.27] },
+      { id: '6.2', name: 'Gruppe 6.2: Berufskraftfahrer (Lehre), Lkw mehr als 3 Achsen', lehrling: true, nur: ['lkw', 'klein'], l: [13.29, 13.56, 13.94, 14.29, 14.58] },
+      { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', lehrling: true, nur: ['lkw', 'klein'], l: [13.63, 13.94, 14.27, 14.59, 14.92] },
       { id: '7', name: 'Gruppe 7: Tankstellenbelieferung (Treibstoff, Heizöl)', l: [13.94, 14.27, 14.60, 14.92, 15.22] }
     ] },
     handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
@@ -428,7 +467,11 @@
       { id: 'E', name: 'Beschäftigungsgruppe E (Angestellte, Gehalt ÷ 158)', l: [16.04, 17.47, 18.90, 20.34, 21.75] },
       { id: 'F', name: 'Beschäftigungsgruppe F (Angestellte, Gehalt ÷ 158)', l: [18.22, 20.38, 22.53, 24.70, 26.86] },
       { id: 'G', name: 'Beschäftigungsgruppe G (Angestellte, Gehalt ÷ 158)', l: [22.53, 24.91, 27.30, 29.68, 32.06] },
-      { id: 'H', name: 'Beschäftigungsgruppe H (Angestellte, Gehalt ÷ 158)', l: [27.72, 30.32, 32.93, 35.52, 38.11] }
+      { id: 'H', name: 'Beschäftigungsgruppe H (Angestellte, Gehalt ÷ 158)', l: [27.72, 30.32, 32.93, 35.52, 38.11] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1026] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1518] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1580] }
     ] },
     klein: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, eintritt: true, gruppen: [
       { id: '1', name: 'Kraftfahrer bis 3,5 t und sonstige Arbeiter (Kleintransportgewerbe)', l: [11.20, 11.56, 11.80, 12.27, 12.87] }
@@ -442,7 +485,77 @@
       { id: 'IIIc', name: 'III c Angelernte Bauarbeiter', l: [19.08] },
       { id: 'IIId', name: 'III d Angelernte Bauarbeiter', l: [18.59] },
       { id: 'IIIe', name: 'III e Angelernte Bauarbeiter', l: [17.91] },
-      { id: 'IV', name: 'IV Bauhilfsarbeiter', l: [17.03] }
+      { id: 'IV', name: 'IV Bauhilfsarbeiter', l: [17.03] },
+      { id: 'VIa', lehrling: true, name: 'VI a Lehrling Hochbau/Tiefbau/Beton, 1. Lehrjahr', l: [8.00] },
+      { id: 'VIb', lehrling: true, name: 'VI b Lehrling, 2. Lehrjahr', l: [11.99] },
+      { id: 'VIc', lehrling: true, name: 'VI c Lehrling, 3. Lehrjahr', l: [15.99] },
+      { id: 'VId', lehrling: true, name: 'VI d Lehrling, 4. Lehrjahr', l: [17.99] },
+      { id: 'VIe', lehrling: true, name: 'VI e Lehrling, Sonderstufe laut Lohntafel', l: [15.99] }
+    ] },
+    holzbau: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'I', name: 'I Vizepolier', l: [21.94] },
+      { id: 'II', name: 'II Vorarbeiter', l: [20.27] },
+      { id: 'III', name: 'III Bundzimmerer, Zimmereitechniker mit Lehrabschlussprüfung', l: [19.50] },
+      { id: 'IV', name: 'IV Zimmerer oder Facharbeiter mit Lehrabschlussprüfung', l: [18.92] },
+      { id: 'V', name: 'V Zimmerer/Zimmereitechniker ohne Lehrabschlussprüfung, angelernt', l: [17.56] },
+      { id: 'VI', name: 'VI Zimmererhelfer', l: [16.50] },
+      { id: 'L1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [6.17] },
+      { id: 'L2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [8.24] },
+      { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [11.66] },
+      { id: 'L4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [15.51] }
+    ] },
+    tischler: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'T1', name: 'Tischler I Spitzenfacharbeiter', l: [17.39] },
+      { id: 'T2', name: 'Tischler II Qualifizierter Facharbeiter', l: [16.72] },
+      { id: 'T3', name: 'Tischler III Facharbeiter mit Lehrabschlussprüfung Tischlereitechnik', l: [15.99] },
+      { id: 'T4', name: 'Tischler IV Facharbeiter oder Professionist mit Lehrabschlussprüfung', l: [15.17] },
+      { id: 'T5', name: 'Tischler V Facharbeiter ohne Lehrabschlussprüfung', l: [14.55] },
+      { id: 'T6', name: 'Tischler VI Angelernte Tätigkeiten oder Kraftfahrer', l: [14.45] },
+      { id: 'T7', name: 'Tischler VII Hilfsarbeiten', l: [14.14] },
+      { id: 'H1', name: 'Holzgestalter I Spitzenfacharbeiter', l: [14.55] },
+      { id: 'H2', name: 'Holzgestalter II Qualifizierter Facharbeiter', l: [13.98] },
+      { id: 'H3', name: 'Holzgestalter III Facharbeiter mit Lehrabschlussprüfung', l: [12.66] },
+      { id: 'H4', name: 'Holzgestalter IV Facharbeiter ohne Lehrabschlussprüfung, angelernt', l: [12.15] },
+      { id: 'H5', name: 'Holzgestalter V Hilfsarbeiten', l: [12.09] },
+      { id: 'LT1', m: true, lehrling: true, name: 'Lehrling Tischlereitechnik, 1. Lehrjahr', l: [921] },
+      { id: 'LT2', m: true, lehrling: true, name: 'Lehrling Tischlereitechnik, 2. Lehrjahr', l: [1107] },
+      { id: 'LT3', m: true, lehrling: true, name: 'Lehrling Tischlereitechnik, 3. Lehrjahr', l: [1666] },
+      { id: 'LT4', m: true, lehrling: true, name: 'Lehrling Tischlereitechnik, 4. Lehrjahr', l: [2091] },
+      { id: 'LH1', m: true, lehrling: true, name: 'Lehrling Holzgestalter, 1. Lehrjahr', l: [881] },
+      { id: 'LH2', m: true, lehrling: true, name: 'Lehrling Holzgestalter, 2. Lehrjahr', l: [1077] },
+      { id: 'LH3', m: true, lehrling: true, name: 'Lehrling Holzgestalter, 3. Lehrjahr', l: [1254] },
+      { id: 'LH4', m: true, lehrling: true, name: 'Lehrling Holzgestalter, 4. Lehrjahr', l: [1369] }
+    ] },
+    maler: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'M1', name: 'Facharbeiter mit Lehrabschlussprüfung, nach dem 3. Verwendungsjahr', l: [16.81] },
+      { id: 'M2', name: 'Facharbeiter mit Lehrabschlussprüfung, ab dem 1. Verwendungsjahr', l: [15.30] },
+      { id: 'M3', name: 'Qualifizierter Arbeitnehmer nach dem 3. Verwendungsjahr, oder Facharbeiter ohne Lehrabschlussprüfung', l: [15.12] },
+      { id: 'M4', name: 'Qualifizierter Arbeitnehmer ab dem 1. Verwendungsjahr', l: [14.09] },
+      { id: 'M5', name: 'Helfer', l: [13.53] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [910] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1090] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1370] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1650] }
+    ] },
+    metall: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'MT', m: true, name: 'Techniker', l: [4160.28] },
+      { id: 'M1', m: true, name: 'Lohngruppe 1 Spitzenfacharbeiter', l: [3808.83] },
+      { id: 'M2', m: true, name: 'Lohngruppe 2 Qualifizierter Facharbeiter', l: [3397.52] },
+      { id: 'M3', m: true, name: 'Lohngruppe 3 Facharbeiter', l: [2948.85] },
+      { id: 'M4', m: true, name: 'Lohngruppe 4 Besonders qualifizierter Arbeitnehmer', l: [2759.39] },
+      { id: 'M5', m: true, name: 'Lohngruppe 5 Qualifizierter Arbeitnehmer', l: [2627.28] },
+      { id: 'M6', m: true, name: 'Lohngruppe 6 Arbeitnehmer mit Zweckausbildung', l: [2571.94] },
+      { id: 'M7', m: true, name: 'Lohngruppe 7 Arbeitnehmer ohne Zweckausbildung', l: [2571.94] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1000.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1148.75] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1493.38] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2000.00] }
+    ] },
+    gastro: { stand: 'ab 1.10.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (nur Doppellehre)', l: [1550] }
     ] }
   };
 
@@ -459,6 +572,16 @@
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Berufskraftfahrer (Lehrling)', b: { fahrzeug: true, kunden: true, praemien: false } }
       } },
+    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'tischler', 'maler', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
+      arten: {
+        maurer: { name: 'Maurer / Hochbau / Tiefbau / Bauarbeiter', kv: 'bau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        zimmerer: { name: 'Zimmerer / Holzbau / Dachstuhl', kv: 'holzbau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        elektro: { name: 'Elektriker / Installateur / Spengler', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        tischler: { name: 'Tischler / Holzgestalter', kv: 'tischler', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        maler: { name: 'Maler / Lackierer / Anstreicher', kv: 'maler', sw: false, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        anderes: { name: 'Anderes Handwerk (Fliesenleger, Dachdecker, Pflasterer …)', kv: 'eigen', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Bau und Handwerk)', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: false } }
+      } },
     bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'de_bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
       arten: {
         bagger: { name: 'Baggerfahrer', b: { fahrzeug: false, kunden: true, praemien: true } },
@@ -472,7 +595,11 @@
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
-    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+      arten: {
+        lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
+        lehrling: { name: 'Lehrling (Lagerlogistik)', b: { fahrzeug: false, kunden: false, praemien: false } }
+      } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -481,7 +608,11 @@
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
+      arten: {
+        buero: { name: 'Büro / Verwaltung / Disposition', b: { fahrzeug: false, kunden: false, praemien: false } },
+        lehrling: { name: 'Lehrling (Bürokaufmann/-frau, Verwaltung)', b: { fahrzeug: false, kunden: false, praemien: false } }
+      } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -508,7 +639,7 @@
     return b.name + (a ? ' (' + a.name + ')' : '');
   }
   // Ist die Arbeitsart eine Tour? Dann heißen "Kunde / Baustelle" in der Erfassung "Tour".
-  function istBau(w) { return !!w && (w.paket === 'bau' || w.paket === 'de_bau'); }
+  function istBau(w) { return !!w && (w.paket === 'bau' || w.paket === 'de_bau' || w.paket === 'holzbau'); }
   function istTour(w) { var b = w && BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && a.tour); }
   // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
   function bausteine(w) {
@@ -921,10 +1052,12 @@
     // Zeitausgleich-Konto: Überstunden, die nicht ausbezahlt, sondern auf das Konto gebucht wurden. Wird zur Überstundenzeile dazugezählt.
     { key: 'zaKonto',  label: 'Zeitausgleich-Konto (Zuwachs)', pflicht: false, info: true, hole: function () { return null; } },
     // Sonderurlaub: wird von manchen Firmen aus den Überstunden bezahlt und zählt dann zur Zeile "Lohn" dazu.
-    { key: 'sonder',   label: 'Sonderurlaub (aus Überstunden bezahlt)', pflicht: false, info: true, hole: function () { return null; } }
+    { key: 'sonder',   label: 'Sonderurlaub (aus Überstunden bezahlt)', pflicht: false, info: true, hole: function () { return null; } },
+    // Urlaubszuschuss / Sonderzahlung: steht auf dem Lohnzettel meist nur als Bruttobetrag. Reine Eingabezeile, wird mit der Sonderzahlung im Profil verglichen.
+    { key: 'urlaubszuschuss', label: 'Urlaubszuschuss (Brutto)', unit: '€', pflicht: false, info: true, hole: function () { return null; } }
   ];
   function hasNum(v) { return !(v === null || v === undefined || v === '' || isNaN(+v)); }
-  function abgleich(summe, lz, alle, fix) { // fix: Fixlohn (Monatsgehalt): Lohn, Feiertag, Urlaub, Krank und Pflege stehen dann ohne Stunden auf dem Lohnzettel
+  function abgleich(summe, lz, alle, fix, alles) { // fix: Fixlohn (Monatsgehalt): Lohn, Feiertag, Urlaub, Krank und Pflege stehen dann ohne Stunden auf dem Lohnzettel
     if (summe && summe.gleit) { // Gleitzeit (Bundesdienst): ein Saldo statt Lohn und Überstunden
       var gv = lz && lz.gleit, gh = hasNum(gv), ga = r2(summe.ueberStd || 0), grow;
       if (!gh) grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: null, diff: null, status: 'offen', faktor: 0 };
@@ -935,11 +1068,13 @@
     AB_ZEILEN.forEach(function (z) {
       var v = lz && lz[z.key], has = hasNum(v);
       if (z.info) { // reine Eingabezeile, nur sichtbar wenn eingetragen oder "alle Zeilen"
-        if (has || alle) rows.push({ key: z.key, label: z.label, app: null, lz: has ? +v : null, diff: null, status: 'info' });
+        if (has || alle) rows.push({ key: z.key, label: z.label, unit: z.unit, app: null, lz: has ? +v : null, diff: null, status: 'info' });
         return;
       }
       if (fix && !alle && !has && ['lohn', 'feiertag', 'urlaub', 'krank', 'pflege'].indexOf(z.key) >= 0) return;
+      if (alles && !has && ['feiertag', 'urlaub', 'krank', 'pflege'].indexOf(z.key) >= 0) return; // alles steckt in der Zeile Lohn
       var app = r2(z.hole(summe) || 0);
+      if (alles && z.key === 'lohn') app = r2((summe.normalStd || 0) + (summe.feiertagStd || 0) + (summe.urlaubStd || 0) + (summe.krankStd || 0) + (summe.pflegeStd || 0));
       var eingetragenOhneApp = has && +v > 0 && app === 0;
       if ((!z.pflicht || (z.key === 'dStd' && app === 0)) && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
       if (z.nurAlle && !alle && !(has && +v > 0)) return; // Euro-Zeile nur auf Wunsch oder wenn eingetragen
