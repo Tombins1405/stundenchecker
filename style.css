@@ -760,3 +760,7 @@ h3[data-ico="door"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.
 h3[data-ico="door"]::before { background: #6d4c41; }
 .day.st-freistellung { border-left-color: #6d4c41; }
 .st-freistellung .d-ico { background: #efebe9; color: #5d4037; }
+/* Notiz-Auswahl: gewählt klar erkennbar (überschreibt die blaue Chip-Grundfarbe) */
+.chips button.chip.pick { background: #fff; border: 2px solid var(--line); color: #334155; }
+.chips button.chip.pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chips button.chip.pick[aria-pressed="true"]::before { content: "✓ "; }
