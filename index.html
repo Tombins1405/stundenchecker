@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261104083737">
+<link rel="stylesheet" href="style.css?v=20261104091545">
 </head>
 <body>
 
@@ -459,6 +459,13 @@
         <details class="how"><summary>Wie wird das gerechnet?</summary><div id="s-uinfo" class="notice"></div>
         <small>Nicht sicher? Schau auf deinen Lohnzettel oder frag im Büro, ob Überstunden pro Tag oder pro Woche gerechnet werden. Solange es unklar ist, nimm „Pro Monat“, so wird es auf vielen Lohnzetteln gerechnet, oder „Pro Tag“, wie in deiner Excel.</small></details>
       </div>
+      <div class="field"><label for="s-zau">Wie schreibt deine Firma Überstunden als Zeitausgleich gut?</label>
+        <select id="s-zau" data-path="zaUmr" data-type="text">
+          <option value="offen">Weiß ich noch nicht</option>
+          <option value="eingerechnet">1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)</option>
+          <option value="getrennt">1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt</option>
+        </select>
+        <small>In Österreich gilt nach § 10 Arbeitszeitgesetz: Der Überstundenzuschlag ist beim Zeitausgleich zu berücksichtigen oder gesondert auszuzahlen. Bei 50 % Zuschlag heißt das entweder 1:1,5 oder 1:1 und der Zuschlag wird bezahlt. Dein Kollektivvertrag kann es anders regeln, zum Beispiel 1:2 bei 100 % Zuschlag. Beim Freinehmen wird der Zeitausgleich immer Stunde für Stunde abgezogen. In Deutschland gibt es kein gesetzliches Verhältnis, es hängt von deinem Tarif- oder Arbeitsvertrag ab. Auf deinem Lohnzettel steht beim Zeitausgleich-Konto zum Beispiel 15 Stunden für 10 Überstunden: dann wähle die Auswahl mit 1,5 Stunden.</small></div>
       <div class="field" id="s-gleitbox" hidden><label id="s-gleit-l">Sollzeit je Wochentag (Stunden)</label>
         <div class="grid2">
           <label for="s-sg1">Montag<input type="number" id="s-sg1" inputmode="decimal" step="0.25" min="0" data-path="ueberstunden.sollProTag.1" data-type="numnull"></label>
@@ -684,21 +691,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261104083737";</script>
-<script src="engine.js?v=20261104083737"></script>
+<script>window.APP_VERSION="20261104091545";</script>
+<script src="engine.js?v=20261104091545"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261104083737"></script>
-<script src="timepicker.js?v=20261104083737"></script>
-<script src="datepicker.js?v=20261104083737"></script>
-<script src="selectpicker.js?v=20261104083737"></script>
-<script src="pdf.js?v=20261104083737"></script>
-<script src="lzread.js?v=20261104083737"></script>
-<script src="app.js?v=20261104083737"></script>
-<script src="auth.js?v=20261104083737"></script>
-<script src="sync.js?v=20261104083737"></script>
-<script src="insights.js?v=20261104083737"></script>
+<script src="firebase-config.js?v=20261104091545"></script>
+<script src="timepicker.js?v=20261104091545"></script>
+<script src="datepicker.js?v=20261104091545"></script>
+<script src="selectpicker.js?v=20261104091545"></script>
+<script src="pdf.js?v=20261104091545"></script>
+<script src="lzread.js?v=20261104091545"></script>
+<script src="app.js?v=20261104091545"></script>
+<script src="auth.js?v=20261104091545"></script>
+<script src="sync.js?v=20261104091545"></script>
+<script src="insights.js?v=20261104091545"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 

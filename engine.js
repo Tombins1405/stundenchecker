@@ -284,6 +284,8 @@
   };
 
   // Freistellung durch die Firma (keine Arbeit): Verrechnung je Tag (day.fv) oder laut Einstellung (w.freiVerr): bezahlt | za | unbezahlt | offen
+  // Zeitausgleich-Konto: Wie viele Überstunden stecken in einem Zuwachs? Bei 1:1,5 (Zuschlag im Zeitausgleich enthalten) sind es 2/3 davon. Abzüge (Freinehmen) zählen immer Stunde für Stunde.
+  function zaUeber(za, umr) { za = +za || 0; return (za > 0 && umr === 'eingerechnet') ? r2(za / 1.5) : za; }
   function freiModus(day, w) { var m = (day && day.fv) || (w && w.freiVerr) || 'offen'; return ['bezahlt', 'za', 'unbezahlt', 'offen'].indexOf(m) >= 0 ? m : 'offen'; }
   var UNBEZAHLT_FREI = ['frei', 'mutterschutz', 'karenz', 'papamonat']; // kein Lohn von der Firma, keine Sollstunden
   // Status eines Tages. credit = Tag wird mit den Sollstunden gutgeschrieben (bezahlte Abwesenheit).
@@ -518,6 +520,7 @@
     w.gueltigAb = gueltigAb;
     w.runAn = false; w.runMin = 15; w.runBeg = 'nahe'; w.runEnd = 'nahe';
     if (!w.freiVerr) w.freiVerr = 'offen';
+    if (!w.zaUmr) w.zaUmr = 'offen';
     return w;
   }
   function wertAt(settings, dateStr) {
@@ -890,7 +893,7 @@
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrFreiStd: h2(s.mehrFreiMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null, gleitKontoStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).konto : null, gleitVerfallStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).verfall : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
-        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage, freiListe: s.freiListe,
+        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage, freiListe: s.freiListe, zaUmr: (wertAt(settings, iso(y, m, n)) || {}).zaUmr || 'offen',
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
       },
@@ -924,7 +927,7 @@
       else { var gd = r2(+gv - ga), gb = Math.abs(gd); grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: +gv, lzGesamt: +gv, diff: gd, faktor: 0, status: gb < 0.005 ? 'gleich' : gb <= 0.5 ? 'klein' : gd < 0 ? 'weniger' : 'mehr' }; }
       return [grow];
     }
-    var rows = [], za = lz && hasNum(lz.zaKonto) ? +lz.zaKonto : 0, so = lz && hasNum(lz.sonder) ? +lz.sonder : 0;
+    var rows = [], za = lz && hasNum(lz.zaKonto) ? zaUeber(+lz.zaKonto, summe && summe.zaUmr) : 0, so = lz && hasNum(lz.sonder) ? +lz.sonder : 0;
     AB_ZEILEN.forEach(function (z) {
       var v = lz && lz[z.key], has = hasNum(v);
       if (z.info) { // reine Eingabezeile, nur sichtbar wenn eingetragen oder "alle Zeilen"
@@ -1063,7 +1066,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, freiModus: freiModus, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
