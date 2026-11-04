@@ -291,7 +291,7 @@
     },
     sozial: {
       name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
-      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Als Lohngruppe ist jeweils nur die Stufe 1 hinterlegt, dein Gehalt steigt mit den Berufsjahren: bitte laut Lohnzettel anpassen. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“.',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -611,10 +611,16 @@
       { id: 'E', name: 'E Veranstaltungssicherheit', l: [12.67] },
       { id: 'F', name: 'F Flughafensicherheitsdienst', l: [16.56] }
     ] },
-    sozial: { stand: 'ab 1.4.2026', stufen: null, teiler: 160.21, gruppen: [
-      { id: 'VG5', m: true, name: 'VG 5 Pflegeassistenz, Stufe 1', l: [2676.40] },
-      { id: 'VG6', m: true, name: 'VG 6 Pflegefachassistenz, Stufe 1', l: [2867.20] },
-      { id: 'VG7', m: true, name: 'VG 7 Diplomierte Gesundheits- und Krankenpflege, Stufe 1', l: [3074.80] }
+    sozial: { stand: 'ab 1.4.2026', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–12', 'Dienstjahre 13–14', 'Dienstjahre 15–16', 'Dienstjahre 17–18', 'Dienstjahre 19–20', 'Dienstjahre 21–22', 'Dienstjahre 23–24', 'Dienstjahre 25–26', 'Dienstjahre 27–28', 'Dienstjahre 29–30', 'Dienstjahre 31–32', 'Dienstjahre 33–34', 'Dienstjahre 35–36'], teiler: 160.21, gruppen: [
+      { id: 'VG1', m: true, name: 'VG 1', l: [2206.00, 2229.80, 2267.60, 2303.30, 2342.60, 2379.90, 2417.60, 2455.30, 2492.80, 2530.40, 2560.10, 2589.90, 2616.30, 2646.00, 2673.20, 2702.30, 2731.70, 2761.50] },
+      { id: 'VG2', m: true, name: 'VG 2', l: [2286.20, 2325.20, 2364.50, 2403.70, 2445.90, 2485.00, 2524.20, 2563.30, 2602.30, 2644.60, 2673.20, 2702.30, 2734.90, 2765.20, 2801.80, 2833.50, 2867.20, 2900.50] },
+      { id: 'VG3', m: true, name: 'VG 3', l: [2390.80, 2430.10, 2474.00, 2516.20, 2556.70, 2599.30, 2641.50, 2682.70, 2726.70, 2772.10, 2807.40, 2840.60, 2877.70, 2912.80, 2948.00, 2982.80, 3018.30, 3053.50] },
+      { id: 'VG4', m: true, name: 'VG 4', l: [2494.30, 2539.80, 2603.90, 2649.70, 2692.40, 2739.80, 2787.70, 2835.60, 2886.30, 2935.60, 2982.80, 3034.20, 3069.40, 3106.20, 3143.20, 3181.80, 3217.00, 3255.70] },
+      { id: 'VG5', m: true, name: 'VG 5 Pflegeassistenz', l: [2676.40, 2726.70, 2803.90, 2896.90, 2963.90, 3016.40, 3069.40, 3123.80, 3178.50, 3232.90, 3283.90, 3336.60, 3391.20, 3444.40, 3496.90, 3551.30, 3606.00, 3658.20] },
+      { id: 'VG6', m: true, name: 'VG 6 Pflegefachassistenz', l: [2867.20, 2923.30, 3009.60, 3123.80, 3210.00, 3294.10, 3382.40, 3468.70, 3522.70, 3581.20, 3639.20, 3697.10, 3755.30, 3809.60, 3867.80, 3925.80, 3983.50, 4040.50] },
+      { id: 'VG7', m: true, name: 'VG 7 Diplomierte Gesundheits- und Krankenpflege', l: [3074.80, 3138.00, 3231.10, 3352.60, 3444.40, 3538.90, 3630.30, 3721.90, 3813.10, 3904.50, 3966.30, 4027.60, 4089.40, 4151.10, 4212.40, 4272.10, 4334.00, 4396.90] },
+      { id: 'VG8', m: true, name: 'VG 8', l: [3348.90, 3447.50, 3583.00, 3749.90, 3918.70, 4050.30, 4152.70, 4253.10, 4349.30, 4451.60, 4520.10, 4585.30, 4652.00, 4719.00, 4785.80, 4852.60, 4919.50, 4986.30] },
+      { id: 'VG9', m: true, name: 'VG 9', l: [3886.80, 4041.70, 4237.00, 4469.40, 4703.20, 4898.20, 5053.20, 5169.10, 5285.30, 5403.10, 5519.40, 5637.30, 5714.30, 5792.00, 5871.20, 5946.60, 6024.20, 6101.30] }
     ] },
     gastro: { stand: 'ab 1.10.2026, Niederösterreich', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], teiler: 173, gruppen: [
       { id: 'G1', m: true, name: 'Lohngruppe 1', l: [2724.00, 2790.30, 2856.60, 2922.90, 2989.20] },
