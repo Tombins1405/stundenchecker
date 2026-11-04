@@ -764,3 +764,9 @@ h3[data-ico="door"]::before { background: #6d4c41; }
 .chips button.chip.pick { background: #fff; border: 2px solid var(--line); color: #334155; }
 .chips button.chip.pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chips button.chip.pick[aria-pressed="true"]::before { content: "✓ "; }
+
+.nl { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.nl li.ok { color: #166534; }
+.nl li.miss { color: #b45309; font-weight: 600; }
+h3[data-ico="target"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%225%22/%3E%3Cpath d=%22M12 12h.01%22/%3E%3C/svg%3E"); }
+h3[data-ico="target"]::before { background: #00838f; }

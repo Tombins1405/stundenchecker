@@ -2228,6 +2228,13 @@
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
     paketInfo(en);
     renderStufen(en);
+    (function () { // Hinweis: Was fehlt für den Lohnzettel-Vergleich
+      var c = $('#s-need'), l = $('#s-needl'); if (!c || !l) return;
+      var cu = cur || en, okB = !!(cu && cu.beruf), okL = !!(cu && ((cu.stundenlohn != null && cu.stundenlohn !== '' && +cu.stundenlohn > 0) || (+cu.monatslohn > 0)));
+      c.hidden = false;
+      l.innerHTML = [[okB, 'Beruf und Kollektivvertrag'], [okL, 'Stundenlohn oder Monatslohn']].map(function (r) { return '<li class="' + (r[0] ? 'ok' : 'miss') + '"><span aria-hidden="true">' + (r[0] ? '✓' : '✗') + '</span> <span>' + r[1] + '</span>' + (r[0] ? '' : ' <b><span>fehlt</span></b>') + '</li>'; }).join('') + (okB && okL ? '<li class="ok"><span>Alles da. Der Vergleich rechnet mit deinen Werten.</span></li>' : '');
+    })();
+    renderStufen(en);
     renderLgBox(en);
     renderVerlauf();
     settingsVisibility(en);
