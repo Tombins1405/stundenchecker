@@ -69,6 +69,7 @@
     if (e.ueberstunden.zuschlagPct == null) e.ueberstunden.zuschlagPct = 50;
     if (e.stundenlohn === undefined) e.stundenlohn = null;
     if (!e.betriebFrei) e.betriebFrei = 'urlaub';
+    if (!e.freiVerr) e.freiVerr = 'offen';
     if (e.runAn === undefined) e.runAn = +e.runMin > 0;
     if (!(+e.runMin > 0)) e.runMin = 15;
     if (!e.runBeg) e.runBeg = 'nahe';
@@ -190,6 +191,7 @@
     betriebsurlaub: '<path d="M4 11l8-7 8 7M6 10v9h12v-9"/>',
     za: '<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
     ersatzruhe: '<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/>',
+    freistellung: '<path d="M5 3h9v18H5zM14 5l5 2v12l-5 2M10 12h.01"/>',
     frei: '<path d="M20 14.500A8 8 0 1 1 9.500 4 6.500 6.500 0 0 0 20 14.500z"/>',
     mutterschutz: '<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',
     karenz: '<circle cx="8" cy="19" r="1.500"/><circle cx="17" cy="19" r="1.500"/><path d="M4 5h3l2 9h9a5 5 0 0 0-5-6H8"/>',
@@ -208,6 +210,7 @@
     ['feiertag', 'Feiertag', 'Gesetzlicher Feiertag.'],
     ['betriebsurlaub', 'Betrieb geschlossen / Betriebsurlaub', 'Deine Firma hatte zu, zum Beispiel zwischen den Feiertagen.'],
     ['za', 'Zeitausgleich', 'Du hast Überstunden in freie Zeit umgewandelt.'],
+    ['freistellung', 'Keine Arbeit (von der Firma freigestellt)', 'Die Firma hat dich für diesen Tag freigestellt oder heimgeschickt, weil es keine Arbeit gab. Wie sie den Tag verrechnet, stellst du ein.'],
     ['ersatzruhe', 'Ersatzruhetag', 'Ein freier Tag als Ausgleich für Arbeit am Wochenende oder zu viele Arbeitstage hintereinander. Ob und wie die Firma ihn bezahlt, trägst du beim Tag ein.'],
     ['mutterschutz', 'Mutterschutz / Wochengeld', 'Zeit vor und nach der Geburt. Die Firma zahlt in dieser Zeit keinen Lohn, das Wochengeld kommt von der Krankenkasse. Es zählen keine Stunden.'],
     ['karenz', 'Karenz', 'Elternkarenz für Mütter und Väter. Die Firma zahlt in dieser Zeit keinen Lohn. Es zählen keine Stunden.'],
@@ -273,6 +276,7 @@
     if (s.pflege) parts.push(s.pflege + ' Pflegefreistellung');
     if (s.schule) parts.push(s.schule + ' Schulung / Berufsschule');
     if (s.za) parts.push(s.za + ' Zeitausgleich');
+    if (s.freiTage) parts.push(s.freiTage + ' Freistellung');
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
     $('#m-ab').hidden = true;
@@ -889,6 +893,7 @@
     if (d.swOn === undefined && +d.sw > 0) { d.swOn = true; d.swAuto = false; } // alte Einträge: Wert nicht überschreiben
     $('#e-sw').value = d.sw ? d.sw : ''; $('#e-swon').checked = !!d.swOn; $('#e-swgrund').value = d.swGrund || ''; $('#e-swbox').hidden = !d.swOn;
     $('#e-erx').value = d.status === 'ersatzruhe' && d.extra ? d.extra : ''; $('#e-erbox').hidden = d.status !== 'ersatzruhe';
+    $('#e-fv').value = d.status === 'freistellung' && d.fv ? d.fv : ''; $('#e-frbox').hidden = d.status !== 'freistellung';
     $('#e-extra').value = d.extra ? d.extra : ''; $('#e-extra-box').open = !!d.extra; $('#e-extra-box').hidden = !d.extra;
     renderAn();
     var seen = {}, opts = '';
@@ -986,7 +991,7 @@
   }
 
   /* ---- Notiz zum Tag: Text, wie es zu dem Tag kam, und Zeitstempel (damit man Monate später noch weiß, was war) ---- */
-  function anBraucht(d) { return ['urlaub', 'za', 'ersatzruhe', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
+  function anBraucht(d) { return ['urlaub', 'za', 'freistellung', 'ersatzruhe', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
   function fmtStamp(iso) { var x = new Date(iso); if (isNaN(x)) return ''; return x.toLocaleDateString('de-AT') + ' um ' + x.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }); }
   function renderAn() {
     var d = ui.edDraft, an = d.an || {};
@@ -1169,6 +1174,7 @@
       if (!d.von && !(+d.sw > 0)) { toast(data.days[ui.edDate] ? 'Beginn fehlt. Soll der Tag leer sein? Dann tippe unten auf „Tag löschen“.' : 'Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
     }
     var out = E.clone(d);
+    if (st !== 'freistellung') delete out.fv;
     out.sw = out.swOn ? (+out.sw || 0) : 0; if (!out.swOn) { delete out.swOn; delete out.swGrund; delete out.swAuto; }
     out.diaeten = (out.diaeten === null || out.diaeten === '' || isNaN(+out.diaeten)) ? null : +out.diaeten;
     out.pausen = (out.pausen || []).filter(function (p) { return p.von && p.bis; });
@@ -1396,6 +1402,7 @@
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
   var NEWS = [
+    { id: 'n7', d: '2026-11-04', text: 'Neu: Die Art des Tages „Keine Arbeit (von der Firma freigestellt)“, wenn dich die Firma wegen fehlender Arbeit heimschickt. Mit Notiz und einer Einstellung, wie deine Firma den Tag verrechnet.' },
     { id: 'n6', d: '2026-11-03', text: 'Neu: Kollektivvertrag für Büro-Angestellte im Transport und in der Güterbeförderung.' },
     { id: 'n5', d: '2026-11-03', text: 'Neu: Mehrarbeit bei Teilzeit wird erkannt, und sie ist ohne Zuschlag, wenn du sie im selben Quartal 1:1 als Zeitausgleich nimmst.' },
     { id: 'n4', d: '2026-11-03', text: 'Neu: Karenz, Mutterschutz und Papamonat gibt es als Tagesart, für alle Berufe.' },
@@ -1403,7 +1410,7 @@
     { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
-  var NEWS_B = { n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
+  var NEWS_B = { n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
   function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }); }
   function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, alle: n.alle, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
   function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }
@@ -1798,6 +1805,7 @@
       { v: E1, sel: '#s-d-vorschlag', t: 'Womit soll die App die Diätenstunden vorschlagen? Sie schlägt es dir bei jedem Tag vor, du kannst es jederzeit ändern.' },
       { v: E1, sel: '#s-folge', up: k, t: 'Schalte ein, wenn deine Firma Diäten und Überstunden erst im Folgemonat abrechnet.' },
       { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Schalte nur ein, was du brauchst.' },
+      { v: E1, sel: '#s-fv', up: f, t: 'Wie verrechnet deine Firma Tage, an denen sie dich wegen fehlender Arbeit freistellt? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-sw', up: k, t: 'Schalte ein, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
       { v: E1, sel: '#s-ansichtsel', up: f, t: 'Wie möchtest du den Monat sehen? Als Liste, als Raster wie ein Kalender oder beides.' },
@@ -1908,7 +1916,7 @@
     var w = ui.wiz;
     ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
     var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
-    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
+    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
@@ -2503,7 +2511,8 @@
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
       case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
-      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
+      case 'e-fv': if (t.value) ui.edDraft.fv = t.value; else delete ui.edDraft.fv; updatePreview(); return;
+      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; $('#e-frbox').hidden = t.value !== 'freistellung'; if (t.value !== 'freistellung') { delete ui.edDraft.fv; $('#e-fv').value = ''; } else { var an0 = ui.edDraft.an || {}; if (!(an0.t || '').trim() && !an0.w) { ui.edDraft.an = { w: 'firma', t: 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab.' }; renderAn(); } } $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;

@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261103234810">
+<link rel="stylesheet" href="style.css?v=20261104064126">
 </head>
 <body>
 
@@ -208,6 +208,11 @@
         <label for="e-erx">Von der Firma bezahlte Stunden (optional)</label>
         <input type="number" id="e-erx" inputmode="decimal" step="0.25" min="0">
         <small>Leer lassen: Der Tag wird von deinen Überstunden abgezogen. Trage zum Beispiel 8 ein, wenn die Firma den Tag extra bezahlt hat.</small>
+      </div>
+
+      <div class="field" id="e-frbox" hidden>
+        <label for="e-fv">Wie verrechnet die Firma diesen Tag?</label>
+        <select id="e-fv"><option value="">Wie in den Einstellungen</option><option value="bezahlt">Die Firma zahlt den Tag normal weiter</option><option value="za">Der Tag wird von meinem Zeitausgleich abgezogen</option><option value="unbezahlt">Der Tag ist unbezahlt</option><option value="offen">Weiß ich noch nicht</option></select>
       </div>
 
       <div id="e-work" class="view" style="gap:14px">
@@ -564,6 +569,16 @@
         </select>
         <small>Das betrifft die Tage mit dem Status „Betrieb geschlossen / Betriebsurlaub“. Schau auf deinen Lohnzettel: Wenn der Tag unter „Lohn“ steht und deine Überstunden um 8 Stunden weniger sind, wird er aus den Überstunden bezahlt.</small></div>
 
+      <h3 data-ico="door">Freistellung (keine Arbeit)</h3>
+      <div class="field"><label for="s-fv">Wie verrechnet deine Firma Tage, an denen sie dich wegen fehlender Arbeit freistellt?</label>
+        <select id="s-fv" data-path="freiVerr" data-type="text">
+          <option value="offen">Weiß ich noch nicht</option>
+          <option value="bezahlt">Die Firma zahlt den Tag normal weiter</option>
+          <option value="za">Der Tag wird von meinem Zeitausgleich abgezogen</option>
+          <option value="unbezahlt">Der Tag ist unbezahlt</option>
+        </select>
+        <small>Das betrifft Tage mit der Art „Keine Arbeit (von der Firma freigestellt)“. Schau auf deinen Lohnzettel: Steht der Tag unter „Lohn“ und deine Überstunden bleiben gleich, zahlt ihn die Firma weiter. Werden deine Überstunden um 8 Stunden weniger, wird er vom Zeitausgleich abgezogen. Steht er gar nicht drauf, ist er unbezahlt.</small></div>
+
       <h3 id="s-sw-h" data-ico="cloud">Schlechtwetter</h3>
       <label class="check" for="s-sw"><input type="checkbox" id="s-sw" data-path="schlechtwetter" data-type="bool"><span id="s-sw-t">Die Schlechtwetterregelung (BUAK) gilt für mich</span></label>
 
@@ -667,21 +682,21 @@
 <div id="rb-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="rb-dh"><h3 id="rb-dh"></h3><div id="rb-dbody"></div><div class="btns" id="rb-dbtns"></div></div></div>
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
-<script>window.APP_VERSION="20261103234810";</script>
-<script src="engine.js?v=20261103234810"></script>
+<script>window.APP_VERSION="20261104064126";</script>
+<script src="engine.js?v=20261104064126"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261103234810"></script>
-<script src="timepicker.js?v=20261103234810"></script>
-<script src="datepicker.js?v=20261103234810"></script>
-<script src="selectpicker.js?v=20261103234810"></script>
-<script src="pdf.js?v=20261103234810"></script>
-<script src="lzread.js?v=20261103234810"></script>
-<script src="app.js?v=20261103234810"></script>
-<script src="auth.js?v=20261103234810"></script>
-<script src="sync.js?v=20261103234810"></script>
-<script src="insights.js?v=20261103234810"></script>
+<script src="firebase-config.js?v=20261104064126"></script>
+<script src="timepicker.js?v=20261104064126"></script>
+<script src="datepicker.js?v=20261104064126"></script>
+<script src="selectpicker.js?v=20261104064126"></script>
+<script src="pdf.js?v=20261104064126"></script>
+<script src="lzread.js?v=20261104064126"></script>
+<script src="app.js?v=20261104064126"></script>
+<script src="auth.js?v=20261104064126"></script>
+<script src="sync.js?v=20261104064126"></script>
+<script src="insights.js?v=20261104064126"></script>
 <script>
 /* Die Sicherung ist nur für Fortgeschrittene: sichtbar mit der Adresse ...index.html#sicherung */
 
