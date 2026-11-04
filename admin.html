@@ -20,6 +20,13 @@ table{width:100%;border-collapse:collapse;font-size:.88rem}th,td{text-align:left
 .kc .kg{font-size:.82rem;color:var(--mut)}
 details.hilfe{margin:0 0 10px;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;font-size:.88rem}details.hilfe summary{cursor:pointer;color:var(--ac);font-weight:600}details.hilfe p{margin:6px 0}
 @media (max-width:600px){body{padding:10px}.card{padding:12px}h2{font-size:1rem}button{min-height:40px}button.sm{min-height:36px}}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:8px 0}.kpi div{border:1px solid var(--line);border-radius:10px;padding:8px 10px}.kpi b{display:block;font-size:1.4rem;line-height:1.2}.kpi span{font-size:.8rem;color:var(--mut)}
+.tr{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;font-size:.86rem;margin:4px 0}.tr i{display:block;height:14px;border-radius:7px;background:var(--ac);min-width:2px}.tr em{font-style:normal;color:var(--mut);text-align:right}
+.days{display:flex;align-items:flex-end;gap:3px;height:70px;margin:6px 0 2px}.days div{flex:1;background:var(--ac);border-radius:3px 3px 0 0;min-height:2px}.dl{display:flex;gap:3px;font-size:.62rem;color:var(--mut)}.dl span{flex:1;text-align:center}
+.amp{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.78rem;font-weight:700}.a-g{background:#dcfce7;color:#166534}.a-y{background:#fef3c7;color:#92400e}.a-r{background:#fee2e2;color:#991b1b}.a-w{background:#e5e7eb;color:#374151}
+.nx{margin:2px 0 0;padding-left:18px;font-size:.86rem}.kc textarea{width:100%;box-sizing:border-box;font:inherit;font-size:.86rem;padding:6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.ctl select,.ctl input{padding:6px 8px}
+@media (max-width:600px){.tr{grid-template-columns:110px 1fr 56px}}
 </style></head><body><main>
 <div class="card"><h1>Verwaltung</h1><p class="mut" id="who">Nicht angemeldet.</p>
 <form id="lf" style="display:grid;gap:8px;max-width:340px"><input type="email" id="m" placeholder="E-Mail" autocomplete="username"><input type="password" id="p" placeholder="Passwort" autocomplete="current-password"><button>Anmelden</button><small class="mut" id="msg"></small></form>
@@ -27,6 +34,8 @@ details.hilfe{margin:0 0 10px;border:1px dashed var(--line);border-radius:8px;pa
 <p id="ver" class="mut"></p><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button id="inst" hidden>Als App installieren</button></div><details class="hilfe"><summary>Als App auf Handy oder Laptop legen</summary><p><b>Handy (Android, Chrome):</b> Oben rechts auf die drei Punkte tippen, dann „Zum Startbildschirm hinzufügen“ oder „App installieren“. Das Symbol liegt danach auf dem Startbildschirm, nicht auf einem Desktop.</p><p><b>Laptop (Chrome oder Edge):</b> Diese Seite öffnen. Rechts in der Adresszeile erscheint ein kleines Installieren-Symbol (Monitor mit Pfeil). Darauf klicken, dann „Installieren“. Alternativ Menü mit den drei Punkten, dann „Speichern und teilen“ und „Als App installieren“.</p></details><div style="display:flex;gap:8px;flex-wrap:wrap"><button id="vs" hidden>Bestätigungsmail senden</button><button id="vr" hidden>Neu prüfen</button><button id="out" hidden>Abmelden</button></div></div>
 <div id="dash" hidden>
 <div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button id="rf">Jetzt aktualisieren</button><button id="ca">Alles Offene an Claude kopieren</button><span class="mut" id="rfm">Aktualisiert sich alle 2 Minuten von selbst.</span></div>
+<div class="card" id="ab"><h2>🎯 Auf einen Blick</h2><details class="hilfe"><summary>Wozu ist das?</summary><p>Alles Wichtige in einem Bild: Wie viele Konten es gibt, wie weit die Leute gekommen sind und wer gerade Hilfe braucht. Alle Zahlen kommen aus den Daten, die die App ohnehin zählt (keine Inhalte, keine Stunden, keine Beträge). Die Notizen schreibst nur du, sie bleiben in diesem Browser.</p><p><b>Ampel:</b> grün = in den letzten 2 Tagen in der App · gelb = 3 bis 7 Tage nicht · rot = länger als 7 Tage nicht · grau = nie benutzt.</p><p><b>Nächster Schritt:</b> Die Seite schlägt dir vor, was du bei jedem Konto tun kannst. Es ist ein Vorschlag, kein Zwang.</p></details><div id="ab-k"></div><div id="ab-t"></div><div id="ab-d"></div>
+<div class="ctl"><input type="search" id="ab-q" placeholder="Suchen (E-Mail, Beruf)"><select id="ab-s"><option value="act">Zuletzt aktiv</option><option value="reg">Zuletzt registriert</option><option value="tage">Meiste Tage</option><option value="hilfe">Braucht Hilfe zuerst</option></select><span id="ab-f"></span></div><div id="ab-l"></div></div>
 <div class="card"><h2>🕒 Verlauf: wer hat was gemacht?</h2><p class="mut">Registrierungen, Anmeldungen, Rückmeldungen und anonyme Meldungen, neueste zuerst.</p><div id="vl"></div></div>
 <div class="card" id="einl"><h2>✉️ Einladungen</h2>
 <details class="hilfe"><summary>Wozu ist das?</summary><p>So lädst du jemanden ein: Name bei „Für wen?“ eintragen, „Code erzeugen“ tippen, dann „Text kopieren“ und per WhatsApp oder SMS einfügen. Jeder Code gilt einmal und 14 Tage. „Sperren“ macht einen offenen Code unbrauchbar, „Entfernen“ löscht einen benutzten oder abgelaufenen aus der Liste.</p></details><p class="mut">Neue Tester brauchen einen persönlichen Code. Er gilt einmal und 14 Tage. Wer den Link weiterleitet, hilft nichts: Nur der Erste, der den Code einlöst, kommt hinein. Bestehende Konten brauchen keinen Code.</p>
@@ -121,6 +130,42 @@ function gDraw(){var P=GS.pr,S=GS.st,F=FB;['pr','mo','st'].forEach(gBar);
   $('#mo').innerHTML=gList('mo').length?gList('mo').map(function(x){return '<div class="fb">'+esc(x.text)+' <span class="mut">('+esc(x.lang||'')+', '+fmt(x.t)+')</span> '+gBtn('mo',x)+'</div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
   $('#st').innerHTML=gList('st').length?gList('st').map(function(x){return '<div class="kc"><div class="kt"><span class="km">'+esc(x.monat)+' · '+esc(x.beruf||x.paket||'?')+'</span><span class="kg">'+fmt(x.t)+'</span></div><div class="kg">'+esc((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')||'–')+'</div><div class="ks">'+gBtn('st',x)+'</div></div>'}).join(''):'<p class="mut">Noch keine.</p>';
 }
+
+/* ---- Auf einen Blick ---- */
+var ABF='alle',ABQ='',ABS='act',ABD=null,KN={};try{KN=JSON.parse(localStorage.getItem('sc.knotiz')||'{}')}catch(e){}
+function tms(v){try{var d=v&&v.toDate?v.toDate():new Date(v);return isNaN(d)?0:d.getTime()}catch(e){return 0}}
+function tgAgo(v){var t=tms(v);if(!t)return null;return Math.floor((Date.now()-t)/864e5)}
+function abInfo(x,F,neu){var tage=+x.tage||0,f=x.features||{},ls=tgAgo(x.lastSeen),rg=tgAgo(x.created),nf=F.filter(function(y){return y.email&&y.email===x.email&&st(y)!=='erledigt'}).length,nx=[],amp,al;
+ if(ls===null){amp='a-w';al='nie benutzt'}else if(ls<=2){amp='a-g';al='aktiv'}else if(ls<=7){amp='a-y';al='ruhig ('+ls+' Tage)'}else{amp='a-r';al='weg ('+ls+' Tage)'}
+ if(!x.beruf)nx.push('Beruf ist nicht eingestellt: bitten, die Einrichtung noch einmal zu machen (Berechnung läuft sonst mit Standardwerten).');
+ if(tage===0&&rg!==null&&rg>=1)nx.push('Noch kein Tag erfasst, seit '+rg+' Tag(en) registriert: nachfragen, woran es hängt.');
+ if(tage>0&&tage<7&&ls!==null&&ls>=3)nx.push('Hat angefangen und ist dann still geworden: kurz nachfragen.');
+ if(x.beruf&&!(f.assistent>0||f.assistentin_fertig>0))nx.push('Einstellungen wohl nicht durchgegangen: Lohn, Überstunden und Zuschläge prüfen lassen.');
+ if(nf)nx.push(nf+' offene Rückmeldung(en): beantworten.');
+ if(neu&&x.version&&x.version<neu)nx.push('Alte App-Version: bitten, die App neu zu laden.');
+ if(!tage&&!nx.length&&ls!==null&&ls<=2)nx.push('Gerade erst gestartet: abwarten.');
+ return{tage:tage,ls:ls,rg:rg,nf:nf,nx:nx,amp:amp,al:al,hilfe:nx.filter(function(z){return z.indexOf('abwarten')<0}).length}}
+function abDraw(){if(!ABD)return;var P=ABD.P,F=ABD.F,M=ABD.M,neu=ABD.neu,I={};P.forEach(function(x){I[x._id]=abInfo(x,F,neu)});
+ var n=P.length,ein=P.filter(function(x){return x.beruf}).length,t1=P.filter(function(x){return(+x.tage||0)>=1}).length,t7=P.filter(function(x){return(+x.tage||0)>=7}).length,ak=P.filter(function(x){return aktiv(x,7)>=1}).length,weg=P.filter(function(x){var l=I[x._id].ls;return l!==null&&l>7}).length,hilfe=P.filter(function(x){return I[x._id].hilfe>0}).length,ofb=F.filter(function(y){return st(y)!=='erledigt'}).length,omi=M.filter(function(y){return !gOk('mo',y)}).length;
+ $('#ab-k').innerHTML='<div class="kpi"><div><b>'+n+'</b><span>Konten gesamt</span></div><div><b>'+ak+'</b><span>aktiv in den letzten 7 Tagen</span></div><div><b>'+hilfe+'</b><span>brauchen einen Anstoß</span></div><div><b>'+weg+'</b><span>länger als 7 Tage weg</span></div><div><b>'+ofb+'</b><span>offene Rückmeldungen</span></div><div><b>'+omi+'</b><span>offene Mia-Fragen</span></div></div>';
+ function bar(l,v){var p=n?Math.round(v/n*100):0;return '<div class="tr"><span>'+l+'</span><span><i style="width:'+p+'%"></i></span><em>'+v+' · '+p+' %</em></div>'}
+ $('#ab-t').innerHTML='<p style="margin:10px 0 2px"><b>Wie weit sind die Leute gekommen?</b></p>'+bar('Registriert',n)+bar('Beruf eingestellt',ein)+bar('Mind. 1 Tag erfasst',t1)+bar('Mind. 7 Tage erfasst',t7)+bar('Aktiv letzte 7 Tage',ak);
+ var D=[],i;for(i=13;i>=0;i--){var d=new Date(Date.now()-i*864e5).toISOString().slice(0,10);D.push([d,P.filter(function(x){return((x.features&&x.features.aktiv)||[]).indexOf(d)>=0}).length])}
+ var mx=Math.max.apply(null,D.map(function(e){return e[1]}).concat([1]));
+ $('#ab-d').innerHTML='<p style="margin:10px 0 2px"><b>Aktive Konten pro Tag (letzte 14 Tage)</b></p><div class="days">'+D.map(function(e){return '<div title="'+e[0]+': '+e[1]+'" style="height:'+Math.round(e[1]/mx*100)+'%"></div>'}).join('')+'</div><div class="dl">'+D.map(function(e){return '<span>'+e[0].slice(8)+'</span>'}).join('')+'</div>';
+ var fl=[['alle','Alle'],['hilfe','Braucht Anstoß'],['aktiv','Aktiv'],['weg','Weg / nie benutzt']];
+ $('#ab-f').innerHTML=fl.map(function(k){return '<button type="button" class="sm'+(ABF===k[0]?'':' alt')+'" data-abf="'+k[0]+'">'+k[1]+'</button>'}).join(' ');
+ var L=P.filter(function(x){var o=I[x._id];if(ABQ&&(String(x.email||'')+' '+String(x.beruf||'')).toLowerCase().indexOf(ABQ)<0)return false;if(ABF==='hilfe')return o.hilfe>0;if(ABF==='aktiv')return o.amp==='a-g';if(ABF==='weg')return o.amp==='a-r'||o.amp==='a-w';return true});
+ L.sort(function(a,b){var A=I[a._id],B=I[b._id];if(ABS==='reg')return tms(b.created)-tms(a.created);if(ABS==='tage')return B.tage-A.tage;if(ABS==='hilfe')return B.hilfe-A.hilfe||tms(b.lastSeen)-tms(a.lastSeen);return tms(b.lastSeen)-tms(a.lastSeen)});
+ $('#ab-l').innerHTML=L.length?L.map(function(x){var o=I[x._id],f=x.features||{},c=x.consent||{};
+  return '<div class="kc"><div class="kt"><span class="km">'+esc(x.email||'ohne E-Mail')+'</span><span class="amp '+o.amp+'">'+esc(o.al)+'</span></div>'+
+  '<div class="ki"><span>💼 '+esc(x.beruf||'kein Beruf')+'</span><span>📅 '+o.tage+' Tage</span><span>🔥 '+aktiv(x,7)+' / '+aktiv(x,30)+'</span><span>💬 '+o.nf+' offen</span><span>🌐 '+esc(x.lang||'?')+'</span><span>🤝 '+(c.statistik&&c.miaFragen?'Ja':(c.statistik||c.miaFragen?'teilweise':'Nein'))+'</span><span title="Hat Mia den Einstellungsassistenten bis zum Ende durchlaufen?">⚙️ Einstellungshilfe '+((f.assistent>0||f.assistentin_fertig>0)?'durchlaufen':'nicht durchlaufen')+'</span></div>'+
+  '<div class="kg">📝 Registriert: '+fmt(x.created)+(o.rg!==null?' (vor '+o.rg+' Tag(en))':'')+' · 🕒 Zuletzt: '+fmt(x.lastSeen)+'</div><div class="kg">📱 '+esc(x.geraet||'unbekannt')+' · Version '+esc(x.version||'?')+'</div>'+
+  (o.nx.length?'<div><b style="font-size:.84rem">Nächster Schritt</b><ul class="nx">'+o.nx.map(function(z){return '<li>'+esc(z)+'</li>'}).join('')+'</ul></div>':'')+
+  '<textarea rows="2" data-kn="'+esc(x._id)+'" placeholder="Deine Notiz zu diesem Konto (nur in diesem Browser)">'+esc(KN[x._id]||'')+'</textarea></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>'}
+document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-abf]');if(b){ABF=b.dataset.abf;abDraw()}});
+document.addEventListener('input',function(ev){var t=ev.target;if(t.id==='ab-q'){ABQ=t.value.trim().toLowerCase();abDraw();var q=$('#ab-q');q.focus();q.setSelectionRange(q.value.length,q.value.length)}if(t.dataset&&t.dataset.kn){KN[t.dataset.kn]=t.value;try{localStorage.setItem('sc.knotiz',JSON.stringify(KN))}catch(e){}}});
+document.addEventListener('change',function(ev){if(ev.target.id==='ab-s'){ABS=ev.target.value;abDraw()}});
 function run(){
  Promise.all([load('profiles','lastSeen'),load('feedback','t'),load('miaOffen','t'),load('statistik','t')]).then(function(r){
   var P=r[0],F=r[1],M=r[2],S=r[3];
@@ -142,6 +187,7 @@ function run(){
   $('#an').innerHTML=byReg.map(function(x){return '<div class="kc"><div class="kt"><span class="km">'+esc(x.email||'ohne E-Mail')+'</span><span class="kg">Version '+esc(x.version||'?')+'</span></div><div class="kg">📝 Registriert: '+fmt(x.created)+'</div><div class="kg">🔑 Letzte Anmeldung: '+fmt(x.lastLogin)+'</div><div class="kg">🕒 Zuletzt in der App: '+fmt(x.lastSeen)+' · 📱 '+esc(x.geraet||'unbekannt')+'</div></div>'}).join('')||'<p class="mut">Noch keine.</p>';
   $('#wk').innerHTML=P.map(function(x){var f=x.features||{},o={};Object.keys(f).forEach(function(k){if(typeof f[k]==='number')o[k]=f[k]});var n=Object.keys(o).reduce(function(a,k){return a+o[k]},0);return '<details style="border-bottom:1px solid var(--line);padding:6px 0"><summary><b>'+esc(x.email||'ohne E-Mail')+'</b> <span class="mut">· '+esc(x.beruf||x.paket||'')+' · '+n+' Aktionen</span></summary>'+lst(o)+'</details>'}).join('')||'<p class="mut">Noch keine.</p>';
   GS.mo=M;GS.st=S;GS.pr=P;gDraw();
+  ABD={P:P,F:F,M:M,neu:P.reduce(function(a,x){return x.version&&x.version>a?x.version:a},'')};abDraw();
  REPORT=report(P,F,M,S,fun,mm,mia);
  },function(e){$('#ov').textContent='Kein Zugriff oder noch nicht eingerichtet ('+(e&&e.code||e)+').'});
 }
