@@ -2129,6 +2129,13 @@
     if (g.m) { w.monat = g.l[i]; w.monatAuto = true; w.lohn = Math.round(g.l[i] / lgTeiler(lg, w.wochen) * 100) / 100; }
     else { if (w.monatAuto) { w.monat = ''; w.monatAuto = false; } w.lohn = g.l[i]; }
   }
+  // Berufe alphabetisch, „Etwas anderes“ immer zuletzt
+  function berufeSortiert() {
+    return Object.keys(E.BERUFE).sort(function (a, b) {
+      if (a === 'anderes') return 1; if (b === 'anderes') return -1;
+      return E.BERUFE[a].name.localeCompare(E.BERUFE[b].name, 'de');
+    });
+  }
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
@@ -2137,12 +2144,12 @@
     if (w.mode === 'start') { nSteps = 4; if (w.step === 'kv' || w.step === 'lohn') num -= 1; }
     var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
-    var sc = (w.beruf === 'lkw' && w.art === 'baustelle') ? miaScene('kipper', w.mia === 'm' ? 'm' : 'w') : (w.beruf === 'bagger' ? miaScene('bagger', w.mia === 'm' ? 'm' : 'w') : ((w.beruf === 'klein' || (w.beruf === 'lkw' && w.art === 'tour')) ? miaScene('transporter', w.mia === 'm' ? 'm' : 'w') : ''));
+    var sc = ''; // keine Fahrzeug-Szene mehr: nur Mia
     if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
     else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + (w.step === 'mia' || w.step === 'bausteine' ? '<span class="need opt">Optional</span>' : '<span class="need must">Unbedingt nötig</span>') + '</p>';
     if (w.step === 'beruf') {
-      html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
+      html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Mein Beruf ist nicht dabei</summary><div class="field"><label for="wz-bf">Welcher Beruf fehlt, und was brauchst du dafür?</label><textarea id="wz-bf" rows="3" maxlength="600"></textarea></div><button type="button" class="btn" data-wbf="1">Senden</button><p class="hint">Bis dahin passt „Etwas anderes“. Mia schlägt dir später etwas Passendes vor.</p></details>';
     } else if (w.step === 'art') {
       var ar = E.BERUFE[w.beruf].arten;
