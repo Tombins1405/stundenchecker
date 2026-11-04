@@ -1019,10 +1019,16 @@
   /* ---- Notiz zum Tag: Text, wie es zu dem Tag kam, und Zeitstempel (damit man Monate später noch weiß, was war) ---- */
   function anBraucht(d) { return ['urlaub', 'za', 'freistellung', 'ersatzruhe', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
   function fmtStamp(iso) { var x = new Date(iso); if (isNaN(x)) return ''; return x.toLocaleDateString('de-AT') + ' um ' + x.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }); }
+  var FREI_ALT = [ // frühere Vorschlagstexte (ohne "Ich war arbeitsbereit."), damit schon gespeicherte Vorschläge weiter mitwechseln
+    'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab.',
+    'Die Firma hat mich für diesen Tag in Zeitausgleich geschickt, weil es keine Arbeit gab. Der Tag wird von meinem Zeitausgleichskonto abgezogen. Angeordnet von der Firma.',
+    'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab. Die Firma zahlt den Tag normal weiter.',
+    'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab. Der Tag ist unbezahlt.'
+  ];
   var AN_TEXT = { wunsch: 'Dieser Tag war mein Wunsch.', verein: 'Dieser Tag wurde mit der Firma vereinbart.', firma: 'Die Firma hat diesen Tag angeordnet.' };
   function anIstVorlage(t) {
     t = (t || '').trim();
-    return !t || Object.keys(AN_TEXT).some(function (k) { return AN_TEXT[k] === t; }) || Object.keys(FREI_NOTE).some(function (k) { return FREI_NOTE[k] === t; }) || t === 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab.';
+    return !t || Object.keys(AN_TEXT).some(function (k) { return AN_TEXT[k] === t; }) || Object.keys(FREI_NOTE).some(function (k) { return FREI_NOTE[k] === t; }) || FREI_ALT.indexOf(t) >= 0;
   }
   function anVorschlag(w) { // Notiztext passt sich der Auswahl an, aber nur wenn er leer oder noch ein Vorschlag ist (eigener Text bleibt)
     var d = ui.edDraft; if (!d.an) d.an = {};
