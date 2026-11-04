@@ -580,7 +580,7 @@
 
     // Betrieb geschlossen: je nach Firma als Urlaub bezahlt oder aus den Überstunden (dann keine Gutschrift in den Stunden).
     var credit = STATUS[status].credit && !(status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden');
-    if (status === 'freistellung') { res.freiModus = freiModus(day, w); if (res.freiModus === 'bezahlt') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
+    if (status === 'freistellung') { res.freiModus = freiModus(day, w); if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
     if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
     if (credit) { res.creditMin = sollMin; return res; }
     if (status !== 'arbeit') return res;
