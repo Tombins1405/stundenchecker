@@ -211,6 +211,45 @@
         schlechtwetter: true
       }
     },
+    dachdecker: {
+      name: 'Dachdecker',
+      hinweis: 'KV Dachdecker, Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, im Winter (November bis März) auf bis zu 32 Stunden verkürzbar, höchstens 9 Stunden pro Tag. Überstunden 50 %, am Sonntag und von 20 bis 5 Uhr 100 %, Feiertag: Feiertagsentgelt plus Bezahlung der geleisteten Arbeit, Überstunden am Feiertag 100 %, am Samstag kein eigener Zuschlag. Taggeld 8,30 € je Arbeitstag (mehr als 3 Stunden, tägliche Heimkehr), Trennungsgeld 30 € je Kalendertag, Lenkzeitvergütung 15,42 € je Stunde. Gefahren- und Schmutzzulagen sind je Bundesland verschieden (zum Beispiel Turm- und Fahrstuhlarbeiten 30 bis 40 %, Schneearbeiten 15 %): lege sie bei Bedarf als Prämie an. Die Löhne gelten für alle Bundesländer außer Kärnten, dort sind sie niedriger: gib dann deinen Stundenlohn selbst ein. Schlechtwetter über die BUAK.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 8.30 }] },
+        ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 0 },
+        schlechtwetter: true
+      }
+    },
+    pflasterer: {
+      name: 'Pflasterer',
+      hinweis: 'KV Pflasterergewerbe, Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, höchstens 10 Stunden pro Tag, im Winter (Dezember bis Februar) verkürzbar, aber nicht unter 32 Stunden. Überstunden 50 %, am Sonntag und von 20 bis 5 Uhr 100 %, über 16 Stunden am Stück 150 %, Feiertag: Feiertagsentgelt plus Bezahlung der geleisteten Arbeit, am Samstag kein eigener Zuschlag. Taggeld 15,10 € je Arbeitstag mit mehr als 3 Stunden und 20,40 € bei mehr als 8 Stunden, 30 € bei auswärtiger Übernachtung, Übernachtungsgeld 17,55 € je Kalendertag, Lenkzeitvergütung 15,42 € je Stunde. Akkord mindestens 30 % über dem Stundenlohn. Schlechtwetter über die BUAK.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 15.10 }, { ab: 8, satz: 20.40 }] },
+        ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 10, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 0 },
+        schlechtwetter: true
+      }
+    },
+    fliesenleger: {
+      name: 'Fliesenleger / Hafner / Plattenleger',
+      hinweis: 'KV Hafner, Platten- und Fliesenleger, Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, mit Zeitausgleich bis 40 Stunden, höchstens 9 Stunden pro Tag. Überstunden werktags 50 %, nachts (22 bis 6 Uhr) und am Sonntag 100 %, am Samstag kein eigener Zuschlag, Arbeit am Feiertag ohne Zuschlag, Überstunden am Feiertag 100 %. Taggeld 8,30 € je Arbeitstag (mehr als 3 Stunden, tägliche Heimkehr), 30 € bei auswärtiger Arbeit, Nächtigungsgeld 12 € je Nacht, Lenkzeitvergütung 15,31 € je Stunde. Helfer beim Akkord-Fliesenleger bekommen in Oberösterreich, Wien und der Steiermark einen Zuschlag (18 %, in der Steiermark 13 %). Keramiker haben eigene Löhne: gib dann deinen Stundenlohn selbst ein.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 8.30 }] },
+        ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 0 },
+        schlechtwetter: false
+      }
+    },
     tischler: {
       name: 'Tischler und Holzgestalter (Gewerbe)',
       hinweis: 'KV Tischler und Holzgestalter, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): 40 Stunden/Woche, meist auf 5 Tage, mit Bandbreite 35 bis 45 Stunden im Durchschnitt von 52 Wochen (höchstens 9 Stunden pro Tag, bis 130 Zeitguthaben-Stunden ohne Zuschlag). Überstunden von 6 bis 20 Uhr 50 %, von 20 bis 6 Uhr 100 %, Sonntag 100 %. Am Feiertag wird das Entgelt weiterbezahlt, gearbeitete Stunden gibt es ohne Zuschlag, Stunden über die Normalarbeitszeit des Tages 100 %. Zeitausgleich für Überstunden 1:1,5. Der 24. und 31. Dezember sind frei bei vollem Lohn. Taggeld bei Außerhausarbeit über 5 Stunden 2,50 € je angefangener Stunde, bei auswärtiger Nächtigung 39 €, Nächtigungsgeld 15 € ohne Quartier: lege sie bei Bedarf als Prämie an. Löhne und Lehrlingseinkommen sind als Lohngruppe hinterlegt.',
@@ -291,14 +330,14 @@
     },
     sozial: {
       name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
-      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“.',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: 50 % Zuschlag, mehrere Zuschläge zählen nur einmal.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
         ueberstunden: { modell: 'monat', wochenStd: 37, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 160.21 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { sa: 0, so: 50, ft: 50 },
         schlechtwetter: false
       }
     },
@@ -543,6 +582,43 @@
       { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [11.66] },
       { id: 'L4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [15.51] }
     ] },
+    dachdecker: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'I', name: 'I Facharbeiter mit Lehrabschlussprüfung, oder ohne ab dem 3. Jahr Praxis', l: [19.60] },
+      { id: 'II', name: 'II Facharbeiter ohne Lehrabschlussprüfung in den ersten zwei Jahren nach der Lehre', l: [19.01] },
+      { id: 'III', name: 'III Dachdeckerhelfer (Steiger)', l: [17.65] },
+      { id: 'IV', name: 'IV Hilfsarbeiter', l: [16.08] },
+      { id: 'L1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [7.50] },
+      { id: 'L2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [9.50] },
+      { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [11.20] },
+      { id: 'L4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [12.90] }
+    ] },
+    pflasterer: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'I', name: 'I Facharbeiter mit Lehrabschlussprüfung, oder ohne ab dem 3. Jahr Praxis', l: [21.01] },
+      { id: 'II', name: 'II Facharbeiter ohne Lehrabschlussprüfung in den ersten zwei Jahren nach der Lehre', l: [19.32] },
+      { id: 'III', name: 'III Maschinenführer mit Berechtigung', l: [18.18] },
+      { id: 'IV', name: 'IV Pflastererhelfer', l: [17.99] },
+      { id: 'V', name: 'V Hilfsarbeiter', l: [16.69] },
+      { id: 'L1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [8.40] },
+      { id: 'L2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [12.61] },
+      { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [16.81] }
+    ] },
+    fliesenleger: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'F3', name: 'Facharbeiter nach dem 2. Verwendungsjahr', l: [18.75] },
+      { id: 'F2', name: 'Facharbeiter im 2. Verwendungsjahr', l: [17.82] },
+      { id: 'F1', name: 'Facharbeiter im 1. Verwendungsjahr', l: [16.81] },
+      { id: 'FQ', name: 'Qualifizierter Helfer', l: [15.96] },
+      { id: 'FH', name: 'Helfer', l: [15.33] },
+      { id: 'L1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [5.50] },
+      { id: 'L2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [7.10] },
+      { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [8.70] },
+      { id: 'L4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [10.50] }
+    ] },
+    gewerbe_ang: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [856.14] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1080.87] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1273.50] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1690.87] }
+    ] },
     tischler: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
       { id: 'T1', name: 'Tischler I Spitzenfacharbeiter', l: [17.39] },
       { id: 'T2', name: 'Tischler II Qualifizierter Facharbeiter', l: [16.72] },
@@ -648,14 +724,17 @@
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Berufskraftfahrer (Lehrling)', b: { fahrzeug: true, kunden: true, praemien: false } }
       } },
-    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'tischler', 'maler', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
+    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'tischler', 'maler', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
       arten: {
         maurer: { name: 'Maurer / Hochbau / Tiefbau / Bauarbeiter', kv: 'bau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         zimmerer: { name: 'Zimmerer / Holzbau / Dachstuhl', kv: 'holzbau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         elektro: { name: 'Elektriker / Installateur / Spengler', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         tischler: { name: 'Tischler / Holzgestalter', kv: 'tischler', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         maler: { name: 'Maler / Lackierer / Anstreicher', kv: 'maler', sw: false, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
-        anderes: { name: 'Anderes Handwerk (Fliesenleger, Dachdecker, Pflasterer …)', kv: 'eigen', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        dachdecker: { name: 'Dachdecker', kv: 'dachdecker', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        pflasterer: { name: 'Pflasterer', kv: 'pflasterer', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        fliesenleger: { name: 'Fliesenleger / Hafner / Plattenleger', kv: 'fliesenleger', sw: false, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        anderes: { name: 'Anderes Handwerk (Eigene Werte)', kv: 'eigen', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Bau und Handwerk)', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: false } }
       } },
     bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'de_bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
@@ -740,7 +819,7 @@
     return b.name + (a ? ' (' + a.name + ')' : '');
   }
   // Ist die Arbeitsart eine Tour? Dann heißen "Kunde / Baustelle" in der Erfassung "Tour".
-  function istBau(w) { return !!w && (w.paket === 'bau' || w.paket === 'de_bau' || w.paket === 'holzbau'); }
+  function istBau(w) { return !!w && (w.paket === 'bau' || w.paket === 'de_bau' || w.paket === 'holzbau' || w.paket === 'dachdecker' || w.paket === 'pflasterer'); }
   function istTour(w) { var b = w && BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && a.tour); }
   // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
   function bausteine(w) {
