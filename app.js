@@ -279,6 +279,13 @@
     if (s.freiTage) parts.push(s.freiTage + ' Freistellung');
     if (s.feiertageBezahlt) parts.push(s.feiertageBezahlt + ' bezahlter Feiertag' + (s.feiertageBezahlt > 1 ? 'e' : ''));
     $('#m-counts').textContent = parts.join(' · ');
+    (function () { // Freistellung: Unterschied zwischen Grundregel (bezahlt) und dem, was die Firma macht
+      var l = s.freiListe || [], za = 0, ub = 0, el = $('#m-frei');
+      l.forEach(function (x) { if (x.modus === 'za') za += x.std; else if (x.modus === 'unbezahlt') ub += x.std; });
+      if (!el) return;
+      el.hidden = !(za || ub);
+      el.innerHTML = (za ? '<span>Laut AK-Grundregel wäre die Freistellung bezahlt. Deine Firma zieht vom Zeitausgleich ab:</span> <b>' + fh(za) + ' h</b>' : '') + (za && ub ? '<br>' : '') + (ub ? '<span>Laut AK-Grundregel wäre die Freistellung bezahlt. Deine Firma zahlt nicht:</span> <b>' + fh(ub) + ' h</b>' : '');
+    })();
     $('#m-ab').hidden = true;
 
     var today = todayISO();
@@ -581,6 +588,22 @@
     });
     el.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (b && b.dataset.act === 'x') { var r = b.closest('.sndrow'); sndList().splice(+r.dataset.i, 1); save(); renderSonder(); } });
   })();
+  function freiFrage(rows) { // Lohnzettel zeigt, dass die Firma die Freistellung anders verrechnet hat als eingestellt: Frage, ob die Tage richtig gestellt werden sollen
+    var el = $('#ab-frei'); if (!el) return; el.innerHTML = '';
+    var l = (ui.summe && ui.summe.freiListe) || []; if (!l.length) return;
+    var key = monthKey(); if (ui.freiNein && ui.freiNein[key]) return;
+    var row = null; rows.forEach(function (r) { if ((r.key === 'ueber' || r.key === 'gleit') && r.status !== 'offen' && r.status !== 'info' && r.diff !== null && !row) row = r; });
+    if (!row) return;
+    var za = l.filter(function (x) { return x.modus === 'za'; }), bz = l.filter(function (x) { return x.modus !== 'za' && x.modus !== 'unbezahlt'; });
+    function sum(a) { return a.reduce(function (t, x) { return t + x.std; }, 0); }
+    var neu = null, liste = null, text = '';
+    if (za.length && row.diff > 0.1 && Math.abs(row.diff - sum(za)) <= 0.26) { neu = 'bezahlt'; liste = za; text = 'Dein Lohnzettel hat mehr Stunden, als die App abzieht. Die Firma hat diese Freistellung wahrscheinlich bezahlt:'; }
+    else if (bz.length && row.diff < -0.1 && Math.abs(-row.diff - sum(bz)) <= 0.26) { neu = 'za'; liste = bz; text = 'Dein Lohnzettel hat weniger Stunden. Die Firma hat diese Freistellung wahrscheinlich vom Zeitausgleich abgezogen:'; }
+    if (!neu) return;
+    el.innerHTML = '<div class="notice warn"><strong>Freistellung: Deine Firma hat es anders gemacht als in deiner Einstellung</strong><p style="margin:6px 0"><span>' + text + '</span> <b>' + liste.map(function (x) { return esc(fmtShort(x.datum)); }).join(', ') + '</b></p><p style="margin:6px 0"><span>Soll ich die Einträge für diese Tage richtig stellen?</span></p><div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="ab-fr-ja">Ja, richtig stellen</button><button type="button" class="btn ghost" id="ab-fr-nein">Nein, so lassen</button></div></div>';
+    $('#ab-fr-ja').onclick = function () { liste.forEach(function (x) { if (data.days[x.datum]) data.days[x.datum].fv = neu; }); save(); el.innerHTML = ''; toast('Die Tage sind richtig gestellt.'); renderMonat(); };
+    $('#ab-fr-nein').onclick = function () { (ui.freiNein || (ui.freiNein = {}))[key] = true; el.innerHTML = ''; };
+  }
   function paintAbgleich() {
     var lz = data.abgleich[monthKey()] || {}, le = E.lzMitKorr(data.abgleich, monthKey()), rows = E.abgleich(ui.summe, le.lz, ui.abAlle, fixLohn()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);
@@ -598,6 +621,7 @@
       var rowEl = chip.closest('.abrow'), old = rowEl && rowEl.querySelector('.abnach'); if (old) old.remove();
       if (rowEl && le.nach[r.key]) { var nn = document.createElement('div'); nn.className = 'abnach'; nn.textContent = 'Darin enthalten (Nachzahlung oder Rückverrechnung): ' + (le.nach[r.key].sum >= 0 ? '+' : '−') + (r.unit === '€' ? eur.format(Math.abs(le.nach[r.key].sum)) : fh(Math.abs(le.nach[r.key].sum)) + ' h'); rowEl.appendChild(nn); }
     });
+    freiFrage(rows);
     var html = '';
     if (!given) html = '<p class="hint">Tippe ab, was auf deinem Lohnzettel steht. Die App zeigt dir sofort, ob es zu deiner Aufzeichnung passt.</p>';
     else if (!bad.length) html = '<div class="notice">Alle eingetragenen Zeilen stimmen mit deiner Aufzeichnung überein.</div>';
@@ -956,6 +980,8 @@
     sg.hidden = !te; if (te) { sg.textContent = 'Meistens bis ' + te + ' (übernehmen)'; sg.dataset.t = te; }
     if (d.status !== 'arbeit') {
       if (r.creditMin) html = line('Gutgeschrieben', fh(r.creditMin / 60) + ' h', true) + '<p class="hint">Bezahlte Abwesenheit. Sie erzeugt keine Überstunden.</p>';
+      else if (d.status === 'freistellung' && r.freiModus === 'za') html = '<p class="hint">Deine Firma zieht diesen Tag vom Zeitausgleich ab. Laut AK-Grundregel wäre er bezahlt.</p>';
+      else if (d.status === 'freistellung' && r.freiModus === 'unbezahlt') html = '<p class="hint">Deine Firma zahlt diesen Tag nicht. Laut AK-Grundregel wäre er bezahlt.</p>';
       else if (d.status === 'za') html = '<p class="hint">Zeitausgleichstag: keine Arbeitsstunden. Das Zeitausgleichskonto kommt mit der Vollversion.</p>';
       else html = '<p class="hint">Dieser Tag zählt keine Stunden.</p>';
     } else if (d.von && !d.bis && !r.swMin) {

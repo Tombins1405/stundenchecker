@@ -580,7 +580,7 @@
 
     // Betrieb geschlossen: je nach Firma als Urlaub bezahlt oder aus den Überstunden (dann keine Gutschrift in den Stunden).
     var credit = STATUS[status].credit && !(status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden');
-    if (status === 'freistellung') { res.freiModus = freiModus(day, w); if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
+    if (status === 'freistellung') { res.freiModus = freiModus(day, w); res.freiSollMin = sollMin; if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
     if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
     if (credit) { res.creditMin = sollMin; return res; }
     if (status !== 'arbeit') return res;
@@ -772,7 +772,7 @@
     if (heute) { var hq = parseISO(heute); live = hq.y === y && hq.m === m; }
     Object.keys(days).forEach(function (k) { if (days[k] && (!firstKey || k < firstKey)) firstKey = k; });
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
-      arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, schule: 0, za: 0, freiTage: 0, feiertageBezahlt: 0, zuschlagMin: 0,
+      arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, schule: 0, za: 0, freiTage: 0, freiListe: [], feiertageBezahlt: 0, zuschlagMin: 0,
       feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
     var bauWochen = false, monatModell = false, gleitModell = false, anyEntry = false;
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
@@ -795,7 +795,7 @@
       if (r.status === 'pflege') s.pflege++;
       if (r.status === 'schule') s.schule++;
       if (r.status === 'za') s.za++;
-      if (r.status === 'freistellung') s.freiTage++;
+      if (r.status === 'freistellung') { s.freiTage++; s.freiListe.push({ datum: ds, modus: r.freiModus, std: h2(r.freiSollMin || 0) }); }
       if (r.status === 'feiertag') { s.feiertageBezahlt++; s.feMin += r.creditMin; }
       if (r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Feiertagslohn gibt es auch, wenn man am Feiertag arbeitet (nur Anzeige, nicht in den Stunden)
       if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urMin += r.creditMin;
@@ -890,7 +890,7 @@
       summe: {
         istStd: h2(s.istMin), lohnStd: h2(s.lohnMin), zuschlagStd: h2(s.zuschlagMin), ueberStd: h2(s.ueberMin), mehrStd: h2(s.mehrMin || 0), mehrFreiStd: h2(s.mehrFreiMin || 0), mehrPct: s.mehrPct != null ? s.mehrPct : 25, gleit: gleitModell, gleitQuartalStd: gleitModell && !(opts && opts.noQ) ? gleitQuartal(data, y, m, heute, opts) : null, gleitKontoStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).konto : null, gleitVerfallStd: gleitModell && !(opts && (opts.noQ || opts.noK)) ? gleitKonto(data, y, m, heute, opts).verfall : null,
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
-        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage,
+        arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage, freiListe: s.freiListe,
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
       },
@@ -980,13 +980,17 @@
     segs.sort(function (a, b) { return (a.von || '99:99').localeCompare(b.von || '99:99'); });
     var out = [];
     segs.forEach(function (sg) {
-      var cur = sg.von, hat = sg.von && sg.bis;
+      var cur = sg.von, hat = sg.von && sg.bis, erst = true;
       if (hat) {
-        pausen.filter(function (p) { return !p.used && p.von >= sg.von && p.bis <= sg.bis; }).sort(function (a, b) { return a.von.localeCompare(b.von); }).forEach(function (p) {
-          if (p.von > cur) out.push({ von: cur, bis: p.von, k: sg.k, t: sg.t });
-          out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); p.used = true; cur = p.bis;
+        // Pausen, die in den Eintrag hineinreichen (auch nur teilweise), teilen ihn. Ab dem zweiten Stück steht "Fortsetzung", damit eine Menge (zum Beispiel 4 Fuhren) nicht doppelt gedruckt wird.
+        function stueck(v, b2) { out.push({ von: v, bis: b2, k: sg.k, t: erst ? sg.t : (sg.t ? 'Fortsetzung' : '') }); erst = false; }
+        pausen.filter(function (p) { return p.von < sg.bis && p.bis > sg.von; }).sort(function (a, b) { return a.von.localeCompare(b.von); }).forEach(function (p) {
+          var ps = p.von > sg.von ? p.von : sg.von, pe = p.bis < sg.bis ? p.bis : sg.bis;
+          if (ps > cur) stueck(cur, ps);
+          if (!p.used) { out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); p.used = true; }
+          if (pe > cur) cur = pe;
         });
-        if (cur < sg.bis || cur === sg.von) out.push({ von: cur, bis: sg.bis, k: sg.k, t: sg.t });
+        if (cur < sg.bis || (cur === sg.von && erst)) stueck(cur, sg.bis);
       } else out.push({ von: sg.von, bis: sg.bis, k: sg.k, t: sg.t });
     });
     pausen.forEach(function (p) { if (!p.used) out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); });
