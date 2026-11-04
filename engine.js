@@ -854,7 +854,24 @@
     var q = min / schritt;
     return Math.round((art === 'nahe' ? Math.round(q) : art === 'auf' ? Math.ceil(q) : Math.floor(q)) * schritt);
   }
-  function dayMinutes(day, w) {
+  // Zeitumstellung (Österreich): letzter Sonntag im März 02:00 -> 03:00 (eine Stunde fehlt), letzter Sonntag im Oktober 03:00 -> 02:00 (eine Stunde kommt dazu).
+  function letzterSonntag(y, m) { var d = new Date(Date.UTC(y, m, 0)); return d.getUTCDate() - d.getUTCDay(); }
+  function dstKorrektur(dateStr, von, bis) {
+    if (!dateStr || von === null || bis === null) return 0;
+    var p = parseISO(dateStr), wd = weekday(dateStr), mar = letzterSonntag(p.y, 3), okt = letzterSonntag(p.y, 10);
+    var istSo = wd === 0, istSa = wd === 6;
+    var umMar = p.m === 3 && ((istSo && p.d === mar) || (istSa && p.d === mar - 1));
+    var umOkt = p.m === 10 && ((istSo && p.d === okt) || (istSa && p.d === okt - 1));
+    if (!umMar && !umOkt) return 0;
+    var ueberMitternacht = bis <= von; // Dienst geht über Mitternacht
+    var tag = istSo && p.d === (umMar ? mar : okt);
+    var schnitt; // der Dienst umfasst die Umstellung (um 03:00 Uhr)
+    if (tag) schnitt = !ueberMitternacht && von < (umMar ? 120 : 180) && bis >= 180;
+    else schnitt = ueberMitternacht && bis >= 180;
+    if (!schnitt) return 0;
+    return umMar ? -60 : 60;
+  }
+  function dayMinutes(day, w, dateStr) {
     var von = toMin(day && day.von), bis = toMin(day && day.bis), warn = [];
     if (von === null || bis === null) return { brutto: 0, pausen: 0, netto: 0, warn: warn };
     // Rundung der Zeiten laut Einstellung (nur die Berechnung, der eingetragene Wert bleibt stehen)
@@ -863,6 +880,8 @@
     var brutto = bis - von;
     if (brutto < 0) brutto += 1440;
     if (brutto === 0) warn.push('Von und Bis sind gleich.');
+    var dst = dstKorrektur(dateStr, von, bis);
+    if (dst && brutto + dst > 0) brutto += dst; else dst = 0;
     var pausen = 0;
     (day.pausen || []).forEach(function (p) {
       var s = toMin(p.von), e = toMin(p.bis);
@@ -875,7 +894,7 @@
     if (pausen === 0 && w && +w.pauseAutoMin > 0 && brutto > 0) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
     var netto = brutto - pausen;
     if (netto < 0) { warn.push('Die Pausen sind länger als die Arbeitszeit.'); netto = 0; }
-    return { brutto: brutto, pausen: pausen, netto: netto, warn: warn };
+    return { brutto: brutto, pausen: pausen, netto: netto, warn: warn, dst: dst };
   }
 
   /* ---------------------------------------------------------------- Ein Tag */
@@ -903,7 +922,8 @@
     if (credit) { res.creditMin = sollMin; return res; }
     if (status !== 'arbeit') return res;
 
-    var m = dayMinutes(day, w);
+    var m = dayMinutes(day, w, dateStr);
+    res.dstMin = m.dst || 0;
     res.bruttoMin = m.brutto; res.pausenMin = m.pausen; res.nettoMin = m.netto; res.warn = m.warn;
 
     var z = w.zuschlag, pct = 0;
@@ -944,7 +964,7 @@
   /* ---------------------------------------------------------------- Zeit pro Kunde */
   // Jeder Eintrag mit von und bis zählt seine Zeit abzüglich der Pausen, die darin liegen.
   // Gibt es an dem Tag nur einen Kunden und keine Zeiten dazu, zählt die Arbeitszeit des Tages (netto).
-  function kundenZeiten(day, w) {
+  function kundenZeiten(day, w, dateStr) {
     var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis)]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
     function dauer(von, bis) {
       var a = toMin(von), b = toMin(bis); if (a === null || b === null) return null;
@@ -968,7 +988,7 @@
     });
     // Nur ein Kunde und keine Zeiten: es zählt die Arbeitszeit des Tages.
     if (rows.length === 1 && rows[0].min === null) {
-      var dm = dayMinutes(day, w); if (dm.netto > 0) { rows[0].min = dm.netto; rows[0].quelle = 'tag'; }
+      var dm = dayMinutes(day, w, dateStr); if (dm.netto > 0) { rows[0].min = dm.netto; rows[0].quelle = 'tag'; }
     }
     var total = 0; rows.forEach(function (r) { if (r.min !== null) total += r.min; });
     return { rows: rows, totalMin: total };
@@ -987,7 +1007,7 @@
       if (e === 'stunde') menge = r.nettoMin / 60;
       else if (e === 'taet') {
         var kw = (p.taet || '').trim().toLowerCase(), mm = 0;
-        if (kw) kundenZeiten(day, w).rows.forEach(function (k) { k.taet.forEach(function (t) { if (t.min && t.tat.toLowerCase().indexOf(kw) >= 0) mm += t.min; }); });
+        if (kw) kundenZeiten(day, w, r.datum).rows.forEach(function (k) { k.taet.forEach(function (t) { if (t.min && t.tat.toLowerCase().indexOf(kw) >= 0) mm += t.min; }); });
         menge = mm / 60;
       }
       else { var v = day.praemien && day.praemien[p.id]; menge = +v > 0 ? +v : 0; }
