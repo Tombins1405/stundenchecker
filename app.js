@@ -1775,13 +1775,14 @@
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
     function paintAsk() {
       var L = miaLang(), u = MIA_UI[L] || MIA_UI.de, chips = $('#mia-chips');
-      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
+      var gl = false; try { var ww = wAt(todayISO()); gl = !!(ww && ww.ueberstunden && ww.ueberstunden.modell === 'gleit'); } catch (e) { }
+      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return (e.t === 'Gleitzeit' && !gl) ? '' : '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
       $('#mia-q').placeholder = u.q; $('#mia-send').textContent = u.go; $('#mia-read').textContent = u.read; $('#mia-askbtn').textContent = u.ask;
       var sel = $('#mia-lang'); if (sel) sel.value = L;
     }
     var ls = $('#mia-lang'); if (ls) { ls.innerHTML = Object.keys(MIA_LANGS).map(function (k) { return '<option value="' + k + '">' + MIA_LANGS[k].n + '</option>'; }).join(''); ls.addEventListener('change', function () { uiSetLang(this.value); $('#mia-ans').hidden = true; paintAsk(); }); }
     paintAsk(); ui.miaPaint = paintAsk;
-    on('#mia-askbtn', 'click', function () { var p = $('#mia-ask'); p.hidden = !p.hidden; if (!p.hidden) { var q = $('#mia-q'); if (q) q.focus(); } });
+    on('#mia-askbtn', 'click', function () { var p = $('#mia-ask'); paintAsk(); p.hidden = !p.hidden; if (!p.hidden) { var q = $('#mia-q'); if (q) q.focus(); } });
     on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) { var qa2 = $('#mia-asked'); if (qa2) qa2.hidden = true; ins('mia_chip'); ins('mia_t_' + miaTopic(+b.dataset.faq)); miaShowAns(miaFaqText(+b.dataset.faq, 'a')); } });
     function send() { var q = $('#mia-q').value.trim(); if (q) { var qa = $('#mia-asked'); if (qa) { qa.textContent = '„' + q + '“'; qa.hidden = false; } miaShowAns(miaAnswer(q)); } }
     on('#mia-q', 'input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 160) + 'px'; });
