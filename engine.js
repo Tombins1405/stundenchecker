@@ -213,14 +213,14 @@
     },
     tischler: {
       name: 'Tischler und Holzgestalter (Gewerbe)',
-      hinweis: 'KV Tischler und Holzgestalter, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): 40 Stunden/Woche auf 5 Tage, Überstunden mit 50 % Zuschlag (6 bis 20 Uhr) und 100 % (20 bis 6 Uhr). Sonntag und Feiertag sind in der Quelle nicht angegeben, bitte laut Lohnzettel einstellen. Zeitausgleich und Gleitzeit nur nach Vereinbarung. Die Regeln stammen aus der Fassung 2019, bitte mit dem aktuellen KV vergleichen.',
+      hinweis: 'KV Tischler und Holzgestalter, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): 40 Stunden/Woche, meist auf 5 Tage, mit Bandbreite 35 bis 45 Stunden im Durchschnitt von 52 Wochen (höchstens 9 Stunden pro Tag, bis 130 Zeitguthaben-Stunden ohne Zuschlag). Überstunden von 6 bis 20 Uhr 50 %, von 20 bis 6 Uhr 100 %, Sonntag 100 %. Am Feiertag wird das Entgelt weiterbezahlt, gearbeitete Stunden gibt es ohne Zuschlag, Stunden über die Normalarbeitszeit des Tages 100 %. Zeitausgleich für Überstunden 1:1,5. Der 24. und 31. Dezember sind frei bei vollem Lohn. Taggeld bei Außerhausarbeit über 5 Stunden 2,50 € je angefangener Stunde, bei auswärtiger Nächtigung 39 €, Nächtigungsgeld 15 € ohne Quartier: lege sie bei Bedarf als Prämie an. Löhne und Lehrlingseinkommen sind als Lohngruppe hinterlegt.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -239,20 +239,20 @@
     },
     metall: {
       name: 'Metallgewerbe / Mechaniker',
-      hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden mit 50 % oder 100 % Zuschlag, Zeitausgleich 1:1,5 bei 50 % und 1:2 bei 100 %. Welche Zuschläge nachts, am Samstag und am Sonntag gelten, konnte ich nicht belegen. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt, Elektro, Installation, Spengler), steht auf deinem Lohnzettel. Die Mindestgrundlöhne und Lehrlingseinkommen 2026 sind als Lohngruppe hinterlegt. Montagezulage mindestens 1,155 € je Stunde (nicht für Lehrlinge), Entfernungszulage 11,94 € bei mehr als 6 Stunden und 30,00 € bei mehr als 11 Stunden Abwesenheit, Nächtigungsgeld 22,05 €: lege sie bei Bedarf als Prämie an.',
+      hinweis: 'KV Eisen- und metallverarbeitendes Gewerbe (Metallgewerbe), Arbeiter, ab 1.1.2026 (Quellen: wko.at, k3-blatt.at): 38,5 Stunden/Woche ohne Pausen, Mehrarbeit 50 %, Überstunden 50 %, zwischen 20 und 6 Uhr 100 %, Sonntag 100 %, am Samstag kein eigener Zuschlag. Zeitausgleich 1:1,5 bei 50 %, 1:2 bei 100 %, Mehrarbeit 1:1,25. Nachtarbeitszulage (22 bis 6 Uhr, nicht für Überstunden) 3,348 € je Stunde, Schichtzulage 2. Schicht 1,065 €, 3. Schicht 3,348 €, Schmutz-, Erschwernis- und Gefahrenzulage je 0,746 € je Stunde, Vorarbeiterzulage 10 %. Feiertagsarbeit: laut Quelle 100 % nur am Werktag, der als Sonntag gilt, sonst gelten die gesetzlichen Bestimmungen. Arbeit am 24. und 31. Dezember nach 12 Uhr 100 %. Ob dein Betrieb darunter fällt (zum Beispiel Kfz-Werkstatt, Elektro, Installation, Spengler), steht auf deinem Lohnzettel. Die Mindestgrundlöhne und Lehrlingseinkommen 2026 sind als Lohngruppe hinterlegt. Montagezulage mindestens 1,155 € je Stunde (nicht für Lehrlinge), Entfernungszulage 11,94 € bei mehr als 6 Stunden, 30,00 € bei mehr als 11 Stunden und 62,04 € mit Nächtigung, Nächtigungsgeld 22,05 €: lege sie bei Bedarf als Prämie an.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
     gastro: {
       name: 'Hotel- und Gastgewerbe',
-      hinweis: 'KV Hotel- und Gastgewerbe (Quellen: vida.at für den Rahmen mit Stand 2024, wko.at für den Abschluss 2026): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Löhne und Gehälter steigen ab 1.10.2026 im Durchschnitt um 3 %, dazu eine Einmalzahlung bis höchstens 275 € brutto (bis 31.12.2026 auszuzahlen). Nachtarbeit (0 bis 6 Uhr) hat einen pauschalen Zuschlag, gestaffelt in Dritteln je begonnene 2 Stunden; die Höhe steht im Lohnabkommen, die App kennt sie nicht, trage sie als Prämie ein. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
+      hinweis: 'KV Hotel- und Gastgewerbe, Arbeiter (Quellen: wko.at, WKO Niederösterreich): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Die Löhne sind je Bundesland verschieden. Hinterlegt sind die Lohngruppen 1 bis 5 für Niederösterreich (Tabelle vom 1.5.2025 plus Erhöhung ab 1.10.2026 laut Abschluss, nach Dienstjahren) und die Lehrlingseinkommen ab 1.10.2026. In anderen Bundesländern trage deinen Lohn laut Lohnzettel ein. Ein Wert der Quelle (Lohngruppe 1, ab 11. Dienstjahr) war offensichtlich verrutscht und wurde nach dem Stufenabstand ergänzt: bitte laut Lohnzettel prüfen. Nachtarbeit (0 bis 6 Uhr) hat einen pauschalen Zuschlag, gestaffelt in Dritteln je begonnene 2 Stunden; die Höhe steht im Lohnabkommen, die App kennt sie nicht, trage sie als Prämie ein. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -616,7 +616,12 @@
       { id: 'VG6', m: true, name: 'VG 6 Pflegefachassistenz, Stufe 1', l: [2867.20] },
       { id: 'VG7', m: true, name: 'VG 7 Diplomierte Gesundheits- und Krankenpflege, Stufe 1', l: [3074.80] }
     ] },
-    gastro: { stand: 'ab 1.10.2026', stufen: null, gruppen: [
+    gastro: { stand: 'ab 1.10.2026, Niederösterreich', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], teiler: 173, gruppen: [
+      { id: 'G1', m: true, name: 'Lohngruppe 1', l: [2724.00, 2790.30, 2856.60, 2922.90, 2989.20] },
+      { id: 'G2', m: true, name: 'Lohngruppe 2', l: [2500.00, 2560.90, 2621.80, 2682.60, 2743.50] },
+      { id: 'G3', m: true, name: 'Lohngruppe 3', l: [2304.00, 2359.90, 2415.90, 2471.80, 2527.70] },
+      { id: 'G4', m: true, name: 'Lohngruppe 4', l: [2153.00, 2205.20, 2257.40, 2309.60, 2361.80] },
+      { id: 'G5', m: true, name: 'Lohngruppe 5', l: [2096.50, 2147.20, 2147.20, 2147.20, 2147.20] },
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445] },
