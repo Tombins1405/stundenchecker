@@ -2261,6 +2261,10 @@
     var p = E.PAKETE[en.paket] || E.PAKETE.gueter;
     $('#s-paketinfo').innerHTML = esc(p.hinweis) + (p.pruefen ? '<br><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte kontrolliere die Werte mit deinem Lohnzettel.' : '');
     $('#s-paketinfo').className = 'notice' + (p.pruefen ? ' warn' : '');
+    var ZG = { handel: 1, it_ang: 1, versicherung_ang: 1, gewerbe_ang: 1, metall: 3, bund: 4, de_spedition: 5, de_bau: 5, de_handel: 5, de_buero: 5, de_metall: 5, de_gastro: 5, eigen: 0 };
+    var zg = en.paket in ZG ? ZG[en.paket] : 2;
+    $('#s-zauinfo').hidden = !zg;
+    Array.prototype.forEach.call($('#s-zauinfo').children, function (sp) { sp.hidden = +sp.getAttribute('data-g') !== zg; });
   }
   function settingsVisibility(en) {
     var dm = en.diaeten.modell, um = en.ueberstunden.modell;
