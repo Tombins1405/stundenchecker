@@ -772,3 +772,12 @@ h3[data-ico="door"]::before { background: #6d4c41; }
 .nl li.miss { color: #b45309; font-weight: 600; }
 h3[data-ico="target"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%225%22/%3E%3Cpath d=%22M12 12h.01%22/%3E%3C/svg%3E"); }
 h3[data-ico="target"]::before { background: #00838f; }
+
+/* Auswahl überall gleich deutlich: gewählt = voll farbig (+ Haken), nicht gewählt = weiß */
+.pick[aria-pressed="true"], .segb[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink, #fff); }
+.pick[aria-pressed="true"]::before, .segb[aria-pressed="true"]::before { content: "\2713\00a0"; font-weight: 800; }
+.tab[aria-current="page"] { background: var(--accent); color: var(--accent-ink, #fff); border-color: var(--accent); }
+.miaopt { position: relative; }
+.miaopt.on { border: 3px solid var(--accent, #1e6fd9); background: var(--accent-soft, rgba(30,111,217,.15)); }
+.miaopt.on::after { content: "\2713"; position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent, #1e6fd9); color: var(--accent-ink, #fff); font-weight: 800; line-height: 26px; text-align: center; }
+.ipk.on, .ipicks .ipk.on, #icon-pick2 .ipk.on { border: 3px solid #1e6fd9; box-shadow: 0 0 0 2px #fff; }
