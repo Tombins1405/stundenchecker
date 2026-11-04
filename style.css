@@ -343,8 +343,10 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .wzstep { font-size: 0.85rem; opacity: .7; margin: 0 0 4px; }
 .wzlist { display: grid; gap: 8px; margin-bottom: 12px; }
 .wzopt { text-align: left; padding: 14px; }
-.wzopt.on { border-color: var(--accent, #1e6fd9); }
-.wizbox .btns { margin-top: 12px; }
+.wzopt { position: relative; }
+.wzopt.on { border: 2px solid #1e6fd9; background: #1e6fd9; color: #fff; padding-right: 44px; }
+.wzopt.on::after { content: '\2713'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 1.3rem; font-weight: 800; }
+.wizbox .btns { margin-top: 12px; position: sticky; bottom: 0; padding: 10px 0 2px; background: var(--card, #fff); }
 
 /* Mia */
 .top .wrap { position: relative; }
