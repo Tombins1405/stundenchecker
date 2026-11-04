@@ -605,6 +605,39 @@
     $('#ab-fr-ja').onclick = function () { liste.forEach(function (x) { if (data.days[x.datum]) data.days[x.datum].fv = neu; }); save(); el.innerHTML = ''; toast('Die Tage sind richtig gestellt.'); renderMonat(); };
     $('#ab-fr-nein').onclick = function () { (ui.freiNein || (ui.freiNein = {}))[key] = true; el.innerHTML = ''; };
   }
+  function abBericht(rows, given, lz, bad) { // Kontrollbericht: Aufzeichnung, Lohnzettel, Unterschied, wie gerechnet, was zu klären ist
+    var el = $('#ab-bericht'); if (!el) return;
+    var sm = ui.summe || {};
+    if (!given) { el.innerHTML = ''; return; }
+    var chipOf = { gleich: ['good', 'Passt'], klein: ['warn', 'Fast gleich'], mehr: ['bad', 'Unterschied'], weniger: ['bad', 'Unterschied'], offen: ['', 'Noch nicht eingetragen'] };
+    function val(x, u) { return u === '€' ? eur.format(x) : '<span>' + fh(x) + '</span> h'; }
+    var tr = rows.filter(function (r) { return r.status !== 'info'; }).map(function (r) {
+      var c = chipOf[r.status] || ['', ''], u = r.unit, lzv = r.lzGesamt != null ? r.lzGesamt : r.lz;
+      var d = r.diff === null ? '' : (r.diff > 0 ? '+' : r.diff < 0 ? '−' : '') + (u === '€' ? eur.format(Math.abs(r.diff)) : fh(Math.abs(r.diff)) + ' h');
+      return '<tr><td>' + esc(r.label) + '</td><td>' + (r.app == null ? '' : val(r.app, u)) + '</td><td>' + (lzv == null ? '' : val(lzv, u)) + '</td><td>' + d + '<br><span class="chip ' + c[0] + '">' + esc(c[1]) + '</span></td></tr>';
+    }).join('');
+    var how = [], fl = sm.freiListe || [];
+    if (fl.length) {
+      var fm = {}, t = 0; fl.forEach(function (x) { fm[x.modus] = (fm[x.modus] || 0) + x.std; t += x.std; });
+      var MT = { bezahlt: 'Freistellung bezahlt, nichts abgezogen', za: 'Freistellung vom Zeitausgleich abgezogen', unbezahlt: 'Freistellung unbezahlt, Soll entfällt', offen: 'Freistellung noch nicht geklärt, nichts abgezogen' };
+      Object.keys(fm).forEach(function (k) { how.push('<li><span>' + esc(MT[k] || MT.offen) + '</span>: <b>' + fh(fm[k]) + '</b> h</li>'); });
+    }
+    if (lz.zaKonto != null || (sm.zaUmr && sm.zaUmr !== 'offen')) {
+      var ZT = { offen: 'Weiß ich noch nicht', eingerechnet: '1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)', getrennt: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt' };
+      how.push('<li><span>Zeitausgleich-Umrechnung</span>: <span>' + esc(ZT[sm.zaUmr] || ZT.offen) + '</span></li>');
+    }
+    var todo = bad.map(function (r) { return '<li><span>Frag im Büro nach dieser Zeile:</span> <b>' + esc(r.label) + '</b></li>'; });
+    if (bad.length) {
+      if (fl.some(function (x) { return x.modus === 'offen'; })) todo.push('<li><span>Frag, ob die Freistellung bezahlt oder vom Zeitausgleich abgezogen wurde.</span></li>');
+      if (lz.zaKonto != null && (!sm.zaUmr || sm.zaUmr === 'offen')) todo.push('<li><span>Frag, wie der Zeitausgleich gutgeschrieben wird: 1:1,5 oder 1:1.</span></li>');
+      todo.push('<li><span>Prüfe, ob alle Tage und Pausen richtig eingetragen sind.</span></li>');
+    }
+    el.innerHTML = '<div class="notice"><strong>Kontrollbericht dieses Monats</strong>' +
+      '<table class="cmp" style="margin-top:8px"><thead><tr><th>Zeile</th><th>Aufzeichnung</th><th>Lohnzettel</th><th>Unterschied</th></tr></thead><tbody>' + tr + '</tbody></table>' +
+      (how.length ? '<p style="margin:10px 0 2px"><strong>So hat die App gerechnet</strong></p><ul style="margin:0;padding-left:20px">' + how.join('') + '</ul>' : '') +
+      '<p style="margin:10px 0 2px"><strong>Das kannst du klären</strong></p>' +
+      (todo.length ? '<ul style="margin:0;padding-left:20px">' + todo.join('') + '</ul>' : '<p style="margin:0"><span>Nichts zu klären. Alles stimmt mit deiner Aufzeichnung überein.</span></p>') + '</div>';
+  }
   function paintAbgleich() {
     var lz = data.abgleich[monthKey()] || {}, le = E.lzMitKorr(data.abgleich, monthKey()), rows = E.abgleich(ui.summe, le.lz, ui.abAlle, fixLohn()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);
@@ -640,6 +673,7 @@
     if (lz.gelesen) html = '<div class="notice warn"><strong>Aus der PDF gelesen.</strong> Beim Lesen können Fehler passieren. Bitte vergleiche die Zahlen mit deinem Lohnzettel, bevor du dich darauf verlässt.</div>' + html;
     if (hasN(lz.satz) && wm && hasN(wm.stundenlohn) && Math.abs(+lz.satz - +wm.stundenlohn) > 0.004 && !fixLohn()) html += '<div class="notice warn"><strong>Der Stundenlohn auf dem Lohnzettel ist anders als in deinen Einstellungen.</strong><br>Lohnzettel: ' + eur.format(+lz.satz) + ' · Einstellungen: ' + eur.format(+wm.stundenlohn) + '<br>Wurde das später aufgerollt? Dann trage es bei „Nachzahlungen und Korrekturen“ ein.</div>';
     $('#ab-result').innerHTML = html;
+    abBericht(rows, given, lz, bad);
     var kz = $('#ab-korr'); if (kz && !kz.contains(document.activeElement) && kz.querySelector('.rg')) renderAbKorr();
     if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; })); } catch (e) {} }
   }
