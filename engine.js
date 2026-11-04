@@ -980,17 +980,13 @@
     segs.sort(function (a, b) { return (a.von || '99:99').localeCompare(b.von || '99:99'); });
     var out = [];
     segs.forEach(function (sg) {
-      var cur = sg.von, hat = sg.von && sg.bis, erst = true;
+      var cur = sg.von, hat = sg.von && sg.bis;
       if (hat) {
-        // Pausen, die in den Eintrag hineinreichen (auch nur teilweise), teilen ihn. Ab dem zweiten Stück steht "Fortsetzung", damit eine Menge (zum Beispiel 4 Fuhren) nicht doppelt gedruckt wird.
-        function stueck(v, b2) { out.push({ von: v, bis: b2, k: sg.k, t: erst ? sg.t : (sg.t ? 'Fortsetzung' : '') }); erst = false; }
-        pausen.filter(function (p) { return p.von < sg.bis && p.bis > sg.von; }).sort(function (a, b) { return a.von.localeCompare(b.von); }).forEach(function (p) {
-          var ps = p.von > sg.von ? p.von : sg.von, pe = p.bis < sg.bis ? p.bis : sg.bis;
-          if (ps > cur) stueck(cur, ps);
-          if (!p.used) { out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); p.used = true; }
-          if (pe > cur) cur = pe;
+        pausen.filter(function (p) { return !p.used && p.von >= sg.von && p.bis <= sg.bis; }).sort(function (a, b) { return a.von.localeCompare(b.von); }).forEach(function (p) {
+          if (p.von > cur) out.push({ von: cur, bis: p.von, k: sg.k, t: sg.t });
+          out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); p.used = true; cur = p.bis;
         });
-        if (cur < sg.bis || (cur === sg.von && erst)) stueck(cur, sg.bis);
+        if (cur < sg.bis || cur === sg.von) out.push({ von: cur, bis: sg.bis, k: sg.k, t: sg.t });
       } else out.push({ von: sg.von, bis: sg.bis, k: sg.k, t: sg.t });
     });
     pausen.forEach(function (p) { if (!p.used) out.push({ von: p.von, bis: p.bis, k: '', t: 'Pause' }); });
