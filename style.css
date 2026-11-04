@@ -736,7 +736,7 @@ h3[data-ico="stack"]::before { background: #00897b; }
 .segb { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; min-height: 44px; font-weight: 700; color: var(--ink-2); font-size: .95rem; }
 .segb[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 
-.fbfloat { position: fixed; left: 10px; bottom: 10px; z-index: 49; display: flex; align-items: center; gap: 6px; padding: 10px 14px; min-height: 44px; border: 2px solid #e65100; border-radius: 999px; background: #fff3e0; color: #bf360c; font-weight: 700; font-size: .85rem; box-shadow: 0 4px 14px rgba(0,0,0,.2); cursor: pointer; }
+.fbfloat { position: fixed; left: 10px; bottom: 10px; z-index: 340; display: flex; align-items: center; gap: 6px; padding: 10px 14px; min-height: 44px; border: 2px solid #e65100; border-radius: 999px; background: #fff3e0; color: #bf360c; font-weight: 700; font-size: .85rem; box-shadow: 0 4px 14px rgba(0,0,0,.2); cursor: pointer; }
 .fbfloat[hidden] { display: none; }
 .fbfloat svg { width: 18px; height: 18px; fill: none; stroke: #e65100; stroke-width: 2.2; stroke-linejoin: round; }
 
@@ -781,3 +781,7 @@ h3[data-ico="target"]::before { background: #00838f; }
 .miaopt.on { border: 3px solid var(--accent, #1e6fd9); background: var(--accent-soft, rgba(30,111,217,.15)); }
 .miaopt.on::after { content: "\2713"; position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent, #1e6fd9); color: var(--accent-ink, #fff); font-weight: 800; line-height: 26px; text-align: center; }
 .ipk.on, .ipicks .ipk.on, #icon-pick2 .ipk.on { border: 3px solid #1e6fd9; box-shadow: 0 0 0 2px #fff; }
+
+/* Auswahlfenster liegen auch während der Führung ganz oben; Feedback-Knopf immer sichtbar, das Feedback-Fenster darüber */
+.tp-overlay, .dp-ov, .sp-ov { z-index: 330; }
+.cropov.fbov { z-index: 400; }
