@@ -56,9 +56,10 @@
     // Anonyme Abweichungs-Statistik, nur mit Einwilligung: Beruf, Zeilen, Status, Größe grob (0,5 h)
     statistik: function (monat, rows) {
       if (!ON || !consent().statistik || !rows || !rows.length) return;
+      try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return; } catch (e) {} // Ausprobier-Modus meldet nichts
       try {
-        var info = (app().info && app().info()) || {}, sig = monat + JSON.stringify(rows);
-        if (rd('stundenchecker.statsig') === sig) return; wr('stundenchecker.statsig', sig);
+        var info = (app().info && app().info()) || {}, sig = JSON.stringify(rows), k = 'stundenchecker.statsig.' + monat;
+        if (rd(k) === sig) return; wr(k, sig);
         db().collection('statistik').doc(anonId() + '_' + monat).set({ monat: monat, beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, zeilen: rows, t: stamp() }).catch(function () {});
       } catch (e) {}
     },
