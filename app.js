@@ -1999,7 +1999,7 @@
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann schalte es ein.' },
       { v: E1, sel: '#s-luecke', up: k, t: 'Soll ich nachfragen, wenn Tage ohne Eintrag bleiben, zum Beispiel bei Urlaub oder Krankenstand? Dann lass den Schalter an.' },
       { v: E1, sel: '#s-help', t: 'Möchtest du anonym mithelfen, die App besser zu machen? Das ist optional. Schalte nur ein, was du willst.' },
-      { v: E1, sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist optional.' },
+      { v: 'lohn', sel: '#s-lz', t: 'Hier schaltest du ein, dass ich deinen Lohnzettel auf diesem Handy lese. Das ist optional.' },
       { t: 'Das war alles. Du kannst jederzeit zurückkommen: Tippe in den Einstellungen oben auf „Mia hilft mir beim Einstellen“. Ich bin immer hier unten.' }];
   }
   function tourEl(st) {
@@ -2379,7 +2379,7 @@
     row.forEach(function (r, k) { if (r.ab === ab) i = k; });
     if (i < 1) return;
     var prev = row[i - 1].v, bis = row[i + 1] ? row[i + 1].ab : null, sorted = sortedSettings();
-    sorted.forEach(function (e) { if (e.gueltigAb >= ab && (!bis || e.gueltigAb < bis)) { setPath(e, path, prev); delete e.test; } });
+    sorted.forEach(function (e) { if (e.gueltigAb >= ab && (!bis || e.gueltigAb < bis)) { setPath(e, path, prev); delete e.test; if (path === 'stundenlohn' || path === 'monatslohn') e.lgAuto = false; } // sonst setzt der Mindestlohn-Schalter den alten Wert gleich wieder ein });
     // Wertesätze, die jetzt genau dem vorherigen gleichen, überflüssig geworden sind: entfernen
     var again = sortedSettings(), keep = [];
     again.forEach(function (e, k) {
