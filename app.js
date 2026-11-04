@@ -1313,7 +1313,7 @@
 
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
   var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
-    bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
+    bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], lager: ['weste', 'paket'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
     'gastro:service': ['schuerze', 'tablett_glas'], 'gastro:kueche': ['kochhaube', 'schuerze', 'pfanne'], 'gastro:chef': ['kochhaube', 'schuerze', 'messer'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
     'handel:verkauf': ['schuerze', 'scanner'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
@@ -2793,6 +2793,8 @@
     on2('#c-stat', 'change', cons('statistik'));
     on2('#c-mia', 'change', cons('miaFragen'));
     try { renderFeedback(); } catch (e) { }
+    window.addEventListener('load', function () { try { renderFeedback(); } catch (e) { } }); // insights.js wird erst nach app.js geladen: Feedback-Knopf danach zeigen
+    if (document.readyState === 'complete') { try { renderFeedback(); } catch (e) { } }
   })();
   setTimeout(function () { try { if (((mitHelfenFaellig() && (miaCfg().skip.mithelfen || 0) < 2) || (newsDue() && (miaNext() || {}).k && miaNext().k.indexOf('news_') === 0)) && !miaCfg().ruhig) { ui.miaAuto = true; if (!ui.wiz && !TOUR) miaOpen(true); } } catch (e) { } }, 2500);
   show(data.settings.length === 0 && Object.keys(data.days).length === 0 ? 'monat' : 'erfassen'); // Wer schon Daten hat, startet direkt mit der Eingabe

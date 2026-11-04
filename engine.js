@@ -456,7 +456,8 @@
         fern: { name: 'Fernverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
         muell: { name: 'Müllabfuhr', b: { fahrzeug: true, kunden: false, praemien: true } },
         kipper: { name: 'Kipper / Erdtransport', b: { fahrzeug: true, kunden: true, praemien: true } },
-        kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } }
+        kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Berufskraftfahrer (Lehrling)', b: { fahrzeug: true, kunden: true, praemien: false } }
       } },
     bagger: { name: 'Baggerfahrer / Maschinist', paket: 'bau', kvs: ['bau', 'de_bau', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
       arten: {
@@ -471,6 +472,7 @@
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -483,6 +485,7 @@
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Einzelhandel)', b: { fahrzeug: false, kunden: false, praemien: true } },
         theke: { name: 'Feinkost / Bedientheke / Bäckerei', b: { fahrzeug: false, kunden: false, praemien: true } },
         lager: { name: 'Lager / Warenübernahme', b: { fahrzeug: false, kunden: false, praemien: true } },
         leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } }
@@ -490,6 +493,7 @@
     gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Koch, Restaurantfachmann, Hotel)', b: { fahrzeug: false, kunden: false, praemien: false } },
         kueche: { name: 'Küche', b: { fahrzeug: false, kunden: false, praemien: false } },
         chef: { name: 'Küchenchef / Koch', b: { fahrzeug: false, kunden: false, praemien: true } },
         rezeption: { name: 'Rezeption / Empfang', b: { fahrzeug: false, kunden: false, praemien: false } },
