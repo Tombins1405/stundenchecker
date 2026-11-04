@@ -1985,6 +1985,11 @@
     $('#tour-box').innerHTML = '<div class="tour-mia">' + miaSvg(miaCfg().figur, miaFor(), '') + '</div><div class="tour-body"><p></p><div class="tour-btns">' +
       (first ? '' : '<button type="button" class="btn" data-tour="prev">Zurück</button>') + '<button type="button" class="btn primary" data-tour="next">' + (st.ask ? 'Ja, gleich' : last ? 'Fertig' : (first && (T.assist || T.tag) ? 'Los geht’s' : 'Weiter')) + '</button>' + (st.ask ? '<button type="button" class="btn" data-tour="later">Später</button><button type="button" class="btn" data-tour="nein">Nein danke</button>' : '<button type="button" class="linkbtn" data-tour="end">Beenden</button>') + '</div></div>';
     $('#tour-box p').textContent = st.t;
+    if (T.assist && st.sel) { // Einrichtung: Mia sagt bei jedem Feld, ob es unbedingt nötig oder optional ist
+      var must = ['#s-beruf', '#s-lohn'].indexOf(st.sel) >= 0, bd = document.createElement('span');
+      bd.className = 'need ' + (must ? 'must' : 'opt'); bd.textContent = must ? 'Unbedingt nötig' : 'Optional';
+      $('#tour-box p').parentNode.insertBefore(bd, $('#tour-box p'));
+    }
     $('#tour-box').style.top = (T.assist || T.live) ? '8px' : '30%'; $('#tour-box').style.bottom = 'auto';
     setTimeout(function () {
       if (!TOUR || TOUR !== T || T.i !== idx) return;
@@ -2084,7 +2089,7 @@
     var sc = (w.beruf === 'lkw' && w.art === 'baustelle') ? miaScene('kipper', w.mia === 'm' ? 'm' : 'w') : (w.beruf === 'bagger' ? miaScene('bagger', w.mia === 'm' ? 'm' : 'w') : ((w.beruf === 'klein' || (w.beruf === 'lkw' && w.art === 'tour')) ? miaScene('transporter', w.mia === 'm' ? 'm' : 'w') : ''));
     if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
     else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
-    html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + '</p>';
+    html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + (w.step === 'mia' || w.step === 'bausteine' ? '<span class="need opt">Optional</span>' : '<span class="need must">Unbedingt nötig</span>') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + Object.keys(E.BERUFE).filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Mein Beruf ist nicht dabei</summary><div class="field"><label for="wz-bf">Welcher Beruf fehlt, und was brauchst du dafür?</label><textarea id="wz-bf" rows="3" maxlength="600"></textarea></div><button type="button" class="btn" data-wbf="1">Senden</button><p class="hint">Bis dahin passt „Etwas anderes“. Mia schlägt dir später etwas Passendes vor.</p></details>';

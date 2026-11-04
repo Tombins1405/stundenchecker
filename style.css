@@ -785,3 +785,9 @@ h3[data-ico="target"]::before { background: #00838f; }
 /* Auswahlfenster liegen auch während der Führung ganz oben; Feedback-Knopf immer sichtbar, das Feedback-Fenster darüber */
 .tp-overlay, .dp-ov, .sp-ov { z-index: 330; }
 .cropov.fbov { z-index: 400; }
+
+/* Mia sagt bei der Einrichtung, was unbedingt nötig und was optional ist */
+.need { display: inline-block; margin: 0 0 6px 8px; padding: 2px 9px; border-radius: 999px; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; vertical-align: middle; }
+.tour-body > .need { margin: 0 0 6px; }
+.need.must { background: #c62828; color: #fff; }
+.need.opt { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
