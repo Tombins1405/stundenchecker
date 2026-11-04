@@ -1530,7 +1530,7 @@
   function miaNext() {
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
-    if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir deine Einstellungen gemeinsam durchgehen? Ich führe dich Feld für Feld, du trägst gleich mit ein.' });
+    if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
@@ -1558,7 +1558,7 @@
     if (k.indexOf('news_') === 0) { newsSet('gelesen', newsListe().map(function (x) { return x.id; })); show('konten'); renderNews(); setTimeout(function () { var el = $('#news-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); return; }
     if (k === 'rundgang') { tourStart(); }
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
-    else if (k === 'assist') { tourStart(true); }
+    else if (k === 'assist') { tourStart(true, 'kurz'); }
     else if (k === 'assistmehr') { tourStart(true); }
     else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
     else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
@@ -2017,7 +2017,7 @@
     var tag = assist === 'tag'; assist = assist === true;
     ins(assist ? 'assistentin' : tag ? 'tagfuehrung' : 'rundgang');
     if (tag) { if (!data.profil) data.profil = {}; data.profil.tagGefuehrt = todayISO(); save(); }
-    TOUR = { s: assist ? (intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir nur das Wichtigste ein, das dauert etwa eine Minute. Was du gerade nicht weißt, überspringst du mit Weiter. Alles Weitere machen wir später, wenn du magst.' }].concat(assistKurz()) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
+    TOUR = { s: assist ? (intro === 'kurz' ? assistKurz() : intro ? [{ t: 'Schön, dass du da bist. Mit dem Stunden-Checker trägst du deine Arbeitszeiten ein. Die App rechnet Überstunden, Zuschläge und Urlaub mit und zeigt dir, ob dein Lohnzettel stimmt. Jetzt richten wir nur das Wichtigste ein, das dauert etwa eine Minute. Was du gerade nicht weißt, überspringst du mit Weiter. Alles Weitere machen wir später, wenn du magst.' }].concat(assistKurz()) : assistSteps()) : tag ? tagSteps() : tourSteps(), i: 0, dir: 1, assist: assist, tag: tag, live: !assist };
     if (assist && intro) TOUR.kurz = true;
     if (assist && !intro && data.profil && data.profil.assistKap > 1) { var ki = TOUR.s.map(function (x) { return x.kap; }).indexOf(data.profil.assistKap); if (ki > 0) TOUR.i = ki; }
     window.addEventListener('scroll', tourOnMove, { passive: true }); window.addEventListener('resize', tourOnMove);
