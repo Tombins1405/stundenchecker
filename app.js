@@ -993,6 +993,18 @@
   /* ---- Notiz zum Tag: Text, wie es zu dem Tag kam, und Zeitstempel (damit man Monate später noch weiß, was war) ---- */
   function anBraucht(d) { return ['urlaub', 'za', 'freistellung', 'ersatzruhe', 'betriebsurlaub', 'frei'].indexOf(d.status) >= 0 || (d.status === 'arbeit' && +d.sw > 0); }
   function fmtStamp(iso) { var x = new Date(iso); if (isNaN(x)) return ''; return x.toLocaleDateString('de-AT') + ' um ' + x.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' }); }
+  var FREI_NOTE = {
+    za: 'Die Firma hat mich für diesen Tag in Zeitausgleich geschickt, weil es keine Arbeit gab. Der Tag wird von meinem Zeitausgleichskonto abgezogen. Angeordnet von der Firma.',
+    bezahlt: 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab. Die Firma zahlt den Tag normal weiter.',
+    unbezahlt: 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab. Der Tag ist unbezahlt.'
+  };
+  function freiNote() {
+    var d = ui.edDraft, w = wAt(ui.edDate || todayISO()), m = d.fv || (w && w.freiVerr) || 'offen';
+    if (m === 'offen') m = 'za';
+    var an = d.an || {}, t = (an.t || '').trim(), preset = Object.keys(FREI_NOTE).some(function (k) { return FREI_NOTE[k] === t; }) || t === 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab.';
+    if (t && !preset) return;
+    d.an = { w: 'firma', t: FREI_NOTE[m] }; renderAn();
+  }
   function renderAn() {
     var d = ui.edDraft, an = d.an || {};
     $('#e-an').value = an.t || '';
@@ -2511,8 +2523,8 @@
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
       case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
-      case 'e-fv': if (t.value) ui.edDraft.fv = t.value; else delete ui.edDraft.fv; updatePreview(); return;
-      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; $('#e-frbox').hidden = t.value !== 'freistellung'; if (t.value !== 'freistellung') { delete ui.edDraft.fv; $('#e-fv').value = ''; } else { var an0 = ui.edDraft.an || {}; if (!(an0.t || '').trim() && !an0.w) { ui.edDraft.an = { w: 'firma', t: 'Die Firma hat mich für diesen Tag freigestellt, weil es keine Arbeit gab.' }; renderAn(); } } $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
+      case 'e-fv': if (t.value) ui.edDraft.fv = t.value; else delete ui.edDraft.fv; freiNote(); updatePreview(); return;
+      case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = t.value !== 'arbeit'; $('#e-frbox').hidden = t.value !== 'freistellung'; if (t.value !== 'freistellung') { delete ui.edDraft.fv; $('#e-fv').value = ''; } else { freiNote(); } $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
       case 'e-bis': ui.edDraft.bis = t.value; updatePreview(); return;
       case 'e-diaeten': ui.edDraft.diaeten = t.value === '' ? null : parseFloat(String(t.value).replace(',', '.')); updatePreview(); return;
