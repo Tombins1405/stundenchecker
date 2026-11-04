@@ -200,7 +200,7 @@
     },
     holzbau: {
       name: 'Holzbau (Zimmerer, Dachstuhl)',
-      hinweis: 'KV Holzbau-Meistergewerbe (Zimmerer), Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, Überstunde ab mehr als 9 Stunden pro Tag, Zuschlag 50 % (20 bis 5 Uhr: 100 %), Sonntag 100 %, Feiertag 50 %, Taggeld 12,10 € je Arbeitstag bei mehr als 3 Stunden und täglicher Heimkehr, 30 € bei auswärtiger Übernachtung. Zeitausgleich in ganzen Tagen. Schlechtwetter über die BUAK. Verteilung der Normalarbeitszeit (kurze/lange Woche) ist noch nicht abgebildet.',
+      hinweis: 'KV Holzbau-Meistergewerbe (Zimmerer), Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39 Stunden/Woche, mit Zeitausgleich in ganzen Tagen auf 40 Stunden ausdehnbar oder bis 45 Stunden in 26 von 52 Wochen (höchstens 156 Zeitguthaben-Stunden). Überstunde ist jede Stunde über 9 Stunden pro Tag oder über der ersten Mehrarbeitsstunde pro Woche. Zuschläge: Überstunden von 5 bis 20 Uhr und Mehrarbeit 50 %, Überstunden von 20 bis 5 Uhr 100 %, Normalstunden von 20 bis 5 Uhr 50 %, Sonntag 100 %, Feiertag 50 % (100 % an einem sonst freien Tag), über 16 Stunden am Stück 150 %; bei mehreren Zuschlägen zählt nur der höchste. Taggeld 12,10 € je Arbeitstag (mehr als 3 Stunden, tägliche Heimkehr), 30 € bei notwendiger Übernachtung (ab 100 km), Übernachtungsgeld 17,53 € ohne Quartier vom Betrieb. Zulagen: Aufsicht 10 %, Schmutz 10 %, Abbruch 15 %, angeseilt 10 %, Gebirge 12 % oder 20 % (höchstens zwei Zulagen gleichzeitig). Lehrlingsentschädigung je Stunde als Lohngruppe hinterlegt. Schlechtwetter über die BUAK.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 12.10 }] },
@@ -260,6 +260,45 @@
         stundenlohn: null,
         betriebFrei: 'urlaub',
         zuschlag: { sa: 0, so: 0, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    reinigung: {
+      name: 'Gebäudereinigung (Denkmal-, Fassaden- und Gebäudereinigung)',
+      hinweis: 'KV Denkmal-, Fassaden- und Gebäudereinigung, Arbeiter, ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche ohne Pausen, Überstunden 50 % (Montag bis Samstag 6 bis 21 Uhr), in der Nacht (21 bis 6 Uhr) 100 %, Sonntag 150 %, am Feiertag 100 %. Normalstunden in der Nacht 50 %, am Sonntag 100 %, am Feiertag ohne Zuschlag. Mehrarbeit bei Teilzeit 25 %. Wegzeiten im Dienst zählen als Arbeitszeit. Zehrgeld 11,71 € je Tag (außerhalb der Gemeinde, mindestens 6 Stunden), Trennungszulage 19,67 €, gefährliche Arbeiten 10 %: lege sie bei Bedarf als Prämie an. Lehrlingseinkommen 2026 als Lohngruppe hinterlegt. In der Hotelreinigung (Lohngruppe 3) gelten am Sonntag andere Zuschläge, bitte laut Lohnzettel prüfen.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 0 },
+        schlechtwetter: false
+      }
+    },
+    bewachung: {
+      name: 'Bewachung / Sicherheitsdienst (Wachorgane)',
+      hinweis: 'KV Wachorgane im Bewachungsgewerbe, Arbeiter, ab 1.1.2026 (Quelle: wko.at): Vollzeit mindestens 40 Stunden/Woche an 4 oder 5 Tagen, Durchrechnung ab 40 Stunden bis 60 Stunden in einer Woche mit Zeitausgleich 1:1. Stunden über dem Monatslimit, über 12 Stunden am Tag oder 60 Stunden in der Woche 50 %, Arbeit am wöchentlichen Ruhetag 100 %. Nachtzulage 1,26 € je Stunde, Erschwerniszulage Revierdienst 0,80 € je Stunde, Diensthund 18,74 € je Schicht: lege sie bei Bedarf als Prämie an. Zuschläge für Sonn- und Feiertage konnte ich in der Quelle nicht belegen, bitte laut Lohnzettel einstellen. Stundenlöhne je Verwendungsgruppe als Lohngruppe hinterlegt.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 0, ft: 0 },
+        schlechtwetter: false
+      }
+    },
+    sozial: {
+      name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Als Lohngruppe ist jeweils nur die Stufe 1 hinterlegt, dein Gehalt steigt mit den Berufsjahren: bitte laut Lohnzettel anpassen. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 37, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 160.21 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -551,6 +590,32 @@
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1493.38] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2000.00] }
     ] },
+    reinigung: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'LG1', name: 'LG 1 Facharbeiter mit Lehrabschluss Reinigungstechnik', l: [15.12] },
+      { id: 'LG2', name: 'LG 2 Sonderreinigung, ohne Lehrabschluss, Chauffeur, Magazin', l: [13.30] },
+      { id: 'LG3', name: 'LG 3 Hotelreinigung', l: [12.99] },
+      { id: 'LG4', name: 'LG 4 Hausbetreuung, Wohnhausanlagen, Privathaushalte', l: [13.03] },
+      { id: 'LG5', name: 'LG 5 Senioreneinrichtungen, Pflege- und Krankenanstalten, Labor', l: [12.73] },
+      { id: 'LG6', name: 'LG 6 Ständige Unterhaltsreinigung, Botengänge, Küche', l: [12.37] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1099.89] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1361.77] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1623.64] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1885.52] }
+    ] },
+    bewachung: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'A', name: 'A Wachdienst', l: [12.63] },
+      { id: 'B', name: 'B Service- und Sicherheitsdienst', l: [13.87] },
+      { id: 'B6', name: 'B 6 Museumsaufsichtsdienst', l: [12.63] },
+      { id: 'C', name: 'C Sonderdienst', l: [15.46] },
+      { id: 'D', name: 'D Mobiler Dienst', l: [13.95] },
+      { id: 'E', name: 'E Veranstaltungssicherheit', l: [12.67] },
+      { id: 'F', name: 'F Flughafensicherheitsdienst', l: [16.56] }
+    ] },
+    sozial: { stand: 'ab 1.4.2026', stufen: null, teiler: 160.21, gruppen: [
+      { id: 'VG5', m: true, name: 'VG 5 Pflegeassistenz, Stufe 1', l: [2676.40] },
+      { id: 'VG6', m: true, name: 'VG 6 Pflegefachassistenz, Stufe 1', l: [2867.20] },
+      { id: 'VG7', m: true, name: 'VG 7 Diplomierte Gesundheits- und Krankenpflege, Stufe 1', l: [3074.80] }
+    ] },
     gastro: { stand: 'ab 1.10.2026', stufen: null, gruppen: [
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220] },
@@ -630,6 +695,31 @@
         rezeption: { name: 'Rezeption / Empfang', b: { fahrzeug: false, kunden: false, praemien: false } },
         housekeeping: { name: 'Zimmerservice / Housekeeping', b: { fahrzeug: false, kunden: false, praemien: false } },
         betrieb: { name: 'Betriebsküche / Catering / Kantine', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    reinigung: { name: 'Reinigung / Gebäudeservice', paket: 'reinigung', kvs: ['reinigung', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: true, praemien: true },
+      arten: {
+        unterhalt: { name: 'Unterhaltsreinigung (Büro, Objekt)', b: { fahrzeug: false, kunden: true, praemien: true } },
+        hotel: { name: 'Hotelreinigung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        haus: { name: 'Hausbetreuung / Wohnhausanlage / Privathaushalt', b: { fahrzeug: false, kunden: true, praemien: true } },
+        pflegeheim: { name: 'Senioren-, Pflege- und Krankenhausreinigung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        sonder: { name: 'Fassaden-, Fenster- und Sonderreinigung', b: { fahrzeug: false, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Reinigungstechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    security: { name: 'Security / Sicherheitsdienst', paket: 'bewachung', kvs: ['bewachung', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: true, praemien: true },
+      arten: {
+        wach: { name: 'Objektschutz / Wachdienst / Portier', b: { fahrzeug: false, kunden: true, praemien: true } },
+        service: { name: 'Service- und Sicherheitsdienst (Empfang, Kassa)', b: { fahrzeug: false, kunden: true, praemien: true } },
+        mobil: { name: 'Mobiler Dienst / Streife', b: { fahrzeug: true, kunden: true, praemien: true } },
+        veranstaltung: { name: 'Veranstaltungssicherheit', b: { fahrzeug: false, kunden: true, praemien: true } },
+        flughafen: { name: 'Flughafensicherheit', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    pflege: { name: 'Pflege / Betreuung / Soziales', paket: 'sozial', kvs: ['sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        pa: { name: 'Pflegeassistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
+        pfa: { name: 'Pflegefachassistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
+        dgkp: { name: 'Diplomierte Gesundheits- und Krankenpflege', b: { fahrzeug: false, kunden: false, praemien: true } },
+        heimhilfe: { name: 'Heimhilfe / Betreuung / Sozialbetreuung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        mobil: { name: 'Mobile Pflege / Hauskrankenpflege', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
     anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
