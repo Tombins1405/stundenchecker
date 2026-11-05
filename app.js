@@ -37,7 +37,9 @@
   var toastTimer = null;
   function toast(msg, ms) {
     var t = $('#toast'); t.textContent = msg; t.hidden = false;
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 2800);
+    if (!t._tap) { t._tap = true; t.addEventListener('click', function () { clearTimeout(toastTimer); t.hidden = true; }); }
+    var dauer = Math.max(ms || 0, 4500, 1500 + String(msg).length * 70);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, dauer);
   }
   // Zweistufiges Bestätigen ohne Pop-up: erster Tipp ändert die Beschriftung, zweiter Tipp führt aus.
   function arm(btn, armedText, fn) {
