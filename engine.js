@@ -409,6 +409,7 @@
   var STATUS = {
     arbeit:        { name: 'Arbeit',                  credit: false },
     urlaub:        { name: 'Urlaub',                  credit: true },
+    sonderurlaub:  { name: 'Sonderurlaub',            credit: true },
     krank:         { name: 'Krankenstand',            credit: true },
     pflege:        { name: 'Pflegefreistellung',      credit: true },
     schule:        { name: 'Schulung / Berufsschule',            credit: true },
@@ -948,10 +949,13 @@
     var credit = STATUS[status].credit && !(status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden');
     if (status === 'freistellung') { res.freiModus = freiModus(day, w); res.freiSollMin = sollMin; if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
     if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
-    if (credit) { res.creditMin = sollMin; return res; }
-    if (status !== 'arbeit') return res;
+    var mitArbeit = status === 'urlaub' || status === 'sonderurlaub'; // an so einem Tag darf trotzdem gearbeitet worden sein: bezahlter Tag plus Arbeit
+    var credBase = 0;
+    if (credit) { res.creditMin = sollMin; credBase = sollMin; if (!mitArbeit) return res; }
+    else if (status !== 'arbeit') return res;
 
     var m = dayMinutes(day, w, dateStr);
+    if (mitArbeit && !(m.netto > 0)) return res;
     res.dstMin = m.dst || 0;
     res.bruttoMin = m.brutto; res.pausenMin = m.pausen; res.nettoMin = m.netto; res.warn = m.warn;
 
@@ -961,11 +965,11 @@
     res.wertMin = m.netto * res.faktor;
     // Zusätzlich bezahlte Stunden am selben Tag (zum Beispiel Sonderurlaub plus Arbeit): werden einfach dazugezählt.
     var ex = +day.extra; if (isNaN(ex) || ex < 0) ex = 0;
-    res.extraMin = Math.round(ex * 60); res.creditMin = res.extraMin;
+    res.extraMin = Math.round(ex * 60); res.creditMin = credBase + res.extraMin;
 
     // Überstunden-Beitrag des Tages (Modell "tag-saldo": Arbeitsstunden minus Tagessoll, kürzere Tage gleichen aus)
     if (w.ueberstunden.modell === 'tag-saldo' && (res.wertMin > 0 || res.swMin > 0 || res.extraMin > 0)) {
-      res.saldoMin = res.wertMin + res.extraMin - Math.max(0, sollMin - res.swMin);
+      res.saldoMin = res.wertMin + res.creditMin - Math.max(0, sollMin - res.swMin);
     }
 
     // Diäten
@@ -1140,7 +1144,7 @@
     Object.keys(days).forEach(function (k) { if (days[k] && (!firstKey || k < firstKey)) firstKey = k; });
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
       arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, schule: 0, za: 0, freiTage: 0, freiListe: [], feiertageBezahlt: 0, zuschlagMin: 0,
-      feMin: 0, urMin: 0, krMin: 0, pfMin: 0, feExtraMin: 0 };
+      feMin: 0, urMin: 0, krMin: 0, pfMin: 0, soMin: 0, sonderTage: 0, feExtraMin: 0 };
     var bauWochen = false, monatModell = false, gleitModell = false, anyEntry = false;
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
 
@@ -1158,6 +1162,7 @@
       s.diaetenBetrag += r.diaetenBetrag;
       if (r.nettoMin > 0) s.arbeitstage++;
       if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urlaub++;
+      if (r.status === 'sonderurlaub') s.sonderTage++;
       if (r.status === 'krank') s.krank++;
       if (r.status === 'pflege') s.pflege++;
       if (r.status === 'schule') s.schule++;
@@ -1165,7 +1170,8 @@
       if (r.status === 'freistellung') { s.freiTage++; s.freiListe.push({ datum: ds, modus: r.freiModus, std: h2(r.freiSollMin || 0) }); }
       if (r.status === 'feiertag') { s.feiertageBezahlt++; s.feMin += r.creditMin; }
       if (r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Feiertagslohn gibt es auch, wenn man am Feiertag arbeitet (nur Anzeige, nicht in den Stunden)
-      if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urMin += r.creditMin;
+      if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
+      if (r.status === 'sonderurlaub') s.soMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
       if (r.status === 'krank') s.krMin += r.creditMin;
       if (r.status === 'pflege') s.pfMin += r.creditMin;
       if (r.saldoMin !== null) s.ueberMin += r.saldoMin;
@@ -1237,7 +1243,7 @@
     }
 
     // Aufteilung wie auf dem Lohnzettel: Lohn = alle Stunden minus Überstunden minus Feiertag, Urlaub, Krankenstand, Pflege.
-    var credMin = s.feMin + s.urMin + s.krMin + s.pfMin;
+    var credMin = s.feMin + s.urMin + s.krMin + s.pfMin + s.soMin;
     var normalMin = Math.max(0, s.lohnMin - Math.max(0, s.ueberMin) - credMin) + (s.mehrFreiMin || 0);
     // Dienste (Bereitschaft, Notdienst, frei benannt): zählen an jedem Tagestyp, auch ohne Arbeitszeit. Die Bezahlung legt der Nutzer fest.
     var dList = (data.profil && data.profil.dienste) || [], dSum = {};
@@ -1259,7 +1265,7 @@
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage, freiListe: s.freiListe, zaUmr: (wertAt(settings, iso(y, m, n)) || {}).zaUmr || 'offen',
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
-        normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin)
+        normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin), sonderStd: h2(s.soMin), sonderTage: s.sonderTage
       },
       schlechtwetter: { verbrauchtStd: h2(sw.min), kontingentStd: sw.kontingentStd, von: sw.vonDatum, bis: sw.bisDatum }
     };
@@ -1281,7 +1287,7 @@
     // Zeitausgleich-Konto: Überstunden, die nicht ausbezahlt, sondern auf das Konto gebucht wurden. Wird zur Überstundenzeile dazugezählt.
     { key: 'zaKonto',  label: 'Zeitausgleich-Konto (Zuwachs)', pflicht: false, info: true, hole: function () { return null; } },
     // Sonderurlaub: wird von manchen Firmen aus den Überstunden bezahlt und zählt dann zur Zeile "Lohn" dazu.
-    { key: 'sonder',   label: 'Sonderurlaub (aus Überstunden bezahlt)', pflicht: false, info: true, hole: function () { return null; } },
+    { key: 'sonder',   label: 'Sonderurlaub (aus Überstunden bezahlt)', pflicht: false, info: true, hole: function (s) { return s && s.sonderStd > 0 ? s.sonderStd : null; } },
     // Urlaubszuschuss / Sonderzahlung: steht auf dem Lohnzettel meist nur als Bruttobetrag. Reine Eingabezeile, wird mit der Sonderzahlung im Profil verglichen.
     { key: 'urlaubszuschuss', label: 'Urlaubszuschuss (Brutto)', unit: '€', pflicht: false, info: true, hole: function () { return null; } }
   ];
@@ -1293,24 +1299,25 @@
       else { var gd = r2(+gv - ga), gb = Math.abs(gd); grow = { key: 'gleit', label: 'Gleitzeitsaldo des Monats', app: ga, lz: +gv, lzGesamt: +gv, diff: gd, faktor: 0, status: gb < 0.005 ? 'gleich' : gb <= 0.5 ? 'klein' : gd < 0 ? 'weniger' : 'mehr' }; }
       return [grow];
     }
-    var rows = [], za = lz && hasNum(lz.zaKonto) ? zaUeber(+lz.zaKonto, summe && summe.zaUmr) : 0, so = lz && hasNum(lz.sonder) ? +lz.sonder : 0;
+    var rows = [], za = lz && hasNum(lz.zaKonto) ? zaUeber(+lz.zaKonto, summe && summe.zaUmr) : 0, so = lz && hasNum(lz.sonder) && !(summe && summe.sonderStd > 0) ? +lz.sonder : 0;
     AB_ZEILEN.forEach(function (z) {
       var v = lz && lz[z.key], has = hasNum(v);
-      if (z.info) { // reine Eingabezeile, nur sichtbar wenn eingetragen oder "alle Zeilen"
+      var eigenSo = z.key === 'sonder' && summe && summe.sonderStd > 0; // eigene Sonderurlaubstage: dann echter Vergleich statt reiner Eingabezeile
+      if (z.info && !eigenSo) { // reine Eingabezeile, nur sichtbar wenn eingetragen oder "alle Zeilen"
         if (has || alle) rows.push({ key: z.key, label: z.label, unit: z.unit, app: null, lz: has ? +v : null, diff: null, status: 'info' });
         return;
       }
-      if (fix && !alle && !has && ['lohn', 'feiertag', 'urlaub', 'krank', 'pflege'].indexOf(z.key) >= 0) return;
-      if (alles && !has && ['feiertag', 'urlaub', 'krank', 'pflege'].indexOf(z.key) >= 0) return; // alles steckt in der Zeile Lohn
+      if (fix && !alle && !has && ['lohn', 'feiertag', 'urlaub', 'krank', 'pflege', 'sonder'].indexOf(z.key) >= 0) return;
+      if (alles && !has && ['feiertag', 'urlaub', 'krank', 'pflege', 'sonder'].indexOf(z.key) >= 0) return; // alles steckt in der Zeile Lohn
       var app = r2(z.hole(summe) || 0);
-      if (alles && z.key === 'lohn') app = r2((summe.normalStd || 0) + (summe.feiertagStd || 0) + (summe.urlaubStd || 0) + (summe.krankStd || 0) + (summe.pflegeStd || 0));
+      if (alles && z.key === 'lohn') app = r2((summe.normalStd || 0) + (summe.feiertagStd || 0) + (summe.urlaubStd || 0) + (summe.krankStd || 0) + (summe.pflegeStd || 0) + (summe.sonderStd || 0));
       var eingetragenOhneApp = has && +v > 0 && app === 0;
       if ((!z.pflicht || (z.key === 'dStd' && app === 0)) && !alle && app === 0 && !eingetragenOhneApp) return; // Zeile nur zeigen, wenn sie vorkommt
       if (z.nurAlle && !alle && !(has && +v > 0)) return; // Euro-Zeile nur auf Wunsch oder wenn eingetragen
-      if (!has) { rows.push({ key: z.key, label: z.label, unit: z.unit, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
+      if (!has) { rows.push({ key: z.key, label: eigenSo ? 'Sonderurlaub' : z.label, unit: z.unit, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
       var lzWert = +v + (z.key === 'ueber' ? za : 0) + (z.key === 'lohn' ? so : 0); // Überstunden + Zeitausgleich-Konto, Lohn + Sonderurlaub
       var diff = r2(lzWert - app), a = Math.abs(diff);
-      rows.push({ key: z.key, label: z.label, unit: z.unit, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
+      rows.push({ key: z.key, label: eigenSo ? 'Sonderurlaub' : z.label, unit: z.unit, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
         status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
     });
     // Prämien: Betrag in Euro gegen die Zeile auf dem Lohnzettel (Toleranz 50 Cent wegen Rundung)

@@ -488,6 +488,7 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .day { border-left: 5px solid var(--line); }
 .day.st-arbeit { border-left-color: var(--accent); }
 .day.st-urlaub { border-left-color: #f2a100; }
+.day.st-sonderurlaub { border-left-color: #7a3fc0; }
 .day.st-krank, .day.st-arzt { border-left-color: var(--bad); }
 .day.st-pflege { border-left-color: #d6409f; }
 .day.st-schule { border-left-color: #5c6bc0; }
@@ -498,6 +499,7 @@ details#e-an-box > summary { cursor: pointer; color: var(--ink-2); font-size: .9
 .d-icos { display: flex; gap: 4px; margin-top: 6px; }
 .d-ico { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); flex: none; }
 .st-urlaub .d-ico { background: #fdeccc; color: #8a5300; }
+.st-sonderurlaub .d-ico { background: #efe3fb; color: #5b2a99; }
 .st-krank .d-ico, .st-arzt .d-ico { background: var(--bad-soft); color: var(--bad); }
 .st-pflege .d-ico { background: #fce4f1; color: #a31d73; }
 .st-schule .d-ico { background: #e3e6f8; color: #2f3b9c; }
