@@ -3559,7 +3559,7 @@
       if (k.einstufung) rows.push(zl('Einstufung', k.einstufung, pr ? en.einstufung || '' : null, 'einst'));
       if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (tr.ls != null && E.LOHNGRUPPEN[tr.paket].stufen ? ', ' + esc(E.LOHNGRUPPEN[tr.paket].stufen[tr.ls]) : '') + '</span></li>');
       b.innerHTML = svg + (rows.length ? '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte vergleiche mit deinem Lohnzettel.</div><ul class="legende">' + rows.join('') + '</ul>' + (lzUi.treff === null && (lzUi.kopf.treffer || []).length > 1 ? '<p class="hint">Der Stundenlohn passt zu mehreren Lohngruppen. Bitte wähle die Lohngruppe danach selbst aus.</p>' : '') : '<p>Auf diesem Lohnzettel habe ich keinen Kollektivvertrag und keinen Stundenlohn gefunden. Bitte stelle alles selbst ein. Ich helfe dir dabei.</p>') +
-        '<p class="hint">Gelesen wurde nur hier auf deinem Handy. Es wurde nichts hochgeladen und nichts gespeichert, außer was du übernimmst.</p>';
+        '<p class="hint">Gelesen wurde nur hier auf deinem Handy. Es wurde nichts hochgeladen und nichts gespeichert, außer was du übernimmst.</p>' + (rows.length ? '<p class="hint">Wenn du übernimmst, merke ich mir die Namen der Zeilen auf deinem Lohnzettel, ohne Zahlen. Dann lese ich ihn nächstes Mal sofort.</p>' : '');
       bt.innerHTML = (!pr && rows.length ? lzBtn('Übernehmen', 'lz-einr-ok', 'primary') : '') + lzBtn(pr ? 'Schließen' : 'Selbst einstellen', 'lz-cancel');
     } else if (s === 'fehler') {
       h.textContent = 'Das hat nicht geklappt';
@@ -3644,6 +3644,18 @@
     if (lzUi.modus === 'pruef') lzUi.en = wAt(todayISO());
     lzUi.step = 'einr'; lzRender();
   }
+  function lzVorlageMerken() {
+    try {
+      var res = window.StundenLz.parse(lzUi.lines || [], lzProfil().lzMap || {}), lm = lzProfil().lzMap || (lzProfil().lzMap = {}), n = 0;
+      res.zeilen.forEach(function (z) {
+        if (!z.key || lm[z.norm] !== undefined) return;
+        lm[z.norm] = z.key; n++;
+        if (z.nums) { lm['#' + z.norm] = z.pos | 0; lm['@' + z.norm] = z.nums.length; }
+      });
+      if (n) save();
+      return n;
+    } catch (e) { return 0; }
+  }
   function lzAnwenden(w, k, tr) {
     var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || [], gleich = k.paket && kvs.indexOf(k.paket) >= 0, pak = gleich ? k.paket : (tr && kvs.indexOf(tr.paket) >= 0 ? tr.paket : null);
     if (pak && pak !== w.paket) { var pv = E.PAKETE[pak].werte; w.paket = pak; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
@@ -3656,8 +3668,8 @@
   }
   function lzEinrOk() {
     var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
-    if (!w.beruf) { w.scan = { k: k, tr: tr }; w.scanDone = false; lzClose(); toast('Gemerkt. Ich trage es im Schritt Kollektivvertrag ein, sobald du deinen Beruf gewählt hast.', 5000); return; }
-    var ok = lzAnwenden(w, k, tr);
+    if (!w.beruf) { w.scan = { k: k, tr: tr }; w.scanDone = false; lzVorlageMerken(); lzClose(); toast('Gemerkt. Ich trage es im Schritt Kollektivvertrag ein, sobald du deinen Beruf gewählt hast.', 5000); return; }
+    var ok = lzAnwenden(w, k, tr); lzVorlageMerken();
     lzClose(); wzRender(); toast(ok ? 'Übernommen. Bitte prüfe die Werte noch einmal.' : 'Dazu habe ich nichts gefunden.', 4000);
   }
   function lzEinrAendern(was) {
@@ -3666,7 +3678,7 @@
     if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && !tr.hinweis && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
     else if (was === 'monat') { var ms = rec.monatsStd || 166.83; rec.monatslohn = k.monatslohn; rec.monatsStd = ms; rec.stundenlohn = Math.round(k.monatslohn / ms * 100) / 100; rec.lgAuto = false; }
     else if (was === 'einst') rec.einstufung = k.einstufung.slice(0, 60);
-    save(); lzUi.en = rec; renderSettings(); toast('Geändert. Gilt ab ' + fmtDate(rec.gueltigAb) + '.', 4000); lzRender();
+    lzVorlageMerken(); save(); lzUi.en = rec; renderSettings(); toast('Geändert. Gilt ab ' + fmtDate(rec.gueltigAb) + '.', 4000); lzRender();
   }
   function lzNext() {
     if (!lzUi.queue || !lzUi.queue.length) { lzFertig(); return; }
@@ -3676,7 +3688,7 @@
     fr.onload = function () {
       window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
         if (!o.hatText) { lzUi.queue = []; lzUi.step = 'keintext'; lzRender(); return; }
-        if (lzUi.modus === 'einr' || lzUi.modus === 'pruef') { lzUi.queue = []; lzEinrAus(o.lines); return; }
+        if (lzUi.modus === 'einr' || lzUi.modus === 'pruef') { lzUi.queue = []; lzUi.lines = o.lines; lzEinrAus(o.lines); return; }
         var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; ins('lz_gelesen');
         if (lzBekannt(res)) { lzApply(res, res.monat, res.zeilen.map(function (z) { return { z: z, key: z.key, pos: z.pos | 0 }; })); lzNext(); return; }
         lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender();
