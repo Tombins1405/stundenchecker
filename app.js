@@ -2921,7 +2921,12 @@
       o[f] = (t.value === '' || isNaN(num)) ? null : num; delete o.test;
       var any = Object.keys(o).some(function (k) { return k !== 'test' && k !== 'gelesen' && o[k] != null; });
       if (!any) delete data.abgleich[key];
-      save(); paintAbgleich(); return;
+      save(); paintAbgleich();
+      if (f === 'ueber' && ui.summe && !ui.abAlle) { // die Zeile „Zeitausgleich-Konto“ kommt dazu oder fällt weg, sobald die Überstunden vom Lohnzettel abweichen
+        var braucht = o.ueber != null && +o.ueber < (ui.summe.ueberStd || 0) - 0.25, hat = !!$('#ab-zaKonto');
+        if (braucht !== hat && !(hat && o.zaKonto != null)) { renderAbgleich(ui.summe); var ue = $('#ab-ueber'); if (ue) { try { ue.focus(); } catch (e) { } } }
+      }
+      return;
     }
   }
   document.addEventListener('input', function (ev) { if (ev.target.id === 'e-date') return; onInput(ev); });
