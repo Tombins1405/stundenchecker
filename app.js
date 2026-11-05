@@ -2875,7 +2875,7 @@
       sheet = document.createElement('div'); sheet.id = 'fb-sheet'; sheet.className = 'cropov fbov'; sheet.hidden = true;
       sheet.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="fs-h"><h3 id="fs-h">Rückmeldung an den Entwickler</h3>' +
         '<div id="fs-bildbox"><img id="fs-prev" alt="" style="width:100%;max-height:200px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><label class="check" for="fs-mit"><input type="checkbox" id="fs-mit" checked><span>Bild dieser Seite mitschicken</span></label><p class="hint">Bitte keine Beträge, Namen oder Sozialversicherungsnummer auf dem Bild.</p></div>' +
-        '<div class="field"><label for="fs-art">Worum geht es?</label><select id="fs-art"><option value="fehler">Etwas stimmt nicht</option><option value="wunsch">Das fehlt mir</option><option value="frage">Ich habe eine Frage</option><option value="lob">Das gefällt mir</option></select></div>' +
+        '<div class="field"><label for="fs-art">Worum geht es?</label><select id="fs-art"><option value="fehler">Etwas stimmt nicht</option><option value="wunsch">Anregung</option><option value="frage">Ich habe eine Frage</option><option value="lob">Das gefällt mir</option></select></div>' +
         '<div class="field"><label for="fs-text">Deine Nachricht</label><textarea id="fs-text" rows="4" maxlength="4000"></textarea></div>' +
         '<p id="fs-msg" class="hint" hidden></p>' +
         '<div class="btns"><button type="button" class="btn" id="fs-x">Schließen</button><button type="button" class="btn primary" id="fs-send">Senden</button></div></div>';
