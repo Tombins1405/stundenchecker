@@ -1339,8 +1339,23 @@
     $('#e-mehr').addEventListener('click', mehrTage);
   })();
   function mitArbeit(st) { return st === 'arbeit' || st === 'urlaub' || st === 'sonderurlaub'; } // an Urlaub und Sonderurlaub darf zusätzlich gearbeitet worden sein
+  // Sonderurlaub oder Urlaub mit Arbeitszeit: Mia fragt einmal nach, ob das wirklich beides stimmt (oder nur ein Versehen war)
+  function paFrage() {
+    var dlg = $('#lk-dlg'), body = $('#lk-body'), btns = $('#lk-btns'), d = ui.edDraft, nm = E.STATUS[d.status].name;
+    lkKopf('Arbeitszeit eingetragen', 'Bei Urlaub und Sonderurlaub trägst du Zeiten nur ein, wenn du an dem Tag wirklich gearbeitet hast. Dann zählt der Tag als bezahlter Tag plus Arbeit. Die Arbeitszeit kommt zu den bezahlten Sollstunden dazu.');
+    body.innerHTML = lkMia('<span>An diesem Tag steht</span> <b>' + esc(nm) + '</b> <span>und eine Arbeitszeit von</span> <b>' + esc(d.von) + '–' + esc(d.bis || '…') + '</b><br><span>Stimmt das, oder war es ein Versehen?</span>');
+    btns.innerHTML = '<button type="button" class="btn primary" id="pa-ja">Ja, beides stimmt</button><button type="button" class="btn" id="pa-nein">Nein, ohne Arbeitszeit</button><button type="button" class="btn" id="pa-zu">Zurück zur Eingabe</button>';
+    dlg.hidden = false;
+    $('#pa-ja').onclick = function () { dlg.hidden = true; ui.paOk = ui.edDate + d.status + d.von + d.bis; saveDay(); };
+    $('#pa-nein').onclick = function () { dlg.hidden = true; d.von = ''; d.bis = ''; d.pausen = []; ui.paOk = ''; renderEditor(); saveDay(); };
+    $('#pa-zu').onclick = function () { dlg.hidden = true; };
+  }
   function saveDay() {
     var d = ui.edDraft, st = d.status;
+    if ((st === 'urlaub' || st === 'sonderurlaub') && d.von) {
+      var vor = data.days[ui.edDate], schonBestaetigt = vor && vor.status === st && vor.von === d.von && (vor.bis || '') === (d.bis || '');
+      if (!schonBestaetigt && ui.paOk !== ui.edDate + st + d.von + d.bis) { paFrage(); return false; }
+    }
     if (st === 'arbeit') {
       if (!d.von && d.bis) { toast('Es fehlt der Beginn.'); return false; }
       if (!d.von && !(+d.sw > 0)) { toast(data.days[ui.edDate] ? 'Beginn fehlt. Soll der Tag leer sein? Dann tippe unten auf „Tag löschen“.' : 'Bitte mindestens den Beginn eintragen.'); return false; } // das Ende darf noch fehlen: Dienst läuft
