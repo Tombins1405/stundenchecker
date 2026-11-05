@@ -1305,11 +1305,12 @@
       return [grow];
     }
     var rows = [], za = lz && hasNum(lz.zaKonto) ? zaUeber(+lz.zaKonto, summe && summe.zaUmr) : 0, so = lz && hasNum(lz.sonder) && !(summe && summe.sonderStd > 0) ? +lz.sonder : 0;
+    var ueberWeniger = !!(lz && hasNum(lz.ueber) && summe && +lz.ueber < (summe.ueberStd || 0) - 0.25); // Lohnzettel hat weniger Überstunden: vielleicht aufs Zeitausgleich-Konto gebucht, dann die Zeile gleich zeigen
     AB_ZEILEN.forEach(function (z) {
       var v = lz && lz[z.key], has = hasNum(v);
       var eigenSo = z.key === 'sonder' && summe && summe.sonderStd > 0; // eigene Sonderurlaubstage: dann echter Vergleich statt reiner Eingabezeile
       if (z.info && !eigenSo) { // reine Eingabezeile, nur sichtbar wenn eingetragen oder "alle Zeilen"
-        if (has || alle) rows.push({ key: z.key, label: z.label, unit: z.unit, app: null, lz: has ? +v : null, diff: null, status: 'info' });
+        if (has || alle || (z.key === 'zaKonto' && ueberWeniger)) rows.push({ key: z.key, label: z.label, unit: z.unit, app: null, lz: has ? +v : null, diff: null, status: 'info' });
         return;
       }
       if (fix && !alle && !has && ['lohn', 'feiertag', 'urlaub', 'krank', 'pflege', 'sonder'].indexOf(z.key) >= 0) return;
