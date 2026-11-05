@@ -781,7 +781,7 @@
     $('#ab-result').innerHTML = html;
     abBericht(rows, given, lz, bad);
     var kz = $('#ab-korr'); if (kz && !kz.contains(document.activeElement) && kz.querySelector('.rg')) renderAbKorr();
-    if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; }).concat(statBrutto())); } catch (e) {} }
+    if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights && !(ui.y > new Date().getFullYear() || (ui.y === new Date().getFullYear() && ui.m >= new Date().getMonth() + 1))) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; }).concat(statBrutto())); } catch (e) {} }
   }
 
 
