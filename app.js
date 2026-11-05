@@ -348,7 +348,7 @@
         if (r.nettoMin > 0) {
           chips += '<span class="chip acc">plus Arbeit</span>';
           small.push(esc(d.von) + '–' + esc(d.bis || ''));
-          val = fh((r.creditMin) / 60) + ' h<small>+ ' + fh(r.nettoMin / 60) + ' h</small>';
+          val = r.creditMin ? fh(r.creditMin / 60) + ' h<small>+ ' + fh(r.nettoMin / 60) + ' h</small>' : fh(r.nettoMin / 60) + ' h';
         }
       }
       var ik = r.leer ? '' : (r.status === 'arbeit' && r.swMin && !r.nettoMin ? 'sw' : r.status), dn = false;
@@ -1338,21 +1338,21 @@
     $('#fest-add').addEventListener('click', function () { festListe().push({ wd: 2, art: 'schule' }); save(); renderFest(); });
     $('#e-mehr').addEventListener('click', mehrTage);
   })();
-  function mitArbeit(st) { return st === 'arbeit' || st === 'urlaub' || st === 'sonderurlaub'; } // an Urlaub und Sonderurlaub darf zusätzlich gearbeitet worden sein
+  function mitArbeit(st) { return st !== 'feiertag'; } // an jedem freien Tag darf zusätzlich gearbeitet worden sein (Feiertag ist ohnehin ein Arbeitstag mit Zuschlag)
   // Sonderurlaub oder Urlaub mit Arbeitszeit: Mia fragt einmal nach, ob das wirklich beides stimmt (oder nur ein Versehen war)
   function paFrage() {
     var dlg = $('#lk-dlg'), body = $('#lk-body'), btns = $('#lk-btns'), d = ui.edDraft, nm = E.STATUS[d.status].name;
-    lkKopf('Arbeitszeit eingetragen', 'Bei Urlaub und Sonderurlaub trägst du Zeiten nur ein, wenn du an dem Tag wirklich gearbeitet hast. Dann zählt der Tag als bezahlter Tag plus Arbeit. Die Arbeitszeit kommt zu den bezahlten Sollstunden dazu.');
+    lkKopf('Arbeitszeit eingetragen', 'Bei einem freien Tag trägst du Zeiten nur ein, wenn du an dem Tag trotzdem gearbeitet hast. Dann zählt der Tag als die gewählte Art plus Arbeit. Die Arbeitszeit kommt zu dem dazu, was der Tag sonst bringt, zum Beispiel bezahlte Sollstunden.');
     body.innerHTML = lkMia('<span>An diesem Tag steht</span> <b>' + esc(nm) + '</b> <span>und eine Arbeitszeit von</span> <b>' + esc(d.von) + '–' + esc(d.bis || '…') + '</b><br><span>Das ist normalerweise nicht möglich. Soll die Arbeitszeit trotzdem dazugerechnet werden? Dann schreibe ich den Fall als Notiz zu diesem Tag.</span>');
     btns.innerHTML = '<button type="button" class="btn primary" id="pa-ja">Ja, dazurechnen und Notiz schreiben</button><button type="button" class="btn" id="pa-nein">Nein, ohne Arbeitszeit</button><button type="button" class="btn" id="pa-zu">Zurück zur Eingabe</button>';
     dlg.hidden = false;
-    $('#pa-ja').onclick = function () { dlg.hidden = true; ui.paOk = ui.edDate + d.status + d.von + d.bis; var nt = uiTr('Arbeit an einem Urlaubs- oder Sonderurlaubstag: normalerweise nicht möglich, hier aber bewusst dazugerechnet.', uiLang()) || 'Arbeit an einem Urlaubs- oder Sonderurlaubstag: normalerweise nicht möglich, hier aber bewusst dazugerechnet.'; if (!d.an) d.an = {}; if ((d.an.t || '').indexOf(nt) < 0) d.an.t = ((d.an.t || '') ? d.an.t + ' ' : '') + nt; saveDay(); };
+    $('#pa-ja').onclick = function () { dlg.hidden = true; ui.paOk = ui.edDate + d.status + d.von + d.bis; var nt = uiTr('Arbeit an einem freien Tag (zum Beispiel Urlaub, Krankenstand): normalerweise nicht möglich, hier aber bewusst dazugerechnet.', uiLang()) || 'Arbeit an einem freien Tag (zum Beispiel Urlaub, Krankenstand): normalerweise nicht möglich, hier aber bewusst dazugerechnet.'; if (!d.an) d.an = {}; if ((d.an.t || '').indexOf(nt) < 0) d.an.t = ((d.an.t || '') ? d.an.t + ' ' : '') + nt; saveDay(); };
     $('#pa-nein').onclick = function () { dlg.hidden = true; d.von = ''; d.bis = ''; d.pausen = []; ui.paOk = ''; renderEditor(); saveDay(); };
     $('#pa-zu').onclick = function () { dlg.hidden = true; };
   }
   function saveDay() {
     var d = ui.edDraft, st = d.status;
-    if ((st === 'urlaub' || st === 'sonderurlaub') && d.von) {
+    if (st !== 'arbeit' && mitArbeit(st) && d.von) {
       var vor = data.days[ui.edDate], schonBestaetigt = vor && vor.status === st && vor.von === d.von && (vor.bis || '') === (d.bis || '');
       if (!schonBestaetigt && ui.paOk !== ui.edDate + st + d.von + d.bis) { paFrage(); return false; }
     }

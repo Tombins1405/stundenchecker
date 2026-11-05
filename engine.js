@@ -947,12 +947,12 @@
 
     // Betrieb geschlossen: je nach Firma als Urlaub bezahlt oder aus den Überstunden (dann keine Gutschrift in den Stunden).
     var credit = STATUS[status].credit && !(status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden');
-    if (status === 'freistellung') { res.freiModus = freiModus(day, w); res.freiSollMin = sollMin; if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
-    if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
-    var mitArbeit = status === 'urlaub' || status === 'sonderurlaub'; // an so einem Tag darf trotzdem gearbeitet worden sein: bezahlter Tag plus Arbeit
-    var credBase = 0;
-    if (credit) { res.creditMin = sollMin; credBase = sollMin; if (!mitArbeit) return res; }
-    else if (status !== 'arbeit') return res;
+    var mitArbeit = status !== 'arbeit' && status !== 'feiertag' && !!(day && day.von && day.bis); // an jedem freien Tag darf trotzdem gearbeitet worden sein: dann Tag plus Arbeit
+    if (status === 'freistellung') { res.freiModus = freiModus(day, w); res.freiSollMin = sollMin; if (res.freiModus === 'bezahlt' || res.freiModus === 'offen') res.creditMin = sollMin; if (!mitArbeit) return res; } // Firma schickt heim: bezahlt = Sollstunden gutgeschrieben, sonst keine Gutschrift (Zeitausgleich oder unbezahlt)
+    if (status === 'ersatzruhe') { var exr = +day.extra; if (isNaN(exr) || exr < 0) exr = 0; res.extraMin = Math.round(exr * 60); res.creditMin = res.extraMin; if (!mitArbeit) return res; } // Ersatzruhetag: ohne Angabe zählt er aus den Überstunden, mit Angabe hat die Firma die Stunden bezahlt
+    var credBase = res.creditMin || 0;
+    if (credit && status !== 'freistellung' && status !== 'ersatzruhe') { res.creditMin = sollMin; credBase = sollMin; if (!mitArbeit) return res; }
+    else if (status !== 'arbeit' && !mitArbeit) return res;
 
     var m = dayMinutes(day, w, dateStr);
     if (mitArbeit && !(m.netto > 0)) return res;
@@ -965,7 +965,8 @@
     res.wertMin = m.netto * res.faktor;
     // Zusätzlich bezahlte Stunden am selben Tag (zum Beispiel Sonderurlaub plus Arbeit): werden einfach dazugezählt.
     var ex = +day.extra; if (isNaN(ex) || ex < 0) ex = 0;
-    res.extraMin = Math.round(ex * 60); res.creditMin = credBase + res.extraMin;
+    if (status === 'ersatzruhe') ex = 0; // beim Ersatzruhetag ist "extra" schon die Gutschrift des Tages
+    if (status !== 'ersatzruhe') res.extraMin = Math.round(ex * 60); res.creditMin = credBase + (status === 'ersatzruhe' ? 0 : res.extraMin);
 
     // Überstunden-Beitrag des Tages (Modell "tag-saldo": Arbeitsstunden minus Tagessoll, kürzere Tage gleichen aus)
     if (w.ueberstunden.modell === 'tag-saldo' && (res.wertMin > 0 || res.swMin > 0 || res.extraMin > 0)) {
