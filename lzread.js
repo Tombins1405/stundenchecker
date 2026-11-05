@@ -146,6 +146,8 @@
   ];
   function kopf(lines, LG) {
     var out = { kv: null, paket: null, einstufung: '', stundenlohn: null, monatslohn: null, treffer: [] }, PERS = /iban|bic\b|@|tel\.|sv-?nr|sozialvers|geb\.|\bstr(asse|aße)?\b|platz|gasse|\bweg\b|gmbh|\bag\b/i;
+    function iso(d, m, y) { d = +d; m = +m; y = +y; if (y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return null; return y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d; }
+    var DATUM = /(\d{1,2})\.(\d{1,2})\.(\d{4})/;
     var cl = (lines && lines.cells) || [];
     cl.forEach(function (cs) {
       for (var ci = 0; ci < cs.length - 1; ci++) {
@@ -154,12 +156,24 @@
         if (lab === 'tarifgruppe' && !out.tarifgruppe && /^[A-Za-z0-9\-\.]{1,12}$/.test(val)) out.tarifgruppe = val;
       }
     });
+    cl.forEach(function (cs) {
+      for (var cj = 0; cj < cs.length - 1; cj++) {
+        var lb = cs[cj].toLowerCase().replace(/[:\.\s]+/g, ''), dm = DATUM.exec(cs[cj + 1]);
+        if (!dm) continue;
+        if (!out.eintritt && /^(eintritt|eintrittsdatum|eintrittam|eindatum)$/.test(lb)) out.eintritt = iso(dm[1], dm[2], dm[3]);
+        if (!out.geb && /^(geb|gebdatum|geburtsdatum|geboren|gebam)$/.test(lb)) out.geb = iso(dm[1], dm[2], dm[3]);
+      }
+    });
     (lines || []).forEach(function (ln) {
       var t = String(ln).replace(/\s+/g, ' ').trim().replace(/^\d{3,5}\s+(?=[A-Za-zÄÖÜäöü])/, ''), lo = t.toLowerCase();
       if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
         if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
       }
+      var me2 = /(?:^|\s)(?:eintritt(?:sdatum)?|ein\.?\s*datum)\s*[:\-]?\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/i.exec(t); if (me2 && !out.eintritt) out.eintritt = iso(me2[1], me2[2], me2[3]);
+      var mg2 = /(?:^|\s)(?:geb\.?(?:urts)?\s*(?:datum|dat\.?)?|geboren(?:\s+am)?)\s*[:\-]?\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/i.exec(t); if (mg2 && !out.geb) out.geb = iso(mg2[1], mg2[2], mg2[3]);
+      var mn = /^DN:?\s*\d+\s+([A-Za-zÄÖÜäöüß\-]{2,25})\s+([A-Za-zÄÖÜäöüß\-]{2,30})(?=\s|$)/.exec(t);
+      if (mn && !out.vorname) { out.vorname = mn[1]; out.nachname = mn[2].charAt(0).toUpperCase() + mn[2].slice(1).toLowerCase(); }
       var mb = /(?:^|\s)(besch\.?\s*als|beschaeftigt\s+als|beschäftigt\s+als|verwendet\s+als)\s*[:\-]?\s+(.{2,40}?)(?=\s+(?:LSt|AV\b|AE\b|Pendler|Pendl|FA\b|Familien|Kinder|Freibetrag|SV\b|IBAN)|$)/i.exec(t);
       if (mb && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(mb[2])) {
         out.beschaeftigt = mb[2].trim();

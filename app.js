@@ -2146,6 +2146,7 @@
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; data.profil.vorname = String(w.vorname || '').trim().slice(0, 40); data.profil.nachname = String(w.nachname || '').trim().slice(0, 60); }
     if (String(w.paket).indexOf('de_') === 0 && w.bl) { if (!data.profil) data.profil = {}; data.profil.bl = w.bl; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
+    if (w.geb && validISO(w.geb)) { if (!data.profil) data.profil = {}; if (!data.profil.geb) data.profil.geb = w.geb; }
     if (w.mode === 'start' && (w.cStat || w.cMia)) { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: !!w.cStat, miaFragen: !!w.cMia }; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
     if (start && data.profil && data.profil.consent) { try { window.StundenInsights.push(true); } catch (e) {} }
@@ -3533,7 +3534,7 @@
     if (s === 'erlaubnis') {
       h.textContent = 'Darf ich dir das Abtippen abnehmen?';
       b.innerHTML = svg + '<p>Wenn du magst, lese ich künftig deinen Lohnzettel für dich ab. Dann musst du die Stunden nicht mehr von Hand eintragen, und ich vergleiche sie gleich mit deiner Aufzeichnung.</p>' +
-        '<p>Das passiert nur hier auf deinem Handy, es wird nichts hochgeladen. Persönliche Daten lese ich nicht. Du siehst alles vorher und kannst es jederzeit in den Einstellungen ausschalten.</p>' +
+        '<p>Das passiert nur hier auf deinem Handy, es wird nichts hochgeladen. Beim Abtippen der Stunden lese ich keine persönlichen Daten. Nur wenn du deine Einstellungen mit dem Lohnzettel einrichtest oder prüfst, lese ich auch Name, Geburtsdatum und Eintrittsdatum, und du bestätigst jedes einzeln. Du kannst es jederzeit in den Einstellungen ausschalten.</p>' +
         '<label class="check"><input type="checkbox" id="lz-ok"> Ja, der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen.</label>';
       bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
     } else if (s === 'datei') {
@@ -3563,8 +3564,12 @@
       if (k.stundenlohn !== null) rows.push(zl('Stundenlohn', fmtNum(k.stundenlohn) + ' €', pr ? fmtNum(en.stundenlohn) + ' €' : null, 'lohn'));
       if (k.monatslohn !== null && k.stundenlohn === null) rows.push(zl('Monatslohn', fmtNum(k.monatslohn) + ' €', pr ? (en.monatslohn ? fmtNum(en.monatslohn) + ' €' : '') : null, 'monat'));
       if (k.einstufung) rows.push(zl('Einstufung', k.einstufung, pr ? en.einstufung || '' : null, 'einst'));
+      var P = data.profil || {};
+      if (k.vorname) rows.push(zl('Name', k.vorname + ' ' + (k.nachname || ''), pr ? ((P.vorname || '') + ' ' + (P.nachname || '')).trim() : null, 'name'));
+      if (k.eintritt) rows.push(zl('Eintritt in die Firma', fmtDate(k.eintritt), pr ? (P.eintritt ? fmtDate(P.eintritt) : '') : null, 'eintritt'));
+      if (k.geb) rows.push(zl('Geburtsdatum', fmtDate(k.geb), pr ? (P.geb ? fmtDate(P.geb) : '') : null, 'geb'));
       if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (tr.ls != null && E.LOHNGRUPPEN[tr.paket].stufen ? ', ' + esc(E.LOHNGRUPPEN[tr.paket].stufen[tr.ls]) : '') + '</span></li>');
-      b.innerHTML = svg + (rows.length ? '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte vergleiche mit deinem Lohnzettel.</div><ul class="legende">' + rows.join('') + '</ul>' + (lzUi.treff === null && (lzUi.kopf.treffer || []).length > 1 ? '<p class="hint">Der Stundenlohn passt zu mehreren Lohngruppen. Bitte wähle die Lohngruppe danach selbst aus.</p>' : '') : '<p>Auf diesem Lohnzettel habe ich keinen Kollektivvertrag und keinen Stundenlohn gefunden. Bitte stelle alles selbst ein. Ich helfe dir dabei.</p>') +
+      b.innerHTML = svg + (lzUi.msg2 ? '<div class="notice"><strong>Geändert.</strong></div>' : '') + (lzUi.msg ? '<div class="notice"><strong>Geändert.</strong> <span>Das gilt für alle Monate ab dem</span> <b>' + esc(lzUi.msg) + '</b></div>' : '') + (rows.length ? '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte vergleiche mit deinem Lohnzettel.</div><ul class="legende">' + rows.join('') + '</ul>' + (lzUi.treff === null && (lzUi.kopf.treffer || []).length > 1 ? '<p class="hint">Der Stundenlohn passt zu mehreren Lohngruppen. Bitte wähle die Lohngruppe danach selbst aus.</p>' : '') : '<p>Auf diesem Lohnzettel habe ich keinen Kollektivvertrag und keinen Stundenlohn gefunden. Bitte stelle alles selbst ein. Ich helfe dir dabei.</p>') +
         '<p class="hint">Gelesen wurde nur hier auf deinem Handy. Es wurde nichts hochgeladen und nichts gespeichert, außer was du übernimmst.</p>' + (rows.length ? '<p class="hint">Wenn du übernimmst, merke ich mir die Namen der Zeilen auf deinem Lohnzettel, ohne Zahlen. Dann lese ich ihn nächstes Mal sofort.</p>' : '');
       bt.innerHTML = (!pr && rows.length ? lzBtn('Übernehmen', 'lz-einr-ok', 'primary') : '') + lzBtn(pr ? 'Schließen' : 'Selbst einstellen', 'lz-cancel');
     } else if (s === 'fehler') {
@@ -3648,7 +3653,7 @@
     }
     lzUi.kopf = k; lzUi.treff = tr; ins('lz_einrichten');
     if (lzUi.modus === 'pruef') lzUi.en = wAt(todayISO());
-    lzUi.step = 'einr'; lzRender();
+    lzUi.step = 'einr'; lzUi.msg = ''; lzUi.msg2 = false; lzRender();
   }
   function lzVorlageMerken() {
     try {
@@ -3669,8 +3674,11 @@
     if (k.stundenlohn !== null) w.lohn = k.stundenlohn;
     if (k.monatslohn !== null && k.stundenlohn === null) w.monat = k.monatslohn;
     if (k.einstufung) w.einst = k.einstufung;
+    if (k.eintritt && !w.eintritt) w.eintritt = k.eintritt;
+    if (k.geb) w.geb = k.geb;
+    if (k.vorname && !w.vorname) { w.vorname = k.vorname; w.nachname = k.nachname || ''; }
     if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls == null ? '' : tr.ls; }
-    return !!(pak || k.stundenlohn !== null || k.einstufung);
+    return !!(pak || k.stundenlohn !== null || k.einstufung || k.eintritt || k.geb || k.vorname);
   }
   function lzEinrOk() {
     var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
@@ -3680,11 +3688,24 @@
   }
   function lzEinrAendern(was) {
     var en = lzUi.en, k = lzUi.kopf, tr = lzUi.treff; if (!en || !k) return;
-    var rec = data.settings.filter(function (x) { return x.gueltigAb === en.gueltigAb; })[0]; if (!rec) return;
-    if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && !tr.hinweis && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
-    else if (was === 'monat') { var ms = rec.monatsStd || 166.83; rec.monatslohn = k.monatslohn; rec.monatsStd = ms; rec.stundenlohn = Math.round(k.monatslohn / ms * 100) / 100; rec.lgAuto = false; }
-    else if (was === 'einst') rec.einstufung = k.einstufung.slice(0, 60);
-    lzVorlageMerken(); save(); lzUi.en = rec; renderSettings(); toast('Geändert. Gilt ab ' + fmtDate(rec.gueltigAb) + '.', 4000); lzRender();
+    if (was === 'name' || was === 'eintritt' || was === 'geb') {
+      var pp = data.profil || (data.profil = {});
+      if (was === 'name') { pp.vorname = k.vorname; pp.nachname = k.nachname || ''; } else if (was === 'eintritt') pp.eintritt = k.eintritt; else { pp.geb = k.geb; delete pp.gebGruss; }
+      save(); lzUi.msg = ''; lzUi.msg2 = true; renderSettings(); lzRender(); return;
+    }
+    var sorted = data.settings.slice().sort(function (x, y) { return x.gueltigAb < y.gueltigAb ? -1 : 1; }), idx = -1;
+    sorted.forEach(function (x, n) { if (x.gueltigAb === en.gueltigAb) idx = n; }); if (idx < 0) return;
+    function wert(r) { return was === 'einst' ? String(r.einstufung || '') : was === 'monat' ? +r.monatslohn || 0 : +r.stundenlohn || 0; }
+    function gleich(a, b) { return was === 'einst' ? a === b : Math.abs(a - b) < 0.005; }
+    var alt = wert(sorted[idx]), kette = [sorted[idx]], n = idx - 1;
+    while (n >= 0 && gleich(wert(sorted[n]), alt)) { kette.push(sorted[n]); n--; } // frühere Einträge mit demselben (falschen) Wert gehören mit korrigiert
+    kette.forEach(function (rec) {
+      if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && !tr.hinweis && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
+      else if (was === 'monat') { var ms = rec.monatsStd || 166.83; rec.monatslohn = k.monatslohn; rec.monatsStd = ms; rec.stundenlohn = Math.round(k.monatslohn / ms * 100) / 100; rec.lgAuto = false; }
+      else if (was === 'einst') rec.einstufung = k.einstufung.slice(0, 60);
+    });
+    var ab = kette[kette.length - 1].gueltigAb;
+    lzVorlageMerken(); save(); lzUi.en = sorted[idx]; lzUi.msg = fmtDate(ab); renderSettings(); lzRender();
   }
   function lzNext() {
     if (!lzUi.queue || !lzUi.queue.length) { lzFertig(); return; }
