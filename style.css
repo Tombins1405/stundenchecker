@@ -796,3 +796,7 @@ h3[data-ico="target"]::before { background: #00838f; }
 .tour-body > .need { margin: 0 0 6px; }
 .need.must { background: #c62828; color: #fff; }
 .need.opt { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+
+.brutto { margin-top: 14px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); }
+.brutto .eyebrow { display: flex; align-items: center; gap: 4px; }
+.brutto .big { font-variant-numeric: tabular-nums; }

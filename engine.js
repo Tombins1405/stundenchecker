@@ -1442,8 +1442,35 @@
     return out;
   }
 
+  // Voraussichtliches Brutto eines Monats (Schätzung): Lohn, Überstunden, Mehrarbeit, Prämien und Dienste. Diäten werden getrennt ausgewiesen.
+  // Nicht enthalten: Sonderzahlungen, Nachzahlungen, Schlechtwetter-Entschädigung und alle Abzüge (Netto hängt von vielen persönlichen Faktoren ab).
+  // laufend = Monat läuft noch: Überstunden entstehen erst am Monatsende und werden dann nicht mitgezählt.
+  function bruttoVorschau(summe, w, laufend) {
+    if (!summe || summe.gleit) return { ok: false, grund: 'gleit' };
+    var fix = w && +w.monatslohn > 0 ? +w.monatslohn : null, lohn = w && w.stundenlohn != null && !isNaN(+w.stundenlohn) && +w.stundenlohn > 0 ? +w.stundenlohn : null;
+    if (fix === null && lohn === null) return { ok: false, grund: 'lohn' };
+    var zus = w.ueberstunden && w.ueberstunden.zuschlagPct != null ? +w.ueberstunden.zuschlagPct : 50, teile = [];
+    var lohnUeber = lohn;
+    if (w.ueberstunden && +w.ueberstunden.ueberTeiler > 0 && +w.monatslohn > 0) {
+      var wo = wochenStd(w.ueberstunden), vz = +w.ueberstunden.vollzeitStd > wo ? +w.ueberstunden.vollzeitStd : wo;
+      lohnUeber = Math.round(+w.monatslohn / (+w.ueberstunden.ueberTeiler * (wo > 0 ? wo / vz : 1)) * 10000) / 10000;
+    }
+    if (fix !== null) teile.push({ key: 'lohn', euro: r2(fix) });
+    else teile.push({ key: 'lohn', euro: r2(((summe.normalStd || 0) + (summe.feiertagStd || 0) + (summe.urlaubStd || 0) + (summe.krankStd || 0) + (summe.pflegeStd || 0) + (summe.sonderStd || 0)) * lohn) });
+    if (!laufend && lohnUeber) {
+      var u = Math.max(0, (summe.ueberStd || 0) - (summe.mehrStd || 0) - (summe.mehrFreiStd || 0));
+      if (u > 0) teile.push({ key: 'ueber', euro: r2(u * lohnUeber * (1 + zus / 100)) });
+      if ((summe.mehrStd || 0) > 0 && (lohn || lohnUeber)) teile.push({ key: 'mehr', euro: r2(summe.mehrStd * (lohn || lohnUeber) * (1 + (w.ueberstunden.mehrPct != null ? +w.ueberstunden.mehrPct : 25) / 100)) });
+    }
+    if (summe.praemienEuro > 0) teile.push({ key: 'praemien', euro: r2(summe.praemienEuro) });
+    var dEuro = 0; (summe.dienste || []).forEach(function (x) { dEuro += +x.euro || 0; });
+    if (dEuro > 0) teile.push({ key: 'dienste', euro: r2(dEuro) });
+    var brutto = 0; teile.forEach(function (t) { brutto += t.euro; });
+    return { ok: true, brutto: r2(brutto), teile: teile, diaeten: r2(summe.diaetenBetrag || 0), fix: fix !== null, laufend: !!laufend };
+  }
+
   return {
-    abgleich: abgleich, abgleichEuro: abgleichEuro, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
+    abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
