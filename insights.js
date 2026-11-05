@@ -47,6 +47,17 @@
         } catch (e) { rej(e); }
       });
     },
+    // Eigene Rückmeldungen, die du als erledigt markiert hast (nur Nummern), damit Mia Danke sagen kann
+    erledigt: function () {
+      return new Promise(function (res) {
+        try {
+          var u = user(); if (!ON || !u) { res(null); return; }
+          db().collection('feedback').where('uid', '==', u.uid).limit(30).get().then(function (sn) {
+            var o = []; sn.forEach(function (d) { var x = d.data() || {}; if (x.status === 'erledigt') o.push(d.id); }); res(o);
+          }, function () { res(null); });
+        } catch (e) { res(null); }
+      });
+    },
     // Mia: Frage ohne Antwort. Wortlaut nur mit Einwilligung.
     miaOffen: function (text, lang) {
       api.count('mia_offen');

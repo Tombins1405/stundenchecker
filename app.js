@@ -1590,6 +1590,7 @@
   function miaNext() {
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
+    if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
@@ -1614,6 +1615,7 @@
   }
   function miaGo(k) {
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
+    if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
     if (k.indexOf('news_') === 0) { newsSet('gelesen', newsListe().map(function (x) { return x.id; })); show('konten'); renderNews(); setTimeout(function () { var el = $('#news-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); return; }
     if (k === 'rundgang') { tourStart(); }
@@ -3664,6 +3666,17 @@
     $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
+  /* Hinweis, wenn eine Rückmeldung erledigt ist: beim ersten Mal werden schon erledigte still als gesehen gemerkt */
+  function fbErledigtPruefen() {
+    if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
+    window.StundenInsights.erledigt().then(function (ids) {
+      if (!ids) return;
+      var pf = data.profil || (data.profil = {});
+      if (!pf.fbGesehen) { pf.fbGesehen = ids.slice(); save(); return; }
+      ui.fbNeu = ids.filter(function (id) { return pf.fbGesehen.indexOf(id) < 0; });
+      if (ui.fbNeu.length && !miaCfg().ruhig && !ui.wiz && !TOUR) { ui.miaAuto = true; miaOpen(true); }
+    });
+  }
   /* Grundeinstellung: "Anonym mithelfen" ist an, wer nicht selbst entschieden hat (Testphase, Tester sind informiert). Wer Nein gesagt hat, bleibt auf Nein. */
   function standardMithelfen() {
     if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
@@ -3675,5 +3688,6 @@
   }
   setTimeout(function () { try { geburtstagPruefen(); } catch (e) { } }, 1800);
   setTimeout(function () { try { standardMithelfen(); } catch (e) { } }, 3500);
+  setTimeout(function () { try { fbErledigtPruefen(); } catch (e) { } }, 6000);
   window.__scBoot = true;
 })();
