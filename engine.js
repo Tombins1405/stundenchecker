@@ -755,7 +755,9 @@
       arten: {
         maurer: { name: 'Maurer / Hochbau / Tiefbau / Bauarbeiter', kv: 'bau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         zimmerer: { name: 'Zimmerer / Holzbau / Dachstuhl', kv: 'holzbau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
-        elektro: { name: 'Elektriker / Installateur / Spengler', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        elektro: { name: 'Elektriker / Elektrotechniker', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        installateur: { name: 'Installateur / Sanitär / Heizung', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        spengler: { name: 'Spengler / Dachspengler', kv: 'metall', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         tischler: { name: 'Tischler / Holzgestalter', kv: 'tischler', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         maler: { name: 'Maler / Lackierer / Anstreicher', kv: 'maler', sw: false, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         dachdecker: { name: 'Dachdecker', kv: 'dachdecker', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },

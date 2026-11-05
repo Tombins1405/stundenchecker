@@ -1407,7 +1407,7 @@
   var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
     bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], lager: ['weste', 'paket'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
     'gastro:service': ['schuerze', 'tablett_glas'], 'gastro:kueche': ['kochhaube', 'schuerze', 'pfanne'], 'gastro:chef': ['kochhaube', 'schuerze', 'messer'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
-    handwerk: ['helm', 'weste'], 'handwerk:maurer': ['helm', 'weste', 'kelle'], 'handwerk:zimmerer': ['helm', 'weste', 'hammer'], 'handwerk:elektro': ['helm', 'overall', 'maulschluessel'], 'handwerk:tischler': ['kappe', 'overall', 'hammer'], 'handwerk:maler': ['kappe', 'overall', 'eimer'], 'handwerk:anderes': ['helm', 'weste', 'wasserwaage'], 'handwerk:lehrling': ['helm', 'weste', 'hammer'],
+    handwerk: ['helm', 'weste'], 'handwerk:maurer': ['helm', 'weste', 'kelle'], 'handwerk:zimmerer': ['helm', 'weste', 'hammer'], 'handwerk:elektro': ['helm', 'overall', 'maulschluessel'], 'handwerk:installateur': ['helm', 'overall', 'maulschluessel'], 'handwerk:spengler': ['helm', 'overall', 'hammer'], 'handwerk:tischler': ['kappe', 'overall', 'hammer'], 'handwerk:maler': ['kappe', 'overall', 'eimer'], 'handwerk:anderes': ['helm', 'weste', 'wasserwaage'], 'handwerk:lehrling': ['helm', 'weste', 'hammer'],
     reinigung: ['schuerze', 'eimer'], 'reinigung:sonder': ['helm', 'overall', 'eimer'], 'reinigung:lehrling': ['schuerze', 'eimer'], security: ['kappe', 'weste', 'klemmbrett'], 'security:mobil': ['kappe', 'weste', 'lenkrad'], pflege: ['kittel'], 'pflege:heimhilfe': ['schuerze'], 'pflege:mobil': ['kittel', 'koffer'],
     'handel:verkauf': ['schuerze', 'scanner'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
@@ -1939,6 +1939,7 @@
     }
     w.mia = (miaCfg().figur); ui.wiz = w; wzRender(); $('#wiz').hidden = false;
   }
+  function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; }
   function wzSetBeruf(k) {
     var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
     w.diaeten = b.diaeten; w.sw = b.sw; w.paket = b.paket;
@@ -2209,6 +2210,43 @@
     else { if (w.monatAuto) { w.monat = ''; w.monatAuto = false; } w.lohn = g.l[i]; }
   }
   // Berufe alphabetisch, „Etwas anderes“ immer zuletzt
+  // Suche im Einrichtungs-Assistenten: Stichwörter je Beruf und Tätigkeit (klein geschrieben, ohne Umlaute)
+  var BERUF_SYN = {
+    'lkw:baustelle': 'lkw fahrer kipper muldenkipper baustelle kurzstrecke schotter beton', 'lkw:tour': 'lkw fahrer zusteller verteiler lieferfahrer paketdienst filiale getraenke', 'lkw:fern': 'lkw fahrer fernfahrer sattelzug kuehltransport tiefkuehl spedition international kuehlwagen', 'lkw:muell': 'lkw fahrer muellwagen muellabfuhr entsorgung', 'lkw:kipper': 'lkw fahrer kipper erdbau erdtransport aushub', 'lkw:kran': 'lkw fahrer ladekran kran hiab', 'lkw:lehrling': 'lehrling berufskraftfahrer lkw',
+    'handwerk:maurer': 'maurer bau bauarbeiter polier betonbauer tiefbau hochbau strassenbau kanalbau schalung hilfsarbeiter', 'handwerk:zimmerer': 'zimmerer zimmermann holzbau dachstuhl', 'handwerk:elektro': 'elektriker elektroinstallateur elektrotechniker strom', 'handwerk:installateur': 'installateur sanitaer heizung klima gas wasser rohr gebaeudetechniker', 'handwerk:spengler': 'spengler dachspengler bauspengler flaschner klempner blech dach', 'handwerk:tischler': 'tischler schreiner moebel holz', 'handwerk:maler': 'maler anstreicher lackierer beschichter', 'handwerk:dachdecker': 'dachdecker dach ziegel', 'handwerk:pflasterer': 'pflasterer pflaster steine', 'handwerk:fliesenleger': 'fliesenleger hafner plattenleger fliesen', 'handwerk:lehrling': 'lehrling lehrjahr bau handwerk',
+    'bagger:bagger': 'baggerfahrer bagger maschinist', 'bagger:lader': 'radlader laderfahrer lader', 'bagger:kran': 'kranfahrer kran', 'klein:tour': 'kleintransport kurier zusteller sprinter transporter', 'klein:baustelle': 'kleintransport handwerker transporter', 'klein:fern': 'kurier express transporter',
+    'lager:lager': 'lager lagerarbeiter staplerfahrer stapler hilfsarbeiter kommissionierer', 'lager:lehrling': 'lehrling lagerlogistik',
+    'mechaniker:kfz': 'kfz mechaniker mechatroniker werkstatt auto automechaniker', 'mechaniker:schlosser': 'schlosser schweisser metallbauer', 'mechaniker:spengler': 'karosseriebauer karosserie spengler', 'mechaniker:lackierer': 'lackierer autolackierer', 'mechaniker:leiter': 'werkstattleiter meister', 'mechaniker:lehrling': 'lehrling mechaniker kfz',
+    'buero:buero': 'buero verwaltung disposition disponent sekretariat sachbearbeiter buchhaltung angestellte empfang', 'buero:lehrling': 'lehrling buerokaufmann buerokauffrau verwaltung', 'aussendienst': 'aussendienst vertrieb verkauf vertreter',
+    'handel:verkauf': 'verkaeufer verkauf kassa kassier einzelhandel supermarkt', 'handel:theke': 'baecker fleischer metzger feinkost theke baeckerei', 'handel:lager': 'warenuebernahme lager handel', 'handel:leitung': 'filialleiter filialleitung stellvertretung', 'handel:lehrling': 'lehrling einzelhandel',
+    'gastro:service': 'kellner kellnerin service bar barkeeper', 'gastro:kueche': 'koch koechin kueche hilfskoch', 'gastro:chef': 'kuechenchef chefkoch koch', 'gastro:rezeption': 'rezeption empfang hotel', 'gastro:housekeeping': 'zimmermaedchen zimmerservice housekeeping', 'gastro:betrieb': 'kantine catering betriebskueche', 'gastro:lehrling': 'lehrling koch restaurantfachmann hotel',
+    'reinigung:unterhalt': 'reinigung reinigungskraft putzfrau buero', 'reinigung:hotel': 'hotelreinigung reinigung zimmer', 'reinigung:haus': 'hausbetreuung hausbesorger wohnhausanlage privathaushalt', 'reinigung:pflegeheim': 'reinigung krankenhaus pflegeheim spital', 'reinigung:sonder': 'fensterputzer fassade glasreinigung sonderreinigung', 'reinigung:lehrling': 'lehrling reinigungstechnik',
+    'security:wach': 'security wachdienst portier objektschutz sicherheit', 'security:service': 'sicherheitsdienst empfang kassa', 'security:mobil': 'streife mobiler dienst security', 'security:veranstaltung': 'veranstaltung security ordner', 'security:flughafen': 'flughafen security passagierkontrolle',
+    'pflege:pa': 'pflegeassistent pflegeassistenz pfleger altenpfleger', 'pflege:pfa': 'pflegefachassistent pflegefachassistenz', 'pflege:dgkp': 'diplomierte krankenschwester krankenpfleger gesundheits krankenpflege dgkp', 'pflege:heimhilfe': 'heimhilfe betreuung sozialbetreuer altenbetreuer behindertenbetreuer', 'pflege:mobil': 'mobile pflege hauskrankenpflege hauskrankenschwester', 'pflege:lehrling': 'lehrling pflege pflegelehre',
+    'bund': 'bund ministerium bundesdienst beamter vertragsbediensteter', 'handel': 'handel verkauf', 'anderes': 'etwas anderes sonstiges eigene werte'
+  };
+  function sNorm(t) { return String(t || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9а-яёіїєґÀ-ɏЀ-ӿ֐-ۿ\s]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function wzSuchListe() {
+    var out = [], L = uiLang();
+    function tx(t) { var x = L !== 'de' ? uiTr(t, L) : null; return x || t; }
+    Object.keys(E.BERUFE).forEach(function (bk) {
+      var b = E.BERUFE[bk]; if (b.verborgen) return;
+      var keys = b.arten ? Object.keys(b.arten) : [null];
+      keys.forEach(function (ak) {
+        var nm = ak ? b.arten[ak].name : b.name, id = ak ? bk + ':' + ak : bk;
+        out.push({ id: bk + (ak ? ':' + ak : ''), name: nm, feld: ak ? b.name : '', hay: sNorm(nm + ' ' + (ak ? b.name + ' ' : '') + tx(nm) + ' ' + (BERUF_SYN[id] || BERUF_SYN[bk] || '')) });
+      });
+    });
+    return out;
+  }
+  function wzSuche(q) {
+    var box = $('#wz-sres'); if (!box) return;
+    var toks = sNorm(q).split(' ').filter(function (x) { return x.length >= 2; });
+    if (!toks.length) { box.innerHTML = ''; return; }
+    var res = wzSuchListe().filter(function (e) { return e.id !== 'anderes' && toks.every(function (t) { return e.hay.indexOf(t) >= 0; }); }).slice(0, 6);
+    box.innerHTML = res.length ? res.map(function (e) { return '<button type="button" class="btn wzopt" data-ws="' + e.id + '">' + esc(e.name) + (e.feld ? '<small> · ' + esc(e.feld) + '</small>' : '') + '</button>'; }).join('') : '<p class="hint">Dazu habe ich nichts gefunden. Wähle unten dein Berufsfeld, oder tippe auf „Mein Beruf ist nicht dabei“.</p>';
+    try { uiApply(box); } catch (e) { }
+  }
   function berufeSortiert() {
     return Object.keys(E.BERUFE).sort(function (a, b) {
       if (a === 'anderes') return 1; if (b === 'anderes') return -1;
@@ -2228,7 +2266,7 @@
     else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + (w.step === 'mia' || w.step === 'bausteine' ? '<span class="need opt">Optional</span>' : '<span class="need must">Unbedingt nötig</span>') + '</p>';
     if (w.step === 'beruf') {
-      html += '<h3>Was machst du beruflich?</h3><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
+      html += '<h3>Was machst du beruflich?</h3><div class="field"><label for="wz-such">Beruf suchen (optional)</label><input type="search" id="wz-such" maxlength="40" autocomplete="off" placeholder="zum Beispiel Spengler, Koch, Lkw"><div id="wz-sres" class="wzlist"></div></div><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Mein Beruf ist nicht dabei</summary><div class="field"><label for="wz-bf">Welcher Beruf fehlt, und was brauchst du dafür?</label><textarea id="wz-bf" rows="3" maxlength="600"></textarea></div><button type="button" class="btn" data-wbf="1">Senden</button><p class="hint">Bis dahin passt „Etwas anderes“. Mia schlägt dir später etwas Passendes vor.</p></details>';
     } else if (w.step === 'art') {
       var ar = E.BERUFE[w.beruf].arten;
@@ -2293,7 +2331,8 @@
         return;
       }
       if (t.dataset.wb) { wzSetBeruf(t.dataset.wb); wzNext(); return; }
-      if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; wzNext(); return; }
+      if (t.dataset.wa) { wzSetArt(t.dataset.wa); wzNext(); return; }
+      if (t.dataset.ws) { var sp = t.dataset.ws.split(':'); wzSetBeruf(sp[0]); wzNext(); if (sp[1]) { wzSetArt(sp[1]); wzNext(); } return; }
       if (t.dataset.wm) { w.mia = t.dataset.wm; wzRender(); return; }
       if (t.dataset.wk) { w.paket = t.dataset.wk; w.kvGewaehlt = true; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
       if (t.id === 'wz-scan') { lzUi.modus = 'einr'; lzOpen(); return; }
@@ -2301,7 +2340,7 @@
       if (t.id === 'wz-back') { wzBack(); return; }
     });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
-    ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
+    ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-such') { wzSuche(t.value); return; } if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
     $('#kv-send').addEventListener('click', function () {
       var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
