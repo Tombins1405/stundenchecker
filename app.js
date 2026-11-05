@@ -569,6 +569,11 @@
     var bi = $('#ab-brutto-info'); if (bi) { var bs = document.createElement('small'); bs.hidden = true; bs.textContent = 'Die Summe „Brutto“ auf dem Lohnzettel. Die App vergleicht sie mit ihrer Schätzung für den ganzen Monat. Sonderzahlungen, Nachzahlungen und Schlechtwetter-Entschädigung sind in der Schätzung nicht enthalten, ein Unterschied kann also einen guten Grund haben.'; bi._sm = bs; }
     paintBrutto();
   }
+  function statBrutto() {
+    var est = bruttoSchaetzung(), v = (data.abgleich[monthKey()] || {}).brutto; if (est === null || v == null) return [];
+    var d = Math.round((v - est) * 100) / 100, a = Math.abs(d);
+    return [{ z: 'brutto', s: a <= 0.5 ? 'gleich' : d < 0 ? 'weniger' : 'mehr', d: Math.round(d), e: 1 }];
+  }
   function paintBrutto() {
     var chip = $('#ab-brutto-chip'); if (!chip) return;
     var est = bruttoSchaetzung(), v = (data.abgleich[monthKey()] || {}).brutto;
@@ -776,7 +781,7 @@
     $('#ab-result').innerHTML = html;
     abBericht(rows, given, lz, bad);
     var kz = $('#ab-korr'); if (kz && !kz.contains(document.activeElement) && kz.querySelector('.rg')) renderAbKorr();
-    if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; })); } catch (e) {} }
+    if (given) { ins('abgleich_geprueft'); try { if (window.StundenInsights) window.StundenInsights.statistik(monthKey(), rows.filter(function (r) { return r.status !== 'offen' && r.status !== 'info'; }).map(function (r) { return { z: r.key.indexOf('pr_') === 0 ? 'praemie' : r.key, s: r.status, d: r.diff == null ? null : Math.round(r.diff * 2) / 2, e: r.unit === '€' ? 1 : 0 }; }).concat(statBrutto())); } catch (e) {} }
   }
 
 
