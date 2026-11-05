@@ -489,6 +489,7 @@
     }).join('');
     renderAbExtra();
     renderAbSatz();
+    renderAbBrutto();
     renderAbKorr();
     paintAbgleich();
   }
@@ -552,6 +553,29 @@
       out.push({ monat: k, normalStd: normal, ueberStd: ueber, alt: hasN(lz.satz) ? +lz.satz : (hasN(e.alt) ? +e.alt : 0), neu: hasN(e.neu) ? +e.neu : 0 });
     });
     return out;
+  }
+  function bruttoSchaetzung() {
+    var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), bv = ui.summe ? E.bruttoVorschau(ui.summe, wm, false) : null;
+    return bv && bv.ok ? bv.brutto : null;
+  }
+  function renderAbBrutto() {
+    var el = $('#ab-bruttowrap'); if (!el) return;
+    var est = bruttoSchaetzung(); if (est === null) { el.innerHTML = ''; return; }
+    var v = (data.abgleich[monthKey()] || {}).brutto;
+    el.innerHTML = '<div class="abrow"><label class="what" for="ab-brutto">Brutto laut Lohnzettel (optional)</label>' +
+      '<button type="button" class="info" id="ab-brutto-info" aria-label="Info"></button>' +
+      '<div class="abline"><div class="abin"><input type="number" id="ab-brutto" inputmode="decimal" step="0.01" value="' + (v == null ? '' : esc(v)) + '" placeholder="vom Lohnzettel"><span>€</span></div>' +
+      '<div class="abapp">Deine Aufzeichnung<br><b>' + eur.format(est) + '</b></div><span class="chip" id="ab-brutto-chip"></span></div></div>';
+    var bi = $('#ab-brutto-info'); if (bi) { var bs = document.createElement('small'); bs.hidden = true; bs.textContent = 'Die Summe „Brutto“ auf dem Lohnzettel. Die App vergleicht sie mit ihrer Schätzung für den ganzen Monat. Sonderzahlungen, Nachzahlungen und Schlechtwetter-Entschädigung sind in der Schätzung nicht enthalten, ein Unterschied kann also einen guten Grund haben.'; bi._sm = bs; }
+    paintBrutto();
+  }
+  function paintBrutto() {
+    var chip = $('#ab-brutto-chip'); if (!chip) return;
+    var est = bruttoSchaetzung(), v = (data.abgleich[monthKey()] || {}).brutto;
+    if (est === null || v == null) { chip.className = 'chip'; chip.textContent = ''; return; }
+    var d = Math.round((v - est) * 100) / 100;
+    if (Math.abs(d) <= 0.5) { chip.className = 'chip good'; chip.textContent = 'Passt'; }
+    else { chip.className = 'chip warn'; chip.innerHTML = '<span>Unterschied</span> <b>' + (d > 0 ? '+' : '−') + eur.format(Math.abs(d)) + '</b>'; }
   }
   function renderAbSatz() {
     var el = $('#ab-satzwrap'); if (!el) return;
@@ -707,6 +731,7 @@
       (todo.length ? '<ul style="margin:0;padding-left:20px">' + todo.join('') + '</ul>' : '<p style="margin:0"><span>Nichts zu klären. Alles stimmt mit deiner Aufzeichnung überein.</span></p>') + '</div>';
   }
   function paintAbgleich() {
+    paintBrutto();
     var lz = data.abgleich[monthKey()] || {}, le = E.lzMitKorr(data.abgleich, monthKey()), rows = E.abgleich(ui.summe, le.lz, ui.abAlle, fixLohn(), lzAlles()), given = 0, bad = [];
     var wm = wAt(ui.y + '-' + (ui.m < 10 ? '0' : '') + ui.m + '-01'), eu = E.abgleichEuro(rows, wm);
     rows.forEach(function (r) {
