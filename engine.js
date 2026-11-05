@@ -624,6 +624,17 @@
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1401.34] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1635.41] }
     ] },
+    gueter_ang: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [907] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1209] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1512] }
+    ] },
+    bau_ang: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1064] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1325] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1645] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1957] }
+    ] },
     it_ang: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [960] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1210] },
