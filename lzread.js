@@ -158,6 +158,11 @@
         var ms = /^(stundenlohn|grundlohn|stundensatz|lohn)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d{1,4})/i.exec(t);
         if (ms) { var v = zahl(ms[2]); if (v >= 5 && v <= 80) out.stundenlohn = v; else if (v >= 500 && v <= 20000 && /^(grundlohn|lohn)$/i.test(ms[1]) && out.monatslohn === null) out.monatslohn = v; }
       }
+      if (out.stundenlohn === null && /^(lohn|stundenlohn|normalstunden|normalarbeitszeit|arbeitszeit|grundlohn|normallohn)\b/i.test(t) && !/zuschl|uberst|überst|mehr/i.test(t)) {
+        var ns = t.match(/\d{1,3}(?:\.\d{3})*,\d{1,4}/g) || [];
+        if (ns.length >= 3) { var a = zahl(ns[0]), r = zahl(ns[1]), c = zahl(ns[2]); if (r >= 5 && r <= 80 && Math.abs(a * r - c) <= Math.max(1, c * 0.01)) out.stundenlohn = r; }
+        else if (ns.length === 2) { var r2 = zahl(ns[1]); if (r2 >= 5 && r2 <= 80 && zahl(ns[0]) > 20) out.stundenlohn = r2; }
+      }
       if (out.monatslohn === null) {
         var mm = /^(monatslohn|monatsgehalt|gehalt|grundgehalt|bruttogehalt|grundbezug|monatsbezug)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d\d)/i.exec(t);
         if (mm) { var v2 = zahl(mm[2]); if (v2 >= 500 && v2 <= 20000) out.monatslohn = v2; }
