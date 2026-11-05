@@ -1602,6 +1602,7 @@
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
+    if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei, ich lese sie nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
@@ -1626,6 +1627,7 @@
     if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
     if (k.indexOf('news_') === 0) { newsSet('gelesen', newsListe().map(function (x) { return x.id; })); show('konten'); renderNews(); setTimeout(function () { var el = $('#news-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); return; }
+    if (k === 'lzeinst') { var pz = data.profil || (data.profil = {}); pz.lzEinstFrage = true; save(); lzUi.modus = 'pruef'; lzOpen(); return; }
     if (k === 'rundgang') { tourStart(); }
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true, 'kurz'); }
@@ -2195,7 +2197,7 @@
     else html += '<div class="wzmia">' + miaSvg(w.mia === 'm' ? 'm' : 'w', wo, '') + '<div class="wzsay">' + esc(say) + '</div></div>';
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + (w.step === 'mia' || w.step === 'bausteine' ? '<span class="need opt">Optional</span>' : '<span class="need must">Unbedingt nötig</span>') + '</p>';
     if (w.step === 'beruf') {
-      html += '<h3>Was machst du beruflich?</h3><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
+      html += '<h3>Was machst du beruflich?</h3><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Mein Beruf ist nicht dabei</summary><div class="field"><label for="wz-bf">Welcher Beruf fehlt, und was brauchst du dafür?</label><textarea id="wz-bf" rows="3" maxlength="600"></textarea></div><button type="button" class="btn" data-wbf="1">Senden</button><p class="hint">Bis dahin passt „Etwas anderes“. Mia schlägt dir später etwas Passendes vor.</p></details>';
     } else if (w.step === 'art') {
       var ar = E.BERUFE[w.beruf].arten;
@@ -2210,6 +2212,7 @@
     } else if (w.step === 'kv') {
       var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen']).slice(), ak = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten && w.art && E.BERUFE[w.beruf].arten[w.art] && E.BERUFE[w.beruf].arten[w.art].kv;
       if (ak && kvs.indexOf(ak) > 0) { kvs.splice(kvs.indexOf(ak), 1); kvs.unshift(ak); }
+      if (w.scan && !w.scanDone) { w.scanDone = true; lzAnwenden(w, w.scan.k, w.scan.tr); }
       if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
       var cp = E.PAKETE[w.paket];
       html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' +
@@ -3641,16 +3644,21 @@
     if (lzUi.modus === 'pruef') lzUi.en = wAt(todayISO());
     lzUi.step = 'einr'; lzRender();
   }
-  function lzEinrOk() {
-    var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
+  function lzAnwenden(w, k, tr) {
     var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || [], gleich = k.paket && kvs.indexOf(k.paket) >= 0, pak = gleich ? k.paket : (tr && kvs.indexOf(tr.paket) >= 0 ? tr.paket : null);
-    if (pak && pak !== w.paket) { w.paket = pak; var pv = E.PAKETE[pak].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
+    if (pak && pak !== w.paket) { var pv = E.PAKETE[pak].werte; w.paket = pak; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
     if (pak) w.kvGewaehlt = true;
     if (k.stundenlohn !== null) w.lohn = k.stundenlohn;
     if (k.monatslohn !== null && k.stundenlohn === null) w.monat = k.monatslohn;
     if (k.einstufung) w.einst = k.einstufung;
     if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls == null ? '' : tr.ls; }
-    lzClose(); wzRender(); toast(pak || k.stundenlohn !== null || k.einstufung ? 'Übernommen. Bitte prüfe die Werte noch einmal.' : 'Dazu habe ich nichts gefunden.', 4000);
+    return !!(pak || k.stundenlohn !== null || k.einstufung);
+  }
+  function lzEinrOk() {
+    var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
+    if (!w.beruf) { w.scan = { k: k, tr: tr }; w.scanDone = false; lzClose(); toast('Gemerkt. Ich trage es im Schritt Kollektivvertrag ein, sobald du deinen Beruf gewählt hast.', 5000); return; }
+    var ok = lzAnwenden(w, k, tr);
+    lzClose(); wzRender(); toast(ok ? 'Übernommen. Bitte prüfe die Werte noch einmal.' : 'Dazu habe ich nichts gefunden.', 4000);
   }
   function lzEinrAendern(was) {
     var en = lzUi.en, k = lzUi.kopf, tr = lzUi.treff; if (!en || !k) return;
@@ -3719,7 +3727,7 @@
       }
     });
     $('#lz-start').addEventListener('click', function () { lzUi.modus = ''; lzOpen(); });
-    $('#lz-einst').addEventListener('click', function () { lzUi.modus = 'pruef'; lzOpen(); });
+    var bE = $('#lz-einst'); if (bE) bE.addEventListener('click', function () { lzUi.modus = 'pruef'; lzOpen(); });
     $('#lz-chk').addEventListener('change', function () { lzProfil().lzLesen = this.checked; save(); if (this.checked) lzOpen('erlaubnis'); });
     $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
