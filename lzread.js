@@ -22,7 +22,7 @@
     [/diaten|aufwandsentsch|taggeld|tagesgeld|reisekosten/, 'dStd'],
     [/^lohn$|^stundenlohn|^normalstunden|^arbeitszeit|^normalarbeitszeit|^gehalt|^lohn/, 'lohn']
   ];
-  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub' };
+  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub', zaKonto: 'Zeitausgleich-Konto (Zuwachs)', urlaubSaldo: 'Resturlaub (Arbeitstage)' };
   function zahl(s) { return parseFloat(String(s).replace(/\./g, '').replace(',', '.')); }
   function monat(lines) {
     for (var i = 0; i < lines.length; i++) {
@@ -48,10 +48,22 @@
       var key = null;
       if (gelernt[n] !== undefined) key = gelernt[n] === '-' ? null : gelernt[n];
       else for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { key = REGELN[i][1]; break; }
+      if (key === null && gelernt[n] === undefined && /^(anfangs|endsaldo|urlaubsanspruch|urlaubsverbrauch|urlaubssaldo|resturlaub)/.test(n)) return; // Kontostände zeigt die App nicht als Zeile
       var menge = zahl(m[2]); if (isNaN(menge)) return;
       if (key === 'zaKonto' && /[-−–]\s*$/.test(m[1])) menge = -menge; // „monatl. Veränderung -5,00 h“ ist ein Abzug vom Konto
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
       zeilen.push({ label: label, norm: n, menge: menge, key: key });
+    });
+    // Urlaubsstand in Arbeitstagen („End - Saldo 2,34 Arbeitstage“, „Resturlaub 2,34 Tage“): geht in die Urlaubskartei
+    var us = false;
+    lines.forEach(function (ln) {
+      if (us) return;
+      var mu = /^(.*?)\s+(\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2})\s*(?:arbeitstag\w*|tage?\b)/i.exec(String(ln).trim());
+      if (!mu) return;
+      var nu = norm(mu[1]);
+      if (!/^(endsaldo|resturlaub|urlaubssaldo|urlaubsstand|restanspruch)$/.test(nu)) return;
+      var vu = zahl(mu[2]); if (isNaN(vu) || vu > 400) return;
+      us = true; zeilen.push({ label: 'Resturlaub (Arbeitstage)', norm: 'resturlaubarbeitstage', menge: vu, key: 'urlaubSaldo' });
     });
     // Zeilen ohne „h“ (zum Beispiel „Lohn 160,00 13,34 2.134,82“): der Nutzer wählt einmal die Art und die Zahl, die App merkt es sich
     var NUM = /\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2}/g, PERS = /iban|bic\b|@|tel\.|sv-?nr|geb\.|\bstr(asse|aße)?\b|platz|gasse|weg\b|gmbh|\bag\b/i, schon = {};
