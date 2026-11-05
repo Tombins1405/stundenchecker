@@ -697,8 +697,15 @@
         else { txt = 'Lohnzettel hat ' + (r.unit === '€' ? eur.format(Math.abs(r.diff)) : fh(Math.abs(r.diff)) + ' h') + ' ' + (r.diff < 0 ? 'weniger' : 'mehr'); cls += ' bad'; bad.push(r); }
       }
       chip.className = cls; chip.textContent = txt;
-      var rowEl = chip.closest('.abrow'), old = rowEl && rowEl.querySelector('.abnach'); if (old) old.remove();
+      var rowEl = chip.closest('.abrow'); if (rowEl) Array.prototype.forEach.call(rowEl.querySelectorAll('.abnach'), function (o) { o.remove(); });
       if (rowEl && le.nach[r.key]) { var nn = document.createElement('div'); nn.className = 'abnach'; nn.textContent = 'Darin enthalten (Nachzahlung oder Rückverrechnung): ' + (le.nach[r.key].sum >= 0 ? '+' : '−') + (r.unit === '€' ? eur.format(Math.abs(le.nach[r.key].sum)) : fh(Math.abs(le.nach[r.key].sum)) + ' h'); rowEl.appendChild(nn); }
+      var so8 = +(le.lz && le.lz.sonder) || 0;
+      if (rowEl && so8 > 0 && r.status !== 'offen') {
+        var sn = null;
+        if (r.key === 'lohn') sn = '<span>Dazugezählt: Sonderurlaub</span> <b>' + fh(so8) + ' h</b>';
+        else if (r.key === 'ueber' && r.diff < -0.5) sn = '<span>Der Sonderurlaub wird bei deiner Firma aus den Überstunden bezahlt. Das kann einen Teil dieses Unterschieds erklären.</span>';
+        if (sn) { var sd = document.createElement('div'); sd.className = 'abnach'; sd.innerHTML = sn; rowEl.appendChild(sd); }
+      }
     });
     freiFrage(rows);
     var html = '';
