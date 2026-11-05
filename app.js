@@ -1343,10 +1343,10 @@
   function paFrage() {
     var dlg = $('#lk-dlg'), body = $('#lk-body'), btns = $('#lk-btns'), d = ui.edDraft, nm = E.STATUS[d.status].name;
     lkKopf('Arbeitszeit eingetragen', 'Bei Urlaub und Sonderurlaub trägst du Zeiten nur ein, wenn du an dem Tag wirklich gearbeitet hast. Dann zählt der Tag als bezahlter Tag plus Arbeit. Die Arbeitszeit kommt zu den bezahlten Sollstunden dazu.');
-    body.innerHTML = lkMia('<span>An diesem Tag steht</span> <b>' + esc(nm) + '</b> <span>und eine Arbeitszeit von</span> <b>' + esc(d.von) + '–' + esc(d.bis || '…') + '</b><br><span>Stimmt das, oder war es ein Versehen?</span>');
-    btns.innerHTML = '<button type="button" class="btn primary" id="pa-ja">Ja, beides stimmt</button><button type="button" class="btn" id="pa-nein">Nein, ohne Arbeitszeit</button><button type="button" class="btn" id="pa-zu">Zurück zur Eingabe</button>';
+    body.innerHTML = lkMia('<span>An diesem Tag steht</span> <b>' + esc(nm) + '</b> <span>und eine Arbeitszeit von</span> <b>' + esc(d.von) + '–' + esc(d.bis || '…') + '</b><br><span>Das ist normalerweise nicht möglich. Soll die Arbeitszeit trotzdem dazugerechnet werden? Dann schreibe ich den Fall als Notiz zu diesem Tag.</span>');
+    btns.innerHTML = '<button type="button" class="btn primary" id="pa-ja">Ja, dazurechnen und Notiz schreiben</button><button type="button" class="btn" id="pa-nein">Nein, ohne Arbeitszeit</button><button type="button" class="btn" id="pa-zu">Zurück zur Eingabe</button>';
     dlg.hidden = false;
-    $('#pa-ja').onclick = function () { dlg.hidden = true; ui.paOk = ui.edDate + d.status + d.von + d.bis; saveDay(); };
+    $('#pa-ja').onclick = function () { dlg.hidden = true; ui.paOk = ui.edDate + d.status + d.von + d.bis; var nt = uiTr('Arbeit an einem Urlaubs- oder Sonderurlaubstag: normalerweise nicht möglich, hier aber bewusst dazugerechnet.', uiLang()) || 'Arbeit an einem Urlaubs- oder Sonderurlaubstag: normalerweise nicht möglich, hier aber bewusst dazugerechnet.'; if (!d.an) d.an = {}; if ((d.an.t || '').indexOf(nt) < 0) d.an.t = ((d.an.t || '') ? d.an.t + ' ' : '') + nt; saveDay(); };
     $('#pa-nein').onclick = function () { dlg.hidden = true; d.von = ''; d.bis = ''; d.pausen = []; ui.paOk = ''; renderEditor(); saveDay(); };
     $('#pa-zu').onclick = function () { dlg.hidden = true; };
   }
