@@ -703,7 +703,6 @@
       if (rowEl && so8 > 0 && r.status !== 'offen') {
         var sn = null;
         if (r.key === 'lohn') sn = '<span>Dazugezählt: Sonderurlaub</span> <b>' + fh(so8) + ' h</b>';
-        else if (r.key === 'ueber' && r.diff < -0.5) sn = '<span>Der Sonderurlaub wird bei deiner Firma aus den Überstunden bezahlt. Das kann einen Teil dieses Unterschieds erklären.</span>';
         if (sn) { var sd = document.createElement('div'); sd.className = 'abnach'; sd.innerHTML = sn; rowEl.appendChild(sd); }
       }
     });
