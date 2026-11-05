@@ -8,6 +8,9 @@
   var REGELN = [
     [/zuschl|zusch|zuschlag/, null],
     [/lohnsteuer|sozialvers|brutto|netto|auszahlung|beitrag|kosten|sechstel|pendler|bemessung/, null],
+    [/^monatlveranderung|^zeitausgleichveranderung|^zaveranderung/, 'zaKonto'], // Block „Zeitausgleich“ unten links: Veränderung des Kontos in diesem Monat
+    [/urlaubsanspruch|urlaubsverbrauch|urlaubssaldo|urlaubsstand|resturlaub/, null], // Urlaubstage (Arbeitstage), keine Stunden
+    [/^anfangsstand|^endsaldo|^anfangssaldo/, null], // Kontostände (Zeitausgleich und Urlaub) werden nicht als Stunden übernommen
     [/zs$/, null], // „Überstunden 50% ZS“: Zuschlag auf dieselben Stunden, zählt nicht noch einmal
     [/sonderurlaub/, 'sonder'],
     [/^uberstunden|^uberstd|^mehrarbeit|^ust/, 'ueber'],
@@ -46,6 +49,7 @@
       if (gelernt[n] !== undefined) key = gelernt[n] === '-' ? null : gelernt[n];
       else for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { key = REGELN[i][1]; break; }
       var menge = zahl(m[2]); if (isNaN(menge)) return;
+      if (key === 'zaKonto' && /[-−–]\s*$/.test(m[1])) menge = -menge; // „monatl. Veränderung -5,00 h“ ist ein Abzug vom Konto
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
       zeilen.push({ label: label, norm: n, menge: menge, key: key });
     });
