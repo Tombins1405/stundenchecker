@@ -176,7 +176,9 @@ details.how p { margin-top: 6px; }
 .btns .btn { flex: 1 1 150px; }
 
 .result { border: 1.5px dashed var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
-.result .line { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+.result .line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.result .line span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.result .line span:last-child { white-space: nowrap; text-align: right; }
 .result .line.main { font-weight: 700; font-size: 1.15rem; }
 .result .line span:first-child { color: var(--ink-2); }
 .result .line.main span:first-child { color: var(--ink); }
