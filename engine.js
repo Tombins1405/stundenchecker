@@ -330,7 +330,7 @@
     },
     sozial: {
       name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
-      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: 50 % Zuschlag, mehrere Zuschläge zählen nur einmal.',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: 50 % Zuschlag, mehrere Zuschläge zählen nur einmal. Lehrlingseinkommen der Pflegelehre ab 1.4.2026 (Quelle: vida.at, Abschlussprotokoll): 966,30 / 1.228,20 / 1.460,40 / 1.909,20 € im 1. bis 4. Lehrjahr.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -696,7 +696,11 @@
       { id: 'VG6', m: true, name: 'VG 6 Pflegefachassistenz', l: [2867.20, 2923.30, 3009.60, 3123.80, 3210.00, 3294.10, 3382.40, 3468.70, 3522.70, 3581.20, 3639.20, 3697.10, 3755.30, 3809.60, 3867.80, 3925.80, 3983.50, 4040.50] },
       { id: 'VG7', m: true, name: 'VG 7 Diplomierte Gesundheits- und Krankenpflege', l: [3074.80, 3138.00, 3231.10, 3352.60, 3444.40, 3538.90, 3630.30, 3721.90, 3813.10, 3904.50, 3966.30, 4027.60, 4089.40, 4151.10, 4212.40, 4272.10, 4334.00, 4396.90] },
       { id: 'VG8', m: true, name: 'VG 8', l: [3348.90, 3447.50, 3583.00, 3749.90, 3918.70, 4050.30, 4152.70, 4253.10, 4349.30, 4451.60, 4520.10, 4585.30, 4652.00, 4719.00, 4785.80, 4852.60, 4919.50, 4986.30] },
-      { id: 'VG9', m: true, name: 'VG 9', l: [3886.80, 4041.70, 4237.00, 4469.40, 4703.20, 4898.20, 5053.20, 5169.10, 5285.30, 5403.10, 5519.40, 5637.30, 5714.30, 5792.00, 5871.20, 5946.60, 6024.20, 6101.30] }
+      { id: 'VG9', m: true, name: 'VG 9', l: [3886.80, 4041.70, 4237.00, 4469.40, 4703.20, 4898.20, 5053.20, 5169.10, 5285.30, 5403.10, 5519.40, 5637.30, 5714.30, 5792.00, 5871.20, 5946.60, 6024.20, 6101.30] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling Pflege, 1. Lehrjahr', l: [966.30] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling Pflege, 2. Lehrjahr', l: [1228.20] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling Pflege, 3. Lehrjahr', l: [1460.40] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling Pflege, 4. Lehrjahr', l: [1909.20] }
     ] },
     gastro: { stand: 'ab 1.10.2026, Niederösterreich', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], teiler: 173, gruppen: [
       { id: 'G1', m: true, name: 'Lohngruppe 1', l: [2724.00, 2790.30, 2856.60, 2922.90, 2989.20] },
@@ -811,7 +815,8 @@
         pfa: { name: 'Pflegefachassistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
         dgkp: { name: 'Diplomierte Gesundheits- und Krankenpflege', b: { fahrzeug: false, kunden: false, praemien: true } },
         heimhilfe: { name: 'Heimhilfe / Betreuung / Sozialbetreuung', b: { fahrzeug: false, kunden: false, praemien: true } },
-        mobil: { name: 'Mobile Pflege / Hauskrankenpflege', b: { fahrzeug: true, kunden: true, praemien: true } }
+        mobil: { name: 'Mobile Pflege / Hauskrankenpflege', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Pflegelehre)', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     anderes: { name: 'Etwas anderes', paket: 'eigen', einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } }
   };
