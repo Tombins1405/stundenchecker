@@ -2887,7 +2887,7 @@
         } catch (e) { res(null); }
       });
     }
-    var sheet = null, sheetImg = null;
+    var sheet = null, sheetImg = null, sheetSeite = '';
     function sheetBauen() {
       sheet = document.createElement('div'); sheet.id = 'fb-sheet'; sheet.className = 'cropov fbov'; sheet.hidden = true;
       sheet.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="fs-h"><h3 id="fs-h">Rückmeldung an den Entwickler</h3>' +
@@ -2903,7 +2903,7 @@
         var tx = ($('#fs-text').value || '').trim(), mit = sheetImg && $('#fs-mit').checked ? sheetImg : null;
         if (!tx && !mit) { m('Bitte schreib etwas oder hänge ein Bild an.', true); return; }
         var b = this; b.disabled = true;
-        window.StundenInsights.feedback($('#fs-art').value, tx, mit).then(function () {
+        window.StundenInsights.feedback($('#fs-art').value, tx, mit, sheetSeite).then(function () {
           b.disabled = false; sheet.querySelector('.lzbox').innerHTML = '<h3>Danke für deine Rückmeldung!</h3><p>Die Nachricht wurde erfolgreich übertragen.</p><div class="btns"><button type="button" class="btn primary" id="fs-ok">Schließen</button></div>'; $('#fs-ok').onclick = function () { sheet.remove(); sheet = null; };
         }, function () { m('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
       });
@@ -2912,6 +2912,12 @@
       if (!window.StundenInsights || !window.StundenInsights.on) return;
       if (!sheet) sheetBauen();
       var ff = $('#fb-float'); ff.hidden = true;
+      sheetSeite = '';
+      try {
+        var tops = Array.prototype.slice.call(document.querySelectorAll('#lz-dlg, #wiz, .cropov, .lzov, [role=dialog]')).filter(function (e) { return e.offsetParent !== null || (e.getClientRects && e.getClientRects().length); });
+        var qel = tops.filter(function (e) { return !e.hidden && !e.closest('#fb-sheet') && e.id !== 'fb-sheet'; }).pop() || document.querySelector('.view:not([hidden])');
+        if (qel) sheetSeite = String(qel.innerText || '').replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim().slice(0, 1800);
+      } catch (e) { }
       shotSeite().then(function (d) {
         ff.hidden = false; sheetImg = d;
         $('#fs-bildbox').hidden = !d; if (d) { $('#fs-prev').src = d; $('#fs-mit').checked = true; }

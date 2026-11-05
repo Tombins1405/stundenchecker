@@ -38,12 +38,12 @@
       try { if (!ON) return; fetch('https://ntfy.sh/stundenchecker-admin-72ab2bfe2a9e265a', { method: 'POST', mode: 'no-cors', body: String(text).slice(0, 120), headers: { 'Title': 'Stunden-Checker' } }).catch(function () {}); } catch (e) {}
     },
     // Feedback mit Text und optional Bild (schon verkleinert)
-    feedback: function (art, text, img) {
+    feedback: function (art, text, img, seite) {
       return new Promise(function (res, rej) {
         if (!ON) { rej(new Error('off')); return; }
         try {
           var u = user(), a = app(), info = a.info ? a.info() : {};
-          db().collection('feedback').add({ uid: u ? u.uid : null, email: u ? u.email : null, art: art, text: String(text).slice(0, 4000), img: img || null, view: info.view || null, geraet: info.geraet || null, lang: info.lang || null, version: window.APP_VERSION || null, t: stamp(), neu: true }).then(function (x) { api.admin('Neues Feedback: ' + art); res(x); }, rej);
+          db().collection('feedback').add({ uid: u ? u.uid : null, email: u ? u.email : null, art: art, text: String(text).slice(0, 4000), img: img || null, seite: seite ? String(seite).slice(0, 1800) : null, view: info.view || null, geraet: info.geraet || null, lang: info.lang || null, version: window.APP_VERSION || null, t: stamp(), neu: true }).then(function (x) { api.admin('Neues Feedback: ' + art); res(x); }, rej);
         } catch (e) { rej(e); }
       });
     },

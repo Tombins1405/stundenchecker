@@ -79,7 +79,9 @@
     var rows = [];
     items.forEach(function (it) { if (!it.str || !it.str.trim()) return; var y = Math.round(it.transform[5] / 3) * 3, r = rows.filter(function (q) { return Math.abs(q.y - it.transform[5]) < 2.5; })[0]; if (!r) { r = { y: it.transform[5], p: [] }; rows.push(r); } r.p.push({ x: it.transform[4], s: it.str }); });
     rows.sort(function (a, b) { return b.y - a.y; });
-    return rows.map(function (r) { r.p.sort(function (a, b) { return a.x - b.x; }); return r.p.map(function (q) { return q.s; }).join(' ').replace(/\s+/g, ' ').trim(); });
+    var cells = [];
+    var lines = rows.map(function (r) { r.p.sort(function (a, b) { return a.x - b.x; }); cells.push(r.p.map(function (q) { return String(q.s).replace(/\s+/g, ' ').trim(); }).filter(Boolean)); return r.p.map(function (q) { return q.s; }).join(' ').replace(/\s+/g, ' ').trim(); });
+    lines.cells = cells; return lines;
   }
   var libP = null;
   function ladeLib(basis) {
@@ -98,9 +100,9 @@
         var task = lib.getDocument({ data: buf.slice(0) });
         task.onPassword = function (cb, grund) { fragePasswort(grund === 2 ? 'falsch' : 'noetig').then(function (pw) { cb(pw); }, function () { fail(new Error('abgebrochen')); }); };
         task.promise.then(function (doc) {
-          var all = [], p = Promise.resolve();
-          for (var i = 1; i <= doc.numPages; i++) (function (n) { p = p.then(function () { return doc.getPage(n).then(function (pg) { return pg.getTextContent(); }).then(function (tc) { all = all.concat(zeilenAus(tc.items)); }); }); })(i);
-          p.then(function () { ok({ lines: all, hatText: all.join('').replace(/\s/g, '').length > 50 }); }, fail);
+          var all = [], allCells = [], p = Promise.resolve();
+          for (var i = 1; i <= doc.numPages; i++) (function (n) { p = p.then(function () { return doc.getPage(n).then(function (pg) { return pg.getTextContent(); }).then(function (tc) { var zl = zeilenAus(tc.items); allCells = allCells.concat(zl.cells || []); all = all.concat(zl); }); }); })(i);
+          p.then(function () { all.cells = allCells; ok({ lines: all, hatText: all.join('').replace(/\s/g, '').length > 50 }); }, fail);
         }, fail);
       });
     });
@@ -144,19 +146,27 @@
   ];
   function kopf(lines, LG) {
     var out = { kv: null, paket: null, einstufung: '', stundenlohn: null, monatslohn: null, treffer: [] }, PERS = /iban|bic\b|@|tel\.|sv-?nr|sozialvers|geb\.|\bstr(asse|aße)?\b|platz|gasse|\bweg\b|gmbh|\bag\b/i;
+    var cl = (lines && lines.cells) || [];
+    cl.forEach(function (cs) {
+      for (var ci = 0; ci < cs.length - 1; ci++) {
+        var lab = cs[ci].toLowerCase().replace(/\s+/g, ' ').replace(/[:\.]/g, ''), val = cs[ci + 1];
+        if (/^(besch als|beschaeftigt als|beschäftigt als|verwendet als)$/.test(lab) && !out.beschaeftigt && val && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(val) && !PERS.test(val)) { out.beschaeftigt = val.slice(0, 40); if (!out.einstufung) out.einstufung = val.slice(0, 60); if (!out.paket) { var nz = normMon(val); for (var qz = 0; qz < KVMAP.length; qz++) if (KVMAP[qz][0].test(nz)) { out.paket = KVMAP[qz][1]; break; } } }
+        if (lab === 'tarifgruppe' && !out.tarifgruppe && /^[A-Za-z0-9\-\.]{1,12}$/.test(val)) out.tarifgruppe = val;
+      }
+    });
     (lines || []).forEach(function (ln) {
       var t = String(ln).replace(/\s+/g, ' ').trim().replace(/^\d{3,5}\s+(?=[A-Za-zÄÖÜäöü])/, ''), lo = t.toLowerCase();
       if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
         if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
       }
-      var mb = /^(besch\.?\s*als|beschaeftigt\s+als|beschäftigt\s+als|verwendet\s+als|taetigkeit|tätigkeit)\s*[:\-]?\s+(.{2,40})$/i.exec(t);
+      var mb = /(?:^|\s)(besch\.?\s*als|beschaeftigt\s+als|beschäftigt\s+als|verwendet\s+als)\s*[:\-]?\s+(.{2,40}?)(?=\s+(?:LSt|AV\b|AE\b|Pendler|Pendl|FA\b|Familien|Kinder|Freibetrag|SV\b|IBAN)|$)/i.exec(t);
       if (mb && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(mb[2])) {
         out.beschaeftigt = mb[2].trim();
         if (!out.einstufung) out.einstufung = mb[2].trim().slice(0, 60);
         if (!out.paket) { var nb = normMon(mb[2]); for (var q = 0; q < KVMAP.length; q++) if (KVMAP[q][0].test(nb)) { out.paket = KVMAP[q][1]; break; } }
       }
-      var mt = /^tarifgruppe\s*[:\-]?\s+([A-Za-z0-9\-\.]{1,12})$/i.exec(t);
+      var mt = /(?:^|\s)tarifgruppe\s*[:\-]?\s+([A-Za-z0-9\-\.]{1,12})(?:\s|$)/i.exec(t);
       if (mt) out.tarifgruppe = mt[1];
       if (!out.einstufung) {
         var me = /^(einstufung|lohngruppe|verwendungsgruppe|beschaeftigungsgruppe|beschäftigungsgruppe|gehaltsgruppe|entlohnungsgruppe|lohnstufe|kategorie|gruppe)\b\s*[:\-]?\s*(.{1,40})$/i.exec(t);

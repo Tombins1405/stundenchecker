@@ -101,7 +101,7 @@ function gAlles(){var L=['STUNDEN-CHECKER: ALLES, WAS NOCH OFFEN IST, Stand '+ne
  [['mo','FRAGEN AN MIA'],['st','ABWEICHUNGEN'],['pr','NEUE KONTEN']].forEach(function(p){var l=GS[p[0]].filter(function(x){return !gOk(p[0],x)});L.push('',p[1]+' ('+l.length+')');l.forEach(function(x){L.push(gText(p[0],x),'---')})});
  return L.join('\n')}
 function gList(g){return GS[g].filter(function(x){return GF[g]==='alle'||gOk(g,x)===(GF[g]==='erledigt')})}
-function fbText(x){return 'RÜCKMELDUNG AUS DEM STUNDEN-CHECKER\nArt: '+art(x)+'\nVon: '+(x.email||'ohne Konto')+'\nAm: '+fmt(x.t)+'\nAnsicht: '+(x.view||'?')+', Gerät: '+(x.geraet||'unbekannt')+', Sprache: '+(x.lang||'?')+', Version: '+(x.version||'?')+'\n\n'+(x.text||'')+(x.img?'\n\n(mit Bild: in der Verwaltung auf "Bild speichern" tippen und hier anhängen)':'')}
+function fbText(x){return 'RÜCKMELDUNG AUS DEM STUNDEN-CHECKER\nArt: '+art(x)+'\nVon: '+(x.email||'ohne Konto')+'\nAm: '+fmt(x.t)+'\nAnsicht: '+(x.view||'?')+', Gerät: '+(x.geraet||'unbekannt')+', Sprache: '+(x.lang||'?')+', Version: '+(x.version||'?')+'\n\n'+(x.text||'')+(x.seite?'\n\nBILDSCHIRMTEXT (automatisch, so wie auf dem Bild zu sehen):\n'+x.seite:'')+(x.img?'\n\n(Das Bild selbst kann ich nicht sehen. Der Bildschirmtext oben zeigt, was darauf steht.)':'')}
 function drawFb(){
  var L=FB.filter(function(x){return FILT==='alle'||st(x)===(FILT==='erledigt'?'erledigt':'offen')});
  var no=FB.filter(function(x){return st(x)!=='erledigt'}).length;
