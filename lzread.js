@@ -145,7 +145,7 @@
   function kopf(lines, LG) {
     var out = { kv: null, paket: null, einstufung: '', stundenlohn: null, monatslohn: null, treffer: [] }, PERS = /iban|bic\b|@|tel\.|sv-?nr|sozialvers|geb\.|\bstr(asse|aße)?\b|platz|gasse|\bweg\b|gmbh|\bag\b/i;
     (lines || []).forEach(function (ln) {
-      var t = String(ln).replace(/\s+/g, ' ').trim(), lo = t.toLowerCase();
+      var t = String(ln).replace(/\s+/g, ' ').trim().replace(/^\d{3,5}\s+(?=[A-Za-zÄÖÜäöü])/, ''), lo = t.toLowerCase();
       if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
         if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
@@ -156,10 +156,10 @@
       }
       if (out.stundenlohn === null) {
         var ms = /^(stundenlohn|grundlohn|stundensatz|lohn)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d{1,4})/i.exec(t);
-        if (ms) { var v = zahl(ms[2]); if (v >= 5 && v <= 80) out.stundenlohn = v; }
+        if (ms) { var v = zahl(ms[2]); if (v >= 5 && v <= 80) out.stundenlohn = v; else if (v >= 500 && v <= 20000 && /^(grundlohn|lohn)$/i.test(ms[1]) && out.monatslohn === null) out.monatslohn = v; }
       }
       if (out.monatslohn === null) {
-        var mm = /^(monatslohn|monatsgehalt|gehalt|grundgehalt|bruttogehalt)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d\d)/i.exec(t);
+        var mm = /^(monatslohn|monatsgehalt|gehalt|grundgehalt|bruttogehalt|grundbezug|monatsbezug)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d\d)/i.exec(t);
         if (mm) { var v2 = zahl(mm[2]); if (v2 >= 500 && v2 <= 20000) out.monatslohn = v2; }
       }
     });
