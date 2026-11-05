@@ -1882,7 +1882,7 @@
   var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
-    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, step: mode === 'start' ? 'mia' : 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
+    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: mode === 'start' ? 'mia' : 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.kvGewaehlt = !!cur.paket; w.bl = (data.profil && data.profil.bl) || '';
@@ -3656,6 +3656,16 @@
     $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
+  /* Grundeinstellung: "Anonym mithelfen" ist an, wer nicht selbst entschieden hat (Testphase, Tester sind informiert). Wer Nein gesagt hat, bleibt auf Nein. */
+  function standardMithelfen() {
+    if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
+    var p = data.profil || (data.profil = {}), co = p.consent || {};
+    if (co.statistik || co.miaFragen || p.mithelfenNein || p.mithelfenStd) return;
+    p.consent = { statistik: true, miaFragen: true }; p.mithelfenStd = true; save();
+    try { window.StundenInsights.push(true); } catch (e) { }
+    toast('Anonym mithelfen ist eingeschaltet. Du kannst es jederzeit in den Einstellungen ausschalten.');
+  }
   setTimeout(function () { try { geburtstagPruefen(); } catch (e) { } }, 1800);
+  setTimeout(function () { try { standardMithelfen(); } catch (e) { } }, 3500);
   window.__scBoot = true;
 })();
