@@ -3521,7 +3521,7 @@
       bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
     } else if (s === 'datei') {
       h.textContent = 'Zeig mir deinen Lohnzettel';
-      b.innerHTML = svg + '<p>Such jetzt die PDF-Datei deines Lohnzettels aus. Am besten die Datei, die du von deiner Firma bekommen hast. Bitte nicht ausdrucken oder neu speichern, sonst kann ich sie nicht lesen.</p><p class="hint">Wenn die Datei ein Kennwort hat, frage ich dich danach.</p>' +
+      b.innerHTML = svg + '<p>Such jetzt die PDF-Datei deines Lohnzettels aus. Am besten die Datei, die du von deiner Firma bekommen hast. Bitte nicht ausdrucken oder neu speichern, sonst kann ich sie nicht lesen.</p><p class="hint">Wenn die Datei ein Kennwort hat, frage ich dich danach.</p><p class="hint">Ein Foto oder ein Scan kann ich nicht lesen, auch wenn du es als PDF speicherst. Frag in deiner Firma nach der PDF-Datei.</p>' +
         '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden>';
       bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'warten') {
