@@ -263,7 +263,7 @@
     if (ev.target.closest && ev.target.closest('#m-legende')) { ev.preventDefault(); legendeOpen(); }
   }, true);
   // Voraussichtliches Brutto (Schätzung) und Auszahlungstag
-  var BRUTTO_INFO = 'Das ist eine Schätzung des Bruttos aus deinen Aufzeichnungen: Lohn, Überstunden, Prämien und Dienste. Das Netto hängt von mehreren Faktoren ab, die die App nicht berücksichtigen kann, zum Beispiel Sozialversicherung, Lohnsteuer, Familienbonus, Pendlerpauschale, Gewerkschaftsbeitrag und Sonderzahlungen. Sonderzahlungen, Nachzahlungen und die Schlechtwetter-Entschädigung sind nicht enthalten.';
+  var BRUTTO_INFO = 'Das ist eine Schätzung des Bruttos aus deinen Aufzeichnungen: Lohn, Überstunden, Prämien und Dienste. Das Netto hängt von mehreren Faktoren ab, die die App nicht berücksichtigen kann, zum Beispiel Sozialversicherung, Lohnsteuer, Familienbonus, Pendlerpauschale, Gewerkschaftsbeitrag und Sonderzahlungen. Sonderzahlungen, Nachzahlungen und die Schlechtwetter-Entschädigung sind nicht enthalten. Tipp: Auf deinem letzten Lohnzettel stehen Brutto und Auszahlung. Teilst du die Auszahlung durch das Brutto, siehst du ungefähr, wie viel vom Brutto bei dir netto ankommt.';
   function bruttoBlock(s, w, laufend) {
     if (laufend) return '';
     if (!(s.lohnStd > 0) && !(s.arbeitstage > 0)) return '';
