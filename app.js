@@ -883,7 +883,9 @@
       return '<div class="prblock">' +
         '<div class="field pn"><label for="pr-n' + i + '">Name der Prämie</label><input type="text" id="pr-n' + i + '" data-pr="' + i + '" data-pf="name" maxlength="60" autocomplete="off" value="' + esc(p.name || '') + '"></div>' +
         '<button type="button" class="rm" data-rmpr="' + i + '" aria-label="Prämie ' + (i + 1) + ' entfernen">×</button>' +
-        '<div class="field"><label for="pr-b' + i + '">Betrag (€)</label><input type="number" id="pr-b' + i + '" data-pr="' + i + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0" value="' + esc(p.betrag == null ? '' : p.betrag) + '"></div>' +
+        '<div class="field"><label for="pr-b' + i + '">' + (p.teile && p.teile.length ? 'Summe der Teile (€)' : 'Betrag (€)') + '</label><input type="number" id="pr-b' + i + '" data-pr="' + i + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0"' + (p.teile && p.teile.length ? ' readonly' : '') + ' value="' + esc(p.betrag == null ? '' : p.betrag) + '"></div>' +
+        (p.teile && p.teile.length ? p.teile.map(function (tl, j) { return '<div class="field pn"><label for="pr-tn' + i + '-' + j + '">Name des Teils</label><input type="text" id="pr-tn' + i + '-' + j + '" data-pr="' + i + '" data-pj="' + j + '" data-pf="name" maxlength="60" autocomplete="off" value="' + esc(tl.name || '') + '"></div><div class="field"><label for="pr-tb' + i + '-' + j + '">Betrag des Teils (€)</label><input type="number" id="pr-tb' + i + '-' + j + '" data-pr="' + i + '" data-pj="' + j + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0" value="' + (+tl.betrag > 0 ? esc(tl.betrag) : '') + '"></div><button type="button" class="btn" data-rmtl="' + i + '.' + j + '">Teil entfernen</button>'; }).join('') : '') +
+        (p.einheit === 'monat' ? '<button type="button" class="btn" data-addtl="' + i + '">' + (p.teile && p.teile.length ? '+ Teil hinzufügen' : 'Aus mehreren Teilen zusammensetzen') + '</button>' : '') +
         '<div class="field"><label for="pr-e' + i + '">Wofür</label><select id="pr-e' + i + '" data-pr="' + i + '" data-pf="einheit">' + PR_EINHEIT.map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
         (p.einheit === 'taet' ? '<div class="field pn"><label for="pr-t' + i + '">Name der Tätigkeit (so wie du sie beim Kunden einträgst)</label><input type="text" id="pr-t' + i + '" data-pr="' + i + '" data-pf="taet" maxlength="40" autocomplete="off" value="' + esc(p.taet || '') + '"><small>Diese Tätigkeit trägst du beim Kunden ein. Beim Eintragen erscheint sie als Button zum Antippen, so passiert kein Tippfehler.</small></div>' : '') +
         '<div class="field pn"><label for="pr-r' + i + '">Wann zählt sie? (nur für dich zur Erinnerung)</label><input type="text" id="pr-r' + i + '" data-pr="' + i + '" data-pf="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
@@ -2715,6 +2717,8 @@
     if (t.dataset.key) { ui.setKey = t.dataset.key; renderSettings(); return; }
     if (t.dataset.rmds !== undefined) { arm(t, 'Sicher?', function () { diensteListe().splice(+t.dataset.rmds, 1); save(); renderDiensteSettings(); }); return; }
     if (t.dataset.dsneu) { dsNeu(t.dataset.dsneu, t.textContent); return; }
+    if (t.dataset.addtl !== undefined) { var pa = praemienListe()[+t.dataset.addtl]; if (pa) { if (!pa.teile || !pa.teile.length) pa.teile = [{ name: '', betrag: +pa.betrag || 0 }]; pa.teile.push({ name: '', betrag: 0 }); save(); renderPraemienSettings(); var tn = $('#pr-tn' + t.dataset.addtl + '-' + (pa.teile.length - 1)); if (tn) tn.focus(); } return; }
+    if (t.dataset.rmtl !== undefined) { var rp = t.dataset.rmtl.split('.'), pb = praemienListe()[+rp[0]]; if (pb && pb.teile) { pb.teile.splice(+rp[1], 1); if (pb.teile.length) pb.betrag = Math.round(pb.teile.reduce(function (a, x) { return a + (+x.betrag || 0); }, 0) * 100) / 100; else delete pb.teile; save(); renderPraemienSettings(); } return; }
     if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
     if (t.dataset.tchip !== undefined) { var tp = String(t.dataset.tcs).split('-'), tk = ui.edDraft.kunden[+tp[0]]; if (tk && tk.taet[+tp[1]]) { tk.taet[+tp[1]].tat = t.dataset.tchip; var ti2 = $('#k-t' + t.dataset.tcs); if (ti2) ti2.value = t.dataset.tchip; var tc2 = $('#e-kunden [data-tc="' + t.dataset.tcs + '"]'); if (tc2) tc2.innerHTML = tatChips(t.dataset.tchip, t.dataset.tcs); updatePreview(); } return; }
@@ -2730,6 +2734,14 @@
     if (id && id.charAt(0) === 'k' && id.charAt(1) === '-' || id.indexOf('ku-') === 0 || id.indexOf('kz-') === 0) { if (id === 'k-eintritt' && ev.type !== 'change') return; if (konInput(t)) return; }
     if (t.dataset && t.dataset.pr !== undefined && t.closest('#pr-list')) {
       var po = praemienListe()[+t.dataset.pr]; if (!po) return;
+      if (t.dataset.pj !== undefined) {
+        var tl = po.teile && po.teile[+t.dataset.pj]; if (!tl) return;
+        if (t.dataset.pf === 'betrag') { var tv = parseFloat(String(t.value).replace(',', '.')); tl.betrag = isNaN(tv) ? 0 : tv; } else tl.name = t.value;
+        po.betrag = Math.round(po.teile.reduce(function (a, x) { return a + (+x.betrag || 0); }, 0) * 100) / 100;
+        var sb = $('#pr-b' + t.dataset.pr); if (sb) sb.value = po.betrag;
+        save(); return;
+      }
+      if (t.dataset.pf === 'einheit' && t.value !== 'monat' && po.teile) { delete po.teile; }
       if (t.dataset.pf === 'einheit') { po.einheit = t.value; save(); renderPraemienSettings(); return; }
       if (t.dataset.pf === 'betrag') { var bv = parseFloat(String(t.value).replace(',', '.')); po.betrag = isNaN(bv) ? 0 : bv; } else po[t.dataset.pf] = t.value;
       save(); return;
