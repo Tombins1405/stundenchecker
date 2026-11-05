@@ -306,6 +306,7 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .kunde2 .taet { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; padding-left: 12px; border-left: 3px solid var(--accent-soft); }
 .kunde2 .taet .kn { grid-column: 1 / -1; }
 .kunde2 .linkbtn { align-self: flex-start; margin-left: 12px; }
+.kz-pau { margin: -4px 0 0; font-size: .85rem; color: var(--ink-2); }
 .kz-sub { padding-left: 14px; color: var(--ink-2); }
 
 /* Prämien */

@@ -1080,6 +1080,7 @@
         kh += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
         kz.rows.forEach(function (x) {
           kh += line('<button type="button" class="kzlink" data-kz="' + x.ki + '"><strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong></button>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
+          if (x.pau > 0) kh += '<div class="hint kz-pau"><span>Pause abgezogen:</span> ' + hm(x.pau) + ' h</div>';
           if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) kh += line('<button type="button" class="kzlink kz-sub" data-kz="' + x.ki + '" data-kj="' + y.j + '">' + esc(y.tat || 'Tätigkeit') + '</button>', y.min === null ? '–' : hm(y.min) + ' h'); });
         });
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
