@@ -2204,7 +2204,7 @@
       if (ak && kvs.indexOf(ak) > 0) { kvs.splice(kvs.indexOf(ak), 1); kvs.unshift(ak); }
       if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
       var cp = E.PAKETE[w.paket];
-      html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="wzlist">' +
+      html += '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' +
         kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>' +
         '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Auf deinem Lohnzettel oder im Dienstvertrag, meist oben unter „Kollektivvertrag“ oder „KV“. Sonst frag im Büro. Weißt du es nicht, nimm „Weiß ich nicht“. Du kannst es später ändern, nichts geht verloren.</p></details>' +
         '<details class="wzfehlt"><summary>Mein Kollektivvertrag ist nicht dabei</summary><div class="field"><label for="wz-kvf">Ich brauche bitte den Kollektivvertrag für …</label><input type="text" id="wz-kvf" maxlength="120" autocomplete="off"></div><button type="button" class="btn" data-wkf="1">An den Entwickler schicken</button></details>' +
@@ -2254,6 +2254,7 @@
       if (t.dataset.wa) { w.art = t.dataset.wa; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; wzNext(); return; }
       if (t.dataset.wm) { w.mia = t.dataset.wm; wzRender(); return; }
       if (t.dataset.wk) { w.paket = t.dataset.wk; w.kvGewaehlt = true; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
+      if (t.id === 'wz-scan') { lzUi.modus = 'einr'; lzOpen(); return; }
       if (t.id === 'wz-next') { wzNext(); return; }
       if (t.id === 'wz-back') { wzBack(); return; }
     });
@@ -3537,6 +3538,18 @@
       h.textContent = 'Das habe ich übernommen';
       b.innerHTML = svg + '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte prüfe die Zahlen mit deinem Lohnzettel.</div><ul class="legende">' + (lzUi.erg || []).filter(function (x) { return x.n && data.abgleich[x.y + '-' + pad(x.m)]; }).map(function (x) { return '<li><span style="flex:1"><strong>' + MON[x.m - 1] + ' ' + x.y + '</strong></span><button type="button" class="btn" data-lzdel="' + x.y + '-' + pad(x.m) + '">Löschen</button></li>'; }).join('') + '</ul>';
       bt.innerHTML = lzBtn('Fertig', 'lz-done', 'primary');
+    } else if (s === 'einr') {
+      var k = lzUi.kopf || {}, tr = lzUi.treff, pk = k.paket && E.PAKETE[k.paket] ? E.PAKETE[k.paket].name : null, rows = [], pr = lzUi.modus === 'pruef', en = pr ? lzUi.en : null;
+      h.textContent = pr ? 'Deine Einstellungen und dein Lohnzettel' : 'Das habe ich auf deinem Lohnzettel gefunden';
+      function zl(t, lz, app, id) { var gl = app !== undefined && app !== null && String(app) !== String(lz); return '<li><span style="flex:1"><strong>' + esc(t) + '</strong><br><span>Lohnzettel:</span> <b>' + esc(lz) + '</b>' + (pr ? (app === null || app === undefined || app === '' ? '<br><span>In der App:</span> <i>nichts eingetragen</i>' : '<br><span>In der App:</span> <b>' + esc(app) + '</b>') : '') + '</span>' + (pr ? (gl ? (id ? '<button type="button" class="btn" data-lzc="' + id + '">Ändern</button>' : '<span class="hint">Bitte über „Beruf ändern“ anpassen</span>') : '<span class="hint">Passt</span>') : '') + '</li>'; }
+      if (pk) rows.push(zl('Kollektivvertrag', pk, pr ? (E.PAKETE[en.paket] ? E.PAKETE[en.paket].name : en.paket) : null, null));
+      if (k.stundenlohn !== null) rows.push(zl('Stundenlohn', fmtNum(k.stundenlohn) + ' €', pr ? fmtNum(en.stundenlohn) + ' €' : null, 'lohn'));
+      if (k.monatslohn !== null && k.stundenlohn === null) rows.push(zl('Monatslohn', fmtNum(k.monatslohn) + ' €', pr ? (en.monatslohn ? fmtNum(en.monatslohn) + ' €' : '') : null, 'monat'));
+      if (k.einstufung) rows.push(zl('Einstufung', k.einstufung, pr ? en.einstufung || '' : null, 'einst'));
+      if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (tr.ls != null && E.LOHNGRUPPEN[tr.paket].stufen ? ', ' + esc(E.LOHNGRUPPEN[tr.paket].stufen[tr.ls]) : '') + '</span></li>');
+      b.innerHTML = svg + (rows.length ? '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte vergleiche mit deinem Lohnzettel.</div><ul class="legende">' + rows.join('') + '</ul>' + (lzUi.treff === null && (lzUi.kopf.treffer || []).length > 1 ? '<p class="hint">Der Stundenlohn passt zu mehreren Lohngruppen. Bitte wähle die Lohngruppe danach selbst aus.</p>' : '') : '<p>Auf diesem Lohnzettel habe ich keinen Kollektivvertrag und keinen Stundenlohn gefunden. Bitte stelle alles selbst ein. Ich helfe dir dabei.</p>') +
+        '<p class="hint">Gelesen wurde nur hier auf deinem Handy. Es wurde nichts hochgeladen und nichts gespeichert, außer was du übernimmst.</p>';
+      bt.innerHTML = (!pr && rows.length ? lzBtn('Übernehmen', 'lz-einr-ok', 'primary') : '') + lzBtn(pr ? 'Schließen' : 'Selbst einstellen', 'lz-cancel');
     } else if (s === 'fehler') {
       h.textContent = 'Das hat nicht geklappt';
       b.innerHTML = svg + '<p>Ich konnte die Datei nicht öffnen. Prüfe bitte deine Internetverbindung, sie wird beim ersten Mal kurz gebraucht, um das Lesemodul zu laden. Du kannst die Zeilen auch von Hand im Abgleich eintragen.</p>';
@@ -3606,6 +3619,34 @@
     toast('Übernommen. Bitte prüfe die Zahlen mit deinem Lohnzettel. Das Ergebnis siehst du unter „Stimmt mein Lohnzettel?“.', 7000);
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
+  function fmtNum(x) { return (Math.round(x * 100) / 100).toFixed(2).replace('.', ','); }
+  function lzEinrAus(lines) {
+    var k = window.StundenLz.kopf(lines, E.LOHNGRUPPEN), tr = null, ts = k.treffer || [];
+    if (ts.length === 1) tr = ts[0];
+    else if (ts.length > 1 && k.einstufung) { var m = ts.filter(function (x) { return new RegExp('(^|\\s)' + x.lg.replace('.', '\\.') + '(\\s|$|[:,])', 'i').test(k.einstufung); }); if (m.length === 1) tr = m[0]; }
+    lzUi.kopf = k; lzUi.treff = tr; ins('lz_einrichten');
+    if (lzUi.modus === 'pruef') lzUi.en = wAt(todayISO());
+    lzUi.step = 'einr'; lzRender();
+  }
+  function lzEinrOk() {
+    var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
+    var kvs = (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || [], gleich = k.paket && kvs.indexOf(k.paket) >= 0, pak = gleich ? k.paket : (tr && kvs.indexOf(tr.paket) >= 0 ? tr.paket : null);
+    if (pak && pak !== w.paket) { w.paket = pak; var pv = E.PAKETE[pak].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
+    if (pak) w.kvGewaehlt = true;
+    if (k.stundenlohn !== null) w.lohn = k.stundenlohn;
+    if (k.monatslohn !== null && k.stundenlohn === null) w.monat = k.monatslohn;
+    if (k.einstufung) w.einst = k.einstufung;
+    if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls; }
+    lzClose(); wzRender(); toast(pak || k.stundenlohn !== null || k.einstufung ? 'Übernommen. Bitte prüfe die Werte noch einmal.' : 'Dazu habe ich nichts gefunden.', 4000);
+  }
+  function lzEinrAendern(was) {
+    var en = lzUi.en, k = lzUi.kopf, tr = lzUi.treff; if (!en || !k) return;
+    var rec = data.settings.filter(function (x) { return x.gueltigAb === en.gueltigAb; })[0]; if (!rec) return;
+    if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
+    else if (was === 'monat') { var ms = rec.monatsStd || 166.83; rec.monatslohn = k.monatslohn; rec.monatsStd = ms; rec.stundenlohn = Math.round(k.monatslohn / ms * 100) / 100; rec.lgAuto = false; }
+    else if (was === 'einst') rec.einstufung = k.einstufung.slice(0, 60);
+    save(); lzUi.en = rec; renderSettings(); toast('Geändert. Gilt ab ' + fmtDate(rec.gueltigAb) + '.', 4000); lzRender();
+  }
   function lzNext() {
     if (!lzUi.queue || !lzUi.queue.length) { lzFertig(); return; }
     var file = lzUi.queue.shift();
@@ -3614,6 +3655,7 @@
     fr.onload = function () {
       window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
         if (!o.hatText) { lzUi.queue = []; lzUi.step = 'keintext'; lzRender(); return; }
+        if (lzUi.modus === 'einr' || lzUi.modus === 'pruef') { lzUi.queue = []; lzEinrAus(o.lines); return; }
         var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; ins('lz_gelesen');
         if (lzBekannt(res)) { lzApply(res, res.monat, res.zeilen.map(function (z) { return { z: z, key: z.key, pos: z.pos | 0 }; })); lzNext(); return; }
         lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender();
@@ -3633,6 +3675,8 @@
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
       if (t.id === 'lz-cancel') { if (lzUi.pwFail && lzUi.step === 'kennwort') { var f = lzUi.pwFail; lzUi.pwFail = null; f(new Error('abgebrochen')); } lzClose(); }
+      else if (t.id === 'lz-einr-ok') lzEinrOk();
+      else if (t.dataset && t.dataset.lzc) lzEinrAendern(t.dataset.lzc);
       else if (t.id === 'lz-hand') { lzUi.step = 'hand'; lzRender(); }
       else if (t.id === 'lz-hsend') {
         var tx = ($('#lz-hand-t').value || '').replace(/\d/g, '#').trim(); if (!tx) { lzClose(); return; }
@@ -3661,7 +3705,8 @@
         lzApply(r, mo, items); lzNext();
       }
     });
-    $('#lz-start').addEventListener('click', function () { lzOpen(); });
+    $('#lz-start').addEventListener('click', function () { lzUi.modus = ''; lzOpen(); });
+    $('#lz-einst').addEventListener('click', function () { lzUi.modus = 'pruef'; lzOpen(); });
     $('#lz-chk').addEventListener('change', function () { lzProfil().lzLesen = this.checked; save(); if (this.checked) lzOpen('erlaubnis'); });
     $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });

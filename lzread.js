@@ -125,6 +125,56 @@
       });
     });
   }
-  var api = { zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+
+  // Kopfdaten für die Einrichtung: Kollektivvertrag, Einstufung, Stundenlohn. Name, Adresse, SV-Nummer und Bankdaten werden nie gelesen.
+  var KVMAP = [
+    [/gueterbefoerd|güterbefördr|kraftfahr|spedition|transportgewerbe|gueterbeford/, 'gueter'],
+    [/kleintransport|personenbefoerd|taxi/, 'klein'],
+    [/handel/, 'handel'],
+    [/bauindustrie|baugewerbe|bauhilfsgewerbe|baunebengewerbe|\bbau\b/, 'bau'],
+    [/metall|kfz|fahrzeug/, 'metall'],
+    [/gastgewerbe|hotel|gastronomie/, 'gastro'],
+    [/sozialwirtschaft|swoe|swö|pflege|gesundheit/, 'sozial'],
+    [/reinigung|denkmal|fassaden/, 'reinigung'],
+    [/bewachung|sicherheit|security/, 'bewachung'],
+    [/holzbau/, 'holzbau'], [/dachdecker/, 'dachdecker'], [/pflasterer/, 'pflasterer'], [/fliesenleger/, 'fliesenleger'],
+    [/tischler|holzverarbeit/, 'tischler'], [/maler|lackierer|anstreicher/, 'maler'],
+    [/bank/, 'banken_ang'], [/versicherung/, 'versicherung_ang'], [/informationstechn|it-|edv/, 'it_ang'],
+    [/industrie/, 'industrie_ang'], [/angestellte|gewerbe/, 'gewerbe_ang']
+  ];
+  function kopf(lines, LG) {
+    var out = { kv: null, paket: null, einstufung: '', stundenlohn: null, monatslohn: null, treffer: [] }, PERS = /iban|bic\b|@|tel\.|sv-?nr|sozialvers|geb\.|\bstr(asse|aße)?\b|platz|gasse|\bweg\b|gmbh|\bag\b/i;
+    (lines || []).forEach(function (ln) {
+      var t = String(ln).replace(/\s+/g, ' ').trim(), lo = t.toLowerCase();
+      if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
+        var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
+        if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
+      }
+      if (!out.einstufung) {
+        var me = /^(einstufung|lohngruppe|verwendungsgruppe|beschaeftigungsgruppe|beschäftigungsgruppe|gehaltsgruppe|entlohnungsgruppe|lohnstufe|kategorie|gruppe)\b\s*[:\-]?\s*(.{1,40})$/i.exec(t);
+        if (me && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(me[2])) out.einstufung = (me[1] + ' ' + me[2]).replace(/\s+/g, ' ').trim().slice(0, 60);
+      }
+      if (out.stundenlohn === null) {
+        var ms = /^(stundenlohn|grundlohn|stundensatz|lohn)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d{1,4})/i.exec(t);
+        if (ms) { var v = zahl(ms[2]); if (v >= 5 && v <= 80) out.stundenlohn = v; }
+      }
+      if (out.monatslohn === null) {
+        var mm = /^(monatslohn|monatsgehalt|gehalt|grundgehalt|bruttogehalt)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d\d)/i.exec(t);
+        if (mm) { var v2 = zahl(mm[2]); if (v2 >= 500 && v2 <= 20000) out.monatslohn = v2; }
+      }
+    });
+    if (LG && (out.stundenlohn !== null || out.monatslohn !== null)) {
+      Object.keys(LG).forEach(function (pk) {
+        if (out.paket && out.paket !== pk) return;
+        LG[pk].gruppen.forEach(function (g) { g.l.forEach(function (val, si) {
+          if (val == null) return;
+          var hit = g.m ? (out.monatslohn !== null && Math.abs(out.monatslohn - val) < 0.005) : (out.stundenlohn !== null && Math.abs(out.stundenlohn - val) < 0.005);
+          if (hit) out.treffer.push({ paket: pk, lg: g.id, name: g.name, ls: LG[pk].stufen && g.l.length > 1 ? si : null, lehrling: !!g.lehrling });
+        }); });
+      });
+    }
+    return out;
+  }
+  var api = { kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
