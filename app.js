@@ -3654,4 +3654,5 @@
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
   setTimeout(function () { try { geburtstagPruefen(); } catch (e) { } }, 1800);
+  window.__scBoot = true;
 })();
