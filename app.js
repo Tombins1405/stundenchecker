@@ -2148,6 +2148,7 @@
     if (w.mode === 'start') { if (!data.profil) data.profil = {}; data.profil.mia = { figur: w.mia === 'm' ? 'm' : 'w', name: (w.miaName || '').trim() }; data.profil.vorname = String(w.vorname || '').trim().slice(0, 40); data.profil.nachname = String(w.nachname || '').trim().slice(0, 60); }
     if (String(w.paket).indexOf('de_') === 0 && w.bl) { if (!data.profil) data.profil = {}; data.profil.bl = w.bl; }
     if (w.eintritt && validISO(w.eintritt)) { if (!data.profil) data.profil = {}; if (!data.profil.eintritt) data.profil.eintritt = w.eintritt; }
+    if (w.firma && !(data.profil && data.profil.firma)) { if (!data.profil) data.profil = {}; data.profil.firma = String(w.firma).slice(0, 60); }
     if (w.geb && validISO(w.geb)) { if (!data.profil) data.profil = {}; if (!data.profil.geb) data.profil.geb = w.geb; }
     if (w.mode === 'start' && (w.cStat || w.cMia)) { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: !!w.cStat, miaFragen: !!w.cMia }; }
     save(); ui.setKey = ab; var start = w.mode === 'start';
@@ -3546,7 +3547,7 @@
     if (s === 'erlaubnis') {
       h.textContent = 'Darf ich dir das Abtippen abnehmen?';
       b.innerHTML = svg + '<p>Wenn du magst, lese ich künftig deinen Lohnzettel für dich ab. Dann musst du die Stunden nicht mehr von Hand eintragen, und ich vergleiche sie gleich mit deiner Aufzeichnung.</p>' +
-        '<p>Das passiert nur hier auf deinem Handy, es wird nichts hochgeladen. Beim Abtippen der Stunden lese ich keine persönlichen Daten. Nur wenn du deine Einstellungen mit dem Lohnzettel einrichtest oder prüfst, lese ich auch Name, Geburtsdatum und Eintrittsdatum, und du bestätigst jedes einzeln. Du kannst es jederzeit in den Einstellungen ausschalten.</p>' +
+        '<p>Das passiert nur hier auf deinem Handy, es wird nichts hochgeladen. Beim Abtippen der Stunden lese ich keine persönlichen Daten. Nur wenn du deine Einstellungen mit dem Lohnzettel einrichtest oder prüfst, lese ich auch Name, Firma, Geburtsdatum und Eintrittsdatum, und du bestätigst jedes einzeln. Du kannst es jederzeit in den Einstellungen ausschalten.</p>' +
         '<label class="check"><input type="checkbox" id="lz-ok"> Ja, der Stunden-Checker darf meinen Lohnzettel auf diesem Handy lesen.</label>';
       bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
     } else if (s === 'datei') {
@@ -3578,6 +3579,7 @@
       if (k.einstufung) rows.push(zl('Einstufung', k.einstufung, pr ? en.einstufung || '' : null, 'einst'));
       var P = data.profil || {};
       if (k.vorname) rows.push(zl('Name', k.vorname + ' ' + (k.nachname || ''), pr ? ((P.vorname || '') + ' ' + (P.nachname || '')).trim() : null, 'name'));
+      if (k.firma) rows.push(zl('Firma', k.firma, pr ? (P.firma || '') : null, 'firma'));
       if (k.eintritt) rows.push(zl('Eintritt in die Firma', fmtDate(k.eintritt), pr ? (P.eintritt ? fmtDate(P.eintritt) : '') : null, 'eintritt'));
       if (k.geb) rows.push(zl('Geburtsdatum', fmtDate(k.geb), pr ? (P.geb ? fmtDate(P.geb) : '') : null, 'geb'));
       if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (tr.ls != null && E.LOHNGRUPPEN[tr.paket].stufen ? ', ' + esc(E.LOHNGRUPPEN[tr.paket].stufen[tr.ls]) : '') + '</span></li>');
@@ -3688,9 +3690,10 @@
     if (k.einstufung) w.einst = k.einstufung;
     if (k.eintritt && !w.eintritt) w.eintritt = k.eintritt;
     if (k.geb) w.geb = k.geb;
+    if (k.firma && !w.firma) w.firma = k.firma;
     if (k.vorname && !w.vorname) { w.vorname = k.vorname; w.nachname = k.nachname || ''; }
     if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls == null ? '' : tr.ls; }
-    return !!(pak || k.stundenlohn !== null || k.einstufung || k.eintritt || k.geb || k.vorname);
+    return !!(pak || k.stundenlohn !== null || k.einstufung || k.eintritt || k.geb || k.vorname || k.firma);
   }
   function lzEinrOk() {
     var w = ui.wiz, k = lzUi.kopf, tr = lzUi.treff; if (!w || !k) { lzClose(); return; }
@@ -3700,9 +3703,9 @@
   }
   function lzEinrAendern(was) {
     var en = lzUi.en, k = lzUi.kopf, tr = lzUi.treff; if (!en || !k) return;
-    if (was === 'name' || was === 'eintritt' || was === 'geb') {
+    if (was === 'name' || was === 'eintritt' || was === 'geb' || was === 'firma') {
       var pp = data.profil || (data.profil = {});
-      if (was === 'name') { pp.vorname = k.vorname; pp.nachname = k.nachname || ''; } else if (was === 'eintritt') pp.eintritt = k.eintritt; else { pp.geb = k.geb; delete pp.gebGruss; }
+      if (was === 'name') { pp.vorname = k.vorname; pp.nachname = k.nachname || ''; } else if (was === 'firma') pp.firma = k.firma; else if (was === 'eintritt') pp.eintritt = k.eintritt; else { pp.geb = k.geb; delete pp.gebGruss; }
       save(); lzUi.msg = ''; lzUi.msg2 = true; renderSettings(); lzRender(); return;
     }
     var sorted = data.settings.slice().sort(function (x, y) { return x.gueltigAb < y.gueltigAb ? -1 : 1; }), idx = -1;

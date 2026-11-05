@@ -164,8 +164,12 @@
         if (!out.geb && /^(geb|gebdatum|geburtsdatum|geboren|gebam)$/.test(lb)) out.geb = iso(dm[1], dm[2], dm[3]);
       }
     });
-    (lines || []).forEach(function (ln) {
+    (lines || []).forEach(function (ln, li) {
       var t = String(ln).replace(/\s+/g, ' ').trim().replace(/^\d{3,5}\s+(?=[A-Za-zÄÖÜäöü])/, ''), lo = t.toLowerCase();
+      if (!out.firma && li < 25 && !/iban|bic\b|@|www\.|sv-?nr/i.test(t)) {
+        var mf = /(?:^|[:\s])((?:[A-ZÄÖÜ&][\wÄÖÜäöüß&\.\-]*\s){1,5}?(?:GmbH(?:\s*&\s*Co\.?\s*KG)?|Ges\.?\s?m\.?\s?b\.?\s?H\.?|KG|OG|AG|e\.\s?U\.))(?=\s|,|$)/.exec(t);
+        if (mf && mf[1].length <= 60) out.firma = mf[1].replace(/\s+/g, ' ').trim();
+      }
       if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
         if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
