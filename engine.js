@@ -619,6 +619,17 @@
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1273.50] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1690.87] }
     ] },
+    banken_ang: { stand: 'ab 1.4.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1168.68] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1401.34] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1635.41] }
+    ] },
+    it_ang: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [960] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1210] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1410] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1750] }
+    ] },
     tischler: { stand: 'ab 1.5.2026', stufen: null, gruppen: [
       { id: 'T1', name: 'Tischler I Spitzenfacharbeiter', l: [17.39] },
       { id: 'T2', name: 'Tischler II Qualifizierter Facharbeiter', l: [16.72] },
