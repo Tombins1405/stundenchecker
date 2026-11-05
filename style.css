@@ -783,7 +783,7 @@ h3[data-ico="target"]::before { background: #00838f; }
 .ipk.on, .ipicks .ipk.on, #icon-pick2 .ipk.on { border: 3px solid #1e6fd9; box-shadow: 0 0 0 2px #fff; }
 
 /* Auswahlfenster liegen auch während der Führung ganz oben; Feedback-Knopf immer sichtbar, das Feedback-Fenster darüber */
-.tp-overlay, .dp-ov, .sp-ov { z-index: 330; }
+.tp-overlay, .dp-ov, .sp-ov { z-index: 450; } /* über dem Rückmeldungs-Fenster (400), sonst lässt sich dort nichts auswählen */
 .cropov.fbov { z-index: 400; }
 
 /* Mia sagt bei der Einrichtung, was unbedingt nötig und was optional ist */
