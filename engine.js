@@ -759,6 +759,8 @@
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
         schlosser: { name: 'Schlosser / Schweißer', b: { fahrzeug: false, kunden: false, praemien: false } },
+        spengler: { name: 'Spengler / Karosseriebauer', b: { fahrzeug: false, kunden: false, praemien: false } },
+        lackierer: { name: 'Lackierer', b: { fahrzeug: false, kunden: false, praemien: false } },
         leiter: { name: 'Werkstattleiter / Meister', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
