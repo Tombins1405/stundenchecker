@@ -4,11 +4,11 @@
 (function () {
   'use strict';
   var E = window.Engine;
-  /* Ausprobier-Modus: eigener Speicher, getrennt von den echten Daten (nur für Geräte mit Freischaltung ?ausprobieren) */
+  /* Ausprobier-Modus: eigener Speicher, getrennt von den echten Daten (für alle Tester) */
   var PROBE_DEV = false, PROBE = false;
   try {
     if (/[?&]ausprobieren(=|&|$)/.test(location.search)) { localStorage.setItem('stundenchecker.probe.dev', '1'); history.replaceState(null, '', location.pathname + location.hash); }
-    PROBE_DEV = localStorage.getItem('stundenchecker.probe.dev') === '1';
+    PROBE_DEV = true; /* Ausprobier-Modus für alle Tester freigeschaltet */
     PROBE = PROBE_DEV && localStorage.getItem('stundenchecker.probe.active') === '1';
   } catch (e) { }
   var KEY = PROBE ? 'stundenchecker.probe.v1' : 'stundenchecker.v1';
