@@ -2379,7 +2379,7 @@
     row.forEach(function (r, k) { if (r.ab === ab) i = k; });
     if (i < 1) return;
     var prev = row[i - 1].v, bis = row[i + 1] ? row[i + 1].ab : null, sorted = sortedSettings();
-    sorted.forEach(function (e) { if (e.gueltigAb >= ab && (!bis || e.gueltigAb < bis)) { setPath(e, path, prev); delete e.test; if (path === 'stundenlohn' || path === 'monatslohn') e.lgAuto = false; } // sonst setzt der Mindestlohn-Schalter den alten Wert gleich wieder ein });
+    sorted.forEach(function (e) { if (e.gueltigAb >= ab && (!bis || e.gueltigAb < bis)) { setPath(e, path, prev); delete e.test; if (path === 'stundenlohn' || path === 'monatslohn') e.lgAuto = false; } });
     // Wertesätze, die jetzt genau dem vorherigen gleichen, überflüssig geworden sind: entfernen
     var again = sortedSettings(), keep = [];
     again.forEach(function (e, k) {
