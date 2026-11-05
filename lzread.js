@@ -150,6 +150,14 @@
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
         if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
       }
+      var mb = /^(besch\.?\s*als|beschaeftigt\s+als|beschäftigt\s+als|verwendet\s+als|taetigkeit|tätigkeit)\s*[:\-]?\s+(.{2,40})$/i.exec(t);
+      if (mb && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(mb[2])) {
+        out.beschaeftigt = mb[2].trim();
+        if (!out.einstufung) out.einstufung = mb[2].trim().slice(0, 60);
+        if (!out.paket) { var nb = normMon(mb[2]); for (var q = 0; q < KVMAP.length; q++) if (KVMAP[q][0].test(nb)) { out.paket = KVMAP[q][1]; break; } }
+      }
+      var mt = /^tarifgruppe\s*[:\-]?\s+([A-Za-z0-9\-\.]{1,12})$/i.exec(t);
+      if (mt) out.tarifgruppe = mt[1];
       if (!out.einstufung) {
         var me = /^(einstufung|lohngruppe|verwendungsgruppe|beschaeftigungsgruppe|beschäftigungsgruppe|gehaltsgruppe|entlohnungsgruppe|lohnstufe|kategorie|gruppe)\b\s*[:\-]?\s*(.{1,40})$/i.exec(t);
         if (me && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(me[2])) out.einstufung = (me[1] + ' ' + me[2]).replace(/\s+/g, ' ').trim().slice(0, 60);

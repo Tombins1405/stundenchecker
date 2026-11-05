@@ -3628,10 +3628,15 @@
     setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 200);
   }
   function fmtNum(x) { return (Math.round(x * 100) / 100).toFixed(2).replace('.', ','); }
+  function lzIdPasst(id, text) { var e = String(id).replace(/\./g, '\\.'); return new RegExp('(^|\\s)' + e + (/^\d+$/.test(id) ? '[a-z]?' : '') + '(\\s|$|[:,])', 'i').test(text); }
   function lzEinrAus(lines) {
     var k = window.StundenLz.kopf(lines, E.LOHNGRUPPEN), tr = null, ts = k.treffer || [];
     if (ts.length === 1) tr = ts[0];
-    else if (ts.length > 1 && k.einstufung) { var m = ts.filter(function (x) { return new RegExp('(^|\\s)' + x.lg.replace('.', '\\.') + '(\\s|$|[:,])', 'i').test(k.einstufung); }); if (m.length === 1) tr = m[0]; }
+    else if (ts.length > 1 && k.einstufung) { var m = ts.filter(function (x) { return lzIdPasst(x.lg, k.einstufung); }); if (m.length === 1) tr = m[0]; }
+    if (!tr && !ts.length && k.paket && k.einstufung && E.LOHNGRUPPEN[k.paket]) {
+      var gm = E.LOHNGRUPPEN[k.paket].gruppen.filter(function (g) { return lzIdPasst(g.id, k.einstufung); });
+      if (gm.length === 1) tr = { paket: k.paket, lg: gm[0].id, name: gm[0].name, ls: null, lehrling: !!gm[0].lehrling, hinweis: true };
+    }
     lzUi.kopf = k; lzUi.treff = tr; ins('lz_einrichten');
     if (lzUi.modus === 'pruef') lzUi.en = wAt(todayISO());
     lzUi.step = 'einr'; lzRender();
@@ -3644,13 +3649,13 @@
     if (k.stundenlohn !== null) w.lohn = k.stundenlohn;
     if (k.monatslohn !== null && k.stundenlohn === null) w.monat = k.monatslohn;
     if (k.einstufung) w.einst = k.einstufung;
-    if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls; }
+    if (tr && tr.paket === w.paket) { w.lg = tr.lg; w.ls = tr.ls == null ? '' : tr.ls; }
     lzClose(); wzRender(); toast(pak || k.stundenlohn !== null || k.einstufung ? 'Übernommen. Bitte prüfe die Werte noch einmal.' : 'Dazu habe ich nichts gefunden.', 4000);
   }
   function lzEinrAendern(was) {
     var en = lzUi.en, k = lzUi.kopf, tr = lzUi.treff; if (!en || !k) return;
     var rec = data.settings.filter(function (x) { return x.gueltigAb === en.gueltigAb; })[0]; if (!rec) return;
-    if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
+    if (was === 'lohn') { rec.stundenlohn = k.stundenlohn; rec.monatslohn = null; rec.lgAuto = false; if (tr && !tr.hinweis && tr.paket === rec.paket) { rec.lg = tr.lg; rec.ls = tr.ls; rec.lgAuto = true; } }
     else if (was === 'monat') { var ms = rec.monatsStd || 166.83; rec.monatslohn = k.monatslohn; rec.monatsStd = ms; rec.stundenlohn = Math.round(k.monatslohn / ms * 100) / 100; rec.lgAuto = false; }
     else if (was === 'einst') rec.einstufung = k.einstufung.slice(0, 60);
     save(); lzUi.en = rec; renderSettings(); toast('Geändert. Gilt ab ' + fmtDate(rec.gueltigAb) + '.', 4000); lzRender();
