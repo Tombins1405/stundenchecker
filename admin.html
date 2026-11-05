@@ -84,14 +84,18 @@ function report(P,F,M,S,fun,mm,mia){
  return L.join('\n');
 }
 var GS={pr:[],mo:[],st:[]},GF={pr:'offen',mo:'offen',st:'offen'},GC={pr:'profiles',mo:'miaOffen',st:'statistik'};
-var FB=[],FILT='offen',LOCAL={};
+var FB=[],FILT='offen',LOCAL={},TRANS={};
+try{TRANS=JSON.parse(localStorage.getItem('sc.transfer')||'{}')}catch(e){}
+function trWann(c,x){return x.uebertragen||TRANS[c+'/'+x._id]||null}
+function trBadge(c,x){var w=trWann(c,x);return w?' <span style="color:#2e7d32;font-weight:600">✓ An Claude übertragen am '+esc(fmt(w))+'</span>':''}
+function markTr(c,x){var t=Date.now();TRANS[c+'/'+x._id]=t;x.uebertragen=t;try{localStorage.setItem('sc.transfer',JSON.stringify(TRANS))}catch(e){}try{db.collection(c).doc(x._id).update({uebertragen:t}).catch(function(){})}catch(e){}}
 try{LOCAL=JSON.parse(localStorage.getItem('sc.fbstatus')||'{}')}catch(e){}
 function st(x){return x.status||LOCAL[x._id]||'offen'}
 function gst(g,x){return x.status||LOCAL[GC[g]+'/'+x._id]||'offen'}
 function gOk(g,x){return gst(g,x)==='erledigt'}
 function gBar(g){var L=GS[g],no=L.filter(function(x){return !gOk(g,x)}).length,el=document.querySelector('.flt[data-g="'+g+'"]');if(!el)return;el.innerHTML=['offen','erledigt','alle'].map(function(k){return '<button type="button" class="sm" data-gf="'+g+'|'+k+'" style="opacity:'+(GF[g]===k?'1':'.55')+'">'+(k==='offen'?gW(g)[0]:k==='erledigt'?gW(g)[1]:'Alle')+'</button>'}).join('')+'<span class="mut">'+no+' '+gW(g)[0].toLowerCase()+', '+(L.length-no)+' '+gW(g)[1].toLowerCase()+'</span>'}
 function gW(g){return g==='pr'?['Neu','Gesehen','Wieder auf neu','Als gesehen markieren']:['Offen','Erledigt','Wieder öffnen','Als erledigt markieren']}
-function gBtn(g,x){var e=gOk(g,x),w=gW(g);return '<b class="'+(e?'ok':'todo')+'">'+(e?w[1]:w[0])+'</b> <button type="button" class="sm'+(e?' alt':'')+'" data-gs="'+g+'|'+esc(x._id)+'">'+(e?w[2]:w[3])+'</button> <button type="button" class="sm alt" data-gc="'+g+'|'+esc(x._id)+'">An Claude kopieren</button>'}
+function gBtn(g,x){var e=gOk(g,x),w=gW(g);return '<b class="'+(e?'ok':'todo')+'">'+(e?w[1]:w[0])+'</b> <button type="button" class="sm'+(e?' alt':'')+'" data-gs="'+g+'|'+esc(x._id)+'">'+(e?w[2]:w[3])+'</button> <button type="button" class="sm alt" data-gc="'+g+'|'+esc(x._id)+'">An Claude kopieren</button>'+trBadge(GC[g],x)}
 function gText(g,x){
  if(g==='mo')return 'FRAGE AN MIA, DIE SIE NICHT BEANTWORTEN KONNTE\nAm: '+fmt(x.t)+', Sprache: '+(x.lang||'?')+'\n\n'+(x.text||'');
  if(g==='st')return 'ANONYME ABWEICHUNGSMELDUNG\nAm: '+fmt(x.t)+'\nMonat: '+(x.monat||'?')+', Beruf: '+(x.beruf||x.paket||'?')+'\nZeilen: '+((x.zeilen||[]).map(function(z){return z.z+':'+z.s+(z.d!=null?' '+z.d:'')}).join(', ')||'–');
@@ -107,18 +111,18 @@ function drawFb(){
  var no=FB.filter(function(x){return st(x)!=='erledigt'}).length;
  document.querySelectorAll('#fbf button').forEach(function(b){b.style.opacity=b.dataset.f===FILT?'1':'.55'});
  $('#fbm').textContent=no+' offen, '+(FB.length-no)+' erledigt';
- $('#fbl').innerHTML=L.length?L.map(function(x){var e=st(x)==='erledigt';return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span> · <b style="color:'+(e?'#2e7d32':'#b45309')+'">'+(e?'Erledigt':'Noch offen')+'</b><div class="mut">Gerät: '+esc(x.geraet||'unbekannt')+'</div><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" data-cl="'+esc(x._id)+'">An Claude übertragen</button>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<button type="button" data-bild="'+esc(x._id)+'">Bild speichern</button>':'')+'<button type="button" data-st="'+esc(x._id)+'">'+(e?'Wieder offen':'Erledigt')+'</button></div></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
+ $('#fbl').innerHTML=L.length?L.map(function(x){var e=st(x)==='erledigt';return '<div class="fb"><b>'+esc(art(x))+'</b> · '+esc(x.email||'ohne Konto')+' · <span class="mut">'+fmt(x.t)+'</span> · <b style="color:'+(e?'#2e7d32':'#b45309')+'">'+(e?'Erledigt':'Noch offen')+'</b>'+trBadge('feedback',x)+'<div class="mut">Gerät: '+esc(x.geraet||'unbekannt')+'</div><div>'+esc(x.text)+'</div>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<img alt="Bild zur Rückmeldung" src="'+x.img+'">':'')+'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" data-cl="'+esc(x._id)+'">An Claude übertragen</button>'+(x.img&&/^data:image\/jpeg;base64,/.test(x.img)?'<button type="button" data-bild="'+esc(x._id)+'">Bild speichern</button>':'')+'<button type="button" data-st="'+esc(x._id)+'">'+(e?'Wieder offen':'Erledigt')+'</button></div></div>'}).join(''):'<p class="mut">Nichts in dieser Ansicht.</p>';
 }
 function copyText(t,msg){function fb(){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');$('#fbm').textContent=msg;$('#rfm').textContent=msg}catch(e){$('#fbm').textContent='Kopieren nicht möglich.'}a.remove()}
  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){$('#fbm').textContent=msg;$('#rfm').textContent=msg},fb);else fb()}
 document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('button');if(!b)return;
- if(b.id==='ca'){copyText(gAlles(),'Alles Offene kopiert. Jetzt im Chat einfügen.');return}
- if(b.dataset.gc){var q3=b.dataset.gc.split('|'),y3=GS[q3[0]].filter(function(z){return z._id===q3[1]})[0];if(y3)copyText(gText(q3[0],y3),'Kopiert. Jetzt im Chat einfügen.');return}
+ if(b.id==='ca'){copyText(gAlles(),'Alles Offene kopiert. Jetzt im Chat einfügen.');FB.filter(function(x){return st(x)!=='erledigt'}).forEach(function(x){markTr('feedback',x)});['mo','st','pr'].forEach(function(p){GS[p].filter(function(x){return !gOk(p,x)}).forEach(function(x){markTr(GC[p],x)})});drawFb();gDraw();return}
+ if(b.dataset.gc){var q3=b.dataset.gc.split('|'),y3=GS[q3[0]].filter(function(z){return z._id===q3[1]})[0];if(y3){copyText(gText(q3[0],y3),'Kopiert. Jetzt im Chat einfügen.');markTr(GC[q3[0]],y3);gDraw()}return}
  if(b.dataset.gf){var q=b.dataset.gf.split('|');GF[q[0]]=q[1];gDraw();return}
  if(b.dataset.gs){var q2=b.dataset.gs.split('|'),g=q2[0],y2=GS[g].filter(function(z){return z._id===q2[1]})[0];if(!y2)return;var neu2=gOk(g,y2)?'offen':'erledigt';y2.status=neu2;LOCAL[GC[g]+'/'+y2._id]=neu2;try{localStorage.setItem('sc.fbstatus',JSON.stringify(LOCAL))}catch(e){}gDraw();db.collection(GC[g]).doc(y2._id).update({status:neu2}).catch(function(){});return}
  if(b.dataset.f){FILT=b.dataset.f;drawFb();return}
  if(b.dataset.bild){var y=FB.filter(function(z){return z._id===b.dataset.bild})[0];if(y&&y.img){var l=document.createElement('a');l.href=y.img;l.download='rueckmeldung-'+String(y._id).slice(0,6)+'.jpg';document.body.appendChild(l);l.click();l.remove();$('#fbm').textContent='Bild gespeichert. Jetzt im Chat anhängen.'}return}
- if(b.dataset.cl){var x=FB.filter(function(y){return y._id===b.dataset.cl})[0];if(x)copyText(fbText(x),'Kopiert. Jetzt im Chat einfügen.');return}
+ if(b.dataset.cl){var x=FB.filter(function(y){return y._id===b.dataset.cl})[0];if(x){copyText(fbText(x),'Kopiert. Jetzt im Chat einfügen.');markTr('feedback',x);drawFb()}return}
  if(b.dataset.st){var y=FB.filter(function(z){return z._id===b.dataset.st})[0];if(!y)return;var neu=st(y)==='erledigt'?'offen':'erledigt';y.status=neu;LOCAL[y._id]=neu;try{localStorage.setItem('sc.fbstatus',JSON.stringify(LOCAL))}catch(e){}
   drawFb();db.collection('feedback').doc(y._id).update({status:neu}).catch(function(){$('#fbm').textContent+=' (Status nur in diesem Browser gespeichert)'});}
 });
