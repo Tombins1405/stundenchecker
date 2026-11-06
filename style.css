@@ -337,7 +337,7 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 
 .cropov { position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
 .cropov[hidden] { display: none; }
-.cropbox { background: var(--card, #fff); color: var(--ink, #111); border-radius: 16px; padding: 16px; width: min(100%, 340px); text-align: center; }
+.cropbox { background: var(--surface, #fff); color: var(--ink, #111); border-radius: 16px; padding: 16px; width: min(100%, 340px); text-align: center; }
 .cropbox canvas { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 22%; background: #1f2937; display: block; margin: 8px auto; }
 .cropbox input[type=range] { width: 100%; }
 
@@ -349,7 +349,7 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .wzopt { position: relative; }
 .wzopt.on { border: 2px solid #1e6fd9; background: #1e6fd9; color: #fff; padding-right: 44px; }
 .wzopt.on::after { content: '\2713'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 1.3rem; font-weight: 800; }
-.wizbox .btns { margin-top: 12px; position: sticky; bottom: 0; padding: 10px 0 16px; background: var(--card, #fff); }
+.wizbox .btns { margin-top: 12px; position: sticky; bottom: 0; padding: 10px 0 16px; background: var(--surface, #fff); }
 
 /* Mia */
 .top .wrap { position: relative; }
