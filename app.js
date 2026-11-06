@@ -2304,7 +2304,7 @@
     var wo = parseFloat(String(w.wochen).replace(',', '.')); if (wo > 0) set.ueberstunden.wochenStd = wo;
     var vzp = E.PAKETE[w.paket].werte.ueberstunden.wochenStd; if (wo > 0 && vzp > wo && String(w.paket).indexOf('de_') !== 0 && set.ueberstunden.modell !== 'bau') set.ueberstunden.vollzeitStd = vzp;
     var mo = parseFloat(String(w.monat || '').replace(',', '.'));
-    if (mo > 0) { var wsd = set.ueberstunden.wochenStd > 0 ? set.ueberstunden.wochenStd : 38.5; set.monatslohn = mo; set.monatsStd = Math.round(wsd * 52 / 12 * 100) / 100; set.stundenlohn = Math.round(mo / set.monatsStd * 100) / 100; set.lgAuto = false; }
+    if (mo > 0) { var wsd = set.ueberstunden.wochenStd > 0 ? set.ueberstunden.wochenStd : 38.5; set.monatslohn = mo; var tlr = (E.LOHNGRUPPEN[w.paket] || {}).teiler; set.monatsStd = w.lg && tlr ? tlr : Math.round(wsd * 52 / 12 * 100) / 100; set.stundenlohn = Math.round(mo / set.monatsStd * 100) / 100; set.lgAuto = false; }
     var lgW = E.LOHNGRUPPEN[w.paket], gW = lgW && w.lg ? lgW.gruppen.filter(function (x) { return x.id === w.lg; })[0] : null;
     set.lg = gW ? gW.id : null; set.ls = gW && lgW.stufen && gW.l.length > 1 && w.ls !== '' && w.ls != null ? +w.ls : null;
     if (gW) { var iW = set.ls != null ? set.ls : 0, vW = gW.l[iW]; if (vW != null && (gW.m ? mo === vW : (!(mo > 0) && lo === vW))) set.lgAuto = true; }
@@ -2441,7 +2441,7 @@
       html += '<h3>Dein Lohn</h3>' +
         lohnGruppenHtml(w) +
         '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
-        ((E.BERUFE[w.beruf] || {}).einfach || w.monat ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
+        ((E.BERUFE[w.beruf] || {}).einfach || w.monat || String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
         '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
         (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +

@@ -584,7 +584,7 @@
       { id: 'A3', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 3. Lehrjahr', l: [1340] },
       { id: 'A4', m: true, lehrling: true, nur: ['lkw', 'klein'], name: 'Berufskraftfahrer-Lehrling, 3. Lehrjahr nach Erwerb der Klasse CE', l: [1490] }
     ] },
-    de_spedition_by: { stand: 'ab 1.1.2026, Bayern', stufen: null, gruppen: [
+    de_spedition_by: { stand: 'ab 1.1.2026, Bayern', stufen: null, teiler: 167, gruppen: [
       { id: 'Y1', name: 'Lohngruppe 1 (nur in Einweisung)', l: [16.82] },
       { id: 'Y2', name: 'Lohngruppe 2 (zum Beispiel Verladekraft im Paketzentrum)', l: [17.28] },
       { id: 'Y3', name: 'Lohngruppe 3 (zum Beispiel Gabelstaplerfahrer)', l: [17.63] },
