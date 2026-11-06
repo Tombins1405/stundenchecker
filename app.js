@@ -1055,9 +1055,28 @@
   // Tätigkeiten aus deinen Prämien zum Antippen, damit kein Tippfehler die Prämie verpasst
   function tatChips(cur, sfx) {
     var c = String(cur || '').trim().toLowerCase(), seen = {};
-    return praemienListe().filter(function (p) { return p.einheit === 'taet' && p.name && (p.taet || '').trim(); }).filter(function (p) {
+    var arr = praemienListe().filter(function (p) { return p.einheit === 'taet' && p.name && (p.taet || '').trim(); }).filter(function (p) {
       var kw = p.taet.trim().toLowerCase(); if (seen[kw]) return false; seen[kw] = 1; return c.indexOf(kw) < 0;
-    }).map(function (p) { return '<button type="button" class="chip" data-tchip="' + esc(p.taet.trim()) + '" data-tcs="' + sfx + '">' + esc(p.taet.trim()) + '</button>'; }).join('');
+    }).map(function (p) { return p.taet.trim(); });
+    // dazu: zuletzt verwendete Tätigkeiten
+    var seen2 = {}; var all = []; arr.concat(letzteTaetigkeiten()).forEach(function (n) { var l = n.toLowerCase(); if (!seen2[l] && c.indexOf(l) < 0) { seen2[l] = 1; all.push(n); } });
+    return all.map(function (n) { return '<button type="button" class="chip" data-tchip="' + esc(n) + '" data-tcs="' + sfx + '">' + esc(n) + '</button>'; }).join('');
+  }
+  function letzteTage() { return Object.keys(data.days).filter(function (k) { return k < (ui.edDate || todayISO()); }).sort().reverse(); }
+  function letzteKundenNamen(draft) { // zuletzt verwendete Kunden zum Antippen
+    var out = [], have = {}; (draft.kunden || []).forEach(function (k) { have[(k.name || '').trim().toLowerCase()] = 1; });
+    letzteTage().some(function (k) { kundenNamen(data.days[k]).forEach(function (n) { var l = n.toLowerCase(); if (!have[l]) { have[l] = 1; out.push(n); } }); return out.length >= 5; });
+    return out.slice(0, 5);
+  }
+  function letzteTaetigkeiten() { // zuletzt verwendete Tätigkeiten zum Antippen
+    var out = [], have = {};
+    letzteTage().some(function (k) { var dd = E.clone(data.days[k]); normKunden(dd); (dd.kunden || []).forEach(function (x) { (x.taet || []).forEach(function (y) { var n = (y.tat || '').trim(), l = n.toLowerCase(); if (n && !have[l]) { have[l] = 1; out.push(n); } }); }); return out.length >= 4; });
+    return out.slice(0, 4);
+  }
+  function kundenVomLetztenTag() {
+    var tage = letzteTage(), i, dd;
+    for (i = 0; i < tage.length; i++) { dd = E.clone(data.days[tage[i]]); normKunden(dd); if (kundenNamen(dd).length) return dd.kunden; }
+    return null;
   }
   function renderKunden() {
     var tour = E.istTour(wAt(ui.edDate || todayISO()));
@@ -1071,10 +1090,16 @@
           (k.taet.length > 1 ? '<button type="button" class="rm" data-rmt="' + i + '-' + j + '" aria-label="Tätigkeit ' + (j + 1) + ' entfernen">×</button>' : '<span></span>') + '</div>';
       }).join('');
       return '<div class="kunde2">' +
-        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + (tour ? 'Tour' : 'Kunde / Baustelle') + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"></div>' +
+        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + (tour ? 'Tour' : 'Kunde / Baustelle') + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"><div class="chips kchips">' + (k.name ? '' : letzteKundenNamen(ui.edDraft).map(function (n) { return '<button type="button" class="chip" data-kchip="' + esc(n) + '" data-kci="' + i + '">' + esc(n) + '</button>'; }).join('')) + '</div></div>' +
         '<button type="button" class="rm" data-rmk="' + i + '" aria-label="' + (tour ? 'Tour' : 'Kunde') + ' ' + (i + 1) + ' entfernen">×</button></div>' +
         rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></div>';
     }).join('');
+    copyKundeBtn();
+  }
+  function copyKundeBtn() {
+    var b = $('#e-copykunde'); if (!b) return;
+    var leer = !ui.edDraft.kunden.some(function (k) { return (k.name || '').trim() || (k.taet || []).some(function (t) { return (t.tat || '').trim() || t.von || t.bis; }); });
+    b.hidden = !(leer && kundenVomLetztenTag());
   }
   function openEditor(date, from, force) {
     if (!force && ui.edDraft && date !== ui.edDate && isDirty()) { askLeave(function () { openEditor(date, from, true); }); return; }
@@ -2809,6 +2834,7 @@
       case 'ds-add': dsNeu('eigen', ''); var dn = $('#ds-n' + (diensteListe().length - 1)); if (dn) dn.focus(); return;
       case 'pr-add': praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: '', betrag: 0, einheit: 'stueck', regel: '' }); save(); renderPraemienSettings(); var pn = $('#pr-n' + (praemienListe().length - 1)); if (pn) pn.focus(); return;
       case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
+      case 'e-copykunde': var kv = kundenVomLetztenTag(); if (kv) { ui.edDraft.kunden = kv.map(function (k) { return { name: k.name || '', taet: (k.taet || [{}]).map(function (t) { return { tat: t.tat || '', von: '', bis: '' }; }) }; }); renderKunden(); copyKundeBtn(); updatePreview(); } return;
       case 'e-addkunde': ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
@@ -2881,6 +2907,7 @@
     if (t.dataset.rmtl !== undefined) { var rp = t.dataset.rmtl.split('.'), pb = praemienListe()[+rp[0]]; if (pb && pb.teile) { pb.teile.splice(+rp[1], 1); if (pb.teile.length) pb.betrag = Math.round(pb.teile.reduce(function (a, x) { return a + (+x.betrag || 0); }, 0) * 100) / 100; else delete pb.teile; save(); renderPraemienSettings(); } return; }
     if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
+    if (t.dataset.kchip !== undefined) { var kc = ui.edDraft.kunden[+t.dataset.kci]; if (kc) { kc.name = t.dataset.kchip; renderKunden(); updatePreview(); } return; }
     if (t.dataset.tchip !== undefined) { var tp = String(t.dataset.tcs).split('-'), tk = ui.edDraft.kunden[+tp[0]]; if (tk && tk.taet[+tp[1]]) { tk.taet[+tp[1]].tat = t.dataset.tchip; var ti2 = $('#k-t' + t.dataset.tcs); if (ti2) ti2.value = t.dataset.tchip; var tc2 = $('#e-kunden [data-tc="' + t.dataset.tcs + '"]'); if (tc2) tc2.innerHTML = tatChips(t.dataset.tchip, t.dataset.tcs); updatePreview(); } return; }
     if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
     if (t.dataset.rmt !== undefined) { var pr = t.dataset.rmt.split('-'); ui.edDraft.kunden[+pr[0]].taet.splice(+pr[1], 1); renderKunden(); updatePreview(); return; }
