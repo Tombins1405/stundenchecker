@@ -72,6 +72,7 @@
     try {
       if (an) { localStorage.removeItem('stundenchecker.probe.v1'); localStorage.setItem('stundenchecker.probe.active', '1'); }
       else { localStorage.removeItem('stundenchecker.probe.active'); localStorage.removeItem('stundenchecker.probe.v1'); }
+      localStorage.removeItem('stundenchecker.profpush'); // beim Wechsel das Profil sofort mit den echten Daten melden
     } catch (e) { return; }
     location.reload();
   }

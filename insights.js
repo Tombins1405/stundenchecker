@@ -21,7 +21,8 @@
     // Zähler: nur lokal, geht mit der Kennkarte mit
     count: function (name) { try { var s = stats(); s[name] = (s[name] || 0) + 1; wr(SK, JSON.stringify(s)); } catch (e) {} },
     push: function (force) {
-      if (!ON) return; var u = user(); if (!u) return;
+      if (!ON) return; try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return; } catch (e) {} // Ausprobier-Modus darf das Profil nicht überschreiben
+      var u = user(); if (!u) return;
       var last = +rd('stundenchecker.profpush') || 0, gnow = ((app().info && app().info()) || {}).geraet || '', gold = rd('stundenchecker.profdev') || ''; if (!force && gnow === gold && Date.now() - last < 6 * 3600 * 1000) return;
       try {
         var a = app(), info = a.info ? a.info() : {};
