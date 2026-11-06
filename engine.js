@@ -370,10 +370,18 @@
   }
   var DE_VERPFL = { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 8, satz: 14 }, { ab: 23.99, satz: 28 }] };
   PAKETE.de_spedition = {
-    name: 'Deutschland: Spedition und Logistik (Kraftfahrer)', land: 'DE', pruefen: true,
-    hinweis: 'Richtwerte aus der Tarifbroschüre Berlin-Brandenburg (ab 2.2026): 38 Stunden/Woche, Überstunden 25 % (nachts 60 %), Sonntag 70 %, Feiertag 120 %, Entgelt zum Beispiel 2.710 bis 3.008 € im Monat je nach Gruppe. Die Tarifverträge unterscheiden sich je Bundesland und gelten nur, wenn dein Betrieb tarifgebunden ist. Für Fahrer im Güterfernverkehr gibt es eigene Regeln. Mindestlohn 2026: 13,90 € je Stunde. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden, am An- und Abreisetag mehrtägiger Fahrten 14 € ohne Mindestdauer (das musst du selbst eintragen), dazu 9 € je Nacht im Lkw. Bitte vergleiche alles mit deiner Abrechnung.',
+    name: 'Deutschland: Spedition und Logistik, Berlin (Kraftfahrer)', land: 'DE', pruefen: true,
+    hinweis: 'Tarif Spedition und Logistik Berlin, gewerbliche Arbeitnehmer (Quelle: Tarifbroschüre des Landes Berlin, Entgelt ab 1.2.2026, mindestens bis 31.12.2026): 38 Stunden/Woche (Brandenburg 39). Monatsentgelt je Gruppe und Dauer, für Zuschläge gilt Monatsentgelt ÷ 165. Überstunden 25 % (von 22 bis 6 Uhr 60 %), Nachtarbeit außerhalb von Schichtarbeit 50 %, Sonntag 70 %, Feiertag 120 %, 24. und 31.12. ab 12 Uhr 70 %; beim Zusammentreffen zählt nur der höchste Zuschlag. Wichtig: Dieser Tarif gilt nicht für Fahrer im Güterfernverkehr, dafür gibt es eigene Verträge (in Brandenburg zuletzt 12,65 € Berufskraftfahrer und 12,30 € Kraftfahrer je Stunde, Stand 10.2022, vermutlich überholt): trage dann deinen Lohn selbst ein. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden unterwegs, dazu 9 € je Nacht im Lkw (selbst eintragen). Gilt nur, wenn dein Betrieb tarifgebunden ist. Bitte vergleiche alles mit deiner Abrechnung.',
     werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 70, ft: 120 } })
   };
+  // Tarifregister Nordrhein-Westfalen (Speditions-, Logistik- und Transportwirtschaft): Lohntarif ab 1.10.2026, Manteltarif Stand 29.4.2024
+  var NRW_VERPFL = { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 8, satz: 12 }, { ab: 23.99, satz: 24 }] };
+  PAKETE.de_spedition_nrw = {
+    name: 'Deutschland: Spedition und Logistik, Nordrhein-Westfalen (Kraftfahrer)', land: 'DE', pruefen: true,
+    hinweis: 'Tarif Speditions-, Logistik- und Transportwirtschaft Nordrhein-Westfalen (Quelle: Tarifregister NRW, Lohntarif ab 1.10.2026, kündbar zum 28.2.2027): Kraftfahrer 40 Stunden/Woche (39 bei Fahrten unter 100 km Luftlinie vom Standort). Mehrarbeit 25 % für jede Stunde über 40 pro Woche. Nachtarbeit (22 bis 6 Uhr) 25 %; Fernfahrer (über 100 km) bekommen stattdessen 5 € je Nachtschicht mit mehr als 2 Stunden Arbeit. Sonntag 75 % (ab 1.1.2026), Feiertag 100 % (ab 1.1.2027 125 %), beim Zusammentreffen zählt nur der höhere Zuschlag, Nacht kommt dazu. Warte- und Anwesenheitszeiten zählen 100 %, Kabinen- und Beifahrerzeit 70 %. Verpflegung laut Tarif 12 € bei mehr als 8 Stunden, 24 € bei 24 Stunden Abwesenheit. Weihnachtsgeld ein Monatsverdienst, Urlaubsgeld und Zulagen je Betrieb: lege sie als Prämie an. Die Nachtzuschläge sind nicht hinterlegt: lege sie als Prämie an. Von den Stundenlöhnen sind die unterste und die oberste Stufe hinterlegt: trage bei Zwischenstufen deinen Lohn laut Lohnzettel ein. Gilt nur, wenn dein Betrieb tarifgebunden ist. Bitte vergleiche alles mit deiner Abrechnung.',
+    werte: deWerte({ diaeten: NRW_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 100 } })
+  };
+
   PAKETE.de_bau = {
     name: 'Deutschland: Bauhauptgewerbe (Baumaschinenführer, Bau)', land: 'DE', pruefen: true,
     hinweis: 'Bundesweiter Tarif für das Bauhauptgewerbe, Löhne ab 1.4.2026 (Gesamttarifstundenlohn): Lohngruppe 2 (Maschinenführer) 18,73 €, Lohngruppe 4 (Baumaschinenführer) 26,05 € je Stunde. Zuschläge laut einer Auskunft zum Tarif: Überstunden 25 %, Nacht 20 %, Sonntag 75 %, Feiertag 200 %. Wochenarbeitszeit 40 Stunden angenommen, bitte prüfen. Schlechtwetter läuft in Deutschland nicht über die BUAK, sondern über Saison-Kurzarbeitergeld; das ist hier nicht abgebildet. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden.',
@@ -537,6 +545,26 @@
       { id: '6.2', name: 'Gruppe 6.2: Berufskraftfahrer (Lehre), Lkw mehr als 3 Achsen', lehrling: true, nur: ['lkw', 'klein'], l: [13.29, 13.56, 13.94, 14.29, 14.58] },
       { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', lehrling: true, nur: ['lkw', 'klein'], l: [13.63, 13.94, 14.27, 14.59, 14.92] },
       { id: '7', name: 'Gruppe 7: Tankstellenbelieferung (Treibstoff, Heizöl)', l: [13.94, 14.27, 14.60, 14.92, 15.22] }
+    ] },
+    de_spedition: { stand: 'ab 1.2.2026, Berlin', stufen: ['Einstieg', 'nach 2 Jahren', 'nach 4 Jahren'], teiler: 165, gruppen: [
+      { id: 'B1', m: true, name: 'Gruppe 1: Handwerker', l: [2950.40, 3000.40, 3050.40] },
+      { id: 'B2', m: true, name: 'Gruppe 2: Berufskraftfahrer mit dreijähriger Ausbildung', l: [2907.87, 2957.87, 3007.87] },
+      { id: 'B3', m: true, name: 'Gruppe 3: Lkw über 7,5 t, Hallen- und Lagermeister, Schichtleiter', l: [2838.09, 2888.09, 2938.09] },
+      { id: 'B4', m: true, name: 'Gruppe 4: Fahrer bis 7,5 t, Kurier, Stapler im Hochregallager', l: [2710.46, 2760.46, 2810.46] },
+      { id: 'B5', m: true, name: 'Gruppe 5: Fachkraft Lagerlogistik, Verlade- und Lagerarbeiter', l: [2516.45, 2566.45, 2616.45] },
+      { id: 'B6', m: true, name: 'Gruppe 6: Einfache Tätigkeiten nach Anweisung', l: [2397.34, 2447.34, 2497.34] }
+    ] },
+    de_spedition_nrw: { stand: 'ab 1.10.2026, Nordrhein-Westfalen', stufen: ['unterste Stufe (Einstieg)', 'oberste Stufe (längste Beschäftigung)'], gruppen: [
+      { id: 'K1', name: 'Kraftfahrer ohne ausreichende Lkw-Fahrpraxis', l: [15.81, 17.03] },
+      { id: 'K2', name: 'Kraftfahrer', l: [16.46, 17.69] },
+      { id: 'K3', name: 'Kraftfahrer mit Berufskraftfahrer-Qualifikation', l: [16.92, 18.18] },
+      { id: 'G1', name: 'Lohngruppe I (unterste), Lager und Hilfsarbeit', l: [15.71, 16.97] },
+      { id: 'G3', name: 'Lohngruppe III (Einstieg nach Ausbildung)', l: [17.07, 18.34] },
+      { id: 'G4', name: 'Lohngruppe IV (höchste)', l: [17.55, 18.85] },
+      { id: 'A1', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 1. Lehrjahr', l: [1140] },
+      { id: 'A2', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 2. Lehrjahr', l: [1240] },
+      { id: 'A3', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 3. Lehrjahr', l: [1340] },
+      { id: 'A4', m: true, lehrling: true, nur: ['lkw', 'klein'], name: 'Berufskraftfahrer-Lehrling, 3. Lehrjahr nach Erwerb der Klasse CE', l: [1490] }
     ] },
     handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
       { id: 'A', name: 'Beschäftigungsgruppe A (Angestellte, Gehalt ÷ 158)', l: [13.23, 13.56, 13.88, null, null] },
@@ -741,7 +769,7 @@
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   var BERUFE = {
-    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
         baustelle: { name: 'Baustelle / Kurzstrecke', b: { fahrzeug: true, kunden: true, praemien: true } },
         tour: { name: 'Zustellung / Tour / Filiale', tour: true, b: { fahrzeug: true, kunden: true, praemien: true } },
@@ -772,14 +800,14 @@
         lader: { name: 'Laderfahrer (Radlader)', b: { fahrzeug: false, kunden: true, praemien: true } },
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: false, kunden: true, praemien: true } }
       } },
-    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
       arten: {
         tour: { name: 'Zustellung / Tour / Filiale', tour: true, b: { fahrzeug: true, kunden: true, praemien: false } },
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
-    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition_nrw', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Lagerlogistik)', b: { fahrzeug: false, kunden: false, praemien: false } }
