@@ -815,3 +815,5 @@ h3[data-ico="target"]::before { background: #00838f; }
 .kzd > summary { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; }
 .kz-zeit { margin: 2px 0 4px; }
 .kz-uhr { font-size: .85rem; color: var(--ink-2); }
+details.kd > summary { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; font-weight: 600; padding: 6px 0; }
+details.kd .ksz { font-weight: 400; color: var(--ink-2); white-space: nowrap; }

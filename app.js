@@ -1079,6 +1079,15 @@
     for (i = 0; i < tage.length; i++) { dd = E.clone(data.days[tage[i]]); normKunden(dd); if (kundenNamen(dd).length) return dd.kunden; }
     return null;
   }
+  function kSumme(k, i, tour) {
+    var tm = (k.taet || []).filter(function (t) { return t.von || t.bis; }), zeit = tm.length ? (tm[0].von || '?') + '–' + (tm[tm.length - 1].bis || '?') : '';
+    return '<span class="ksn">' + esc((k.name || '').trim() || ((tour ? 'Tour ' : 'Kunde / Baustelle ') + (i + 1))) + '</span><span class="ksz">' + esc(zeit) + '</span>';
+  }
+  function kSummeFrisch() {
+    var tour = E.istTour(wAt(ui.edDate || todayISO()));
+    Array.prototype.forEach.call(document.querySelectorAll('#e-kunden details.kd'), function (dt) { var k = ui.edDraft.kunden[+dt.dataset.kd], sm = dt.firstElementChild; if (k && sm) sm.innerHTML = kSumme(k, +dt.dataset.kd, tour); });
+  }
+  document.addEventListener('toggle', function (ev) { var d0 = ev.target; if (d0 && d0.classList && d0.classList.contains('kd')) { (ui.kOpen = ui.kOpen || {})[+d0.dataset.kd] = d0.open; } }, true);
   function renderKunden() {
     var tour = E.istTour(wAt(ui.edDate || todayISO()));
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
@@ -1090,10 +1099,12 @@
           '<div class="field"><label for="k-b' + sfx + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="k-b' + sfx + '" data-k="' + i + '" data-j="' + j + '" data-f="bis" value="' + esc(t.bis || '') + '"></div>' +
           (k.taet.length > 1 ? '<button type="button" class="rm" data-rmt="' + i + '-' + j + '" aria-label="Tätigkeit ' + (j + 1) + ' entfernen">×</button>' : '<span></span>') + '</div>';
       }).join('');
-      return '<div class="kunde2">' +
+      var leerK = !(k.name || '').trim() && !(k.taet || []).some(function (t) { return (t.tat || '').trim() || t.von || t.bis; });
+      var offenK = ui.kOpen && ui.kOpen[i] !== undefined ? ui.kOpen[i] : leerK;
+      return '<details class="kunde2 kd" data-kd="' + i + '"' + (offenK ? ' open' : '') + '><summary>' + kSumme(k, i, tour) + '</summary>' +
         '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + (tour ? 'Tour' : 'Kunde / Baustelle') + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"><div class="chips kchips">' + (k.name ? '' : letzteKundenNamen(ui.edDraft).map(function (n) { return '<button type="button" class="chip" data-kchip="' + esc(n) + '" data-kci="' + i + '">' + esc(n) + '</button>'; }).join('')) + '</div></div>' +
         '<button type="button" class="rm" data-rmk="' + i + '" aria-label="' + (tour ? 'Tour' : 'Kunde') + ' ' + (i + 1) + ' entfernen">×</button></div>' +
-        rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></div>';
+        rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></details>';
     }).join('');
     copyKundeBtn();
   }
@@ -1104,7 +1115,7 @@
   }
   function openEditor(date, from, force) {
     if (!force && ui.edDraft && date !== ui.edDate && isDirty()) { askLeave(function () { openEditor(date, from, true); }); return; }
-    ui.edDate = date; ui.edFrom = from || 'erfassen';
+    ui.edDate = date; ui.edFrom = from || 'erfassen'; ui.kOpen = {};
     ui.edDraft = data.days[date] ? E.clone(data.days[date]) : blankDay();
     normKunden(ui.edDraft);
     if (!data.days[date]) prefillFahrzeuge(ui.edDraft, date);
@@ -1180,6 +1191,7 @@
       if (+d.sw !== restSw) { d.sw = restSw; r = E.calcDay(d, ui.edDate, w); }
       var swi = $('#e-sw'); if (swi && document.activeElement !== swi) swi.value = d.sw || '';
     }
+    kSummeFrisch();
     $('#e-diaeten').placeholder = 'Vorschlag';
     (function () {
       var kh = '', kz = E.kundenZeiten(d, w, ui.edDate), tourK = E.istTour(w);
@@ -2802,7 +2814,7 @@
     if (t.dataset.tour) { if (t.dataset.tour === 'next') tourStep(1); else if (t.dataset.tour === 'prev') tourStep(-1); else if (t.dataset.tour === 'nein') tourEnd(true); else tourEnd(false); return; }
     if (t.dataset.seg && t.classList.contains('segb')) { setSeg(t.dataset.seg); return; }
     if (t.dataset.kz !== undefined && t.classList.contains('kzlink')) {
-      var kid = t.dataset.kj !== undefined ? 'k-t' + t.dataset.kz + '-' + t.dataset.kj : 'k-n' + t.dataset.kz, ke = document.getElementById(kid) || document.getElementById('k-n' + t.dataset.kz);
+      var kid = t.dataset.kj !== undefined ? 'k-t' + t.dataset.kz + '-' + t.dataset.kj : 'k-n' + t.dataset.kz, ke = document.getElementById(kid) || document.getElementById('k-n' + t.dataset.kz); if (ke && ke.closest) { var dk = ke.closest('details.kd'); if (dk) { dk.open = true; (ui.kOpen = ui.kOpen || {})[+dk.dataset.kd] = true; } }
       if (ke) { var kb = ke.closest('.taet') || ke.closest('.kunde2') || ke; ke.scrollIntoView({ behavior: 'smooth', block: 'center' }); kb.classList.add('kzflash'); setTimeout(function () { kb.classList.remove('kzflash'); }, 1800); }
       return;
     }
@@ -2843,8 +2855,8 @@
       case 'ds-add': dsNeu('eigen', ''); var dn = $('#ds-n' + (diensteListe().length - 1)); if (dn) dn.focus(); return;
       case 'pr-add': praemienListe().push({ id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1000).toString(36), name: '', betrag: 0, einheit: 'stueck', regel: '' }); save(); renderPraemienSettings(); var pn = $('#pr-n' + (praemienListe().length - 1)); if (pn) pn.focus(); return;
       case 'e-addfz': ui.edDraft.fahrzeuge.push({ kfz: '', kmVon: '', kmBis: '' }); renderFahrzeuge(); var fi = $('#fz-kfz' + (ui.edDraft.fahrzeuge.length - 1)); if (fi) fi.focus(); return;
-      case 'e-copykunde': var kv = kundenVomLetztenTag(); if (kv) { ui.edDraft.kunden = kv.map(function (k) { return { name: k.name || '', taet: (k.taet || [{}]).map(function (t) { return { tat: t.tat || '', von: '', bis: '' }; }) }; }); renderKunden(); copyKundeBtn(); updatePreview(); } return;
-      case 'e-addkunde': ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
+      case 'e-copykunde': var kv = kundenVomLetztenTag(); if (kv) { ui.kOpen = {}; ui.edDraft.kunden = kv.map(function (k) { return { name: k.name || '', taet: (k.taet || [{}]).map(function (t) { return { tat: t.tat || '', von: '', bis: '' }; }) }; }); renderKunden(); copyKundeBtn(); updatePreview(); } return;
+      case 'e-addkunde': (ui.kOpen = ui.kOpen || {})[ui.edDraft.kunden.length] = true; ui.edDraft.kunden.push({ name: '', taet: [{ tat: '', von: '', bis: '' }] }); renderKunden(); var ki = $('#k-n' + (ui.edDraft.kunden.length - 1)); if (ki) ki.focus(); return;
       case 'e-addpause': ui.edDraft.pausen.push({ von: '12:00', bis: '12:30' }); renderPausen(); updatePreview(); return;
       case 'e-copy': copyLast(); return;
       case 'od-go': if (ui.openDay) openEditor(ui.openDay, 'erfassen'); return;
@@ -2916,11 +2928,11 @@
     if (t.dataset.rmtl !== undefined) { var rp = t.dataset.rmtl.split('.'), pb = praemienListe()[+rp[0]]; if (pb && pb.teile) { pb.teile.splice(+rp[1], 1); if (pb.teile.length) pb.betrag = Math.round(pb.teile.reduce(function (a, x) { return a + (+x.betrag || 0); }, 0) * 100) / 100; else delete pb.teile; save(); renderPraemienSettings(); } return; }
     if (t.dataset.rmpr !== undefined) { arm(t, 'Sicher?', function () { praemienListe().splice(+t.dataset.rmpr, 1); save(); renderPraemienSettings(); }); return; }
     if (t.dataset.rmfz !== undefined) { ui.edDraft.fahrzeuge.splice(+t.dataset.rmfz, 1); renderFahrzeuge(); return; }
-    if (t.dataset.kchip !== undefined) { var kc = ui.edDraft.kunden[+t.dataset.kci]; if (kc) { kc.name = t.dataset.kchip; renderKunden(); updatePreview(); } return; }
+    if (t.dataset.kchip !== undefined) { var kc = ui.edDraft.kunden[+t.dataset.kci]; (ui.kOpen = ui.kOpen || {})[+t.dataset.kci] = true; if (kc) { kc.name = t.dataset.kchip; renderKunden(); updatePreview(); } return; }
     if (t.dataset.tchip !== undefined) { var tp = String(t.dataset.tcs).split('-'), tk = ui.edDraft.kunden[+tp[0]]; if (tk && tk.taet[+tp[1]]) { tk.taet[+tp[1]].tat = t.dataset.tchip; var ti2 = $('#k-t' + t.dataset.tcs); if (ti2) ti2.value = t.dataset.tchip; var tc2 = $('#e-kunden [data-tc="' + t.dataset.tcs + '"]'); if (tc2) tc2.innerHTML = tatChips(t.dataset.tchip, t.dataset.tcs); updatePreview(); } return; }
-    if (t.dataset.addt !== undefined) { var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
+    if (t.dataset.addt !== undefined) { (ui.kOpen = ui.kOpen || {})[+t.dataset.addt] = true; var kk = ui.edDraft.kunden[+t.dataset.addt]; kk.taet.push({ tat: '', von: '', bis: '' }); renderKunden(); var ti = $('#k-t' + t.dataset.addt + '-' + (kk.taet.length - 1)); if (ti) ti.focus(); return; }
     if (t.dataset.rmt !== undefined) { var pr = t.dataset.rmt.split('-'); ui.edDraft.kunden[+pr[0]].taet.splice(+pr[1], 1); renderKunden(); updatePreview(); return; }
-    if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); renderKunden(); updatePreview(); return; }
+    if (t.dataset.rmk !== undefined) { ui.edDraft.kunden.splice(+t.dataset.rmk, 1); ui.kOpen = {}; renderKunden(); updatePreview(); return; }
     if (t.dataset.rm !== undefined) { ui.edDraft.pausen.splice(+t.dataset.rm, 1); renderPausen(); updatePreview(); return; }
     if (t.dataset.srm !== undefined) { var e3 = curEntry(); e3.diaeten.stufen.splice(+t.dataset.srm, 1); save(); renderStufen(e3); return; }
   });
