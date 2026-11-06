@@ -1063,16 +1063,16 @@
   // Jeder Eintrag mit von und bis zählt seine Zeit abzüglich der Pausen, die darin liegen.
   // Gibt es an dem Tag nur einen Kunden und keine Zeiten dazu, zählt die Arbeitszeit des Tages (netto).
   function kundenZeiten(day, w, dateStr) {
-    var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis)]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
-    var abz = 0; // Minuten Pause, die bei der zuletzt berechneten Zeit abgezogen wurden
+    var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis), p.von + '–' + p.bis]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
+    var abz = 0, pl = []; // Minuten Pause, die bei der zuletzt berechneten Zeit abgezogen wurden
     function dauer(von, bis) {
-      abz = 0;
+      abz = 0; pl = [];
       var a = toMin(von), b = toMin(bis); if (a === null || b === null) return null;
       if (b < a) b += 1440;
       var min = b - a;
       pausen.forEach(function (p) {
         var s = p[0], e = p[1]; if (e < s) e += 1440;
-        [0, 1440].forEach(function (off) { var o = Math.min(b, e + off) - Math.max(a, s + off); if (o > 0) { min -= o; abz += o; } });
+        [0, 1440].forEach(function (off) { var o = Math.min(b, e + off) - Math.max(a, s + off); if (o > 0) { min -= o; abz += o; if (pl.indexOf(p[2]) < 0) pl.push(p[2]); } });
       });
       return Math.max(0, min);
     }
@@ -1082,7 +1082,7 @@
       var tl = k.taet || ((k.tat || k.von || k.bis) ? [{ tat: k.tat, von: k.von, bis: k.bis }] : []);
       tl = tl.map(function (t, j) { return { t: t, j: j }; }).filter(function (o) { return (o.t.tat || '').trim() || o.t.von || o.t.bis; });
       if (!(k.name || '').trim() && !tl.length) return;
-      var taet = tl.map(function (o) { var m = dauer(o.t.von, o.t.bis); return { tat: (o.t.tat || '').trim(), min: m, pau: abz, j: o.j }; });
+      var taet = tl.map(function (o) { var m = dauer(o.t.von, o.t.bis); return { tat: (o.t.tat || '').trim(), min: m, pau: abz, j: o.j, von: o.t.von || '', bis: o.t.bis || '', pl: pl.slice() }; });
       var min = null, pau = 0; taet.forEach(function (t) { if (t.min !== null) { min = (min || 0) + t.min; pau += t.pau; } });
       rows.push({ name: (k.name || '').trim(), taet: taet, min: min, pau: pau, ki: ki });
     });

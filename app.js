@@ -1181,16 +1181,24 @@
     }
     $('#e-diaeten').placeholder = 'Vorschlag';
     (function () {
-      var kh = '', kz = E.kundenZeiten(d, w, ui.edDate);
+      var kh = '', kz = E.kundenZeiten(d, w, ui.edDate), tourK = E.istTour(w);
+      var box = $('#e-kz-box'), offen = {}; if (box) Array.prototype.forEach.call(box.querySelectorAll('details[data-ki]'), function (x) { if (x.open) offen[x.dataset.ki] = 1; });
       if (kz.rows.some(function (x) { return x.min !== null; })) {
-        kh += '<div class="kz-title">' + (E.istTour(w) ? 'Zeit pro Tour' : 'Zeit pro Kunde') + '</div>';
         kz.rows.forEach(function (x) {
-          kh += line('<button type="button" class="kzlink" data-kz="' + x.ki + '"><strong>' + esc(x.name || (E.istTour(w) ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong></button>', x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h');
-          if (x.pau > 0) kh += '<div class="hint kz-pau"><span>Pause abgezogen:</span> ' + hm(x.pau) + ' h</div>';
-          if (x.taet.length > 1 || (x.taet.length === 1 && x.taet[0].tat && x.min !== null)) x.taet.forEach(function (y) { if (y.tat || y.min !== null) kh += line('<button type="button" class="kzlink kz-sub" data-kz="' + x.ki + '" data-kj="' + y.j + '">' + esc(y.tat || 'Tätigkeit') + '</button>', y.min === null ? '–' : hm(y.min) + ' h'); });
+          var tm = x.taet.filter(function (y) { return y.von || y.bis; }), zeit = tm.length ? (tm[0].von || '?') + '–' + (tm[tm.length - 1].bis || '?') : '';
+          kh += '<details class="kzd" data-ki="' + x.ki + '"' + (offen[x.ki] ? ' open' : '') + '><summary><strong>' + esc(x.name || (tourK ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong><span>' + (x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h') + '</span></summary>';
+          if (zeit) kh += '<div class="hint kz-zeit">' + esc(zeit) + '</div>';
+          x.taet.forEach(function (y) {
+            if (!(y.tat || y.von || y.bis)) return;
+            kh += line('<button type="button" class="kzlink kz-sub" data-kz="' + x.ki + '" data-kj="' + y.j + '">' + esc(y.tat || 'Tätigkeit') + '</button><br><span class="kz-uhr">' + esc((y.von || '?') + '–' + (y.bis || '?')) + '</span>', y.min === null ? '–' : hm(y.min) + ' h');
+            if (y.pau > 0) kh += '<div class="hint kz-pau"><span>Pause abgezogen:</span> ' + hm(y.pau) + ' h (' + esc(y.pl.join(', ')) + ')</div>';
+          });
+          kh += '</details>';
         });
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
+      var kzs = $('#e-kz-sum'); if (kzs) kzs.textContent = d.status === 'arbeit' && kh ? hm(kz.totalMin) + ' h' : '';
+      if (box) { box.hidden = !(d.status === 'arbeit' && kh); var kt = $('#e-kz-title'); if (kt) kt.textContent = tourK ? 'Zeit pro Tour' : 'Zeit pro Kunde'; }
       $('#e-kz').innerHTML = d.status === 'arbeit' ? kh : '';
     })();
     var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
