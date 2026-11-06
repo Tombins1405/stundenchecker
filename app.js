@@ -3044,10 +3044,12 @@
         '<div class="field"><label for="fs-art">Worum geht es?</label><select id="fs-art"><option value="fehler">Etwas stimmt nicht</option><option value="wunsch">Anregung</option><option value="frage">Ich habe eine Frage</option><option value="lob">Das gefällt mir</option></select></div>' +
         '<div class="field"><label for="fs-text">Deine Nachricht</label><textarea id="fs-text" rows="4" maxlength="4000"></textarea></div>' +
         '<p id="fs-msg" class="hint" hidden></p>' +
-        '<div class="btns"><button type="button" class="btn" id="fs-x">Schließen</button><button type="button" class="btn primary" id="fs-send">Senden</button></div></div>';
+        '<div class="btns"><button type="button" class="btn" id="fs-x">Verwerfen</button><button type="button" class="btn" id="fs-weg">Kurz weglegen</button><button type="button" class="btn primary" id="fs-send">Senden</button></div></div>';
       document.body.appendChild(sheet);
       function m(t, bad) { var e = $('#fs-msg'); e.textContent = t; e.hidden = !t; e.style.color = bad ? 'var(--bad, #b3261e)' : ''; }
-      $('#fs-x').addEventListener('click', function () { sheet.hidden = true; });
+      var ffl = function (weg) { var f = $('#fb-float'); if (f && f.lastChild) f.lastChild.textContent = weg ? 'Meldung fortsetzen' : 'Problem melden'; };
+      $('#fs-x').addEventListener('click', function () { sheet.hidden = true; sheet.dataset.weg = ''; $('#fs-text').value = ''; ffl(false); });
+      $('#fs-weg').addEventListener('click', function () { sheet.hidden = true; sheet.dataset.weg = '1'; ffl(true); });
       $('#fs-send').addEventListener('click', function () {
         var tx = ($('#fs-text').value || '').trim(), mit = sheetImg && $('#fs-mit').checked ? sheetImg : null;
         if (!tx && !mit) { m('Bitte schreib etwas oder hänge ein Bild an.', true); return; }
@@ -3060,6 +3062,7 @@
     on2('#fb-float', 'click', function () {
       if (!window.StundenInsights || !window.StundenInsights.on) return;
       if (!sheet) sheetBauen();
+      if (sheet.dataset.weg === '1') { sheet.dataset.weg = ''; sheet.hidden = false; var f0 = $('#fb-float'); if (f0 && f0.lastChild) f0.lastChild.textContent = 'Problem melden'; return; }
       var ff = $('#fb-float'); ff.hidden = true;
       sheetSeite = '';
       try {

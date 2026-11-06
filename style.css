@@ -803,3 +803,4 @@ h3[data-ico="target"]::before { background: #00838f; }
 
 .cmp td.warn { color: #b45309; font-weight: 700; }
 .cmp td.no { font-weight: 700; }
+.fbov .lzbox { max-height: 92dvh; overscroll-behavior: contain; }
