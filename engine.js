@@ -382,6 +382,12 @@
     werte: deWerte({ diaeten: NRW_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 100 } })
   };
 
+  // Bayern: ver.di Bayern und Landesverein Bayerischer Spediteure, Lohntarif ab 1.1.2026 (läuft bis 30.11.2026). Zuschläge des Manteltarifs nicht belegt: Überstunden 25 % und 40 Stunden nur angenommen.
+  PAKETE.de_spedition_by = {
+    name: 'Deutschland: Spedition und Logistik, Bayern (Kraftfahrer)', land: 'DE', pruefen: true,
+    hinweis: 'Tarif Speditions- und Logistikgewerbe Bayern, gewerbliche Arbeitnehmer (Quellen: ver.di Bayern, Landesverein Bayerischer Spediteure): Stundenlöhne ab 1.1.2026 (plus 3,5 %). Der Lohntarif läuft bis 30.11.2026, danach wird neu verhandelt (ver.di fordert 230 € mehr ab 1.12.2026): Nach einem Abschluss musst du den Lohn selbst anpassen. Dazu gibt es eine Betriebszugehörigkeitszulage von 80, 100 oder 110 € im Monat, je nach Dauer im Betrieb: lege sie als Prämie an. Die Zuschläge laut Manteltarif konnte ich nicht belegen: Überstunden 25 % und 40 Stunden/Woche sind nur angenommen, Nacht-, Sonn- und Feiertagszuschläge stehen bei 0: trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden unterwegs, dazu 9 € je Nacht im Lkw (selbst eintragen). Gilt nur, wenn dein Betrieb tarifgebunden ist. Für Fahrer im Fernverkehr gibt es oft eigene Regeln. Bitte vergleiche alles mit deiner Abrechnung.',
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 0, ft: 0 } })
+  };
   PAKETE.de_bau = {
     name: 'Deutschland: Bauhauptgewerbe (Baumaschinenführer, Bau)', land: 'DE', pruefen: true,
     hinweis: 'Bundesweiter Tarif für das Bauhauptgewerbe, Löhne ab 1.4.2026 (Gesamttarifstundenlohn): Lohngruppe 2 (Maschinenführer) 18,73 €, Lohngruppe 4 (Baumaschinenführer) 26,05 € je Stunde. Zuschläge laut einer Auskunft zum Tarif: Überstunden 25 %, Nacht 20 %, Sonntag 75 %, Feiertag 200 %. Wochenarbeitszeit 40 Stunden angenommen, bitte prüfen. Schlechtwetter läuft in Deutschland nicht über die BUAK, sondern über Saison-Kurzarbeitergeld; das ist hier nicht abgebildet. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden.',
@@ -565,6 +571,15 @@
       { id: 'A2', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 2. Lehrjahr', l: [1240] },
       { id: 'A3', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 3. Lehrjahr', l: [1340] },
       { id: 'A4', m: true, lehrling: true, nur: ['lkw', 'klein'], name: 'Berufskraftfahrer-Lehrling, 3. Lehrjahr nach Erwerb der Klasse CE', l: [1490] }
+    ] },
+    de_spedition_by: { stand: 'ab 1.1.2026, Bayern', stufen: null, gruppen: [
+      { id: 'Y1', name: 'Lohngruppe 1 (nur in Einweisung)', l: [16.82] },
+      { id: 'Y2', name: 'Lohngruppe 2 (zum Beispiel Verladekraft im Paketzentrum)', l: [17.28] },
+      { id: 'Y3', name: 'Lohngruppe 3 (zum Beispiel Gabelstaplerfahrer)', l: [17.63] },
+      { id: 'Y4', name: 'Lohngruppe 4 (Kraftfahrer)', l: [17.56] },
+      { id: 'YA1', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 1. Lehrjahr', l: [1270] },
+      { id: 'YA2', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 2. Lehrjahr', l: [1333] },
+      { id: 'YA3', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 3. Lehrjahr', l: [1401] }
     ] },
     handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
       { id: 'A', name: 'Beschäftigungsgruppe A (Angestellte, Gehalt ÷ 158)', l: [13.23, 13.56, 13.88, null, null] },
@@ -769,7 +784,7 @@
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   var BERUFE = {
-    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+    lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
         baustelle: { name: 'Baustelle / Kurzstrecke', b: { fahrzeug: true, kunden: true, praemien: true } },
         tour: { name: 'Zustellung / Tour / Filiale', tour: true, b: { fahrzeug: true, kunden: true, praemien: true } },
@@ -800,14 +815,14 @@
         lader: { name: 'Laderfahrer (Radlader)', b: { fahrzeug: false, kunden: true, praemien: true } },
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: false, kunden: true, praemien: true } }
       } },
-    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_spedition', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
       arten: {
         tour: { name: 'Zustellung / Tour / Filiale', tour: true, b: { fahrzeug: true, kunden: true, praemien: false } },
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
-    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition_nrw', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition_nrw', 'de_spedition_by', 'de_spedition', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Lagerlogistik)', b: { fahrzeug: false, kunden: false, praemien: false } }
