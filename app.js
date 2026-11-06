@@ -733,7 +733,7 @@
       '<table class="cmp" style="margin-top:8px"><thead><tr><th>Zeile</th><th>Aufzeichnung</th><th>Lohnzettel</th><th>Unterschied</th></tr></thead><tbody>' + tr + '</tbody></table>' +
       (how.length ? '<p style="margin:10px 0 2px"><strong>So hat die App gerechnet</strong></p><ul style="margin:0;padding-left:20px">' + how.join('') + '</ul>' : '') +
       '<p style="margin:10px 0 2px"><strong>Das kannst du klären</strong></p>' +
-      (todo.length ? '<ul style="margin:0;padding-left:20px">' + todo.join('') + '</ul>' : '<p style="margin:0"><span>Nichts zu klären. Alles stimmt mit deiner Aufzeichnung überein.</span></p>') + '</div>';
+      (todo.length ? '<ul class="rot" style="margin:0;padding-left:20px">' + todo.join('') + '</ul>' : '<p style="margin:0"><span>Nichts zu klären. Alles stimmt mit deiner Aufzeichnung überein.</span></p>') + '</div>';
   }
   function paintAbgleich() {
     paintBrutto();
