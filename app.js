@@ -719,7 +719,7 @@
       var MT = { bezahlt: 'Freistellung bezahlt, nichts abgezogen', za: 'Freistellung vom Zeitausgleich abgezogen', unbezahlt: 'Freistellung unbezahlt, Soll entfällt', offen: 'Freistellung noch nicht geklärt, nichts abgezogen' };
       Object.keys(fm).forEach(function (k) { how.push('<li><span>' + esc(MT[k] || MT.offen) + '</span>: <b>' + fh(fm[k]) + '</b> h</li>'); });
     }
-    if (lz.zaKonto != null || (sm.zaUmr && sm.zaUmr !== 'offen')) {
+    if (sm.zaUmr && sm.zaUmr !== 'offen') {
       var ZT = { offen: 'Weiß ich noch nicht', eingerechnet: '1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)', getrennt: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt' };
       how.push('<li><span>Zeitausgleich-Umrechnung</span>: <span>' + esc(ZT[sm.zaUmr] || ZT.offen) + '</span></li>');
     }
@@ -843,13 +843,15 @@
         return '<tr><td>' + monKurz(+r.key.slice(0, 4), +r.key.slice(5, 7)) + '</td><td>' + (r.ver >= 0 ? '+' : '−') + fh(Math.abs(r.ver)) + ' h</td><td><strong>' + fh(r.saldo) + ' h</strong></td><td>' + numIn('kz-' + r.key, r.zettel, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint">Noch keine Buchung. Trage im Monatsabgleich die Zeile „Zeitausgleich-Konto“ ein, wenn dein Lohnzettel Zeitausgleich-Stunden zeigt.</p>';
     korrUeberblick(); renderSonder();
+    var ji = $('#jahr-info'); if (ji) { var js = document.createElement('small'); js.hidden = true; js.textContent = 'Jede Säule zeigt die Stunden eines Monats. Orange ist der Monat, den du gerade in der Monatsansicht offen hast.'; ji._sm = js; }
+    var ui2 = $('#ue-info'); if (ui2) { var us = document.createElement('small'); us.hidden = true; us.textContent = 'Von dir: deine aufgeschriebenen Überstunden. Bezahlt: so viele stehen auf dem Lohnzettel. Konto: so viele wurden aufs Zeitausgleich-Konto gebucht. Unterschied = bezahlt plus Konto minus von dir. Plus (orange): Der Lohnzettel hat mehr als du aufgeschrieben hast. Minus (rot): weniger. Grün: passt.'; ui2._sm = us; }
     // Überstunden im Überblick
     var orows = ueberRows();
     $('#k-ueber').innerHTML = orows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Von dir</th><th>Bezahlt</th><th>Konto</th><th>Unterschied</th></tr></thead><tbody>' +
       orows.map(function (r) {
-        var cls = Math.abs(r.diff) <= 0.5 ? 'ok' : (r.diff < 0 ? 'no' : '');
+        var cls = Math.abs(r.diff) <= 0.5 ? 'ok' : (r.diff < 0 ? 'no' : 'warn');
         return '<tr><td>' + monKurz(r.y, r.m) + '</td><td>' + fh(r.app) + '</td><td>' + fh(r.paid) + '</td><td>' + fh(r.konto) + '</td><td class="' + cls + '">' + (r.diff > 0 ? '+' : r.diff < 0 ? '−' : '') + fh(Math.abs(r.diff)) + '</td></tr>';
-      }).join('') + '</tbody></table><p class="hint" style="margin-top:8px">Unterschied = bezahlt plus Konto minus deine Aufzeichnung. Minus heißt: Der Lohnzettel hat weniger als du aufgeschrieben hast. Plus heißt: mehr.</p>' : '<p class="hint">Sobald du Lohnzettel-Zeilen im Monatsabgleich einträgst, erscheint hier die Übersicht.</p>';
+      }).join('') + '</tbody></table>' : '<p class="hint">Sobald du Lohnzettel-Zeilen im Monatsabgleich einträgst, erscheint hier die Übersicht.</p>';
   }
   function konInput(t) {
     var id = t.id, num = parseFloat(String(t.value).replace(',', '.')), val = (t.value === '' || isNaN(num)) ? null : num;
@@ -1642,6 +1644,9 @@
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
   var NEWS = [
+    { id: 'n10', d: '2026-11-06', text: 'Neu: Kollektivverträge für Lkw-Fahrer in Deutschland: Nordrhein-Westfalen, Bayern, Sachsen und Berlin, dazu eine Auswahl für alle anderen Länder.' },
+    { id: 'n9', d: '2026-11-05', text: 'Neu: Zeitausgleich-Konto und Resturlaub werden vom Lohnzettel gelesen und mit deiner Aufzeichnung verglichen.' },
+    { id: 'n8', d: '2026-11-05', text: 'Neu: Brutto (geschätzt) für abgeschlossene Monate. Trage das Brutto vom Lohnzettel ein, dann siehst du, wie weit die Schätzung danebenliegt.' },
     { id: 'n7', d: '2026-11-04', text: 'Neu: Die Art des Tages „Keine Arbeit (von der Firma freigestellt)“, wenn dich die Firma wegen fehlender Arbeit heimschickt. Mit Notiz und einer Einstellung, wie deine Firma den Tag verrechnet.' },
     { id: 'n6', d: '2026-11-03', text: 'Neu: Kollektivvertrag für Büro-Angestellte im Transport und in der Güterbeförderung.' },
     { id: 'n5', d: '2026-11-03', text: 'Neu: Mehrarbeit bei Teilzeit wird erkannt, und sie ist ohne Zuschlag, wenn du sie im selben Quartal 1:1 als Zeitausgleich nimmst.' },
@@ -1650,7 +1655,7 @@
     { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
-  var NEWS_B = { n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
+  var NEWS_B = { n10: ['lkw', 'klein', 'lager'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
   function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }); }
   function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, alle: n.alle, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
   function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }

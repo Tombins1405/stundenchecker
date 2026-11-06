@@ -800,3 +800,6 @@ h3[data-ico="target"]::before { background: #00838f; }
 .brutto { margin-top: 14px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, currentColor 25%, transparent); }
 .brutto .eyebrow { display: flex; align-items: center; gap: 4px; }
 .brutto .big { font-variant-numeric: tabular-nums; }
+
+.cmp td.warn { color: #b45309; font-weight: 700; }
+.cmp td.no { font-weight: 700; }
