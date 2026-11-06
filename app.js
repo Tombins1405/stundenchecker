@@ -803,8 +803,37 @@
     hh.forEach(function (v, k) { var bh = Math.round(v / mx * (H - 18)), bx = g + k * (bw + g); o += '<rect class="jb' + (k + 1 === ui.m ? ' cur' : '') + '" x="' + bx + '" y="' + (H - bh) + '" width="' + bw + '" height="' + bh + '" rx="3"/>' + (v ? '<text x="' + (bx + bw / 2) + '" y="' + (H - bh - 4) + '">' + Math.round(v) + '</text>' : '') + '<text x="' + (bx + bw / 2) + '" y="' + (H + 15) + '">' + (k + 1) + '</text>'; });
     box.innerHTML = o + '</svg>';
   }
+  function renderBruttoJahr() {
+    var box = $('#k-brutto-chart'), card = $('#k-brutto'); if (!box || !card) return;
+    var y = ui.y, now0 = new Date(), rows = [], mx = 0, i;
+    for (i = 1; i <= 12; i++) {
+      var fertig = y < now0.getFullYear() || (y === now0.getFullYear() && i < now0.getMonth() + 1), est = null, lz = null;
+      if (fertig) {
+        try {
+          var sm = E.calcMonth(data, y, i, todayISO(), { ohneSpaeter: true }).summe, bv = sm && sm.istStd ? E.bruttoVorschau(sm, wAt(y + '-' + (i < 10 ? '0' : '') + i + '-01'), false) : null;
+          if (bv && bv.ok) est = bv.brutto;
+        } catch (e) { }
+        var z = (data.abgleich[y + '-' + (i < 10 ? '0' : '') + i] || {}).brutto; if (z != null && z !== '' && !isNaN(+z)) lz = +z;
+      }
+      rows.push({ est: est, lz: lz }); mx = Math.max(mx, est || 0, lz || 0);
+    }
+    if (!mx) { card.hidden = true; return; }
+    card.hidden = false;
+    var W = 340, H = 150, bw = 10, g = (W - 12 * 2 * bw) / 13, o = '<svg viewBox="0 0 ' + W + ' ' + (H + 22) + '" role="img" aria-label="' + y + '">';
+    rows.forEach(function (r, k) {
+      var bx = g + k * (2 * bw + g);
+      [['jb', r.est, 0], ['jb jl', r.lz, bw]].forEach(function (s2) {
+        if (s2[1] == null) return; var bh = Math.max(2, Math.round(s2[1] / mx * (H - 18)));
+        o += '<rect class="' + s2[0] + '" x="' + (bx + s2[2]) + '" y="' + (H - bh) + '" width="' + bw + '" height="' + bh + '" rx="2"/>';
+      });
+      o += '<text x="' + (bx + bw) + '" y="' + (H + 15) + '">' + (k + 1) + '</text>';
+    });
+    box.innerHTML = o + '</svg><p class="hint" style="margin-top:4px">' + rows.map(function (r, k) { return r.est == null ? '' : (k + 1) + ': ' + eur.format(r.est) + (r.lz != null ? ' / ' + eur.format(r.lz) : ''); }).filter(Boolean).join(' · ') + '</p>';
+    var kb = $('#kb-info'); if (kb) { var ks = document.createElement('small'); ks.hidden = true; ks.textContent = 'Blau: Schätzung der App für abgeschlossene Monate. Grün: das Brutto, das du vom Lohnzettel eingetragen hast. So siehst du, wie nah die Schätzung liegt. Sonderzahlungen und Nachzahlungen sind in der Schätzung nicht enthalten.'; kb._sm = ks; }
+  }
   function renderKonten() {
     renderJahr();
+    try { renderBruttoJahr(); } catch (e) { }
     anRender();
     renderMia();
     renderNews();

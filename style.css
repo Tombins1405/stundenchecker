@@ -804,3 +804,8 @@ h3[data-ico="target"]::before { background: #00838f; }
 .cmp td.warn { color: #b45309; font-weight: 700; }
 .cmp td.no { font-weight: 700; }
 .fbov .lzbox { max-height: 92dvh; overscroll-behavior: contain; }
+#k-brutto-chart .jb.jl { fill: #2e7d32; }
+#k-brutto-chart text { font-size: 10px; text-anchor: middle; fill: currentColor; }
+#k-brutto-chart svg { width: 100%; height: auto; display: block; }
+#k-brutto-chart .jb { fill: var(--accent); }
+#k-brutto-chart text { fill: var(--muted, #667); }
