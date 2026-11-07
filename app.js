@@ -807,23 +807,23 @@
   }
   function renderStdKartei() {
     var box = $('#k-std'); if (!box) return;
-    var ks = Object.keys(data.days).filter(function (k) { return data.days[k]; }).sort();
-    if (!ks.length) { box.parentNode.hidden = true; return; }
-    box.parentNode.hidden = false;
-    var f = E.parseISO(ks[0]), y = ui.y, now0 = new Date(), stand = 0, rows = [], yy = f.y, mm = f.m;
-    while (yy < y || (yy === y && mm <= 12)) {
-      var fertig = yy < now0.getFullYear() || (yy === now0.getFullYear() && mm < now0.getMonth() + 1), sm = null;
-      try { sm = E.calcMonth(data, yy, mm, todayISO(), { ohneSpaeter: true }).summe; } catch (e) { }
-      var hat = sm && (sm.istStd || sm.lohnStd);
-      if (hat && fertig) { var u = Math.round((sm.ueberStd || 0) * 100) / 100; stand = Math.round((stand + u) * 100) / 100; if (yy === y) rows.push({ m: mm, soll: sm.sollStd, lohn: sm.lohnStd, ue: u, stand: stand }); }
-      else if (hat && yy === y && yy === now0.getFullYear() && mm === now0.getMonth() + 1) rows.push({ m: mm, laeuft: true, soll: sm.sollStd, lohn: sm.lohnStd });
-      mm++; if (mm > 12) { mm = 1; yy++; }
+    var y = ui.y, now0 = new Date(), ur = {}, rows = [], m;
+    ueberRows().forEach(function (r) { ur[r.y + '-' + r.m] = r; });
+    for (m = 1; m <= 12; m++) {
+      var fertig = y < now0.getFullYear() || (y === now0.getFullYear() && m < now0.getMonth() + 1), sm = null;
+      if (!fertig) continue;
+      try { sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe; } catch (e) { }
+      if (!sm || !(sm.istStd || sm.lohnStd)) continue;
+      var r = ur[y + '-' + m];
+      rows.push({ m: m, app: Math.round((sm.ueberStd || 0) * 100) / 100, lz: r ? Math.round((r.paid + r.konto) * 100) / 100 : null, diff: r ? r.diff : null });
     }
+    box.parentNode.hidden = !rows.length;
     function sg(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + fh(Math.abs(x)); }
-    box.innerHTML = rows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Soll</th><th>Bezahlt</th><th>Plus/Minus</th><th>Stand</th></tr></thead><tbody>' + rows.map(function (r) {
-      return '<tr><td>' + monKurz(y, r.m) + '</td>' + (r.laeuft ? '<td colspan="4"><span class="hint">läuft noch, wird am Monatsende gezählt</span></td>' : '<td>' + fh(r.soll) + '</td><td>' + fh(r.lohn) + '</td><td><span class="' + (r.ue >= 0 ? 'pos' : 'neg') + '">' + sg(r.ue) + '</span></td><td><strong>' + sg(r.stand) + '</strong></td>') + '</tr>';
-    }).join('') + '</tbody></table>' : '<p class="hint">Für dieses Jahr gibt es noch keinen abgeschlossenen Monat.</p>';
-    var si = $('#sk-info'); if (si) { var ss = document.createElement('small'); ss.hidden = true; ss.textContent = 'Soll: so viele Stunden hättest du laut Arbeitszeit gearbeitet. Bezahlt: gearbeitete Stunden plus bezahlte Abwesenheit wie Urlaub und Feiertag. Plus/Minus: der Unterschied. Stand: alle Monate zusammengezählt seit deinem ersten Eintrag. Ausbezahlte Überstunden und Zeitausgleich sind darin nicht abgezogen. Den Zeitausgleich siehst du weiter unten.'; si._sm = ss; }
+    box.innerHTML = rows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Aufgezeichnet</th><th>Laut Lohnzettel</th><th>Unterschied</th></tr></thead><tbody>' + rows.map(function (r) {
+      var d = r.diff == null ? '<span class="hint">–</span>' : (Math.abs(r.diff) <= 0.5 ? '<span class="ok">✓</span>' : '<span class="no">' + sg(r.diff) + ' h</span>');
+      return '<tr><td>' + monKurz(y, r.m) + '</td><td>' + sg(r.app) + ' h</td><td>' + (r.lz == null ? '<span class="hint">–</span>' : fh(r.lz) + ' h') + '</td><td>' + d + '</td></tr>';
+    }).join('') + '</tbody></table>' : '';
+    var si = $('#sk-info'); if (si) { var ss = document.createElement('small'); ss.hidden = true; ss.textContent = 'Aufgezeichnet: deine Plus- und Minusstunden im Monat laut deiner Aufzeichnung. Laut Lohnzettel: ausbezahlte Überstunden plus aufs Zeitausgleich-Konto gebuchte Stunden. Unterschied: so viele Stunden fehlen oder sind zu viel. Das Häkchen heißt: Aufzeichnung und Lohnzettel stimmen überein. Ohne Lohnzettel-Eingabe steht ein Strich.'; si._sm = ss; }
   }
   function renderBruttoJahr() {
     var box = $('#k-brutto-chart'), card = $('#k-brutto'); if (!box || !card) return;
