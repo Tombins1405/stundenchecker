@@ -457,6 +457,15 @@
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, art: 'frei', std: x.std, text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und die Stunden vom Zeitausgleich abgezogen.' });
         if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, art: 'frei', std: x.std, text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und den Tag nicht bezahlt.' });
       });
+      if (data.abgleich[k] && Object.keys(data.abgleich[k]).length) { // alle weiteren Zeilen (Lohn, Diäten, Prämien ...) gegen den Lohnzettel
+        var sm2 = abSumme(sm, y, m), wmm = wAt(k + '-01'), le2 = E.lzMitKorr(data.abgleich, k).lz, fx = !!(wmm && +wmm.monatslohn > 0);
+        E.abgleich(sm2, le2, false, fx, lzAlles()).forEach(function (q) {
+          if (q.key === 'ueber' || q.status === 'info' || q.diff === undefined) return;
+          var ein = q.unit === '€' ? function (v) { return eur.format(Math.abs(v)); } : function (v) { return fh(Math.abs(v)) + ' h'; };
+          if ((q.status === 'weniger' || q.status === 'mehr') && q.diff !== null) out.push({ y: y, m: m, art: 'zeile', std: q.diff, text: q.label + ': Aufzeichnung ' + ein(q.app) + ', Lohnzettel ' + ein(q.lz) + ' (Unterschied ' + (q.diff > 0 ? '+' : '−') + ein(q.diff) + ').' });
+          else if (q.status === 'offen' && q.key.indexOf('pr_') === 0 && q.app > 0 && (le2.lohn != null || le2.ueber != null)) out.push({ y: y, m: m, art: 'zeile', std: q.app, text: q.label + ': ' + eur.format(q.app) + ' sind in der Aufzeichnung, auf dem Lohnzettel ist die Zeile nicht eingetragen oder fehlt.' });
+        });
+      }
       if (r && Math.abs(r.diff) > 0.5) out.push({ y: y, m: m, art: 'ueber', std: r.diff, text: 'Überstunden: Du hast ' + fh(r.app) + ' h aufgeschrieben, auf dem Lohnzettel stehen ' + fh(r.paid + r.konto) + ' h (Unterschied ' + (r.diff > 0 ? '+' : '−') + fh(Math.abs(r.diff)) + ' h).' + (r.diff < 0 && sw > 0 && Math.abs(Math.abs(r.diff) - sw) < 0.02 ? ' Der Unterschied ist genau so groß wie deine Ausfallstunden (' + fh(sw) + ' h): Die Firma hat sie offenbar mit den Überstunden verrechnet.' : '') });
     });
     return out;
@@ -739,7 +748,7 @@
     if (fl.length) {
       var fm = {}, t = 0; fl.forEach(function (x) { fm[x.modus] = (fm[x.modus] || 0) + x.std; t += x.std; });
       var MT = { bezahlt: 'Freistellung bezahlt, nichts abgezogen', za: 'Freistellung vom Zeitausgleich abgezogen', unbezahlt: 'Freistellung unbezahlt, Soll entfällt', offen: 'Freistellung noch nicht geklärt, nichts abgezogen' };
-      Object.keys(fm).forEach(function (k) { how.push('<li><span>' + esc(MT[k] || MT.offen) + '</span>: <b>' + fh(fm[k]) + '</b> h</li>'); });
+      Object.keys(fm).forEach(function (k) { how.push('<li' + (k === 'za' || k === 'unbezahlt' ? ' class="rot"' : '') + '><span>' + esc(MT[k] || MT.offen) + '</span>: <b>' + fh(fm[k]) + '</b> h' + (k === 'za' || k === 'unbezahlt' ? ' <span>Wird als Abweichung festgehalten.</span>' : '') + '</li>'); });
     }
     if (sm.zaUmr && sm.zaUmr !== 'offen') {
       var ZT = { offen: 'Weiß ich noch nicht', eingerechnet: '1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)', getrennt: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt' };
