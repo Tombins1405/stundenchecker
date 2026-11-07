@@ -30,7 +30,7 @@
     },
     bau: {
       name: 'Bau (Baugewerbe/Bauindustrie, Maschinist, Bagger)',
-      hinweis: 'KV Baugewerbe und Bauindustrie, Arbeiter, ab 1.5.2026: 39-Stunden-Woche (die 40. Stunde ist Mehrarbeit), Überstunde ab mehr als 9 Stunden pro Tag, Zuschlag 50 % (nachts 100 %), Sonntag 100 %, Taggeld pro Tag mit Stufen, Schlechtwetter über die BUAK. Verteilung der Normalarbeitszeit (kurze/lange Woche) ist noch nicht abgebildet. Lehrlinge: Stufen VI a bis VI e der Lohntafel (Hochbau, Tiefbau, Beton); Zimmerer haben einen eigenen Kollektivvertrag (Holzbau).',
+      hinweis: 'KV Baugewerbe und Bauindustrie, Arbeiter, ab 1.5.2026 (Quelle: wko.at): 39-Stunden-Woche, die 40. Stunde ist Mehrarbeit (50 %, zählt nicht zu den Überstunden). Überstunde ist jede Stunde über 9 Stunden am Tag und jede Stunde über einer Stunde Mehrarbeit in der Woche. Zuschlag 50 %, von 20 bis 5 Uhr 100 %, Sonntag 100 %, Feiertagsarbeit 50 % (100 %, wenn an dem Tag sonst nicht gearbeitet wird), mehr als 16 Stunden am Stück 150 %. Es gilt immer nur der höchste Zuschlag. Taggeld pro Tag mit Stufen, Schlechtwetter über die BUAK. Kurze und lange Woche: Viele Betriebe arbeiten abwechselnd lange Wochen (bis 43 Stunden, bei Durchrechnung 43 bis 45) und kurze Wochen (35 bis 36 Stunden), im Schnitt 39. Die Stunden über 39 sind dann Zeitguthaben und keine Überstunden. Das rechnet die App noch nicht: In langen Wochen kann sie deshalb Überstunden anzeigen, die nach deiner Wochenverteilung Zeitguthaben sind. Frag in deinem Büro nach dem Arbeitszeitmodell. Lehrlinge: Stufen VI a bis VI e der Lohntafel (Hochbau, Tiefbau, Beton); Zimmerer haben einen eigenen Kollektivvertrag (Holzbau).',
       pruefen: true,
       werte: {
         diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit',
@@ -57,7 +57,7 @@
     },
     handel: {
       name: 'Handel (Angestellte und Arbeiter)',
-      hinweis: 'KV Handel, ab 1.1.2026 (Quellen: gpa.at und wko.at): 38,5 Stunden/Woche ohne Pausen, Überstunden 50 %, nachts (20 bis 6 Uhr) sowie an Sonn- und Feiertagen 100 %, Überstunden bei erweiterten Öffnungszeiten 70 %. Zeitausgleich für Überstunden 1:1,5 bei 50 %, 1:2 bei 100 %. Bei Monatsgehalt ist die Grundstunde 1/158 (Angestellte) bzw. 1/167 (Arbeiter). Weil die Überstunden von der Einteilung der Firma abhängen, gilt hier die Monatsrechnung als Vorschlag.',
+      hinweis: 'KV Handel, Angestellte, ab 1.1.2026 (Quellen: gpa.at und wko.at): 38,5 Stunden/Woche ohne Pausen. Grundstunde = 1/158 des Bruttomonatsgehalts (Arbeiter: 1/167). Überstunden: 50 %; 70 % bei erweiterten Öffnungszeiten (Mo bis Fr 18:30 bis 20 Uhr, Sa 13 bis 18 Uhr); 100 % von 20 bis 6 Uhr sowie an Sonn- und Feiertagen. Arbeit an Sonn- und Feiertagen zählt immer als Überstunde. Zeitausgleich statt Bezahlung: 1:1,5 bei 50 %, 1:1,7 bei 70 %, 1:2 bei 100 %; bei 1:1 bleibt der Zuschlag. Mehrarbeit: 1,5 Stunden pro Woche bis zur alten 40-Stunden-Grenze, zuschlagsfrei und nicht auf die Überstunden angerechnet. Die App rechnet Überstunden mit einem einheitlichen Zuschlag und kann 50 %, 70 % und 100 % je Uhrzeit nicht trennen. Vergleiche deshalb am Lohnzettel die Zeilen „Überstunden 50 %“, „70 %“ und „100 %“ einzeln. Weil die Überstunden von der Einteilung der Firma abhängen, gilt hier die Monatsrechnung als Vorschlag.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
