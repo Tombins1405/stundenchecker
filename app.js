@@ -27,7 +27,7 @@
   var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', dachdecker: 'Dachdecker', pflasterer: 'Pflasterer', fliesenleger: 'Fliesenleger / Hafner', gewerbe_ang: 'Büro Gewerbe (Angestellte)', reinigung: 'Gebäudereinigung', bewachung: 'Bewachung', sozial: 'Sozialwirtschaft (SWÖ)', de_spedition: 'Spedition Berlin (Deutschland)', de_spedition_nrw: 'Spedition NRW (Deutschland)', de_spedition_by: 'Spedition Bayern (Deutschland)', de_logistik_sn: 'Logistik Sachsen (Deutschland)', de_spedition_sonst: 'Spedition, anderes Bundesland (Deutschland)', de_handel: 'Einzelhandel (Deutschland)', de_gastro: 'Gastgewerbe (Deutschland)', eigen: 'Eigene Werte' };
+  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel (Angestellte)', handel_arb: 'Handel (Arbeiter)', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', dachdecker: 'Dachdecker', pflasterer: 'Pflasterer', fliesenleger: 'Fliesenleger / Hafner', gewerbe_ang: 'Büro Gewerbe (Angestellte)', reinigung: 'Gebäudereinigung', bewachung: 'Bewachung', sozial: 'Sozialwirtschaft (SWÖ)', de_spedition: 'Spedition Berlin (Deutschland)', de_spedition_nrw: 'Spedition NRW (Deutschland)', de_spedition_by: 'Spedition Bayern (Deutschland)', de_logistik_sn: 'Logistik Sachsen (Deutschland)', de_spedition_sonst: 'Spedition, anderes Bundesland (Deutschland)', de_handel: 'Einzelhandel (Deutschland)', de_gastro: 'Gastgewerbe (Deutschland)', eigen: 'Eigene Werte' };
   function todayISO() { var d = new Date(); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
   function fmtDate(s) { var p = E.parseISO(s); return p.d + '.' + p.m + '.' + p.y; }
   function fmtShort(s) { var p = E.parseISO(s); return WD[E.weekday(s)] + ' ' + p.d + '.' + p.m + '.'; }
@@ -1006,6 +1006,7 @@
   var PR_VOR = {
     gueter: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 15], ['Möbeltransportzulage', 'tag', 'Einsatztage mit händischer Be- und Entladung von Stücken ab 40 kg', 7.33], ['Autotransportzulage (Spezialfahrzeug)', 'tag', 'Einsatztage mit Spezialfahrzeug für Autotransporte', 7.33], ['Abfalleinsammlungszulage', 'tag', 'Einsatztage mit Abfalleinsammlung', 20.01], ['Tieflader-Zulage', 'tag', 'Einsatztage mit Tieflader, Betrag laut Lohnzettel'], ['Schwergüterzulage (250 bis 500 kg)', 'stueck', 'Je Stück und Arbeitspartie', 19.71], ['Klavier- oder Kassentransport', 'stueck', 'Je Stück und Arbeitspartie', 23.41], ['Schmutzzulage', 'tag', '10 % des KV-Lohns bei Müll, Fäkalien oder offenen Schüttgütern'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     klein: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
+    handel_arb: [['Nachtzulage', 'stunde', 'Stunden in der Nacht'], ['Kälte- oder Schmutzzulage', 'monat', 'einmal pro Monat'], ['Vorarbeiterzulage', 'monat', 'einmal pro Monat'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     handel: [['Provision / Umsatzprämie', 'monat', 'einmal pro Monat'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Nachtzuschlag', 'stunde', 'Stunden nach 20 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     gastro: [['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale / Umsatzbeteiligung', 'monat', 'einmal pro Monat'], ['Schmutzzulage', 'tag', 'Einsatztage']],
     de_spedition: [['Übernachtung im Lkw (Pauschale)', 'tag', 'Nächte im Lkw', 9], ['Nachtzuschlag', 'stunde', 'Stunden zwischen 22 und 6 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
@@ -1735,7 +1736,7 @@
       '<rect x="14" y="96" width="6" height="10" rx="2" fill="#374151"/>' +
       wheel(60) + wheel(228) + '</g></svg>';
   }
-  var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
+  var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], handel_arb: ['weste', 'paket'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
   function miaFor(date) { if (data.profil && data.profil.mia && data.profil.mia.eigen === true) return miaOutfitEigen(); var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
@@ -2706,7 +2707,7 @@
     var p = E.PAKETE[en.paket] || E.PAKETE.gueter;
     $('#s-paketinfo').innerHTML = esc(p.hinweis) + (p.pruefen ? '<br><strong>Noch nicht an einem echten Lohnzettel geprüft.</strong> Bitte kontrolliere die Werte mit deinem Lohnzettel.' : '');
     $('#s-paketinfo').className = 'notice' + (p.pruefen ? ' warn' : '');
-    var ZG = { handel: 1, it_ang: 1, versicherung_ang: 1, gewerbe_ang: 1, metall: 3, bund: 4, de_spedition: 5, de_spedition_nrw: 5, de_spedition_by: 5, de_logistik_sn: 5, de_spedition_sonst: 5, de_bau: 5, de_handel: 5, de_buero: 5, de_metall: 5, de_gastro: 5, eigen: 0 };
+    var ZG = { handel: 1, handel_arb: 1, it_ang: 1, versicherung_ang: 1, gewerbe_ang: 1, metall: 3, bund: 4, de_spedition: 5, de_spedition_nrw: 5, de_spedition_by: 5, de_logistik_sn: 5, de_spedition_sonst: 5, de_bau: 5, de_handel: 5, de_buero: 5, de_metall: 5, de_gastro: 5, eigen: 0 };
     var zg = en.paket in ZG ? ZG[en.paket] : 2;
     $('#s-zauinfo').hidden = !zg;
     Array.prototype.forEach.call($('#s-zauinfo').children, function (sp) { sp.hidden = +sp.getAttribute('data-g') !== zg; });
@@ -2740,10 +2741,10 @@
         : 'Die Woche (Montag bis Sonntag) wird gerechnet. Stunden über der Tagesgrenze sind Überstunden, zum Beispiel alles ab Stunde ' + fh(gr) + ' an einem Tag. Dazu kommen Stunden, die über den Wochenstunden liegen. Beispiel: Tagesgrenze ' + fh(gr) + ' Stunden, Wochenstunden ' + fh(wo) + '. Fünf Tage mit je ' + fh(gr) + ' Stunden sind ' + fh(5 * gr) + ' Stunden, minus ' + fh(wo) + ' = ' + fh(Math.max(0, 5 * gr - wo)) + ' Überstunden. Sonntage und Feiertage zählen über den Zuschlag.';
   }
   // Lohngruppe laut Kollektivvertrag auch in den Einstellungen: Gruppe und Stufe wählen, Stundenlohn übernehmen.
-  function stufeAusEintritt(ref) {
+  function stufeAusEintritt(ref, ref2) {
     var e = data.profil && data.profil.eintritt; if (!e || !validISO(e)) return '';
     var y = (new Date(ref + 'T00:00:00') - new Date(e + 'T00:00:00')) / 31557600000; if (!(y >= 0)) return '';
-    return y < 5 ? 0 : y < 10 ? 1 : y < 15 ? 2 : y < 20 ? 3 : 4;
+    var sw = (ref2 && ref2.schwellen) || [5, 10, 15, 20], k = 0; while (k < sw.length && y >= sw[k]) k++; return k;
   }
   function renderLgBox(en) {
     var box = $('#s-lgbox'); if (!box) return;
@@ -2754,7 +2755,7 @@
       gl.map(function (x) { return '<option value="' + esc(x.id) + '"' + (en.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
     var stuf = !!(g && lg.stufen && g.l.length > 1);
     if (stuf) {
-      var ls = en.ls == null || en.ls === '' ? (lg.eintritt ? stufeAusEintritt(en.gueltigAb) : '') : en.ls;
+      var ls = en.ls == null || en.ls === '' ? (lg.eintritt ? stufeAusEintritt(en.gueltigAb, lg) : '') : en.ls;
       h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
       en._lsVor = ls;
     }

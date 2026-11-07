@@ -56,8 +56,21 @@
       }
     },
     handel: {
-      name: 'Handel (Angestellte und Arbeiter)',
+      name: 'Handel (Angestellte)',
       hinweis: 'KV Handel, Angestellte, ab 1.1.2026 (Quellen: gpa.at und wko.at): 38,5 Stunden/Woche ohne Pausen. Grundstunde = 1/158 des Bruttomonatsgehalts (Arbeiter: 1/167). Überstunden: 50 %; 70 % bei erweiterten Öffnungszeiten (Mo bis Fr 18:30 bis 20 Uhr, Sa 13 bis 18 Uhr); 100 % von 20 bis 6 Uhr sowie an Sonn- und Feiertagen. Arbeit an Sonn- und Feiertagen zählt immer als Überstunde. Zeitausgleich statt Bezahlung: 1:1,5 bei 50 %, 1:1,7 bei 70 %, 1:2 bei 100 %; bei 1:1 bleibt der Zuschlag. Mehrarbeit: 1,5 Stunden pro Woche bis zur alten 40-Stunden-Grenze, zuschlagsfrei und nicht auf die Überstunden angerechnet. Die App rechnet Überstunden mit einem einheitlichen Zuschlag und kann 50 %, 70 % und 100 % je Uhrzeit nicht trennen. Vergleiche deshalb am Lohnzettel die Zeilen „Überstunden 50 %“, „70 %“ und „100 %“ einzeln. Weil die Überstunden von der Einteilung der Firma abhängen, gilt hier die Monatsrechnung als Vorschlag.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    handel_arb: {
+      name: 'Handel (Arbeiter)',
+      hinweis: 'KV Handel, Arbeiter/innen, ab 1.1.2026 (Quelle: wko.at): 38,5 Stunden/Woche. Der Stundenlohn ist der Monatslohn geteilt durch 167. Überstunden: 50 %; 70 % bei erweiterten Öffnungszeiten (Mo bis Fr 18:30 bis 20 Uhr, Sa 13 bis 18 Uhr); 100 % von 20 bis 6 Uhr sowie an Sonn- und Feiertagen. Die Lohnstufe richtet sich nach der Zeit im Betrieb (bis 1 Jahr, bis 10, bis 17, über 17 Jahre). Bitte trage Zulagen (Nacht, Kälte, Vorarbeiter) und Sonderzahlungen laut deinem Lohnzettel ein. Bei Abweichungen gilt dein Dienstvertrag.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -551,6 +564,7 @@
 
   // Lohngruppen laut Kollektivvertrag als Vorschlag für den Stundenlohn (Arbeiter, 2026). Quelle: wko.at Lohnordnungen.
   var STUFEN_AT = ['bis 5 Jahre im Betrieb', 'über 5 bis 10 Jahre', 'über 10 bis 15 Jahre', 'über 15 bis 20 Jahre', 'über 20 Jahre'];
+  var STUFEN_HANDEL_ARB = ['bis 1 Jahr im Betrieb', 'bis 10 Jahre', 'bis 17 Jahre', 'über 17 Jahre'];
   var STUFEN_HANDEL = ['Berufsjahr 1 bis 3', 'Berufsjahr 4 bis 6', 'Berufsjahr 7 bis 9', 'Berufsjahr 10 bis 12', 'ab Berufsjahr 13'];
   var LOHNGRUPPEN = {
     gueter: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, eintritt: true, gruppen: [
@@ -599,6 +613,17 @@
       { id: 'SA1', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 1. Lehrjahr', l: [1093.29] },
       { id: 'SA2', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 2. Lehrjahr', l: [1241.03] },
       { id: 'SA3', m: true, lehrling: true, nur: ['lkw', 'klein', 'lager'], name: 'Lehrling, 3. Lehrjahr', l: [1388.77] }
+    ] },
+    handel_arb: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL_ARB, eintritt: true, schwellen: [1, 10, 17], gruppen: [
+      { id: 'LG1', name: 'Lohngruppe 1 (einfache Tätigkeiten, Lohn ÷ 167)', l: [12.85, 12.88, 13.01, 13.14] },
+      { id: 'LG2', name: 'Lohngruppe 2 (Lohn ÷ 167)', l: [13.04, 13.24, 13.45, 13.60] },
+      { id: 'LG3', name: 'Lohngruppe 3 (Lohn ÷ 167)', l: [13.52, 13.64, 14.06, 14.25] },
+      { id: 'LG4', name: 'Lohngruppe 4 (Lohn ÷ 167)', l: [13.90, 13.96, 14.50, 14.75] },
+      { id: 'LG5', name: 'Lohngruppe 5 (Lohn ÷ 167)', l: [14.12, 14.22, 14.75, 15.01] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1026] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1518] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1580] }
     ] },
     handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
       { id: 'A', name: 'Beschäftigungsgruppe A (Angestellte, Gehalt ÷ 158)', l: [13.23, 13.56, 13.88, null, null] },
@@ -841,7 +866,7 @@
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
     aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
-    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel_arb', 'handel', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Lagerlogistik)', b: { fahrzeug: false, kunden: false, praemien: false } }
@@ -861,12 +886,12 @@
         buero: { name: 'Büro / Verwaltung / Disposition', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Bürokaufmann/-frau, Verwaltung)', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
-    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'handel_arb', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         verkauf: { name: 'Verkauf / Kassa', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Einzelhandel)', b: { fahrzeug: false, kunden: false, praemien: true } },
         theke: { name: 'Feinkost / Bedientheke / Bäckerei', b: { fahrzeug: false, kunden: false, praemien: true } },
-        lager: { name: 'Lager / Warenübernahme', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lager: { name: 'Lager / Warenübernahme', kv: 'handel_arb', b: { fahrzeug: false, kunden: false, praemien: true } },
         leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
