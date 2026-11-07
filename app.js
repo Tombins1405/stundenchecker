@@ -823,10 +823,11 @@
     }
     box.parentNode.hidden = !rows.length;
     function sg(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + fh(Math.abs(x)); }
-    box.innerHTML = rows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Aufgezeichnet</th><th>Laut Lohnzettel</th><th>Unterschied</th></tr></thead><tbody>' + rows.map(function (r) {
-      var d = r.diff == null ? '<span class="hint">–</span>' : (Math.abs(r.diff) <= 0.5 ? '<span class="ok">✓</span>' : '<span class="no">' + sg(r.diff) + ' h</span>');
-      return '<tr><td>' + monKurz(y, r.m) + '</td><td>' + sg(r.app) + ' h</td><td>' + (r.lz == null ? '<span class="hint">–</span>' : fh(r.lz) + ' h') + '</td><td>' + d + '</td></tr>';
-    }).join('') + '</tbody></table>' : '';
+    var abw = rows.filter(function (r) { return r.diff != null && Math.abs(r.diff) > 0.5; }), passt = rows.filter(function (r) { return r.diff != null && Math.abs(r.diff) <= 0.5; }).length, ohne = rows.filter(function (r) { return r.diff == null; }).length;
+    box.innerHTML = rows.length ? (abw.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Aufgezeichnet</th><th>Laut Lohnzettel</th><th>Unterschied</th></tr></thead><tbody>' + abw.map(function (r) {
+      return '<tr><td>' + monKurz(y, r.m) + '</td><td>' + sg(r.app) + ' h</td><td>' + fh(r.lz) + ' h</td><td><span class="no">' + sg(r.diff) + ' h</span></td></tr>';
+    }).join('') + '</tbody></table>' : (passt ? '<p class="hint"><span class="ok">✓</span> <span>Keine Abweichung zum Lohnzettel</span></p>' : '')) +
+      (passt ? '<p class="sub"><span>Monate ohne Abweichung</span> ' + passt + '</p>' : '') + (ohne ? '<p class="sub"><span>Monate ohne Lohnzettel-Eingabe</span> ' + ohne + '</p>' : '') : '';
     var si = $('#sk-info'); if (si) { var ss = document.createElement('small'); ss.hidden = true; ss.textContent = 'Aufgezeichnet: deine Plus- und Minusstunden im Monat laut deiner Aufzeichnung. Laut Lohnzettel: ausbezahlte Überstunden plus aufs Zeitausgleich-Konto gebuchte Stunden. Unterschied: so viele Stunden fehlen oder sind zu viel. Das Häkchen heißt: Aufzeichnung und Lohnzettel stimmen überein. Ohne Lohnzettel-Eingabe steht ein Strich.'; si._sm = ss; }
   }
   function renderBruttoJahr() {
@@ -893,9 +894,9 @@
       saldo = Math.round((saldo + (+lz.zaKonto || 0)) * 100) / 100;
       zrows.push({ key: k, ver: +lz.zaKonto || 0, saldo: saldo, zettel: lz.zaSaldo });
     });
-    $('#k-za').innerHTML = zrows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Stunden dazu/weg</th><th>Konto neu</th><th>Laut Lohnzettel</th></tr></thead><tbody>' +
+    $('#k-za').innerHTML = zrows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Stunden dazu/weg</th><th>Konto neu</th><th>Konto laut Lohnzettel (End-Saldo)</th></tr></thead><tbody>' +
       zrows.map(function (r) {
-        var chk = r.zettel != null ? (Math.abs(r.zettel - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗</span>') : '';
+        var chk = r.zettel != null ? (Math.abs(r.zettel - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗</span>' + (Math.abs(r.zettel - r.ver) < 0.005 && r.ver !== r.saldo ? '<small class="no">Das ist die Veränderung im Monat. Trage den End-Saldo ein.</small>' : '')) : '';
         return '<tr><td>' + monKurz(+r.key.slice(0, 4), +r.key.slice(5, 7)) + '</td><td>' + (r.ver >= 0 ? '+' : '−') + fh(Math.abs(r.ver)) + ' h</td><td><strong>' + fh(r.saldo) + ' h</strong></td><td>' + numIn('kz-' + r.key, r.zettel, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint">Noch keine Buchung. Trage im Monatsabgleich die Zeile „Zeitausgleich-Konto“ ein, wenn dein Lohnzettel Zeitausgleich-Stunden zeigt.</p>';
     korrUeberblick(); renderSonder();
@@ -1773,7 +1774,8 @@
     an.checked = c.an === true; $('#news-opt').hidden = c.an !== true;
     $$('#news-freq .segb').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.nf === c.freq)); });
     $('#news-alle').checked = c.alle === true;
-    $('#news-list').innerHTML = newsListe().map(function (x) { var neu = c.gelesen.indexOf(x.id) < 0; return '<div class="newsli' + (neu ? ' neu' : '') + '"><strong>' + esc(x.text) + '</strong>' + (neu ? '<span class="nbadge">Neu!</span>' : '') + '<small>' + fmtDate(x.d) + '</small></div>'; }).join('');
+    var nl = newsListe(), nli = function (x) { var neu = c.gelesen.indexOf(x.id) < 0; return '<div class="newsli' + (neu ? ' neu' : '') + '"><strong>' + esc(x.text) + '</strong>' + (neu ? '<span class="nbadge">Neu!</span>' : '') + '<small>' + fmtDate(x.d) + '</small></div>'; };
+    $('#news-list').innerHTML = nl.slice(0, 3).map(nli).join('') + (nl.length > 3 ? '<details class="how"><summary>Ältere Neuigkeiten</summary>' + nl.slice(3).map(nli).join('') + '</details>' : '');
   }
   function mitHelfenFaellig() {
     var co = (data.profil && data.profil.consent) || {};
