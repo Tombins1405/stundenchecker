@@ -259,7 +259,7 @@ $('#vr').addEventListener('click',function(){auth.currentUser.reload().then(func
 
 /* ---- Übersicht: aufklappbare Bereiche, Zähler, Sammel-Aktionen, Erklärungen zu Symbolen ---- */
 var OPENK='sc.open',OP={};try{OP=JSON.parse(localStorage.getItem(OPENK)||'{}')}catch(e){}
-var STDOPEN={'✉️ Einladungen':1,'💬 Rückmeldungen':1};
+var STDOPEN={'✉️ Einladungen':1,'🎯 Auf einen Blick':1,'💬 Rückmeldungen':1};
 document.querySelectorAll('#dash>.card').forEach(function(c){var h=c.querySelector(':scope>h2');if(!h)return;
  var d=document.createElement('details');d.className='card sec';if(c.id)d.id=c.id;var key=h.textContent.trim();
  d.open=key in OP?!!OP[key]:!!STDOPEN[key];
