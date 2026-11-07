@@ -2068,7 +2068,7 @@
   var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
-    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: mode === 'start' ? 'mia' : 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
+    var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.kvGewaehlt = !!cur.paket; w.bl = (data.profil && data.profil.bl) || '';
@@ -2390,12 +2390,18 @@
       return E.BERUFE[a].name.localeCompare(E.BERUFE[b].name, 'de');
     });
   }
+  function miaFelder(w) {
+    return '<div class="miachoose">' +
+        ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (w.mia === f ? ' on' : '') + '" data-wm="' + f + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('') + '</div>' +
+        '<div class="field"><label for="wz-vn">Dein Vorname</label><input type="text" id="wz-vn" maxlength="40" autocomplete="given-name" data-wf="vorname" value="' + esc(w.vorname || '') + '"></div><div class="field"><label for="wz-nn">Dein Nachname (kommt auf deine Berichte)</label><input type="text" id="wz-nn" maxlength="60" autocomplete="family-name" data-wf="nachname" value="' + esc(w.nachname || '') + '"></div>' +
+        '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>';
+  }
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
     var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
     var off = w.mode === 'start' ? 1 : 0, num = w.step === 'mia' ? 1 : (w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4) + off;
-    if (w.mode === 'start') { nSteps = 4; if (w.step === 'kv' || w.step === 'lohn') num -= 1; }
+    if (w.mode === 'start') { nSteps = 3; num = (w.step === 'beruf' || w.step === 'art') ? 1 : w.step === 'kv' ? 2 : 3; }
     var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
     var sc = ''; // keine Fahrzeug-Szene mehr: nur Mia
@@ -2431,20 +2437,17 @@
         (String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-bl">Bundesland (für die Feiertage)</label><select id="wz-bl" data-wf="bl"><option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (w.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join('') + '</select></div>' : '') +
         (w.mode === 'start' ? '<div class="field"><label for="wz-ein">Eintritt in die Firma (optional)</label><input type="date" id="wz-ein" data-wf="eintritt" value="' + esc(w.eintritt) + '"></div>' : '');
     } else if (w.step === 'mia') {
-      var mc = miaCfg();
-      html += '<h3>Wer bist du, und wer soll dich begleiten?</h3><div class="miachoose">' +
-        ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (w.mia === f ? ' on' : '') + '" data-wm="' + f + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('') + '</div>' +
-        '<div class="field"><label for="wz-vn">Dein Vorname</label><input type="text" id="wz-vn" maxlength="40" autocomplete="given-name" data-wf="vorname" value="' + esc(w.vorname || '') + '"></div><div class="field"><label for="wz-nn">Dein Nachname (kommt auf deine Berichte)</label><input type="text" id="wz-nn" maxlength="60" autocomplete="family-name" data-wf="nachname" value="' + esc(w.nachname || '') + '"></div>' +
-        '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>';
+      html += '<h3>Wer bist du, und wer soll dich begleiten?</h3>' + miaFelder(w);
     } else {
       var pw = E.PAKETE[w.paket].werte;
       html += '<h3>Dein Lohn</h3>' +
         lohnGruppenHtml(w) +
-        '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
-        ((E.BERUFE[w.beruf] || {}).einfach || w.monat || String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
         '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
-        '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
-        (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') +
+        '<details class="wzfehlt" data-wzmore' + (w.more ? ' open' : '') + '><summary>Weitere Angaben (optional)</summary><p class="hint">Alles andere kannst du später in den Einstellungen ändern. Mia hilft dir dabei.</p>' + (w.mode === 'start' ? miaFelder(w) : '') +
+        '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
+((E.BERUFE[w.beruf] || {}).einfach || w.monat || String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
+'<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
+(w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') + '</details>' +
         (w.mode === 'start' ? '<h4>Mithelfen (optional)</h4><label class="check"><input type="checkbox" data-wfc="statistik"' + (w.cStat ? ' checked' : '') + '><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label><label class="check"><input type="checkbox" data-wfc="miaFragen"' + (w.cMia ? ' checked' : '') + '><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>' : '') +
         '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Alles steht auf deinem Lohnzettel: Lohngruppe oder Einstufung oben, Stundenlohn in der Zeile „Lohn“ oder „Stundenlohn“, Wochenstunden im Dienstvertrag. Weißt du etwas nicht, lass es leer. Du kannst es später nachtragen.</p></details>' +
         '<p class="hint">Fehlt dir noch etwas? Kein Problem: Du kannst schon starten und alles später in den Einstellungen nachtragen. Die App rechnet dann auch deine bisherigen Tage damit neu.</p>';
@@ -2456,6 +2459,7 @@
   }
   (function () {
     var ov = $('#wiz');
+    ov.addEventListener('toggle', function (ev) { if (ui.wiz && ev.target.hasAttribute && ev.target.hasAttribute('data-wzmore')) ui.wiz.more = ev.target.open; }, true);
     ov.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t || !ui.wiz) return; var w = ui.wiz;
       if (t.dataset.wbf) {
