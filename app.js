@@ -813,7 +813,8 @@
       var fertig = y < now0.getFullYear() || (y === now0.getFullYear() && m < now0.getMonth() + 1), sm = null;
       if (!fertig) continue;
       try { sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe; } catch (e) { }
-      if (!sm || !(sm.istStd || sm.lohnStd)) continue;
+      var pre = y + '-' + (m < 10 ? '0' : '') + m + '-';
+      if (!sm || !Object.keys(data.days).some(function (k) { return k.indexOf(pre) === 0; })) continue;
       var r = ur[y + '-' + m];
       rows.push({ m: m, app: Math.round((sm.ueberStd || 0) * 100) / 100, lz: r ? Math.round((r.paid + r.konto) * 100) / 100 : null, diff: r ? r.diff : null });
     }
