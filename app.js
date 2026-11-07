@@ -2627,7 +2627,7 @@
     if (!en) return;
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
-    $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
+    $('#s-swue-l').hidden = bauS || !en.schlechtwetter; $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
