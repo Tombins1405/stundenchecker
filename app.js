@@ -346,6 +346,7 @@
         else main = '<strong>' + (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Ohne Zeiten') + '</strong>';
         if (r.pausenMin) small.push('Pause ' + hm(r.pausenMin));
         if (r.diaetenStd) small.push('Diäten ' + fh(r.diaetenStd) + ' h');
+        try { E.praemienDay(d, r, (data.profil && data.profil.praemien) || [], wAt(r.datum)).forEach(function (x) { small.push(esc(x.name) + ' ' + fh(x.menge) + (x.einheit === 'stunde' || x.einheit === 'taet' ? ' h' : ' ×')); }); } catch (e) { }
         if (r.swMin) small.push((E.istBau(wAt(r.datum)) ? 'Schlechtwetter ' : 'Ausfall ') + fh(r.swMin / 60) + ' h');
         if (r.extraMin) small.push('+ ' + fh(r.extraMin / 60) + ' h zusätzlich bezahlt');
         if (d.swOn && d.swGrund) small.push(esc(d.swGrund));
@@ -804,6 +805,26 @@
     hh.forEach(function (v, k) { var bh = Math.round(v / mx * (H - 18)), bx = g + k * (bw + g); o += '<rect class="jb' + (k + 1 === ui.m ? ' cur' : '') + '" x="' + bx + '" y="' + (H - bh) + '" width="' + bw + '" height="' + bh + '" rx="3"/>' + (v ? '<text x="' + (bx + bw / 2) + '" y="' + (H - bh - 4) + '">' + Math.round(v) + '</text>' : '') + '<text x="' + (bx + bw / 2) + '" y="' + (H + 15) + '">' + (k + 1) + '</text>'; });
     box.innerHTML = o + '</svg>';
   }
+  function renderStdKartei() {
+    var box = $('#k-std'); if (!box) return;
+    var ks = Object.keys(data.days).filter(function (k) { return data.days[k]; }).sort();
+    if (!ks.length) { box.parentNode.hidden = true; return; }
+    box.parentNode.hidden = false;
+    var f = E.parseISO(ks[0]), y = ui.y, now0 = new Date(), stand = 0, rows = [], yy = f.y, mm = f.m;
+    while (yy < y || (yy === y && mm <= 12)) {
+      var fertig = yy < now0.getFullYear() || (yy === now0.getFullYear() && mm < now0.getMonth() + 1), sm = null;
+      try { sm = E.calcMonth(data, yy, mm, todayISO(), { ohneSpaeter: true }).summe; } catch (e) { }
+      var hat = sm && (sm.istStd || sm.lohnStd);
+      if (hat && fertig) { var u = Math.round((sm.ueberStd || 0) * 100) / 100; stand = Math.round((stand + u) * 100) / 100; if (yy === y) rows.push({ m: mm, soll: sm.sollStd, lohn: sm.lohnStd, ue: u, stand: stand }); }
+      else if (hat && yy === y) rows.push({ m: mm, laeuft: true, soll: sm.sollStd, lohn: sm.lohnStd });
+      mm++; if (mm > 12) { mm = 1; yy++; }
+    }
+    function sg(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + fh(Math.abs(x)); }
+    box.innerHTML = rows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Soll</th><th>Bezahlt</th><th>Plus/Minus</th><th>Stand</th></tr></thead><tbody>' + rows.map(function (r) {
+      return '<tr><td>' + monKurz(y, r.m) + '</td>' + (r.laeuft ? '<td colspan="4"><span class="hint">läuft noch, wird am Monatsende gezählt</span></td>' : '<td>' + fh(r.soll) + '</td><td>' + fh(r.lohn) + '</td><td><span class="' + (r.ue >= 0 ? 'pos' : 'neg') + '">' + sg(r.ue) + '</span></td><td><strong>' + sg(r.stand) + '</strong></td>') + '</tr>';
+    }).join('') + '</tbody></table>' : '<p class="hint">Für dieses Jahr gibt es noch keinen abgeschlossenen Monat.</p>';
+    var si = $('#sk-info'); if (si) { var ss = document.createElement('small'); ss.hidden = true; ss.textContent = 'Soll: so viele Stunden hättest du laut Arbeitszeit gearbeitet. Bezahlt: gearbeitete Stunden plus bezahlte Abwesenheit wie Urlaub und Feiertag. Plus/Minus: der Unterschied. Stand: alle Monate zusammengezählt seit deinem ersten Eintrag. Ausbezahlte Überstunden und Zeitausgleich sind darin nicht abgezogen. Den Zeitausgleich siehst du weiter unten.'; si._sm = ss; }
+  }
   function renderBruttoJahr() {
     var box = $('#k-brutto-chart'), card = $('#k-brutto'); if (!box || !card) return;
     var y = ui.y, now0 = new Date(), rows = [], mx = 0, i;
@@ -850,6 +871,7 @@
     $('#k-kmvortag').checked = p.kmVortag !== false;
     try { var kl = $('#k-kmvortag').closest('label'); if (kl) kl.hidden = !E.bausteine(wAt(todayISO())).fahrzeug; } catch (e) { }
     var lk = lastMonthKey(), ly = +lk.slice(0, 4), lm = +lk.slice(5, 7);
+    try { renderStdKartei(); } catch (e) { }
     // Urlaubskartei
     var uk = E.urlaubKartei(data, p, ly, lm);
     if (!uk.length) $('#k-urlaub').innerHTML = '<p class="hint">Trage oben dein Eintrittsdatum ein, dann erscheint die Kartei.</p>';

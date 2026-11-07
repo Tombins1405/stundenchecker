@@ -817,3 +817,6 @@ h3[data-ico="target"]::before { background: #00838f; }
 .kz-uhr { font-size: .85rem; color: var(--ink-2); }
 details.kd > summary { display: flex; justify-content: space-between; gap: 8px; cursor: pointer; font-weight: 600; padding: 6px 0; }
 details.kd .ksz { font-weight: 400; color: var(--ink-2); white-space: nowrap; }
+
+h3[data-ico="balance"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z%22/%3E%3C/svg%3E"); }
+h3[data-ico="balance"]::before { background: #00897b; }
