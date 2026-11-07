@@ -275,7 +275,7 @@
     return '<div class="brutto"><p class="eyebrow"><span>Brutto (geschätzt)</span><button type="button" class="info" id="br-info" aria-label="Info"></button></p><p class="big">' + eur.format(bv.brutto) + '</p>' +
       '<p class="sub">' + (laufend ? '<span>Stand heute, Überstunden kommen am Monatsende dazu</span>' : '<span>für den ganzen Monat</span>') + '</p>' +
       (bv.diaeten > 0 ? '<p class="sub"><span>plus Diäten</span> ' + eur.format(bv.diaeten) + '</p>' : '') + zl +
-      '<p class="sub"><a class="btn" id="nb-link" href="https://www.bmf.gv.at/services/berechnungsprogramme.html" target="_blank" rel="noopener noreferrer">'+ esc('Netto im BMF-Rechner prüfen') +'</a> <button type="button" class="info" id="nb-info" aria-label="Info"></button></p></div>';
+      '<div class="nbrow"><a class="btn" id="nb-link" href="https://www.bmf.gv.at/services/berechnungsprogramme.html" target="_blank" rel="noopener noreferrer">'+ esc('Netto im BMF-Rechner prüfen') +'</a> <button type="button" class="info" id="nb-info" aria-label="Info"></button></div></div>';
   }
   function renderMonat() {
     $('#storage-warn').hidden = speicherOk;
