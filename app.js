@@ -444,6 +444,23 @@
       return { y: y, m: m, app: app, paid: paid, konto: konto, diff: Math.round((paid + konto - app) * 100) / 100 };
     });
   }
+  // Abweichungen, die die App festhält – auch wenn die Einstellung der Firmenpraxis entspricht.
+  function abwListe() {
+    var out = [], mon = {};
+    Object.keys(data.days).forEach(function (d) { mon[d.slice(0, 7)] = 1; });
+    Object.keys(data.abgleich).forEach(function (k) { mon[k] = 1; });
+    var ur = {}; ueberRows().forEach(function (r) { ur[r.y + '-' + r.m] = r; });
+    Object.keys(mon).sort().forEach(function (k) {
+      var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
+      var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0;
+      (sm.freiListe || []).forEach(function (x) {
+        if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, art: 'frei', std: x.std, text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und die Stunden vom Zeitausgleich abgezogen.' });
+        if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, art: 'frei', std: x.std, text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und den Tag nicht bezahlt.' });
+      });
+      if (r && Math.abs(r.diff) > 0.5) out.push({ y: y, m: m, art: 'ueber', std: r.diff, text: 'Überstunden: Du hast ' + fh(r.app) + ' h aufgeschrieben, auf dem Lohnzettel stehen ' + fh(r.paid + r.konto) + ' h (Unterschied ' + (r.diff > 0 ? '+' : '−') + fh(Math.abs(r.diff)) + ' h).' + (r.diff < 0 && sw > 0 && Math.abs(Math.abs(r.diff) - sw) < 0.02 ? ' Der Unterschied ist genau so groß wie deine Ausfallstunden (' + fh(sw) + ' h): Die Firma hat sie offenbar mit den Überstunden verrechnet.' : '') });
+    });
+    return out;
+  }
   /* ============================================================ LOHNZETTEL (eigener Reiter) */
   function renderLohn() {
     $('#lm-title').textContent = MON[ui.m - 1] + ' ' + ui.y;
@@ -904,6 +921,13 @@
     var ji = $('#jahr-info'); if (ji) { var js = document.createElement('small'); js.hidden = true; js.textContent = 'Jede Säule zeigt die Stunden eines Monats. Orange ist der Monat, den du gerade in der Monatsansicht offen hast.'; ji._sm = js; }
     var ui2 = $('#ue-info'); if (ui2) { var us = document.createElement('small'); us.hidden = true; us.textContent = 'Von dir: deine aufgeschriebenen Überstunden. Bezahlt: so viele stehen auf dem Lohnzettel. Konto: so viele wurden aufs Zeitausgleich-Konto gebucht. Unterschied = bezahlt plus Konto minus von dir. Plus (orange): Der Lohnzettel hat mehr als du aufgeschrieben hast. Minus (rot): weniger. Grün: passt.'; ui2._sm = us; }
     // Überstunden im Überblick
+    var abw = abwListe();
+    $('#k-abw').innerHTML = abw.length ? '<ul class="rot" style="margin:0;padding-left:20px">' + abw.map(function (x) { return '<li><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; }).join('') + '</ul><button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    var ac = $('#abw-copy'); if (ac) ac.onclick = function () {
+      var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + abw.map(function (x) { return MON[x.m - 1] + ' ' + x.y + ': ' + x.text; }).join('\n') + '\n\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
+      var done = function () { ac.textContent = 'Kopiert'; };
+      try { navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Text markieren und kopieren:', txt); }); } catch (e) { window.prompt('Text markieren und kopieren:', txt); }
+    };
     var orows = ueberRows();
     $('#k-ueber').innerHTML = orows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Von dir</th><th>Bezahlt</th><th>Konto</th><th>Unterschied</th></tr></thead><tbody>' +
       orows.map(function (r) {
