@@ -1289,7 +1289,7 @@
         var dq = iso(y, m, q), wq = weekday(dq);
         if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && (UNBEZAHLT_FREI.indexOf(days[dq].status) >= 0 || (days[dq].status === 'freistellung' && freiModus(days[dq], wertAt(settings, dq)) === 'unbezahlt')))) sollMin += Math.round(sollFuer(wertAt(settings, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
-      s.ueberMin = s.lohnMin + (wertAt(settings, iso(y, m, n)).ausfallAusUeber ? 0 : s.swMin) - sollMin;
+      s.ueberMin = s.lohnMin + s.swMin - sollMin;
       s.sollMin = sollMin; s.sollAb = ab;
       // Teilzeit (AT, § 19d AZG): Stunden über das vereinbarte Ausmaß bis zur Vollzeit-Grenze des Kollektivvertrags sind Mehrarbeit, erst darüber Überstunden.
       var wzm = wertAt(settings, iso(y, m, n)).ueberstunden, woz = wochenStd(wzm), vzz = wzm.vollzeitStd != null ? +wzm.vollzeitStd : 0;
