@@ -816,7 +816,7 @@
       try { sm = E.calcMonth(data, yy, mm, todayISO(), { ohneSpaeter: true }).summe; } catch (e) { }
       var hat = sm && (sm.istStd || sm.lohnStd);
       if (hat && fertig) { var u = Math.round((sm.ueberStd || 0) * 100) / 100; stand = Math.round((stand + u) * 100) / 100; if (yy === y) rows.push({ m: mm, soll: sm.sollStd, lohn: sm.lohnStd, ue: u, stand: stand }); }
-      else if (hat && yy === y) rows.push({ m: mm, laeuft: true, soll: sm.sollStd, lohn: sm.lohnStd });
+      else if (hat && yy === y && yy === now0.getFullYear() && mm === now0.getMonth() + 1) rows.push({ m: mm, laeuft: true, soll: sm.sollStd, lohn: sm.lohnStd });
       mm++; if (mm > 12) { mm = 1; yy++; }
     }
     function sg(x) { return (x > 0 ? '+' : x < 0 ? '−' : '') + fh(Math.abs(x)); }
