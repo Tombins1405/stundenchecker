@@ -19,7 +19,7 @@
     [/urlaub/, 'urlaub'],
     [/krank|entgeltfortzahlung|krst/, 'krank'],
     [/pflege/, 'pflege'],
-    [/diaten|aufwandsentsch|taggeld|tagesgeld|reisekosten/, 'dStd'],
+    [/diaten|aufwandsentsch|taggeld|tagesgeld|reisekosten|verpflegung|ubernacht|spesen|auslosung/, 'dStd'],
     [/^lohn$|^stundenlohn|^normalstunden|^arbeitszeit|^normalarbeitszeit|^gehalt|^lohn/, 'lohn']
   ];
   var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub', zaKonto: 'Zeitausgleich-Konto (Zuwachs)', urlaubSaldo: 'Resturlaub (Arbeitstage)' };
@@ -79,8 +79,9 @@
       var key = null, pos = 0, rk = null;
       if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length || (gelernt['@' + n] !== undefined && gelernt['@' + n] !== nums.length)) pos = 0; }
       else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
+      var euroZ = rk && rk[1] === 'dStd' && /verpfleg|ubernacht|spesen|auslos/.test(n); if (euroZ && key === null && nums.length > 1) pos = nums.length - 1; // „12 Tage × 28,00 = 336,00“: der Betrag steht hinten
       var menge = zahl(nums[pos]); if (isNaN(menge)) return;
-      if (key === null && rk) { if (rk[1] === 'dStd' && nums.length === 1) key = 'dEuro'; else if (menge <= 400) key = rk[1]; }
+      if (key === null && rk) { if (rk[1] === 'dStd' && (nums.length === 1 || euroZ)) { key = 'dEuro'; } else if (menge <= 400) key = rk[1]; }
       if (key && !(gelernt[n] !== undefined) && used[key]) key = null; // dieselbe Art nie zweimal vorbelegen
       if (key === null && gelernt[n] === undefined && (menge > 400 || /^summe/.test(n))) return; // Beträge und Summen sind nie Stunden
       if (key) used[key] = 1;
