@@ -1770,6 +1770,7 @@
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
     var ur = ueberRows().slice(-4), neg = ur.filter(function (x) { return x.diff < -1.5; }).length, pos = ur.filter(function (x) { return x.diff > 1.5; }).length;
     if (ur.length >= 3 && (neg >= 3 || pos >= 3)) out.push({ k: 'abweichung', pose: 'eyes', text: 'Deine Überstunden weichen in mehreren Monaten vom Lohnzettel ab. Schau bitte nach, ob diese Einstellungen stimmen: Überstunden-Modell, Betrieb geschlossen und Rundung.' });
+    if (umfrageFaellig()) out.push({ k: 'umfrage', text: 'Du nutzt die App jetzt etwa einen Monat. Hilfst du mir mit drei kurzen Fragen, damit sie besser wird?' });
     fristenMia(out);
     festMia(out);
     if (mitHelfenFaellig()) out.unshift({ k: 'mithelfen', text: 'Du testest die App gratis. Hilfst du mit, sie besser zu machen? Ich melde nur anonym, in welchem Beruf du bist und wie stark Lohnzettel und Aufzeichnung abweichen, dazu Fragen, die ich nicht beantworten kann. Keine Namen, keine Beträge. Du kannst es jederzeit im Profil ausschalten.' });
@@ -1779,7 +1780,39 @@
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
   }
+  function umfrageFaellig() {
+    if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length || (data.profil && data.profil.umfrage)) return false;
+    var ks = Object.keys(data.days).sort(); if (ks.length < 15) return false;
+    var p = E.parseISO(ks[0]), t = new Date(p.y, p.m - 1, p.d + 30);
+    return todayISO() >= E.iso(t.getFullYear(), t.getMonth() + 1, t.getDate());
+  }
+  var UM_ZAHL = ['Nein', 'Ja, bis 2 € im Monat', 'Ja, bis 4 € im Monat', 'Ja, bis 6 € im Monat', 'Ja, mehr als 6 € im Monat'];
+  function umOpen() {
+    var u = { n: 0, z: -1 }, ov = document.createElement('div'); ov.className = 'cropov';
+    function draw() {
+      ov.innerHTML = '<div class="cropbox wizbox"><h3>Drei kurze Fragen</h3>' +
+        '<div class="field"><label>Wie nützlich ist die App für dich?</label><div class="wzlist" style="flex-direction:row;gap:6px">' + [1, 2, 3, 4, 5].map(function (i) { return '<button type="button" class="btn wzopt' + (u.n === i ? ' on' : '') + '" data-un="' + i + '" style="flex:1;min-width:0">' + i + '</button>'; }).join('') + '</div><p class="hint" style="display:flex;justify-content:space-between"><span>Gar nicht nützlich</span><span>Sehr nützlich</span></p></div>' +
+        '<div class="field"><label>Würdest du dafür zahlen?</label><div class="wzlist">' + UM_ZAHL.map(function (t, i) { return '<button type="button" class="btn wzopt' + (u.z === i ? ' on' : '') + '" data-uz="' + i + '">' + esc(t) + '</button>'; }).join('') + '</div></div>' +
+        '<div class="field"><label for="um-t">Was würdest du am meisten vermissen, wenn es die App nicht mehr gäbe? (optional)</label><textarea id="um-t" rows="3" maxlength="500">' + esc(u.t || '') + '</textarea></div>' +
+        '<div class="btns"><button type="button" class="btn primary" id="um-send">Absenden</button><button type="button" class="btn" id="um-nein">Nein danke</button></div></div>';
+    }
+    ov.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b) return; var t = $('#um-t', ov) || ov.querySelector('#um-t'); if (t) u.t = t.value;
+      if (b.dataset.un) { u.n = +b.dataset.un; draw(); return; }
+      if (b.dataset.uz) { u.z = +b.dataset.uz; draw(); return; }
+      var pf = data.profil || (data.profil = {});
+      if (b.id === 'um-nein') { pf.umfrage = 'nein'; save(); ov.remove(); return; }
+      if (b.id === 'um-send') {
+        if (!u.n || u.z < 0) { toast('Bitte beantworte die ersten zwei Fragen.'); return; }
+        var txt = '[Umfrage] Nutzen: ' + u.n + ' von 5 | Zahlen: ' + UM_ZAHL[u.z] + ' | Vermissen: ' + String(u.t || '').trim().slice(0, 500);
+        try { window.StundenInsights.feedback('wunsch', txt, null).then(function () { pf.umfrage = todayISO(); save(); toast('Danke für deine Antwort!'); }, function () { toast('Das hat gerade nicht geklappt. Bitte versuche es später noch einmal.'); }); } catch (e) { }
+        ov.remove();
+      }
+    });
+    draw(); document.body.appendChild(ov);
+  }
   function miaGo(k) {
+    if (k === 'umfrage') { umOpen(); return; }
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
     if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
