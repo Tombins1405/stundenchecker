@@ -826,3 +826,5 @@ h3[data-ico="flag"]::before { background: #d32f2f; }
 .brutto .nbrow { display: flex; align-items: center; gap: 8px; margin-top: 14px; position: static; clear: both; }
 .brutto .nbrow .btn { margin: 0; width: auto; }
 .notice.warn, .notice.warn strong, .notice.warn b, .notice.warn li { color: var(--bad); }
+.brutto .nbrow .btn { text-decoration: none; color: var(--ink); white-space: normal; }
+.sw .row strong { white-space: nowrap; }
