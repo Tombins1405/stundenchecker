@@ -478,15 +478,19 @@
         out.push({ y: y, m: m, kat: 'ueber', fehl: r.diff < 0 ? -r.diff : 0, eur: ew, text: 'Überstunden: Du hast ' + fh(r.app) + ' h aufgeschrieben, auf dem Lohnzettel stehen ' + fh(r.paid + r.konto) + ' h (Unterschied ' + (r.diff > 0 ? '+' : '−') + fh(Math.abs(r.diff)) + ' h).' + (r.diff < 0 && sw > 0 && Math.abs(Math.abs(r.diff) - sw) < 0.02 ? ' Der Unterschied ist genau so groß wie deine Ausfallstunden (' + fh(sw) + ' h): Die Firma hat sie offenbar mit den Überstunden verrechnet.' : '') });
       }
     });
+    ((data.profil && data.profil.sonder) || []).forEach(function (sz) {
+      var an = E.sonderAnteil(data.profil.eintritt, +sz.jahr), soll = E.sonderSoll(sz.voll, an);
+      if (soll !== null && hasN(sz.ist) && +sz.ist - soll < -0.5) { var art = (SND_ART.filter(function (x) { return x[0] === sz.art; })[0] || [0, 'Sonderzahlung'])[1]; out.push({ y: +sz.jahr, m: 12, kat: 'sonder', fehl: soll - +sz.ist, eur: soll - +sz.ist, text: art + ' ' + sz.jahr + ': laut Vertrag ' + eur.format(soll) + ', auf dem Lohnzettel ' + eur.format(+sz.ist) + ' (es fehlen ' + eur.format(soll - +sz.ist) + ').' }); }
+    });
     return out;
   }
   // Zusammenfassung in Zahlen: was dir gegenüber deiner Aufzeichnung fehlt (nur Minus-Abweichungen). Sätze bewusst einzeln und ohne Zusammenbau, damit sie übersetzt werden können.
   function abwSumme(l) {
-    var t = { diaeten: 0, stunden: 0, ueber: 0, eur: 0, praem: {}, ohneEuro: false };
+    var t = { diaeten: 0, stunden: 0, ueber: 0, sonder: 0, eur: 0, praem: {}, ohneEuro: false };
     l.forEach(function (x) {
       if (!(x.fehl > 0)) return;
-      if (x.kat === 'praemien') { var n = x.text.split(':')[0]; t.praem[n] = (t.praem[n] || 0) + x.fehl; } else if (x.kat === 'diaeten') t.diaeten += x.fehl; else if (x.kat === 'ueber') t.ueber += x.fehl; else t.stunden += x.fehl;
-      if (x.eur != null) t.eur += x.eur; else if (x.kat !== 'praemien') t.ohneEuro = true;
+      if (x.kat === 'praemien') { var n = x.text.split(':')[0]; t.praem[n] = (t.praem[n] || 0) + x.fehl; } else if (x.kat === 'sonder') t.sonder += x.fehl; else if (x.kat === 'diaeten') t.diaeten += x.fehl; else if (x.kat === 'ueber') t.ueber += x.fehl; else t.stunden += x.fehl;
+      if (x.eur != null) t.eur += x.eur; else if (x.kat !== 'praemien' && x.kat !== 'sonder') t.ohneEuro = true;
     });
     return t;
   }
@@ -494,6 +498,7 @@
     var t = abwSumme(l), z = [];
     if (t.diaeten > 0) z.push(['Diäten', fh(t.diaeten) + ' h']);
     Object.keys(t.praem).forEach(function (n) { z.push([n, eur.format(t.praem[n])]); });
+    if (t.sonder > 0) z.push(['Sonderzahlungen', eur.format(t.sonder)]);
     if (t.stunden > 0) z.push(['Stunden', fh(t.stunden) + ' h']);
     if (t.ueber > 0) z.push(['Überstunden', fh(t.ueber) + ' h']);
     if (z.length) z.push(['Summe der Differenzen in Euro (geschätzt)', eur.format(t.eur) + (t.ohneEuro ? ' (ohne Posten ohne Stundenlohn)' : '')]);
