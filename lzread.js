@@ -233,11 +233,11 @@
     if (LG && (out.stundenlohn !== null || out.monatslohn !== null)) {
       Object.keys(LG).forEach(function (pk) {
         if (out.paket && out.paket !== pk) return;
-        LG[pk].gruppen.forEach(function (g) { g.l.forEach(function (val, si) {
+        LG[pk].gruppen.forEach(function (g) { var tabs = [g.l]; (LG[pk].folgt || []).forEach(function (f) { if (f.gruppen && f.gruppen[g.id]) tabs.push(f.gruppen[g.id]); }); tabs.forEach(function (tab) { tab.forEach(function (val, si) {
           if (val == null) return;
           var hit = g.m ? (out.monatslohn !== null && Math.abs(out.monatslohn - val) < 0.005) : (out.stundenlohn !== null && Math.abs(out.stundenlohn - val) < 0.005);
-          if (hit) out.treffer.push({ paket: pk, lg: g.id, name: g.name, ls: LG[pk].stufen && g.l.length > 1 ? si : null, lehrling: !!g.lehrling });
-        }); });
+          if (hit && !out.treffer.some(function (t0) { return t0.paket === pk && t0.lg === g.id && t0.ls === (LG[pk].stufen && g.l.length > 1 ? si : null); })) out.treffer.push({ paket: pk, lg: g.id, name: g.name, ls: LG[pk].stufen && g.l.length > 1 ? si : null, lehrling: !!g.lehrling });
+        }); }); });
       });
     }
     return out;

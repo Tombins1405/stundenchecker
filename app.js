@@ -1898,6 +1898,8 @@
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
     if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei, ich lese sie nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
+    var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
+    if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
@@ -1949,8 +1951,19 @@
     });
     draw(); document.body.appendChild(ov);
   }
+  // Neuer Kollektivvertrags-Stand: legt Werte "gültig ab" an. Frühere Monate behalten ihre alten Werte.
+  function kvUebernehmen(ab) {
+    var an = E.lgAnstehend(data.settings, todayISO(), 45); if (!an || an.ab !== ab) return;
+    var w = E.wertAt(data.settings, todayISO()), ne = E.clone(w);
+    ne.gueltigAb = ab; delete ne.test;
+    if (an.auto) { ne.lgAuto = false; lgNehmen(ne, an.val, an.mon); }
+    data.settings.push(ne); ui.setKey = ab; save(); renderSettings();
+    toast(abw1(an.auto ? 'Neue Werte ab {0} angelegt. Der Lohn laut Kollektivvertrag ist übernommen. Frühere Monate bleiben unverändert.' : 'Neue Werte ab {0} angelegt. Trage jetzt deinen Lohn laut Lohnzettel ein.', [fmtDate(ab)]), 7000);
+    if (!an.auto) { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 150); }
+  }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
+    if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
     if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
@@ -2011,7 +2024,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -2482,7 +2495,7 @@
     var vzp = E.PAKETE[w.paket].werte.ueberstunden.wochenStd; if (wo > 0 && vzp > wo && String(w.paket).indexOf('de_') !== 0 && set.ueberstunden.modell !== 'bau') set.ueberstunden.vollzeitStd = vzp;
     var mo = parseFloat(String(w.monat || '').replace(',', '.'));
     if (mo > 0) { var wsd = set.ueberstunden.wochenStd > 0 ? set.ueberstunden.wochenStd : 38.5; set.monatslohn = mo; var tlr = (E.LOHNGRUPPEN[w.paket] || {}).teiler; set.monatsStd = w.lg && tlr ? tlr : Math.round(wsd * 52 / 12 * 100) / 100; set.stundenlohn = Math.round(mo / set.monatsStd * 100) / 100; set.lgAuto = false; }
-    var lgW = E.LOHNGRUPPEN[w.paket], gW = lgW && w.lg ? lgW.gruppen.filter(function (x) { return x.id === w.lg; })[0] : null;
+    var lgW = E.lgFuer(E.LOHNGRUPPEN[w.paket], ab), gW = lgW && w.lg ? lgW.gruppen.filter(function (x) { return x.id === w.lg; })[0] : null;
     set.lg = gW ? gW.id : null; set.ls = gW && lgW.stufen && gW.l.length > 1 && w.ls !== '' && w.ls != null ? +w.ls : null;
     if (gW) { var iW = set.ls != null ? set.ls : 0, vW = gW.l[iW]; if (vW != null && (gW.m ? mo === vW : (!(mo > 0) && lo === vW))) set.lgAuto = true; }
     var ds = parseFloat(String(w.dsatz).replace(',', '.')); if (w.diaeten && set.diaeten.modell === 'stunde' && ds >= 0) set.diaeten.satz = ds;
@@ -2508,7 +2521,7 @@
   function lgListe(lg, art, wahl, beruf) { return lg.gruppen.filter(function (x) { return x.id === wahl || (!!x.lehrling === (art === 'lehrling') && (!x.nur || x.nur.indexOf(beruf) >= 0)); }); }
   function lgTeiler(lg, wochenStd) { return lg.teiler || Math.round((+wochenStd > 0 ? +wochenStd : 38.5) * 52 / 12 * 100) / 100; }
   function lohnGruppenHtml(w) {
-    var lg = E.LOHNGRUPPEN[w.paket]; if (!lg) return '';
+    var lg = E.lgFuer(E.LOHNGRUPPEN[w.paket], todayISO()); if (!lg) return '';
     var gl = lgListe(lg, w.art, w.lg, w.beruf); if (!gl.length) return '';
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0];
     var h = '<div class="field"><label for="wz-lg">' + (w.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><small>Die Lohngruppe (oder Einstufung) bestimmt, welchen Mindestlohn dir der Kollektivvertrag zusteht. Du musst sie nicht kennen: Trage einfach deinen Stundenlohn vom Lohnzettel ein. Kennst du sie, kann die App prüfen, ob dein Lohn dem Kollektivvertrag entspricht. Du findest sie oben auf dem Lohnzettel (bei „Einstufung“, „Lohngruppe“ oder „Verwendungsgruppe“) oder im Dienstvertrag. Steht sie nirgends, frag in der Firma nach.</small><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
@@ -2517,7 +2530,7 @@
     return h;
   }
   function lohnVorschlag(w) {
-    var lg = E.LOHNGRUPPEN[w.paket]; if (!lg) return;
+    var lg = E.lgFuer(E.LOHNGRUPPEN[w.paket], todayISO()); if (!lg) return;
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0]; if (!g) return;
     var i = lg.stufen && g.l.length > 1 ? (w.ls === '' || w.ls == null ? -1 : +w.ls) : 0; if (i < 0 || g.l[i] == null) return;
     if (g.m) { w.monat = g.l[i]; w.monatAuto = true; w.lohn = Math.round(g.l[i] / lgTeiler(lg, w.wochen) * 100) / 100; }
@@ -2715,7 +2728,7 @@
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
     var kvp = (data.profil && data.profil.kv) || {}, kvv = {};
     if (cur) { // schon gewählte Angaben gleich anzeigen
-      var lgx = E.LOHNGRUPPEN[cur.paket], gx = lgx && lgx.gruppen.filter(function (x) { return x.id === cur.lg; })[0];
+      var lgx = E.lgFuer(E.LOHNGRUPPEN[cur.paket], cur.gueltigAb), gx = lgx && lgx.gruppen.filter(function (x) { return x.id === cur.lg; })[0];
       kvv.name = (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || '';
       kvv.gruppe = cur.einstufung || (gx ? gx.name + (lgx.stufen && cur.ls != null && cur.ls !== '' ? ', ' + lgx.stufen[+cur.ls] : '') : '');
       kvv.branche = cwb || PAKET_KURZ[cur.paket] || '';
@@ -2865,7 +2878,7 @@
   }
   function renderLgBox(en) {
     var box = $('#s-lgbox'); if (!box) return;
-    var lg = E.LOHNGRUPPEN[en.paket], gl = lg ? lgListe(lg, en.art, en.lg, en.beruf) : [];
+    var lg = E.lgFuer(E.LOHNGRUPPEN[en.paket], en.gueltigAb), gl = lg ? lgListe(lg, en.art, en.lg, en.beruf) : [];
     if (!lg || !gl.length) { box.innerHTML = ''; box.dataset.val = ''; var tk0 = $('#s-lgtake'); if (tk0) tk0.innerHTML = ''; return; }
     var g = lg.gruppen.filter(function (x) { return x.id === en.lg; })[0];
     var h = '<div class="field"><label for="s-lg">' + (en.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><small>Die Lohngruppe (oder Einstufung) bestimmt, welchen Mindestlohn dir der Kollektivvertrag zusteht. Du musst sie nicht kennen: Trage einfach deinen Stundenlohn vom Lohnzettel ein. Kennst du sie, kann die App prüfen, ob dein Lohn dem Kollektivvertrag entspricht. Du findest sie oben auf dem Lohnzettel (bei „Einstufung“, „Lohngruppe“ oder „Verwendungsgruppe“) oder im Dienstvertrag. Steht sie nirgends, frag in der Firma nach.</small><select id="s-lg"><option value="">Nicht gewählt</option>' +
@@ -3638,6 +3651,25 @@
     ['Lager und Handel', [['Prüfung des Staplers (jährlich)', 1]]],
     ['Büro', [['Datenschutz-Schulung', 0], ['Brandschutzwart-Ausbildung', 0]]]
   ];
+  // Ausbildungen und Abschlüsse: Laufzeit -1 = läuft nicht ab (nur "erreicht am"), 0 = Ablaufdatum selbst eintragen, sonst Jahre
+  var AUSB_ALLG = ['Abschlüsse und Ausbildungen (laufen nicht ab)', [['Lehrabschlussprüfung', -1], ['Meisterprüfung', -1], ['Befähigungsprüfung', -1], ['Matura / Berufsreifeprüfung', -1], ['Studienabschluss', -1], ['Ausbilderprüfung', -1]]];
+  var AUSB_BERUF = {
+    lkw: [['Lehrabschluss Berufskraftfahrer', -1], ['Ecofahr-Training', -1], ['Tankwagen-Aufbaukurs (ADR)', 5], ['Kühltransport-Schulung', 0]],
+    klein: [['Lehrabschluss Berufskraftfahrer', -1], ['Ecofahr-Training', -1]],
+    handwerk: [['Gesellenprüfung / Facharbeiterbrief', -1], ['Meisterprüfung', -1], ['Schweißerprüfung', 0], ['Absturzsicherung-Schulung', 0]],
+    bagger: [['Lehrabschluss Baumaschinentechnik', -1], ['Baggerschein / Maschinenführer', 0], ['Kranschein', 0]],
+    lager: [['Lehrabschluss Lagerlogistik', -1], ['Staplerschein', 0], ['Ladungssicherung-Kurs', -1]],
+    mechaniker: [['Lehrabschluss Kfz-Technik', -1], ['Meisterprüfung', -1], ['Pickerl-Ermächtigung (§ 57a)', 0], ['Hochvolt-Schulung', 0]],
+    buero: [['Lehrabschluss Bürokaufmann / Bürokauffrau', -1], ['Handelsakademie / Matura', -1], ['Buchhaltungsprüfung', -1], ['Computerführerschein', -1]],
+    aussendienst: [['Handelsakademie / Matura', -1], ['Verkaufstraining', -1]],
+    handel: [['Lehrabschluss Einzelhandel', -1], ['Lehrabschluss Lebensmittelhandel', -1], ['Hygieneschulung', 0], ['Ausbilderprüfung', -1]],
+    gastro: [['Lehrabschluss Koch / Restaurantfachkraft', -1], ['Konzessionsprüfung Gastgewerbe', -1], ['Hygieneschulung', 0], ['Allergen-Schulung', 0]],
+    reinigung: [['Lehrabschluss Denkmal-, Fassaden- und Gebäudereinigung', -1], ['Desinfektionsschulung', 0]],
+    security: [['Sicherheitsgrundkurs', -1], ['Deeskalationstraining', -1], ['Erste-Hilfe-Auffrischung', 4]],
+    pflege: [['Heimhilfe-Ausbildung', -1], ['Pflegeassistenz', -1], ['Pflegefachassistenz', -1], ['Diplom Gesundheits- und Krankenpflege', -1], ['Pflicht-Fortbildung Pflege', 0]],
+    bund: [['Grundausbildung', -1], ['Dienstprüfung', -1]]
+  };
+  function ausbAbschluss(n) { return /Lehrabschluss|Gesellen|Meister|Befähigung|Diplom|Matura|Studium|Pflegeassistenz|Pflegefachassistenz|Heimhilfe|Dienstprüfung|Konzession/.test(n || ''); }
   function fristListe() { if (!data.profil) data.profil = {}; return data.profil.fristen || (data.profil.fristen = []); }
   function fristTage(f) { if (!f.ablauf) return null; var a = E.parseISO(f.ablauf), t = E.parseISO(todayISO()); return Math.round((Date.UTC(a.y, a.m - 1, a.d) - Date.UTC(t.y, t.m - 1, t.d)) / 86400000); }
   function fristenAm(datum) { return (data.profil && data.profil.fristen || []).filter(function (f) { return f.ablauf === datum; }).map(function (f) { return f.name || 'Frist'; }); }
@@ -3677,17 +3709,23 @@
     var ml = [['taeglich', 'Jeden Tag, bis es erledigt ist'], ['einmal', 'Einmal vorher und am Ablauftag'], ['nie', 'Nur im Kalender, ohne Meldung']];
     el.innerHTML = fristListe().map(function (f) {
       var n = fristTage(f), v = +f.vorlauf || 30, st = n === null ? '' : n < 0 ? ['bad', 'Abgelaufen'] : n === 0 ? ['bad', 'Heute fällig'] : n <= v ? ['warn', 'Bald fällig'] : ['ok', 'Gültig'];
+      var mitAb = !!f.ablauf || !f.ausb;
+      if (f.ausb && !f.ablauf) st = f.datum ? ['ok', 'Läuft nicht ab'] : '';
       return '<div class="frrow" data-id="' + esc(f.id) + '"><div class="frtop"><input type="text" data-f="name" maxlength="60" value="' + esc(f.name || '') + '" aria-label="Name der Frist"><button type="button" class="btn" data-act="del" aria-label="Entfernen">×</button></div>' +
-        '<div class="field"><label>Läuft ab am</label><input type="date" data-f="ablauf" value="' + esc(f.ablauf || '') + '"></div>' +
+        (f.ausb || f.datum ? '<div class="field"><label>Erreicht / bestanden am</label><input type="date" data-f="datum" max="' + todayISO() + '" value="' + esc(f.datum || '') + '"></div>' : '') +
+        '<div class="field"><label>' + (f.ausb ? 'Läuft ab am (leer lassen, wenn es nicht abläuft)' : 'Läuft ab am') + '</label><input type="date" data-f="ablauf" value="' + esc(f.ablauf || '') + '"></div>' +
         (st ? '<p class="frstat fr-' + st[0] + '">' + st[1] + '</p>' : '') +
-        '<div class="field"><label>Erinnern ab</label><select data-f="vorlauf">' + opt(vl, v) + '</select></div>' +
+        (mitAb ? '<div class="field"><label>Erinnern ab</label><select data-f="vorlauf">' + opt(vl, v) + '</select></div>' +
         '<div class="field"><label>Meldung in der App</label><select data-f="mia">' + opt(ml, f.mia || 'taeglich') + '</select></div>' +
         '<label class="check"><input type="checkbox" data-f="kal"' + (f.kal ? ' checked' : '') + '><span>In meinem Handy-Kalender eingetragen</span></label>' +
-        '<div class="btns"><button type="button" class="btn" data-act="ics"' + (f.ablauf ? '' : ' disabled') + '>Kalenderdatei laden</button><button type="button" class="btn primary" data-act="neu">Erneuert / bestanden</button></div></div>';
+        '<div class="btns"><button type="button" class="btn" data-act="ics"' + (f.ablauf ? '' : ' disabled') + '>Kalenderdatei laden</button><button type="button" class="btn primary" data-act="neu">Erneuert / bestanden</button></div>' : '') + '</div>';
     }).join('');
-    var vo = $('#fr-vorl'); if (vo && !vo.dataset.f) { vo.dataset.f = 1; vo.innerHTML = FR_VOR.map(function (g) { return '<p class="frgrp">' + g[0] + '</p><div class="frchips">' + g[1].map(function (x) { return '<button type="button" class="btn" data-n="' + esc(x[0]) + '" data-y="' + x[1] + '">' + x[0] + '</button>'; }).join('') + '</div>'; }).join(''); }
+    var vo = $('#fr-vorl'); if (vo) {
+      var bw = wAt(todayISO()) || {}, bl = AUSB_BERUF[bw.beruf] || [], gr = (bl.length ? [[abw1('Für deinen Beruf: {0}', [abwLab(E.BERUFE[bw.beruf] ? E.BERUFE[bw.beruf].name : '')]), bl]] : []).concat([AUSB_ALLG], FR_VOR), sig = (bw.beruf || '') + '|' + uiLang();
+      if (vo.dataset.f !== sig) { vo.dataset.f = sig; vo.innerHTML = gr.map(function (g) { return '<p class="frgrp">' + esc(g[0]) + '</p><div class="frchips">' + g[1].map(function (x) { return '<button type="button" class="btn" data-n="' + esc(x[0]) + '" data-y="' + x[1] + '">' + esc(x[0]) + '</button>'; }).join('') + '</div>'; }).join(''); }
+    }
   }
-  function fristNeu(name, jahre) { fristListe().push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: name || 'Neue Frist', laufzeit: jahre || 0, ablauf: '', vorlauf: 30, mia: 'taeglich', kal: false }); save(); renderFristen(); }
+  function fristNeu(name, jahre) { var ab = jahre < 0; fristListe().push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: name || 'Neue Frist', laufzeit: ab ? 0 : (jahre || 0), ausb: ab, datum: '', ablauf: '', vorlauf: 30, mia: 'taeglich', kal: false }); save(); renderFristen(); }
   (function () {
     var el = $('#fr-list'); if (!el) return;
     function row(t) { var r = t.closest('.frrow'); if (!r) return null; var f = fristListe().filter(function (x) { return x.id === r.dataset.id; })[0]; return f ? { f: f, r: r } : null; }
@@ -3695,6 +3733,11 @@
     el.addEventListener('change', function (ev) {
       var t = ev.target, o = row(t); if (!o || !t.dataset.f) return; var k = t.dataset.f;
       if (k === 'ablauf') { var alt = o.f.ablauf; if (t.value && alt && t.value > alt) { fertig(o.f, t.value); return; } o.f.ablauf = t.value; o.f.kal = false; delete o.f.m1; delete o.f.m2; delete o.f.spaet; }
+      else if (k === 'datum') {
+        o.f.datum = t.value; save(); renderFristen();
+        if (t.value && t.value <= todayISO() && !o.f.gratuliert) { o.f.gratuliert = true; save(); feier('Gratulation!', abw1(ausbAbschluss(o.f.name) ? 'Gratulation zu „{0}“! Das hast du dir verdient. Prüfe auch, ob sich dadurch deine Lohngruppe ändert.' : 'Gratulation zu „{0}“! Das hast du dir verdient.', [o.f.name || ''])); ins('ausbildung'); }
+        return;
+      }
       else if (k === 'kal') o.f.kal = t.checked;
       else if (k === 'vorlauf') { o.f.vorlauf = +t.value; o.f.kal = false; delete o.f.m1; delete o.f.m2; }
       else o.f[k] = t.value;
@@ -3719,6 +3762,7 @@
     });
     $('#fr-add').addEventListener('click', function () { var v = $('#fr-vorl'); v.hidden = !v.hidden; });
     $('#fr-eigen').addEventListener('click', function () { fristNeu('Neue Frist', 0); $('#fr-vorl').hidden = true; });
+    $('#fr-eigen-a').addEventListener('click', function () { fristNeu('Neue Ausbildung', -1); $('#fr-vorl').hidden = true; });
     $('#fr-vorl').addEventListener('click', function (ev) { var b = ev.target.closest('[data-n]'); if (!b) return; fristNeu(b.dataset.n, +b.dataset.y); $('#fr-vorl').hidden = true; });
     renderFristen();
   })();

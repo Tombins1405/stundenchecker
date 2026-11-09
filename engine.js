@@ -957,6 +957,36 @@
     if (!w.zaUmr) w.zaUmr = 'offen';
     return w;
   }
+
+  // Lohntabelle eines Kollektivvertrags, wie sie an einem Datum gilt (berücksichtigt "folgt"). Ein neuer Stand muss alle Gruppen enthalten.
+  function lgFuer(lg, ab) {
+    if (!lg || !lg.folgt || !lg.folgt.length) return lg;
+    var f = null; lg.folgt.forEach(function (x) { if (x.ab <= ab && (!f || x.ab > f.ab)) f = x; });
+    if (!f) return lg;
+    var c = {}; Object.keys(lg).forEach(function (k) { c[k] = lg[k]; });
+    c.stand = f.stand || lg.stand;
+    c.gruppen = lg.gruppen.map(function (g) { var a = f.gruppen && f.gruppen[g.id]; if (!a) return g; var n = {}; Object.keys(g).forEach(function (k) { n[k] = g[k]; }); n.l = a; return n; });
+    return c;
+  }
+  // Kommende Lohnstände eines Kollektivvertrags (Feld "folgt": [{ab, stand, gruppen:{id:[Werte]}}]).
+  // Gibt den nächsten Stand zurück, der in den nächsten "tage" Tagen gilt und für den noch keine Werte angelegt sind.
+  function lgAnstehend(settings, heute, tage) {
+    if (!settings || !settings.length) return null;
+    var w = wertAt(settings, heute), lg0 = LOHNGRUPPEN[w.paket], lg = lgFuer(lg0, heute);
+    if (!lg0 || !lg0.folgt || !lg0.folgt.length || !w.lg) return null;
+    var g = null; lg.gruppen.forEach(function (x) { if (x.id === w.lg) g = x; });
+    if (!g) return null;
+    var grenze = addDays(heute, tage == null ? 45 : tage), hit = null;
+    lg0.folgt.slice().sort(function (a, b) { return a.ab < b.ab ? -1 : 1; }).forEach(function (f) {
+      if (hit || f.ab > grenze || f.ab <= w.gueltigAb) return;
+      if (settings.some(function (e) { return e.gueltigAb >= f.ab; })) return;
+      var arr = f.gruppen && f.gruppen[w.lg]; if (!arr) return;
+      var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : +w.ls) : 0;
+      var val = i >= 0 ? arr[i] : null, alt = i >= 0 ? g.l[i] : null; if (val == null) return;
+      hit = { ab: f.ab, stand: f.stand || ('ab ' + f.ab), val: val, alt: alt, mon: !!g.m, auto: w.lgAuto === true, gruppe: g.name, paket: w.paket };
+    });
+    return hit;
+  }
   function wertAt(settings, dateStr) {
     if (!settings || !settings.length) return neuerWertesatz('gueter', '1900-01-01');
     var list = settings.slice().sort(function (a, b) { return a.gueltigAb < b.gueltigAb ? -1 : 1; });
@@ -1563,7 +1593,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
