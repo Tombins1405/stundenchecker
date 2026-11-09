@@ -931,6 +931,34 @@
     box.innerHTML = o + '</svg><p class="hint" style="margin-top:4px">' + rows.map(function (r, k) { return r.est == null ? '' : (k + 1) + ': ' + eur.format(r.est) + (r.lz != null ? ' / ' + eur.format(r.lz) : ''); }).filter(Boolean).join(' · ') + '</p>';
     var kb = $('#kb-info'); if (kb) { var ks = document.createElement('small'); ks.hidden = true; ks.textContent = 'Blau: Schätzung der App für abgeschlossene Monate. Grün: das Brutto, das du vom Lohnzettel eingetragen hast. So siehst du, wie nah die Schätzung liegt. Sonderzahlungen und Nachzahlungen sind in der Schätzung nicht enthalten.'; kb._sm = ks; }
   }
+  /* ---- Freie Tage planen (Brückentage): wenige Urlaubs-/ZA-Tage, viele freie Tage am Stück ---- */
+  function planerBerechne(y) {
+    var fe = E.feiertage(y), fe2 = E.feiertage(y + 1), start = E.iso(y, 1, 1), n = 0, tage = [];
+    for (var d = E.addDays(start, -10); d <= E.iso(y, 12, 31) || n < 12; d = E.addDays(d, 1)) { var wd = E.weekday(d), p = E.parseISO(d); tage.push({ d: d, frei: wd === 0 || wd === 6 || !!((p.y === y ? fe : fe2)[d] || (p.y === y - 1 ? E.feiertage(y - 1)[d] : null)) }); if (d > E.iso(y, 12, 31)) n++; if (tage.length > 400) break; }
+    var res = [];
+    for (var s = 0; s < tage.length; s++) {
+      if (!tage[s].frei || (s > 0 && tage[s - 1].frei)) continue; // Fenster beginnt direkt nach einem Arbeitstag
+      var k = 0, lst = [];
+      for (var e = s; e < tage.length && e < s + 20; e++) {
+        if (!tage[e].frei) { k++; lst.push(tage[e].d); if (k > 6) break; }
+        if (tage[e].frei && k >= 1 && k <= 6 && (e + 1 >= tage.length || !tage[e + 1].frei) && tage[e].d >= start && tage[s].d <= E.iso(y, 12, 31)) { var len = e - s + 1; if (k === 1 ? len >= 4 : (len >= k + 4 && len >= 2 * k)) res.push({ von: tage[s].d, bis: tage[e].d, k: k, len: len, tage: lst.slice() }); }
+      }
+    }
+    var bestK = {}; res.sort(function (a, b) { return b.len / b.k - a.len / a.k; });
+    var out = [], used = {}; res.forEach(function (r) { if ((bestK[r.k] || 0) >= 3 || out.length >= 8) return; var ov = out.some(function (o) { return !(r.bis < o.von || r.von > o.bis); }); if (ov) return; bestK[r.k] = (bestK[r.k] || 0) + 1; out.push(r); });
+    out.sort(function (a, b) { return a.von < b.von ? -1 : 1; });
+    return out;
+  }
+  function renderPlaner() {
+    var box = $('#pl-liste'), jb = $('#pl-jahre'); if (!box || !jb) return;
+    var y0 = +todayISO().slice(0, 4); if (!ui.plJahr) ui.plJahr = y0 + (+todayISO().slice(5, 7) >= 10 ? 1 : 0);
+    jb.innerHTML = [y0, y0 + 1, y0 + 2].map(function (y) { return '<button type="button" class="btn wzopt' + (ui.plJahr === y ? ' on' : '') + '" data-plj="' + y + '">' + y + '</button>'; }).join('');
+    var l = planerBerechne(ui.plJahr);
+    box.innerHTML = l.length ? l.map(function (r) {
+      return '<div class="plrow"><b>' + esc(abw1('{0} Tage frei am Stück: {1} bis {2}', [r.len, fmtShort(r.von), fmtShort(r.bis)])) + '</b><span>' + esc(r.k === 1 ? abw1('Du brauchst dafür 1 Tag Urlaub oder Zeitausgleich: {0}', [r.tage.map(fmtShort).join(', ')]) : abw1('Du brauchst dafür {0} Tage Urlaub oder Zeitausgleich: {1}', [r.k, r.tage.map(fmtShort).join(', ')])) + '</span></div>';
+    }).join('') : '<p class="hint">Keine Vorschläge für dieses Jahr.</p>';
+  }
+  (function () { var jb = $('#pl-jahre'); if (jb) jb.addEventListener('click', function (ev) { var b = ev.target.closest('[data-plj]'); if (!b) return; ui.plJahr = +b.dataset.plj; renderPlaner(); }); var dt = $('#pl-det'); if (dt) dt.addEventListener('toggle', function () { if (dt.open) renderPlaner(); }); })();
   function renderKonten() {
     renderJahr();
     try { renderBruttoJahr(); } catch (e) { }
