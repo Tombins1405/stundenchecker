@@ -4003,6 +4003,11 @@
       lm[z.norm] = it.key || '-'; if (it.key) sum[it.key] = (sum[it.key] || 0) + menge;
     });
     Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; }); if (n) cur.gelesen = true;
+    (res.sonder || []).forEach(function (q) { // Sonderzahlung vom Lohnzettel: „Laut Lohnzettel“ in der Karte Sonderzahlungen vorbelegen
+      var l = sndList(), e = l.filter(function (x) { return x.art === q.art && +x.jahr === mo.y; })[0];
+      if (!e) { e = { art: q.art, jahr: mo.y, voll: null, ist: null, notiz: '' }; l.push(e); }
+      e.ist = q.betrag; n++; cur.gelesen = true;
+    });
     save(); lzUi.erg.push({ y: mo.y, m: mo.m, n: n });
     return n;
   }

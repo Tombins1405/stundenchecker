@@ -89,7 +89,16 @@
       kand.push({ label: label, norm: n, menge: menge, key: key, nums: nums, pos: pos, unsicher: true });
     });
     kand.slice(0, 25).forEach(function (q) { zeilen.push(q); });
-    return { monat: monat(lines), zeilen: zeilen, lines: lines };
+    // Sonderzahlungen (Urlaubszuschuss, Weihnachtsremuneration, 13./14. Gehalt): Zeile ohne Stunden, der Euro-Betrag steht am Zeilenende („Urlaubszuschuss 1 804,15“)
+    var sonder = [];
+    lines.forEach(function (ln) {
+      var t = String(ln).trim(), mb = /(\d{1,3}(?:[. \u00a0]\d{3})*,\d{2})\s*€?\s*$/.exec(t); if (!mb || PERS.test(t)) return;
+      var lab = norm(t.slice(0, mb.index)), art = /^urlaubszuschuss|^urlaubsgeld|^urlaubsbeihilfe/.test(lab) ? 'urlaub' : /^weihnachts(remuneration|geld|zuwendung)|^weihnachtsgratifikation/.test(lab) ? 'weihnacht' : /^13(gehalt|monatsgehalt|monatslohn)|^dreizehnt/.test(lab) ? 'd13' : /^14(gehalt|monatsgehalt|monatslohn)|^vierzehnt/.test(lab) ? 'd14' : /^sonderzahlung/.test(lab) ? 'andere' : null;
+      if (!art || /\d{1,3},\d{2}\s*h\b/i.test(t)) return;
+      var b = zahl(mb[1].replace(/[ \u00a0]/g, '')); if (isNaN(b) || b <= 0) return;
+      sonder.push({ art: art, betrag: b, label: t.slice(0, mb.index).replace(/\s+/g, ' ').trim() });
+    });
+    return { monat: monat(lines), zeilen: zeilen, sonder: sonder, lines: lines };
   }
   // Aus pdf.js-Textstücken Zeilen bauen (gleiche Höhe = eine Zeile).
   function zeilenAus(items) {
