@@ -457,11 +457,11 @@
       var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
       (sm.freiListe || []).forEach(function (x) {
-        if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'stunden', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und die Stunden vom Zeitausgleich abgezogen.' });
-        if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'stunden', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und den Tag nicht bezahlt.' });
+        if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und die Stunden vom Zeitausgleich abgezogen.' });
+        if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' hat dich die Firma freigestellt (' + fh(x.std) + ' h) und den Tag nicht bezahlt.' });
       });
       (sm.betriebListe || []).forEach(function (x) {
-        out.push({ y: y, m: m, kat: 'stunden', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' war der Betrieb geschlossen (' + fh(x.std) + ' h). Die Firma hat die Stunden vom Zeitausgleich bzw. von den Überstunden abgezogen und nicht als Urlaub oder bezahlte Zeit gerechnet.' });
+        out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: 'Am ' + fmtShort(x.datum) + ' war der Betrieb geschlossen (' + fh(x.std) + ' h). Die Firma hat die Stunden vom Zeitausgleich bzw. von den Überstunden abgezogen und nicht als Urlaub oder bezahlte Zeit gerechnet.' });
       });
       if (data.abgleich[k] && Object.keys(data.abgleich[k]).length) { // alle weiteren Zeilen (Lohn, Diäten, Prämien ...) gegen den Lohnzettel
         var sm2 = abSumme(sm, y, m), le2 = E.lzMitKorr(data.abgleich, k).lz, fx = !!(wmm && +wmm.monatslohn > 0);
@@ -486,9 +486,10 @@
   }
   // Zusammenfassung in Zahlen: was dir gegenüber deiner Aufzeichnung fehlt (nur Minus-Abweichungen). Sätze bewusst einzeln und ohne Zusammenbau, damit sie übersetzt werden können.
   function abwSumme(l) {
-    var t = { diaeten: 0, stunden: 0, ueber: 0, sonder: 0, eur: 0, praem: {}, ohneEuro: false };
+    var t = { diaeten: 0, stunden: 0, ueber: 0, sonder: 0, eur: 0, firma: 0, firmaTage: 0, firmaEur: 0, praem: {}, ohneEuro: false };
     l.forEach(function (x) {
       if (!(x.fehl > 0)) return;
+      if (x.kat === 'firma') { t.firma += x.fehl; t.firmaTage++; if (x.eur != null) t.firmaEur += x.eur; return; }
       if (x.kat === 'praemien') { var n = x.text.split(':')[0]; t.praem[n] = (t.praem[n] || 0) + x.fehl; } else if (x.kat === 'sonder') t.sonder += x.fehl; else if (x.kat === 'diaeten') t.diaeten += x.fehl; else if (x.kat === 'ueber') t.ueber += x.fehl; else t.stunden += x.fehl;
       if (x.eur != null) t.eur += x.eur; else if (x.kat !== 'praemien' && x.kat !== 'sonder') t.ohneEuro = true;
     });
@@ -496,18 +497,21 @@
   }
   function abwSummeZeilen(l) {
     var t = abwSumme(l), z = [];
-    if (t.diaeten > 0) z.push(['Diäten', fh(t.diaeten) + ' h']);
-    Object.keys(t.praem).forEach(function (n) { z.push([n, eur.format(t.praem[n])]); });
-    if (t.sonder > 0) z.push(['Sonderzahlungen', eur.format(t.sonder)]);
-    if (t.stunden > 0) z.push(['Stunden', fh(t.stunden) + ' h']);
-    if (t.ueber > 0) z.push(['Überstunden', fh(t.ueber) + ' h']);
-    if (z.length) z.push(['Summe der Differenzen in Euro (geschätzt)', eur.format(t.eur) + (t.ohneEuro ? ' (ohne Posten ohne Stundenlohn)' : '')]);
+    if (t.diaeten > 0) z.push(['Diäten', fh(t.diaeten) + ' h', 'diaeten']);
+    Object.keys(t.praem).forEach(function (n) { z.push([n, eur.format(t.praem[n]), 'praemien']); });
+    if (t.sonder > 0) z.push(['Sonderzahlungen', eur.format(t.sonder), 'sonder']);
+    if (t.stunden > 0) z.push(['Stunden', fh(t.stunden) + ' h', 'stunden']);
+    if (t.ueber > 0) z.push(['Überstunden', fh(t.ueber) + ' h', 'ueber']);
+    if (z.length) z.push(['Summe der Differenzen in Euro (geschätzt)', eur.format(t.eur) + (t.ohneEuro ? ' (ohne Posten ohne Stundenlohn)' : ''), '']);
     return z;
   }
-  function abwSummeText(l) { var z = abwSummeZeilen(l); return z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : ''; }
+  function abwFirmaZeile(l) { var t = abwSumme(l); return t.firma > 0 ? ['Stunden, die die Firma abgezogen hat (nicht bezahlt, nicht als Urlaub gerechnet)', fh(t.firma) + ' h' + (t.firmaEur > 0 ? ', ca. ' + eur.format(t.firmaEur) : ''), 'firma'] : null; }
+  function abwSummeText(l) { var z = abwSummeZeilen(l), f = abwFirmaZeile(l); return (z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') + (f ? f[0] + ': ' + f[1] + '\n\n' : ''); }
   function abwSummeHtml(l) {
-    var z = abwSummeZeilen(l); if (!z.length) return '';
-    return '<div class="notice warn" style="margin-bottom:10px"><strong>Bislang fehlen dir gegenüber deinen Aufzeichnungen:</strong><table class="cmp" style="margin-top:6px"><tbody>' + z.map(function (r) { return '<tr><td>' + esc(r[0]) + '</td><td class="no">' + esc(r[1]) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    var z = abwSummeZeilen(l), f = abwFirmaZeile(l); if (!z.length && !f) return '';
+    function tr(r) { return '<tr' + (r[2] ? ' class="abwk" data-abw="' + r[2] + '"' : '') + '><td>' + esc(r[0]) + '</td><td class="no">' + esc(r[1]) + '</td></tr>'; }
+    return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>Bislang fehlen dir gegenüber deinen Aufzeichnungen:</strong><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
+      (f ? '<div class="notice warn" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(f) + '</tbody></table></div>' : '');
   }
   /* ============================================================ LOHNZETTEL (eigener Reiter) */
   function renderLohn() {
@@ -971,7 +975,8 @@
     var ui2 = $('#ue-info'); if (ui2) { var us = document.createElement('small'); us.hidden = true; us.textContent = 'Von dir: deine aufgeschriebenen Überstunden. Bezahlt: so viele stehen auf dem Lohnzettel. Konto: so viele wurden aufs Zeitausgleich-Konto gebucht. Unterschied = bezahlt plus Konto minus von dir. Plus (orange): Der Lohnzettel hat mehr als du aufgeschrieben hast. Minus (rot): weniger. Grün: passt.'; ui2._sm = us; }
     // Überstunden im Überblick
     var abw = abwListe();
-    $('#k-abw').innerHTML = abw.length ? abwSummeHtml(abw) + '<ul class="rot" style="margin:0;padding-left:20px">' + abw.map(function (x) { return '<li><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; }).join('') + '</ul><button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    $('#k-abw').innerHTML = abw.length ? abwSummeHtml(abw) + '<ul class="rot" style="margin:0;padding-left:20px">' + abw.map(function (x) { return '<li data-abw="' + x.kat + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; }).join('') + '</ul><button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    var kb = $('#k-abw'); if (kb) kb.onclick = function (ev) { var r = ev.target.closest && ev.target.closest('tr.abwk'); if (!r) return; var k = r.dataset.abw, an = kb.dataset.hl === k; kb.dataset.hl = an ? '' : k; kb.classList.toggle('abwdim', !an); $$('#k-abw [data-abw]').forEach(function (e) { e.classList.toggle('abwhl', !an && e.dataset.abw === k); }); };
     var ac = $('#abw-copy'); if (ac) ac.onclick = function () {
       var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + abwSummeText(abw) + abw.map(function (x) { return MON[x.m - 1] + ' ' + x.y + ': ' + x.text; }).join('\n') + '\n\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
       var done = function () { ac.textContent = 'Kopiert'; };

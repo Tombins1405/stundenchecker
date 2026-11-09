@@ -828,3 +828,8 @@ h3[data-ico="flag"]::before { background: #d32f2f; }
 .notice.warn, .notice.warn strong, .notice.warn b, .notice.warn li { color: var(--bad); }
 .brutto .nbrow .btn { text-decoration: none; color: var(--ink); white-space: normal; }
 .sw .row strong { white-space: nowrap; }
+#k-abw tr.abwk { cursor: pointer; }
+#k-abw tr.abwk:active { background: color-mix(in srgb, var(--bad) 12%, transparent); }
+#k-abw.abwdim li { opacity: .35; }
+#k-abw.abwdim li.abwhl, #k-abw.abwdim tr.abwhl { opacity: 1; background: color-mix(in srgb, var(--bad) 14%, transparent); border-radius: 6px; }
+#k-abw li { padding: 2px 4px; }
