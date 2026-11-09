@@ -165,6 +165,7 @@
     [/sozialwirtschaft|swoe|swö|pflege|gesundheit/, 'sozial'],
     [/reinigung|denkmal|fassaden/, 'reinigung'],
     [/bewachung|sicherheit|security/, 'bewachung'],
+    [/b(ae|ä)cker/, 'baecker'], [/friseur/, 'friseur'],
     [/holzbau/, 'holzbau'], [/dachdecker/, 'dachdecker'], [/pflasterer/, 'pflasterer'], [/fliesenleger/, 'fliesenleger'],
     [/tischler|holzverarbeit/, 'tischler'], [/maler|lackierer|anstreicher/, 'maler'],
     [/bank/, 'banken_ang'], [/versicherung/, 'versicherung_ang'], [/informationstechn|it-|edv/, 'it_ang'],

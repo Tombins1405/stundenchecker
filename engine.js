@@ -328,6 +328,32 @@
         schlechtwetter: false
       }
     },
+    baecker: {
+      name: 'Bäckergewerbe (Arbeiter)',
+      hinweis: 'KV Bäckergewerbe, Arbeiter, ab 1.10.2026 (Quelle: wko.at): 40 Stunden/Woche, der Stundenlohn ist der Monatslohn geteilt durch 167. Überstunden werktags 50 %, nachts 100 %. Für Bäckereiarbeiter nach dem Bäckereiarbeiter/innengesetz gilt als Nacht 20 bis 4 Uhr: Überstunden 125 %, von 4 bis 6 Uhr 100 %. Normalstunden in der Nacht 50 % (22 bis 6 Uhr), nach dem Bäckereiarbeiter/innengesetz 75 % (20 bis 4 Uhr) und 50 % (4 bis 6 Uhr). Sonntag: die ersten 8 Stunden 100 %, weitere Stunden und Sonntagsnacht 150 %. Feiertag 100 % (Nacht 150 %, Überstunden 200 %), dazu der ungekürzte Monatslohn. Mehrere Zuschläge: es gilt nur der höchste. Samstag endet die Normalarbeitszeit um 12 Uhr. Erschwerniszulage Tiefkühlanlage 32,90 € je Woche und Taggeld Kraftfahrer 15,79 €: lege sie bei Bedarf als Prämie an. Die App rechnet Überstunden mit 50 % und Sonntag und Feiertag mit 100 %, die Nachtzuschläge bitte laut Lohnzettel prüfen.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
+    friseur: {
+      name: 'Friseurgewerbe (Arbeiter)',
+      hinweis: 'KV Friseure, Arbeiter, Lohnordnung ab 1.4.2026 (Quelle: wko.at): Monatslöhne, für Teilzeit wird der Monatslohn durch 173 geteilt. 40 Stunden/Woche. Überstunden 50 %, Sonntag 100 %, Überstunden am Feiertag 100 % (so steht es im zuletzt gefundenen KV-Text, bitte laut Lohnzettel prüfen). Haararbeiten-Zulage 2,31 € je Stunde, Salonleiter 15 %, Ausbilder 10 %, Friseurmeister 10 % vom Lohn der Lohngruppe 5: lege sie bei Bedarf als Prämie an.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { sa: 0, so: 100, ft: 0 },
+        schlechtwetter: false
+      }
+    },
     bewachung: {
       name: 'Bewachung / Sicherheitsdienst (Wachorgane)',
       hinweis: 'KV Wachorgane im Bewachungsgewerbe, Arbeiter, ab 1.1.2026 (Quelle: wko.at): Vollzeit mindestens 40 Stunden/Woche an 4 oder 5 Tagen, Durchrechnung ab 40 Stunden bis 60 Stunden in einer Woche mit Zeitausgleich 1:1. Stunden über dem Monatslimit, über 12 Stunden am Tag oder 60 Stunden in der Woche 50 %, Arbeit am wöchentlichen Ruhetag 100 %. Nachtzulage 1,26 € je Stunde, Erschwerniszulage Revierdienst 0,80 € je Stunde, Diensthund 18,74 € je Schicht: lege sie bei Bedarf als Prämie an. Zuschläge für Sonn- und Feiertage konnte ich in der Quelle nicht belegen, bitte laut Lohnzettel einstellen. Stundenlöhne je Verwendungsgruppe als Lohngruppe hinterlegt.',
@@ -775,7 +801,9 @@
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1148.75] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1493.38] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2000.00] }
-    ] },
+    ], folgt: [{ ab: '2027-01-01', stand: 'ab 1.1.2027', gruppen: {
+      MT: [4243.49], M1: [3885.01], M2: [3465.47], M3: [3007.83], M4: [2814.58], M5: [2679.83], M6: [2623.38], M7: [2623.38],
+      L1: [1006.30], L2: [1171.73], L3: [1523.25], L4: [2037.20] } }] },
     reinigung: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
       { id: 'LG1', name: 'LG 1 Facharbeiter mit Lehrabschluss Reinigungstechnik', l: [15.12] },
       { id: 'LG2', name: 'LG 2 Sonderreinigung, ohne Lehrabschluss, Chauffeur, Magazin', l: [13.30] },
@@ -787,6 +815,33 @@
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1361.77] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1623.64] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1885.52] }
+    ] },
+    baecker: { stand: 'ab 1.10.2026', stufen: null, teiler: 167, gruppen: [
+      { id: 'P1', m: true, name: 'Produktion 1: Mischer/in, Ofenarbeiter/in', l: [2798.69] },
+      { id: 'P2', m: true, name: 'Produktion 2: Vizemischer/in, Tafelarbeiter/in', l: [2547.90] },
+      { id: 'P3', m: true, name: 'Produktion 3: Qualifizierte/r Arbeiter/in', l: [2295.77] },
+      { id: 'P4', m: true, name: 'Produktion 4: Arbeiter/in nach der Lehrzeit (Behaltepflicht)', l: [2006.26] },
+      { id: 'P5', m: true, name: 'Produktion 5: Sonstige Arbeitnehmer/innen', l: [2012.12] },
+      { id: 'V6', m: true, name: 'Außerhalb der Produktion 6: Ladner/in nach dem 1. Dienstjahr', l: [2064.10] },
+      { id: 'V7', m: true, name: 'Außerhalb der Produktion 7: Ladner/in im 1. Dienstjahr', l: [2006.38] },
+      { id: 'V8', m: true, name: 'Außerhalb der Produktion 8: Sonstige Arbeitnehmer/innen', l: [2007.39] },
+      { id: 'V9', m: true, name: 'Außerhalb der Produktion 9: Kraftfahrer/in', l: [2541.23] },
+      { id: 'V10', m: true, name: 'Außerhalb der Produktion 10: Brot- und Gebäckausführer/in', l: [2295.77] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [708.85] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [888.93] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1243.93] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (Doppellehre Bäcker und Konditor)', l: [1357.12] }
+    ] },
+    friseur: { stand: 'ab 1.4.2026', stufen: null, teiler: 173, gruppen: [
+      { id: 'F1', m: true, name: 'Lohngruppe 1: Angelernte Arbeitnehmer/innen', l: [2020.00] },
+      { id: 'F2', m: true, name: 'Lohngruppe 2: Friseur/in, 1. Jahr der Berufstätigkeit', l: [2071.00] },
+      { id: 'F3', m: true, name: 'Lohngruppe 3: Friseur/in, 2. und 3. Jahr', l: [2087.00] },
+      { id: 'F4', m: true, name: 'Lohngruppe 4: Friseur/in, 4. und 5. Jahr', l: [2133.00] },
+      { id: 'F5', m: true, name: 'Lohngruppe 5: Friseur/in, ab dem 6. Jahr', l: [2287.00] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [804.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [921.00] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1244.00] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1350.00] }
     ] },
     bewachung: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
       { id: 'A', name: 'A Wachdienst', l: [12.63] },
@@ -920,6 +975,20 @@
         mobil: { name: 'Mobiler Dienst / Streife', b: { fahrzeug: true, kunden: true, praemien: true } },
         veranstaltung: { name: 'Veranstaltungssicherheit', b: { fahrzeug: false, kunden: true, praemien: true } },
         flughafen: { name: 'Flughafensicherheit', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    lebensmittel: { name: 'Bäckerei (Backstube, Verkauf, Zustellung)', paket: 'baecker', kvs: ['baecker', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        backstube: { name: 'Backstube / Produktion', b: { fahrzeug: false, kunden: false, praemien: true } },
+        verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
+        fahrer: { name: 'Zustellung / Brotausführer / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Bäcker)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        friseur: { name: 'Friseur / Friseurin', b: { fahrzeug: false, kunden: false, praemien: true } },
+        angelernt: { name: 'Angelernte Hilfskraft (Waschen, Empfang)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        salon: { name: 'Salonleitung / Meister', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Friseur)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     pflege: { name: 'Pflege / Betreuung / Soziales', paket: 'sozial', kvs: ['sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {

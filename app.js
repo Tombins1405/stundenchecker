@@ -27,7 +27,7 @@
   var WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   var WDL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
   var MON = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel (Angestellte)', handel_arb: 'Handel (Arbeiter)', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', dachdecker: 'Dachdecker', pflasterer: 'Pflasterer', fliesenleger: 'Fliesenleger / Hafner', gewerbe_ang: 'Büro Gewerbe (Angestellte)', reinigung: 'Gebäudereinigung', bewachung: 'Bewachung', sozial: 'Sozialwirtschaft (SWÖ)', de_spedition: 'Spedition Berlin (Deutschland)', de_spedition_nrw: 'Spedition NRW (Deutschland)', de_spedition_by: 'Spedition Bayern (Deutschland)', de_logistik_sn: 'Logistik Sachsen (Deutschland)', de_spedition_sonst: 'Spedition, anderes Bundesland (Deutschland)', de_handel: 'Einzelhandel (Deutschland)', de_gastro: 'Gastgewerbe (Deutschland)', eigen: 'Eigene Werte' };
+  var PAKET_KURZ = { gueter: 'Güterbeförderung', klein: 'Kleintransport', bau: 'Bau', handel: 'Handel (Angestellte)', handel_arb: 'Handel (Arbeiter)', buero: 'Büro (Angestellte)', gastro: 'Gastgewerbe', metall: 'Metallgewerbe', dachdecker: 'Dachdecker', pflasterer: 'Pflasterer', fliesenleger: 'Fliesenleger / Hafner', gewerbe_ang: 'Büro Gewerbe (Angestellte)', reinigung: 'Gebäudereinigung', bewachung: 'Bewachung', baecker: 'Bäckergewerbe', friseur: 'Friseurgewerbe', sozial: 'Sozialwirtschaft (SWÖ)', de_spedition: 'Spedition Berlin (Deutschland)', de_spedition_nrw: 'Spedition NRW (Deutschland)', de_spedition_by: 'Spedition Bayern (Deutschland)', de_logistik_sn: 'Logistik Sachsen (Deutschland)', de_spedition_sonst: 'Spedition, anderes Bundesland (Deutschland)', de_handel: 'Einzelhandel (Deutschland)', de_gastro: 'Gastgewerbe (Deutschland)', eigen: 'Eigene Werte' };
   function todayISO() { var d = new Date(); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
   function fmtDate(s) { var p = E.parseISO(s); return p.d + '.' + p.m + '.' + p.y; }
   function fmtShort(s) { var p = E.parseISO(s); return WD[E.weekday(s)] + ' ' + p.d + '.' + p.m + '.'; }
@@ -1133,6 +1133,8 @@
   };
   PR_VOR.holzbau = [['Aufsichtszulage', 'stunde', 'Stunden mit Aufsicht über mehrere Mitarbeiter'], ['Schmutzzulage (10 %)', 'stunde', 'Stunden mit Schmutzarbeiten'], ['Höhen- und Gefahrenzulage', 'stunde', 'Stunden angeseilt (10 %), auf Türmen ab 16 m (15 %) oder im Gebirge'], ['Taggeld mit Übernachtung', 'tag', 'Arbeitstage mit notwendiger Übernachtung, ab 100 km', 30], ['Übernachtungsgeld', 'tag', 'Kalendertage ohne Quartier vom Betrieb, mit Nachweis', 17.53], ['Lenkzeitvergütung Mannschaftstransporter', 'stunde', 'Stunden am Steuer des Mannschaftstransporters', 15.26], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.reinigung = [['Zehrgeld', 'tag', 'Einsatztage außerhalb deiner Gemeinde, mindestens 6 Stunden', 11.71], ['Trennungszulage', 'tag', 'Tage mit notwendiger Übernachtung', 19.67], ['Gefahrenzulage (10 %)', 'stunde', 'Stunden mit gefährlicher Arbeit, zum Beispiel am Seil oder mit Atemschutz'], ['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.baecker = [['Erschwerniszulage Tiefkühlanlage', 'tag', 'Tage mit Arbeit in begehbaren Tiefkühlanlagen, mehr als 2,5 Stunden', 5.71], ['Taggeld Kraftfahrer', 'tag', 'Tage mit Zustellfahrt', 15.79], ['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Mankogeld', 'monat', 'Zusteller mit Geldverrechnung, laut Vereinbarung'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.friseur = [['Haararbeiten-Zulage', 'stunde', 'Stunden mit Tressieren, Knüpfen, Nähen', 2.31], ['Salonleiter-Zulage', 'monat', 'einmal pro Monat, 15 % laut Kollektivvertrag'], ['Ausbilder-Zulage', 'monat', 'einmal pro Monat, 10 % laut Kollektivvertrag'], ['Meister-Zulage', 'monat', 'einmal pro Monat, 10 % laut Kollektivvertrag'], ['Provision / Umsatzbeteiligung', 'monat', 'einmal pro Monat']];
   PR_VOR.bewachung = [['Nachtzulage', 'stunde', 'Stunden in der Nacht', 1.26], ['Erschwerniszulage Revierdienst', 'stunde', 'Stunden im Revierdienst', 0.80], ['Diensthund-Aufwandsersatz', 'tag', 'Schichten mit Diensthund', 18.74], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.sozial = [['Nachtarbeitszuschlag', 'stunde', 'Stunden von 22 bis 6 Uhr', 9.45], ['Rufbereitschaft', 'stunde', 'Stunden in Rufbereitschaft', 4.37], ['Flexibilisierungszuschlag', 'tag', 'Dienste, die kurzfristig geändert wurden', 51.30], ['SEG-Zulage (Schmutz, Erschwernis, Gefahr)', 'stunde', 'Stunden mit erschwerten Bedingungen']];
   PR_VOR.tischler = [['Montagezulage', 'stunde', 'Stunden auf Montage'], ['Taggeld Außerhausarbeit', 'stunde', 'Abwesenheitsstunden bei Außerhausarbeit über 5 Stunden', 2.50], ['Taggeld mit Übernachtung', 'tag', 'Arbeitstage mit notwendiger Übernachtung, ab 100 km', 39], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 15], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
@@ -1673,7 +1675,7 @@
     bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], lager: ['weste', 'paket'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
     'gastro:service': ['schuerze', 'tablett_glas'], 'gastro:kueche': ['kochhaube', 'schuerze', 'pfanne'], 'gastro:chef': ['kochhaube', 'schuerze', 'messer'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
     handwerk: ['helm', 'weste'], 'handwerk:maurer': ['helm', 'weste', 'kelle'], 'handwerk:zimmerer': ['helm', 'weste', 'hammer'], 'handwerk:elektro': ['helm', 'overall', 'maulschluessel'], 'handwerk:installateur': ['helm', 'overall', 'maulschluessel'], 'handwerk:spengler': ['helm', 'overall', 'hammer'], 'handwerk:tischler': ['kappe', 'overall', 'hammer'], 'handwerk:maler': ['kappe', 'overall', 'eimer'], 'handwerk:anderes': ['helm', 'weste', 'wasserwaage'], 'handwerk:lehrling': ['helm', 'weste', 'hammer'],
-    reinigung: ['schuerze', 'eimer'], 'reinigung:sonder': ['helm', 'overall', 'eimer'], 'reinigung:lehrling': ['schuerze', 'eimer'], security: ['kappe', 'weste', 'klemmbrett'], 'security:mobil': ['kappe', 'weste', 'lenkrad'], pflege: ['kittel'], 'pflege:heimhilfe': ['schuerze'], 'pflege:mobil': ['kittel', 'koffer'],
+    lebensmittel: ['kochhaube', 'schuerze'], 'lebensmittel:fahrer': ['kappe', 'paket', 'lenkrad'], friseur: ['schuerze'], reinigung: ['schuerze', 'eimer'], 'reinigung:sonder': ['helm', 'overall', 'eimer'], 'reinigung:lehrling': ['schuerze', 'eimer'], security: ['kappe', 'weste', 'klemmbrett'], 'security:mobil': ['kappe', 'weste', 'lenkrad'], pflege: ['kittel'], 'pflege:heimhilfe': ['schuerze'], 'pflege:mobil': ['kittel', 'koffer'],
     'handel:verkauf': ['schuerze', 'scanner'], 'handel:theke': ['kochhaube', 'schuerze'], 'handel:lager': ['weste', 'paket'], 'handel:leitung': ['krawatte', 'klemmbrett'] };
   function miaOutfit(beruf, art) { return MIA_OUT[beruf + ':' + art] || MIA_OUT[beruf] || []; }
   var MIA_TEILE = {
@@ -2548,6 +2550,8 @@
     'handel:verkauf': 'verkaeufer verkauf kassa kassier einzelhandel supermarkt', 'handel:theke': 'baecker fleischer metzger feinkost theke baeckerei', 'handel:lager': 'warenuebernahme lager handel', 'handel:leitung': 'filialleiter filialleitung stellvertretung', 'handel:lehrling': 'lehrling einzelhandel',
     'gastro:service': 'kellner kellnerin service bar barkeeper', 'gastro:kueche': 'koch koechin kueche hilfskoch', 'gastro:chef': 'kuechenchef chefkoch koch', 'gastro:rezeption': 'rezeption empfang hotel', 'gastro:housekeeping': 'zimmermaedchen zimmerservice housekeeping', 'gastro:betrieb': 'kantine catering betriebskueche', 'gastro:lehrling': 'lehrling koch restaurantfachmann hotel',
     'reinigung:unterhalt': 'reinigung reinigungskraft putzfrau buero', 'reinigung:hotel': 'hotelreinigung reinigung zimmer', 'reinigung:haus': 'hausbetreuung hausbesorger wohnhausanlage privathaushalt', 'reinigung:pflegeheim': 'reinigung krankenhaus pflegeheim spital', 'reinigung:sonder': 'fensterputzer fassade glasreinigung sonderreinigung', 'reinigung:lehrling': 'lehrling reinigungstechnik',
+    'lebensmittel:backstube': 'baecker backstube baeckerei produktion konditor teig ofen mischer', 'lebensmittel:verkauf': 'baeckerei verkauf ladner verkaeufer backwaren', 'lebensmittel:fahrer': 'brotausfahrer zustellung baeckerei fahrer kraftfahrer brot', 'lebensmittel:lehrling': 'lehrling baecker baeckerei',
+    'friseur:friseur': 'friseur friseurin frisoer haare salon', 'friseur:angelernt': 'angelernt hilfskraft salon waschen friseur', 'friseur:salon': 'salonleiter salonleitung friseurmeister meister friseur', 'friseur:lehrling': 'lehrling friseur friseurin',
     'security:wach': 'security wachdienst portier objektschutz sicherheit', 'security:service': 'sicherheitsdienst empfang kassa', 'security:mobil': 'streife mobiler dienst security', 'security:veranstaltung': 'veranstaltung security ordner', 'security:flughafen': 'flughafen security passagierkontrolle',
     'pflege:pa': 'pflegeassistent pflegeassistenz pfleger altenpfleger', 'pflege:pfa': 'pflegefachassistent pflegefachassistenz', 'pflege:dgkp': 'diplomierte krankenschwester krankenpfleger gesundheits krankenpflege dgkp', 'pflege:heimhilfe': 'heimhilfe betreuung sozialbetreuer altenbetreuer behindertenbetreuer', 'pflege:mobil': 'mobile pflege hauskrankenpflege hauskrankenschwester', 'pflege:lehrling': 'lehrling pflege pflegelehre',
     'bund': 'bund ministerium bundesdienst beamter vertragsbediensteter', 'handel': 'handel verkauf', 'anderes': 'etwas anderes sonstiges eigene werte'
@@ -2682,7 +2686,7 @@
       var tx = 'Kollektivvertrag: ' + (f.name || '-') + ' | Einstufung: ' + (f.gruppe || '-') + ' | Branche: ' + (f.branche || '-') + ' | Wochenstunden: ' + (f.wst || '-');
       try { window.StundenInsights.feedback('wunsch', '[Mein Kollektivvertrag] ' + tx, null).then(function () { toast('Danke! Wir prüfen deinen Kollektivvertrag und melden uns.'); ins('kv_gemeldet'); }, function () { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }); } catch (e) { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }
     });
-    [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { $('#' + q[0]).addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil[q[1]] = this.value.trim(); save(); }); });
+    [['s-titelvor', 'titelVor'], ['s-vorname', 'vorname'], ['s-nachname', 'nachname'], ['s-titelnach', 'titelNach']].forEach(function (q) { $('#' + q[0]).addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil[q[1]] = this.value.trim(); save(); }); });
     $('#s-geb').addEventListener('change', function () { if (!data.profil) data.profil = {}; if (this.value) data.profil.geb = this.value; else delete data.profil.geb; delete data.profil.gebGruss; save(); });
     ['#s-foto', '#s-kamera'].forEach(function (q) { $(q).addEventListener('change', function () { var f = this.files && this.files[0]; this.value = ''; if (f) fotoLaden(f); }); });
     function fotoLaden(f) {
@@ -2737,7 +2741,7 @@
     [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || kvv[q[0]] || ''; });
     var kvc = $('#s-kv-cur'); if (kvc) kvc.textContent = kvv.name ? ': ' + (PAKET_KURZ[cur.paket] || kvv.name) : '';
     $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
-    [['s-vorname', 'vorname'], ['s-nachname', 'nachname']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
+    [['s-titelvor', 'titelVor'], ['s-vorname', 'vorname'], ['s-nachname', 'nachname'], ['s-titelnach', 'titelNach']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
     $('#s-ansichtsel').value = (data.profil && data.profil.monatAnsicht) || 'liste';
     fotoZeigen(); $('#s-luecke').checked = !(data.profil && data.profil.lueckenFrage === false); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
@@ -3644,7 +3648,7 @@
   /* ---- Fristen und Ausweise (Code 95, Fahrerkarte, Staplerschein ...) ---- */
   var FR_VOR = [
     ['Für alle', [['Führerschein', 0], ['Erste-Hilfe-Auffrischung', 4], ['Brandschutz-Unterweisung', 0], ['Sicherheitsunterweisung', 0], ['Arbeitsmedizinische Untersuchung', 0]]],
-    ['Fahrer', [['Code 95 (Weiterbildung für Berufskraftfahrer)', 5], ['Fahrerkarte', 5], ['ADR-Bescheinigung (Gefahrgut)', 5], ['Ladekran-Berechtigung', 0], ['Ladungssicherung-Schulung', 0]]],
+    ['Fahrer', [['Code 95 (Weiterbildung für Berufskraftfahrer)', 5], ['Fahrerkarte (Tachograph)', 5], ['Fahrerqualifizierungsnachweis (FQN)', 5], ['ADR-Bescheinigung (Gefahrgut)', 5], ['Ladekran-Berechtigung', 0], ['Ladungssicherung-Schulung', 0]]],
     ['Bau und Maschinen', [['Baggerschein / Maschinenführer', 0], ['Kranschein', 0], ['Staplerschein', 0], ['Hebebühnen-Berechtigung', 0], ['Absturzsicherung-Schulung', 0]]],
     ['Werkstatt und Metall', [['Pickerl-Ermächtigung (§ 57a)', 0], ['Schweißerprüfung', 0], ['Hochvolt-Schulung', 0], ['Kältemittel-Sachkunde', 0]]],
     ['Küche und Gastro', [['Hygieneschulung', 0], ['Allergen-Schulung', 0]]],
@@ -3665,8 +3669,10 @@
     handel: [['Lehrabschluss Einzelhandel', -1], ['Lehrabschluss Lebensmittelhandel', -1], ['Hygieneschulung', 0], ['Ausbilderprüfung', -1]],
     gastro: [['Lehrabschluss Koch / Restaurantfachkraft', -1], ['Konzessionsprüfung Gastgewerbe', -1], ['Hygieneschulung', 0], ['Allergen-Schulung', 0]],
     reinigung: [['Lehrabschluss Denkmal-, Fassaden- und Gebäudereinigung', -1], ['Desinfektionsschulung', 0]],
+    lebensmittel: [['Lehrabschluss Bäcker', -1], ['Lehrabschluss Konditor', -1], ['Meisterprüfung Bäcker', -1], ['Hygieneschulung', 0], ['Allergen-Schulung', 0]],
+    friseur: [['Lehrabschluss Friseur und Perückenmacher', -1], ['Meisterprüfung Friseur', -1], ['Visagistik-Kurs', -1], ['Hygieneschulung', 0]],
     security: [['Sicherheitsgrundkurs', -1], ['Deeskalationstraining', -1], ['Erste-Hilfe-Auffrischung', 4]],
-    pflege: [['Heimhilfe-Ausbildung', -1], ['Pflegeassistenz', -1], ['Pflegefachassistenz', -1], ['Diplom Gesundheits- und Krankenpflege', -1], ['Pflicht-Fortbildung Pflege', 0]],
+    pflege: [['Hygieneschulung', 0], ['Erste-Hilfe-Auffrischung', 4], ['Basale Stimulation', -1], ['Palliativ-Lehrgang', -1], ['Demenz-Schulung', -1], ['Wundmanagement-Kurs', -1], ['Medikamentenschulung', 0], ['Heimhilfe-Ausbildung', -1], ['Pflegeassistenz', -1], ['Pflegefachassistenz', -1], ['Diplom Gesundheits- und Krankenpflege', -1], ['Pflicht-Fortbildung Pflege', 0]],
     bund: [['Grundausbildung', -1], ['Dienstprüfung', -1]]
   };
   function ausbAbschluss(n) { return /Lehrabschluss|Gesellen|Meister|Befähigung|Diplom|Matura|Studium|Pflegeassistenz|Pflegefachassistenz|Heimhilfe|Dienstprüfung|Konzession/.test(n || ''); }
@@ -3770,7 +3776,7 @@
   (function () {
     var card = $('#rb-card'); if (!card) return;
     function hh(min) { return fh(min / 60) + ' h'; }
-    function bName() { var p = data.profil || {}; return ($('#rb-name').value || '').trim() || ((p.vorname || '') + ' ' + (p.nachname || '')).trim() || p.berichtName || ''; }
+    function bName() { var p = data.profil || {}; return ($('#rb-name').value || '').trim() || ((p.titelVor ? p.titelVor + ' ' : '') + (p.vorname || '') + ' ' + (p.nachname || '') + (p.titelNach ? ', ' + p.titelNach : '')).trim() || p.berichtName || ''; }
     function addDays(s, n) { var p = E.parseISO(s), d = new Date(p.y, p.m - 1, p.d + n); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
     function tageVon(von, bis) {
       var res = [], cache = {};
