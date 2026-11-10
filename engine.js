@@ -1068,6 +1068,12 @@
     var tl = lg.teiler || Math.round((wochenStd(w.ueberstunden) > 0 ? wochenStd(w.ueberstunden) : 38.5) * 52 / 12 * 100) / 100, vz = +w.ueberstunden.vollzeitStd > wochenStd(w.ueberstunden) ? wochenStd(w.ueberstunden) / +w.ueberstunden.vollzeitStd : 1;
     return { std: Math.round(v / tl * 100) / 100, mon: Math.round(v * vz * 100) / 100 };
   }
+  function unterKv(w, dateStr) { // { lohn: {ist, kv}, diaet: {ist, kv} } oder null
+    if (!w) return null; var out = {}, kl = kvLohn(w, dateStr), p = PAKETE[w.paket];
+    if (kl) { if (+w.monatslohn > 0 && kl.mon && +w.monatslohn < kl.mon - 0.005) out.lohn = { ist: +w.monatslohn, kv: kl.mon, monat: true }; else if (!(+w.monatslohn > 0) && +w.stundenlohn > 0 && +w.stundenlohn < kl.std - 0.005) out.lohn = { ist: +w.stundenlohn, kv: kl.std }; }
+    if (p && w.paket !== 'eigen' && p.werte.diaeten && w.diaeten && p.werte.diaeten.modell === 'stunde' && +p.werte.diaeten.satz > 0 && (w.diaeten.modell === 'aus' || (w.diaeten.modell === 'stunde' && +w.diaeten.satz < +p.werte.diaeten.satz - 0.005))) out.diaet = { ist: w.diaeten.modell === 'aus' ? 0 : +w.diaeten.satz, kv: +p.werte.diaeten.satz };
+    return out.lohn || out.diaet ? out : null;
+  }
   function wRef(w, opts, dateStr) {
     if (!opts || !opts.kvRef || !w) return w;
     var keys = opts.kvRef === true ? KV_REGELN : opts.kvRef, c = null;
@@ -1078,7 +1084,12 @@
     if (hat('betrieb') && w.betriebFrei === 'ueberstunden') kopie().betriebFrei = 'urlaub';
     if (hat('frei')) kopie().kvFrei = true;
     if (hat('rund') && w.runAn) kopie().runAn = false;
-    if (hat('diaet') && p && w.paket !== 'eigen' && p.werte && p.werte.diaeten && w.diaeten) { kopie().diaeten = clone(p.werte.diaeten); c.kvDiaet = true; }
+    if (hat('diaet') && p && w.paket !== 'eigen' && p.werte && p.werte.diaeten && w.diaeten) {
+      // Zählregeln des Kollektivvertrags, aber eigene Sätze bleiben, wenn sie gleich hoch oder höher sind (Bezahlung über dem Kollektivvertrag ist kein Unterschied).
+      var kd = clone(p.werte.diaeten), ud = w.diaeten, maxS = function (d) { var x = 0; (d.stufen || []).forEach(function (q) { if (+q.satz > x) x = +q.satz; }); return x; };
+      if (kd.modell === ud.modell) { if (kd.modell === 'stunde' && +ud.satz >= +kd.satz) kd.satz = +ud.satz; if (kd.modell === 'tag' && maxS(ud) >= maxS(kd) && (ud.stufen || []).length) kd.stufen = clone(ud.stufen); }
+      kopie().diaeten = kd; c.kvDiaet = true;
+    }
     if (hat('lohn')) { var kl = kvLohn(w, dateStr); if (kl) { if (+w.monatslohn > 0 && kl.mon && +w.monatslohn < kl.mon - 0.005) { kopie().monatslohn = kl.mon; c.stundenlohn = kl.std; } else if (!(+w.monatslohn > 0) && w.stundenlohn != null && +w.stundenlohn > 0 && +w.stundenlohn < kl.std - 0.005) kopie().stundenlohn = kl.std; } }
     return c || w;
   }
@@ -1717,7 +1728,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });

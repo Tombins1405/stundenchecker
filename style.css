@@ -882,3 +882,10 @@ h3[data-ico="plan"]::before { background: #12b886; }
 #k-abw ul.kvl li { color: var(--ink-2); margin-bottom: 4px; }
 #k-abw table.cmp td.no { white-space: nowrap; }
 #k-abw .notice:not(.warn) table.cmp td.no { color: var(--ink); }
+
+/* Block "Handhabung der Firma gegen Kollektivvertrag und Gesetz": dezent, aber sichtbar abgehoben */
+.notice.kvb { border: 1.5px solid var(--accent); border-left-width: 6px; background: color-mix(in srgb, var(--accent) 9%, var(--card, #fff)); }
+.notice.kvb table.cmp tr:last-child td { font-weight: 700; }
+#k-abw ul.kvl { border-left: 4px solid var(--accent); padding-left: 26px !important; }
+#k-abw ul.kvl li { color: var(--ink); }
+.sub.kvz { border-left: 4px solid var(--accent); padding-left: 8px; font-weight: 600; }

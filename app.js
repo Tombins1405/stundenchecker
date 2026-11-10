@@ -498,6 +498,9 @@
       var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
       kvTexte(y, m, sm, wmm).forEach(function (x) { out.push(x); });
+      var lzS = (data.abgleich || {})[k] || {};
+      if (hasN(lzS.satz) && wmm && hasN(wmm.stundenlohn) && !(+wmm.monatslohn > 0) && Math.abs(+lzS.satz - +wmm.stundenlohn) > 0.004) { var sA = [eur.format(+lzS.satz), eur.format(+wmm.stundenlohn)], sT = 'Stundenlohn: auf dem Lohnzettel {0}, in deinen Einstellungen {1}.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(sT, sA), de: abw1(sT, sA, 1) }); }
+      if (hasN(lzS.dSatz) && wmm && wmm.diaeten && wmm.diaeten.modell === 'stunde' && Math.abs(+lzS.dSatz - +wmm.diaeten.satz) > 0.004) { var dA = [eur.format(+lzS.dSatz), eur.format(+wmm.diaeten.satz)], dT = 'Diätensatz: auf dem Lohnzettel {0} je Stunde, in deinen Einstellungen {1} je Stunde.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(dT, dA), de: abw1(dT, dA, 1) }); }
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
         if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -572,7 +575,7 @@
     var z = abwSummeZeilen(l), k = abwKvZeilen(l, abwLab); if (!z.length && !k.length) return '';
     function tr(r) { return '<tr' + (r[2] ? ' class="abwk" data-abw="' + r[2] + '"' : '') + '><td>' + esc(r[0]) + '</td><td class="no">' + esc(r[1]) + '</td></tr>'; }
     return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_A)) + '</strong><p style="margin:4px 0 0">Bislang fehlen dir gegenüber deinen Aufzeichnungen:</p><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
-      (k.length ? '<div class="notice" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_B)) + '</strong><p class="hint" style="margin:4px 0 0">' + esc(abwLab(ABW_BV)) + '</p><table class="cmp" style="margin-top:6px"><tbody>' + k.map(tr).join('') + '</tbody></table></div>' : '');
+      (k.length ? '<div class="notice kvb" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_B)) + '</strong><p class="hint" style="margin:4px 0 0">' + esc(abwLab(ABW_BV)) + '</p><table class="cmp" style="margin-top:6px"><tbody>' + k.map(tr).join('') + '</tbody></table></div>' : '');
   }
   function abwListeHtml(l) {
     var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; };
@@ -920,6 +923,7 @@
     if (given && !E.istBau(wm) && ui.summe && ui.summe.swStd > 0 && lz.zaKonto != null && +lz.zaKonto < 0) html += '<div class="notice warn"><strong>Ausfallstunden und Zeitausgleich.</strong> In diesem Monat hast du ' + fh(ui.summe.swStd) + ' Ausfallstunden aufgeschrieben, und dein Zeitausgleich-Konto ist gesunken. Wenn dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, trägt sie nach § 1155 ABGB grundsätzlich das Risiko, und Zeitausgleich muss in der Regel vereinbart sein. Das hängt vom Einzelfall und vom Kollektivvertrag ab, deshalb ist das ein Hinweis und keine Rechtsberatung. Frag bei Betriebsrat, Gewerkschaft (vida) oder Arbeiterkammer nach.</div>';
     (function () { var ru2 = rows.filter(function (r) { return r.key === 'ueber'; })[0]; if (given && !E.istBau(wm) && ru2 && ru2.diff < 0 && ui.summe && ui.summe.swStd > 0 && Math.abs(Math.abs(ru2.diff) - ui.summe.swStd) < 0.02) html += '<div class="notice warn"><strong>Ausfallstunden.</strong> Der Unterschied bei den Überstunden ist genau so groß wie deine Ausfallstunden in diesem Monat. Deine Firma hat diese Stunden offenbar nicht zusätzlich bezahlt, sondern mit den Überstunden verrechnet. Die Ausfallstunden bleiben in deiner Aufzeichnung stehen. Die Differenz bleibt als Abweichung stehen. Wenn du das nicht wusstest, frag bei Betriebsrat oder Arbeiterkammer nach.</div>'; })();
     if (lz.gelesen) html = '<div class="notice warn"><strong>Vom Lohnzettel eingelesen.</strong> Beim Lesen können Fehler passieren. Bitte vergleiche die Zahlen mit deinem Lohnzettel, bevor du dich darauf verlässt.</div>' + html;
+    if (hasN(lz.dSatz) && wm && wm.diaeten && wm.diaeten.modell === 'stunde' && Math.abs(+lz.dSatz - +wm.diaeten.satz) > 0.004) html += '<div class="notice warn">' + esc(abw1('Der Diätensatz auf dem Lohnzettel ({0} je Stunde) ist anders als in deinen Einstellungen ({1} je Stunde). Prüfe, welcher stimmt.', [eur.format(+lz.dSatz), eur.format(+wm.diaeten.satz)])) + '</div>';
     if (hasN(lz.satz) && wm && hasN(wm.stundenlohn) && Math.abs(+lz.satz - +wm.stundenlohn) > 0.004 && !fixLohn()) html += '<div class="notice warn"><strong>Der Stundenlohn auf dem Lohnzettel ist anders als in deinen Einstellungen.</strong><br>Lohnzettel: ' + eur.format(+lz.satz) + ' · Einstellungen: ' + eur.format(+wm.stundenlohn) + '<br>Wurde das später aufgerollt? Dann trage es bei „Nachzahlungen und Korrekturen“ ein.</div>';
     $('#ab-result').innerHTML = html;
     abBericht(rows, given, lz, bad);
@@ -2003,6 +2007,7 @@
     if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei oder ein Foto, ich lese es nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
     var zuW = data.settings.length ? E.wertAt(data.settings, todayISO()) : null;
     if (zuW && zuW.zuschlag && zuW.zuschlag.art !== 'kv' && (+zuW.zuschlag.so > 0 || +zuW.zuschlag.ft > 0 || +zuW.zuschlag.sa > 0) && !(data.profil && data.profil.zuartFrage)) out.push({ k: 'zuart', text: 'Neu: Zuschläge für Sonn- und Feiertage kann ich jetzt nach Kollektivvertrag und Gesetz rechnen, in einer eigenen Zeile. Bei dir zählen sie noch als zusätzliche Stunden. Wenn deine Firma so zählt, lass es so: Ich zeige dir dann bei den Abweichungen daneben, was nach Kollektivvertrag herauskäme. Soll ich stattdessen ganz auf Kollektivvertrag umstellen? Das kannst du in den Einstellungen bei den Zuschlägen jederzeit ändern.' });
+    if (zuW) { var ukT = unterKvTexte(zuW, todayISO()); if (ukT.length) out.push({ k: 'unterkv_' + (zuW.gueltigAb || ''), text: ukT.join(' ') }); }
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
@@ -2069,6 +2074,7 @@
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
+    if (k.indexOf('unterkv_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#s-kvwarn'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); return; }
     if (k === 'zuart') {
       data.settings.forEach(function (en) { if (!en.zuschlag || en.zuschlag.art === 'kv') return; var p = E.PAKETE[en.paket]; if (p && en.paket !== 'eigen') en.zuschlag = E.clone(p.werte.zuschlag); else en.zuschlag.art = 'kv'; });
       if (!data.profil) data.profil = {}; data.profil.zuartFrage = true; save(); renderSettings(); neuZeichnen();
@@ -2871,7 +2877,7 @@
     });
     
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
-    paketInfo(en); zuHint(en);
+    paketInfo(en); zuHint(en); kvWarn(en);
     renderStufen(en);
     (function () { // Hinweis: Was fehlt für den Lohnzettel-Vergleich
       var c = $('#s-need'), l = $('#s-needl'); if (!c || !l) return;
@@ -3034,6 +3040,13 @@
   var ZU_KV = 'Zuschlag in Prozent für Stunden an diesem Tag, wie im Kollektivvertrag. Die Stunden zählen einfach, der Zuschlag steht in einer eigenen Zeile. Überstunden am Sonntag bekommen nur den höheren Zuschlag, nicht beide. Am Feiertag kommt die gesetzliche Bezahlung von selbst dazu (Feiertagsentgelt plus gearbeitete Stunden), trage hier nur einen Zuschlag ein, den es darüber hinaus gibt. Wenn du es nicht weißt, lass 0 stehen.';
   var ZU_FIRMA = 'Deine Firma zählt die Zuschläge als zusätzliche Stunden: Bei 100 % zählt eine Stunde doppelt und läuft in die Überstunden. Die App rechnet so mit und zeigt bei den Abweichungen daneben, was nach Kollektivvertrag und Gesetz herauskäme.';
   function zuHint(en) { var h = $('#s-zu-hint'); if (h) h.textContent = en && en.zuschlag && en.zuschlag.art === 'kv' ? ZU_KV : ZU_FIRMA; }
+  function unterKvTexte(en, dat) {
+    var u = E.unterKv(en, dat), t = []; if (!u) return t;
+    if (u.lohn) t.push(abw1(u.lohn.monat ? 'Dein Monatslohn ({0}) liegt unter dem Kollektivvertrag für deine Lohngruppe ({1}). Prüfe die Lohngruppe und deinen Lohnzettel. Stimmt beides, frag bei der Arbeiterkammer nach.' : 'Dein Stundenlohn ({0}) liegt unter dem Kollektivvertrag für deine Lohngruppe ({1}). Prüfe die Lohngruppe und deinen Lohnzettel. Stimmt beides, frag bei der Arbeiterkammer nach.', [eur.format(u.lohn.ist), eur.format(u.lohn.kv)]));
+    if (u.diaet) t.push(abw1('Dein Diätensatz ({0} je Stunde) liegt unter dem Kollektivvertrag ({1} je Stunde). Prüfe deinen Lohnzettel. Stimmt es, frag bei der Arbeiterkammer nach.', [eur.format(u.diaet.ist), eur.format(u.diaet.kv)]));
+    return t;
+  }
+  function kvWarn(en) { var b = $('#s-kvwarn'); if (!b) return; var t = en ? unterKvTexte(en, en.gueltigAb > todayISO() ? en.gueltigAb : todayISO()) : []; b.hidden = !t.length; b.innerHTML = t.map(function (x) { return '<p style="margin:0 0 4px">' + esc(x) + '</p>'; }).join(''); }
   function onSettingInput(inp) {
     var en = curEntry(); if (!en) return;
     var t = inp.dataset.type, v;
@@ -3059,7 +3072,7 @@
     }
     delete en.test;
     save();
-    settingsVisibility(en); zuHint(en);
+    settingsVisibility(en); zuHint(en); kvWarn(en);
   }
   function onDateChange(inp) {
     var en = curEntry(); if (!en) return;
@@ -4225,6 +4238,7 @@
       lm[z.norm] = it.key || '-'; if (it.key) sum[it.key] = (sum[it.key] || 0) + menge;
     });
     Object.keys(sum).forEach(function (k) { cur[k] = Math.round(sum[k] * 100) / 100; n++; }); if (n) cur.gelesen = true;
+    if (res.satz && sum.lohn != null) { cur.satz = res.satz; n++; } if (res.dSatz && sum.dStd != null) { cur.dSatz = res.dSatz; n++; }
     (res.sonder || []).forEach(function (q) { // Sonderzahlung vom Lohnzettel: „Laut Lohnzettel“ in der Karte Sonderzahlungen vorbelegen
       var l = sndList(), e = l.filter(function (x) { return x.art === q.art && +x.jahr === mo.y; })[0];
       if (!e) { e = { art: q.art, jahr: mo.y, voll: null, ist: null, notiz: '' }; l.push(e); }
