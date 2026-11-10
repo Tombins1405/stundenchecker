@@ -341,6 +341,19 @@
         schlechtwetter: false
       }
     },
+    konditor: {
+      name: 'Konditorgewerbe (Arbeiter)',
+      hinweis: 'KV Konditoren, Arbeiter, Lohnordnung Niederösterreich ab 1.6.2026 (Quelle: wko.at): 38,5 Stunden/Woche, der Stundenlohn ist der Monatslohn geteilt durch 167. Überstunden werktags 50 %, von 4 bis 6 Uhr 100 %, von 20 bis 4 Uhr 125 %. Normalstunden in der Nacht 50 % (20 bis 22 und 4 bis 6 Uhr) und 75 % (22 bis 4 Uhr). Sonntag: die ersten 8 Stunden 100 %, weitere Stunden und 4 bis 6 Uhr 150 %, Nacht 175 %. Feiertag 100 % (Nacht 150 % bzw. 175 %, Überstunden 200 %), dazu der ungekürzte Lohn. Mehrere Zuschläge: es gilt nur der höchste. Samstag endet die Normalarbeitszeit mit der Ladenschlusszeit. Erschwerniszulage Tiefkühlanlage 11,00 € je Tag (mehr als 1,5 Stunden): lege sie bei Bedarf als Prämie an. Die Löhne anderer Bundesländer habe ich noch nicht eingetragen: wähle dann Eigene Werte. Die App rechnet Überstunden mit 50 % und Sonntag und Feiertag mit 100 %, die Nachtzuschläge bitte laut Lohnzettel prüfen.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     friseur: {
       name: 'Friseurgewerbe (Arbeiter)',
       hinweis: 'KV Friseure, Arbeiter, Lohnordnung ab 1.4.2026 (Quelle: wko.at): Monatslöhne, für Teilzeit wird der Monatslohn durch 173 geteilt. 40 Stunden/Woche. Überstunden 50 %, Sonntag 100 %, Überstunden am Feiertag 100 % (so steht es im zuletzt gefundenen KV-Text, bitte laut Lohnzettel prüfen). Haararbeiten-Zulage 2,31 € je Stunde, Salonleiter 15 %, Ausbilder 10 %, Friseurmeister 10 % vom Lohn der Lohngruppe 5: lege sie bei Bedarf als Prämie an.',
@@ -832,6 +845,22 @@
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1243.93] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (Doppellehre Bäcker und Konditor)', l: [1357.12] }
     ] },
+    konditor: { stand: 'ab 1.6.2026, Niederösterreich', stufen: null, teiler: 167, gruppen: [
+      { id: 'K1', m: true, name: 'Lohngruppe 1: Abteilungsleitung oder Konditor/in mit Meisterprüfung', l: [2473.00] },
+      { id: 'K2', m: true, name: 'Lohngruppe 2: Konditor/in nach dem 4. Gesellenjahr', l: [2460.00] },
+      { id: 'K2a', m: true, name: 'Lohngruppe 2a: Konditor/in im 2. bis 4. Gesellenjahr', l: [2156.00] },
+      { id: 'K2b', m: true, name: 'Lohngruppe 2b: Konditor/in im 1. Gesellenjahr', l: [1968.00] },
+      { id: 'K2c', m: true, name: 'Lohngruppe 2c: Geselle/Gesellin während der Behaltepflicht', l: [1943.00] },
+      { id: 'K3', m: true, name: 'Lohngruppe 3: Professionisten, Heizer, Kraftfahrer', l: [2174.00] },
+      { id: 'K4', m: true, name: 'Lohngruppe 4: Qualifizierte Arbeiter/innen, Ausführer, Portiere, Wächter, Waffel- und Tütenbäcker/innen', l: [2020.00] },
+      { id: 'K5', m: true, name: 'Lohngruppe 5: Arbeiter/innen bis 2 Jahre im Betrieb, Reinigungskräfte', l: [1943.00] },
+      { id: 'K6', m: true, name: 'Lohngruppe 6: Arbeiter/innen bis 4 Monate im Betrieb', l: [1943.00] },
+      { id: 'K7a', m: true, name: 'Lohngruppe 7a: Servierer/in und Ladner/in, 1. Praxisjahr', l: [1943.00] },
+      { id: 'K7b', m: true, name: 'Lohngruppe 7b: Servierer/in und Ladner/in nach dem 1. Praxisjahr', l: [1943.00] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [603.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [804.00] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1006.00] }
+    ] },
     friseur: { stand: 'ab 1.4.2026', stufen: null, teiler: 173, gruppen: [
       { id: 'F1', m: true, name: 'Lohngruppe 1: Angelernte Arbeitnehmer/innen', l: [2020.00] },
       { id: 'F2', m: true, name: 'Lohngruppe 2: Friseur/in, 1. Jahr der Berufstätigkeit', l: [2071.00] },
@@ -982,6 +1011,13 @@
         verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
         fahrer: { name: 'Zustellung / Brotausführer / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Bäcker)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    konditor: { name: 'Konditorei (Backstube, Verkauf, Zustellung)', paket: 'konditor', kvs: ['konditor', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        backstube: { name: 'Backstube / Produktion', b: { fahrzeug: false, kunden: false, praemien: true } },
+        verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
+        fahrer: { name: 'Zustellung / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Konditor)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
