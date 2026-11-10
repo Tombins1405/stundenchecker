@@ -855,7 +855,7 @@
     }
     if (given && !E.istBau(wm) && ui.summe && ui.summe.swStd > 0 && lz.zaKonto != null && +lz.zaKonto < 0) html += '<div class="notice warn"><strong>Ausfallstunden und Zeitausgleich.</strong> In diesem Monat hast du ' + fh(ui.summe.swStd) + ' Ausfallstunden aufgeschrieben, und dein Zeitausgleich-Konto ist gesunken. Wenn dich die Firma wegen Wetter oder fehlender Arbeit heimgeschickt hat, trägt sie nach § 1155 ABGB grundsätzlich das Risiko, und Zeitausgleich muss in der Regel vereinbart sein. Das hängt vom Einzelfall und vom Kollektivvertrag ab, deshalb ist das ein Hinweis und keine Rechtsberatung. Frag bei Betriebsrat, Gewerkschaft (vida) oder Arbeiterkammer nach.</div>';
     (function () { var ru2 = rows.filter(function (r) { return r.key === 'ueber'; })[0]; if (given && !E.istBau(wm) && ru2 && ru2.diff < 0 && ui.summe && ui.summe.swStd > 0 && Math.abs(Math.abs(ru2.diff) - ui.summe.swStd) < 0.02) html += '<div class="notice warn"><strong>Ausfallstunden.</strong> Der Unterschied bei den Überstunden ist genau so groß wie deine Ausfallstunden in diesem Monat. Deine Firma hat diese Stunden offenbar nicht zusätzlich bezahlt, sondern mit den Überstunden verrechnet. Die Ausfallstunden bleiben in deiner Aufzeichnung stehen. Die Differenz bleibt als Abweichung stehen. Wenn du das nicht wusstest, frag bei Betriebsrat oder Arbeiterkammer nach.</div>'; })();
-    if (lz.gelesen) html = '<div class="notice warn"><strong>Aus der PDF gelesen.</strong> Beim Lesen können Fehler passieren. Bitte vergleiche die Zahlen mit deinem Lohnzettel, bevor du dich darauf verlässt.</div>' + html;
+    if (lz.gelesen) html = '<div class="notice warn"><strong>Vom Lohnzettel eingelesen.</strong> Beim Lesen können Fehler passieren. Bitte vergleiche die Zahlen mit deinem Lohnzettel, bevor du dich darauf verlässt.</div>' + html;
     if (hasN(lz.satz) && wm && hasN(wm.stundenlohn) && Math.abs(+lz.satz - +wm.stundenlohn) > 0.004 && !fixLohn()) html += '<div class="notice warn"><strong>Der Stundenlohn auf dem Lohnzettel ist anders als in deinen Einstellungen.</strong><br>Lohnzettel: ' + eur.format(+lz.satz) + ' · Einstellungen: ' + eur.format(+wm.stundenlohn) + '<br>Wurde das später aufgerollt? Dann trage es bei „Nachzahlungen und Korrekturen“ ein.</div>';
     $('#ab-result').innerHTML = html;
     abBericht(rows, given, lz, bad);
@@ -1936,14 +1936,14 @@
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
-    if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei, ich lese sie nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
+    if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei oder ein Foto, ich lese es nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
-    if (data.profil && data.profil.lzLesen === undefined && Object.keys(data.days).length >= 3) out.push({ k: 'lzlesen', text: 'Darf ich dir künftig das Abtippen vom Lohnzettel abnehmen? Du zeigst mir die PDF-Datei, ich lese sie nur hier auf deinem Handy, und du musst nichts mehr eintippen. Du entscheidest und kannst es jederzeit ausschalten.' });
+    if (data.profil && data.profil.lzLesen === undefined && Object.keys(data.days).length >= 3) out.push({ k: 'lzlesen', text: 'Darf ich dir künftig das Abtippen vom Lohnzettel abnehmen? Du zeigst mir die PDF-Datei oder ein Foto, ich lese es nur hier auf deinem Handy, und du musst fast nichts mehr eintippen. Du entscheidest und kannst es jederzeit ausschalten.' });
     var cnt = Object.keys(data.days).filter(function (k) { return k.slice(0, 7) === pk.key; }).length;
     var lzt = (data.profil && data.profil.lzTag) || 10; // Mia fragt erst ab dem Tag, an dem der Lohnzettel meist kommt
     if (cnt >= 5 && now.getDate() >= lzt && !(data.abgleich && data.abgleich[pk.key])) out.push({ k: 'lohnzettel', text: 'Dein Lohnzettel für ' + MON[pk.m - 1] + ' müsste da sein. Tippe die Zeilen ab, und ich vergleiche sie mit deiner Aufzeichnung.' });
@@ -3295,7 +3295,24 @@
     });
     function cons(key) { return function () { if (!data.profil) data.profil = {}; if (!data.profil.consent) data.profil.consent = {}; data.profil.consent[key] = !!this.checked; data.profil.mithelfenNein = !data.profil.consent.statistik && !data.profil.consent.miaFragen; save(); try { window.StundenInsights.push(true); } catch (e) {} }; }
     /* Rückmeldung direkt von der Seite: Bild vom Bildschirm machen, Fenster darüber öffnen, Text darunter schreiben */
-    function shotSeite() {
+    // Schriften der App in das Bild einbetten. Ohne sie nimmt das Bild eine Ersatzschrift mit anderen Breiten, dann brechen Wörter um und Zeilen überlappen.
+    var shotFontCss = null;
+    function shotFonts() {
+      if (shotFontCss !== null) return Promise.resolve(shotFontCss);
+      var lk = document.querySelector('link[rel="stylesheet"][href*="fonts.googleapis.com"]');
+      if (!lk || !window.fetch) return Promise.resolve('');
+      var zeit = new Promise(function (r) { setTimeout(function () { r(''); }, 4000); });
+      var lade = fetch(lk.href).then(function (r) { return r.ok ? r.text() : ''; }).then(function (css) {
+        var bl = (css.match(/\/\*[^*]*\*\/\s*@font-face\s*\{[^}]*\}/g) || css.match(/@font-face\s*\{[^}]*\}/g) || []).filter(function (x) { return !/^\/\*/.test(x) || /\/\*\s*latin(-ext)?\s*\*\//.test(x); });
+        return Promise.all(bl.map(function (x) {
+          var u = /url\((https:[^)]+)\)/.exec(x); if (!u) return '';
+          return fetch(u[1]).then(function (r) { return r.blob(); }).then(function (b) { return new Promise(function (ok) { var fr = new FileReader(); fr.onload = function () { ok(x.replace(u[1], fr.result)); }; fr.onerror = function () { ok(''); }; fr.readAsDataURL(b); }); }).catch(function () { return ''; });
+        })).then(function (a) { shotFontCss = a.join('\n'); return shotFontCss; });
+      }).catch(function () { return ''; });
+      return Promise.race([lade, zeit]);
+    }
+    function shotSeite() { return shotFonts().then(shotSeite2, function () { return shotSeite2(''); }); }
+    function shotSeite2(fontCss) {
       return new Promise(function (res) {
         try {
           var W = window.innerWidth, H = window.innerHeight, sx = window.scrollX, sy = window.scrollY;
@@ -3313,7 +3330,7 @@
             if (tag === 'canvas') { c = document.createElement('img'); try { c.setAttribute('src', o.toDataURL('image/png')); } catch (e) { } }
             else c = o.cloneNode(false);
             var css = '', i;
-            for (i = 0; i < cs.length; i++) css += cs[i] + ':' + cs.getPropertyValue(cs[i]) + ';';
+            for (i = 0; i < cs.length; i++) { if ((cs[i] === 'height' || cs[i] === 'block-size') && tag !== 'img' && tag !== 'svg' && tag !== 'canvas' && tag !== 'input' && !o.closest('svg') && cs.display !== 'inline-block' && !(o.children.length === 0 && !o.textContent.trim())) continue; css += cs[i] + ':' + cs.getPropertyValue(cs[i]) + ';'; }
             c.setAttribute('style', css);
             c.removeAttribute('id'); c.removeAttribute('class');
             if (tag === 'input') { if (o.type === 'checkbox' || o.type === 'radio') { if (o.checked) c.setAttribute('checked', 'checked'); else c.removeAttribute('checked'); } else c.setAttribute('value', o.value); }
@@ -3328,6 +3345,7 @@
           wrap.appendChild(b);
           var holder = document.createElement('div'); holder.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
           holder.setAttribute('style', 'position:relative;overflow:hidden;width:' + W + 'px;height:' + H + 'px;background:' + (bg && bg !== 'rgba(0, 0, 0, 0)' ? bg : '#fff') + ';');
+          if (fontCss) { var stl = document.createElement('style'); stl.textContent = fontCss; holder.appendChild(stl); }
           holder.appendChild(wrap);
           var xml = new XMLSerializer().serializeToString(holder);
           var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '"><foreignObject x="0" y="0" width="100%" height="100%">' + xml + '</foreignObject></svg>';
@@ -4041,19 +4059,19 @@
       bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
     } else if (s === 'datei') {
       h.textContent = 'Zeig mir deinen Lohnzettel';
-      b.innerHTML = svg + '<p>Such jetzt die PDF-Datei deines Lohnzettels aus. Am besten die Datei, die du von deiner Firma bekommen hast. Bitte nicht ausdrucken oder neu speichern, sonst kann ich sie nicht lesen.</p><p class="hint">Wenn die Datei ein Kennwort hat, frage ich dich danach.</p><p class="hint">Ein Foto oder ein Scan kann ich nicht lesen, auch wenn du es als PDF speicherst. Frag in deiner Firma nach der PDF-Datei.</p>' +
-        '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden>';
-      bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
+      b.innerHTML = svg + '<p>Am besten nimmst du die PDF-Datei, die du von deiner Firma bekommen hast. Die lese ich am genauesten.</p><p>Hast du den Lohnzettel nur auf Papier? Dann mach ein Foto davon. Bei mehreren Blättern wählst du alle Fotos auf einmal aus.</p><p class="hint">So wird das Foto gut: gerade von oben, helles Licht ohne Schatten, das ganze Blatt im Bild, scharf.</p><p class="hint">Das Foto bleibt auf deinem Handy und wird nirgends hochgeladen. Wenn die PDF-Datei ein Kennwort hat, frage ich dich danach.</p>' +
+        '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden><input type="file" id="lz-foto" accept="image/*" multiple hidden>';
+      bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Foto auswählen oder aufnehmen', 'lz-pickf', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'warten') {
-      h.textContent = 'Ich lese …'; b.innerHTML = svg + '<p>Einen Moment bitte.</p>'; bt.innerHTML = '';
+      h.textContent = 'Ich lese …'; b.innerHTML = svg + (lzUi.fotoLauf ? '<p>Ich lese das Bild. Das kann bis zu einer Minute dauern. Bitte lass die App so lange offen.</p>' : '<p>Einen Moment bitte.</p>'); bt.innerHTML = '';
     } else if (s === 'kennwort') {
       h.textContent = 'Die Datei hat ein Kennwort';
       b.innerHTML = svg + '<p>' + (lzUi.pwFalsch ? 'Das Kennwort war leider falsch. Bitte noch einmal.' : 'Gib das Kennwort deiner Datei ein. Ich brauche es nur jetzt zum Öffnen und speichere es nicht.') + '</p><div class="field"><label for="lz-pw">Kennwort</label><div class="a-pwrow"><input type="password" id="lz-pw" autocomplete="off"><button type="button" class="eyebtn" data-eye="lz-pw" aria-label="Passwort anzeigen" aria-pressed="false"><svg class="eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.7A17 17 0 0 0 2 12s3.6 7 10 7a9.6 9.6 0 0 0 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg></button></div></div>';
       bt.innerHTML = lzBtn('Öffnen', 'lz-pwok', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'keintext') {
       h.textContent = 'Das kann ich nicht lesen';
-      b.innerHTML = svg + '<p>In dieser Datei steckt nur ein Bild und kein Text. Das passiert, wenn man sie ausdruckt oder mit „Als PDF drucken“ neu speichert. Nimm bitte die ursprüngliche PDF-Datei deiner Firma. Wenn du nur ein Foto oder die Papierversion hast, tippe die Zeilen im Abgleich einfach ab.</p>';
-      bt.innerHTML = lzBtn('Andere Datei', 'lz-pick2', 'primary') + lzBtn('Bezeichnungen eintippen', 'lz-hand') + lzBtn('Schließen', 'lz-cancel');
+      b.innerHTML = svg + '<p>Ich konnte auf diesem Bild keinen Lohnzettel erkennen. Probier es mit einem neuen Foto: gerade von oben, helles Licht ohne Schatten, das ganze Blatt im Bild, scharf. Oder nimm die PDF-Datei deiner Firma. Du kannst die Zeilen im Abgleich auch einfach abtippen.</p>';
+      bt.innerHTML = lzBtn('Noch einmal', 'lz-pick2', 'primary') + lzBtn('Bezeichnungen eintippen', 'lz-hand') + lzBtn('Schließen', 'lz-cancel');
     } else if (s === 'ergebnis') {
       h.textContent = 'Das habe ich übernommen';
       b.innerHTML = svg + '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte prüfe die Zahlen mit deinem Lohnzettel.</div><ul class="legende">' + (lzUi.erg || []).filter(function (x) { return x.n && data.abgleich[x.y + '-' + pad(x.m)]; }).map(function (x) { return '<li><span style="flex:1"><strong>' + MON[x.m - 1] + ' ' + x.y + '</strong></span><button type="button" class="btn" data-lzdel="' + x.y + '-' + pad(x.m) + '">Löschen</button></li>'; }).join('') + '</ul>';
@@ -4093,8 +4111,8 @@
       var r = lzUi.res, mo = r.monat || { y: new Date().getFullYear(), m: 0 };
       h.textContent = 'Eingelesene Lohnzetteldaten';
       var opts = [['', 'Nicht übernehmen']].concat(Object.keys(window.StundenLz.NAMEN).map(function (k) { return [k, window.StundenLz.NAMEN[k]]; }));
-      b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + [ 'Monat wählen'].concat(MON).map(function (mn, k) { return '<option value="' + k + '"' + (k === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div><p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>' + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
-        (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<input type="text" inputmode="decimal" class="lzv" data-lzv="' + i + '" value="' + esc(z.unsicher ? z.nums[0] : String(z.menge).replace('.', ',')) + '" aria-label="Wert">') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>') + (r.zeilen.length ? '<label class="check"><input type="checkbox" id="lz-stimmt"><span>Ich habe alle Werte mit meinem Lohnzettel verglichen. Alles stimmt.</span></label>' : '');
+      b.innerHTML = svg + '<div class="field"><span class="lbl">Für welchen Monat ist dieser Lohnzettel?</span><div class="grid2"><select id="lz-mo" aria-label="Monat">' + [ 'Monat wählen'].concat(MON).map(function (mn, k) { return '<option value="' + k + '"' + (k === mo.m ? ' selected' : '') + '>' + mn + '</option>'; }).join('') + '</select><select id="lz-jr" aria-label="Jahr">' + [0, 1, 2, 3].map(function (d) { return new Date().getFullYear() - 2 + d; }).concat([mo.y]).filter(function (y, k, ar) { return ar.indexOf(y) === k; }).sort().map(function (y) { return '<option value="' + y + '"' + (y === mo.y ? ' selected' : '') + '>' + y + '</option>'; }).join('') + '</select></div></div>' + (r.foto ? '<div class="notice warn">Vom Foto gelesen. Dabei können einzelne Ziffern falsch erkannt werden. Vergleiche bitte jede Zahl mit deinem Lohnzettel und bessere sie hier aus.</div>' : '<p>Die Zahlen kommen direkt aus deinem Lohnzettel. Bitte schau nur, ob jede Zeile zur richtigen Art passt.</p>') + (r.zeilen.some(function (z) { return z.nums && z.nums.length > 1; }) ? '<p>Steht in einer Zeile mehr als eine Zahl, wähle die Stundenzahl aus.</p>' : '') +
+        (r.zeilen.length ? r.zeilen.map(function (z, i) { return '<div class="lzrow"><span>' + esc(z.label) + '' + '</span>' + (z.nums && z.nums.length > 1 ? '<select data-lzp="' + i + '" aria-label="' + esc(z.label) + '">' + z.nums.map(function (nn, k) { return '<option value="' + k + '"' + (k === z.pos ? ' selected' : '') + '>' + esc(nn) + '</option>'; }).join('') + '</select>' : '<input type="text" inputmode="decimal" class="lzv" data-lzv="' + i + '" value="' + esc(z.unsicher ? z.nums[0] : String(z.menge).replace('.', ',')) + '" aria-label="Wert">') + '<select data-lzz="' + i + '" aria-label="' + esc(z.label) + '">' + opts.map(function (o) { return '<option value="' + o[0] + '"' + ((z.key || '') === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>' + (r.foto && z.pruef === true ? '<small class="lzok">✓ Rechenprobe stimmt: Menge mal Satz ergibt den Betrag</small>' : r.foto && z.pruef === false ? '<small class="lzbad">' + esc(z.pruefSoll != null ? abw1('Bitte genau vergleichen: Die Rechenprobe geht hier nicht auf. Aus Satz und Betrag ergäben sich {0}.', [String(z.pruefSoll).replace('.', ',')]) : abwLab('Bitte genau vergleichen: Die Rechenprobe geht hier nicht auf. Eine der Zahlen ist vielleicht falsch gelesen.')) + '</small>' : '') + '</div>'; }).join('') : '<p>Ich habe keine Stundenzeilen gefunden. Du kannst die Zeilen von Hand im Abgleich eintragen.</p>') + (r.zeilen.length ? '<label class="check"><input type="checkbox" id="lz-stimmt"><span>Ich habe alle Werte mit meinem Lohnzettel verglichen. Alles stimmt.</span></label>' : '');
       bt.innerHTML = (r.zeilen.length ? lzBtn('Übernehmen', 'lz-apply', 'primary') : '') + lzBtn('Abbrechen', 'lz-cancel');
       if ($('#lz-apply')) $('#lz-apply').disabled = true;
     }
@@ -4223,15 +4241,29 @@
     var fr = new FileReader();
     fr.onload = function () {
       window.StundenLz.lesePdf(fr.result, lzFragePw).then(function (o) {
-        if (!o.hatText) { lzUi.queue = []; lzUi.step = 'keintext'; lzRender(); return; }
-        if (lzUi.modus === 'einr' || lzUi.modus === 'pruef') { lzUi.queue = []; lzUi.lines = o.lines; lzEinrAus(o.lines); return; }
-        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; ins('lz_gelesen');
-        if (lzBekannt(res)) { lzApply(res, res.monat, res.zeilen.map(function (z) { return { z: z, key: z.key, pos: z.pos | 0 }; })); lzNext(); return; }
-        lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender();
-      }, function (e) { lzUi.queue = []; if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
+        if (!o.hatText) { // eingescanntes PDF: Seiten wie ein Foto lesen
+          lzUi.fotoLauf = true; lzRender();
+          return window.StundenLz.lesePdfBild(fr.result, lzFragePw).then(function (o2) { lzUi.fotoLauf = false; lzUi.queue = []; ins('lz_scan'); lzGelesen(o2); });
+        }
+        lzGelesen(o);
+      }, function (e) { lzUi.fotoLauf = false; lzUi.queue = []; if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); }).then(null, function (e) { lzUi.fotoLauf = false; lzUi.queue = []; if (e && e.message === 'abgebrochen') { lzClose(); return; } lzUi.step = 'fehler'; lzRender(); });
     };
     fr.onerror = function () { lzUi.queue = []; lzUi.step = 'fehler'; lzRender(); };
     fr.readAsArrayBuffer(file);
+  }
+  // Fotos: alle gewählten Bilder sind Seiten desselben Lohnzettels. Nie ohne Prüfung übernehmen.
+  function lzFotos(files) {
+    lzUi.queue = []; lzUi.erg = []; lzUi.step = 'warten'; lzUi.fotoLauf = true; lzRender();
+    window.StundenLz.leseFotos(files).then(function (o) { lzUi.fotoLauf = false; ins('lz_foto'); lzGelesen(o); }, function () { lzUi.fotoLauf = false; lzUi.step = 'fehler'; lzRender(); });
+  }
+  function lzGelesen(o) {
+        if (!o.hatText) { lzUi.queue = []; lzUi.step = 'keintext'; lzRender(); return; }
+        if (lzUi.modus === 'einr' || lzUi.modus === 'pruef') { lzUi.queue = []; lzUi.lines = o.lines; lzEinrAus(o.lines); return; }
+        var res = window.StundenLz.parse(o.lines, lzProfil().lzMap || {}); lzUi.res = res; ins('lz_gelesen');
+        res.foto = !!o.foto;
+        if (!o.foto && lzBekannt(res)) { lzApply(res, res.monat, res.zeilen.map(function (z) { return { z: z, key: z.key, pos: z.pos | 0 }; })); lzNext(); return; }
+        if (o.foto && !res.zeilen.length) { lzUi.step = 'keintext'; lzRender(); return; }
+        lzUi.step = res.zeilen.length ? 'pruefen' : 'vorlage'; if (!res.zeilen.length) lzUi.labels = lzLabels(o.lines); lzRender();
   }
   (function () {
     var dlg = $('#lz-dlg'); if (!dlg) return;
@@ -4240,6 +4272,7 @@
       if (t.id === 'lz-ok') { $('#lz-weiter').disabled = !t.checked; return; }
       if (t.id === 'lz-stimmt') { $('#lz-apply').disabled = !t.checked; return; }
       if (t.id === 'lz-file' && t.files && t.files[0]) { var fl = Array.prototype.slice.call(t.files); t.value = ''; lzLese(fl); }
+      if (t.id === 'lz-foto' && t.files && t.files[0]) { var ff = Array.prototype.slice.call(t.files, 0, 6); t.value = ''; lzFotos(ff); }
     });
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
@@ -4262,7 +4295,9 @@
       else if (t.id === 'lz-done') { lzUi.step = 'x'; lzUi.queue = []; var e2 = (lzUi.erg || []).filter(function (x) { return data.abgleich[x.y + '-' + pad(x.m)]; }); lzUi.erg = e2.length ? e2.map(function (x) { return { y: x.y, m: x.m, n: 1 }; }) : []; if (e2.length) lzFertig2(e2); else lzClose(); }
       else if (t.id === 'lz-nein') { lzProfil().lzLesen = false; save(); lzClose(); renderSettings(); }
       else if (t.id === 'lz-weiter') { lzProfil().lzLesen = true; save(); ins('lz_erlaubt'); lzUi.step = 'datei'; lzRender(); renderSettings(); }
-      else if (t.id === 'lz-pick' || t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
+      else if (t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); }
+      else if (t.id === 'lz-pick') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
+      else if (t.id === 'lz-pickf') { var ff2 = $('#lz-foto'); if (ff2) ff2.click(); }
       else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; lzUi.pwMem = pw; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
       else if (t.id === 'lz-apply') {
         var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }; if (!mo.m) { toast('Bitte wähl zuerst den Monat.'); return; } var items = $$('#lz-body [data-lzz]').map(function (sl) {

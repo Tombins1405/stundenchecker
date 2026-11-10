@@ -52,7 +52,9 @@
       var menge = zahl(m[2]); if (isNaN(menge)) return;
       if (key === 'zaKonto' && /[-−–]\s*$/.test(m[1])) menge = -menge; // „monatl. Veränderung -5,00 h“ ist ein Abzug vom Konto
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
-      zeilen.push({ label: label, norm: n, menge: menge, key: key });
+      var zl = { label: label, norm: n, menge: menge, key: key };
+      if (lines.foto) { var pr = rechenprobe(menge, ln.trim().slice(m[0].length)); if (pr) { zl.pruef = pr.ok; if (!pr.ok && pr.soll != null) zl.pruefSoll = pr.soll; } }
+      zeilen.push(zl);
     });
     // Urlaubsstand in Arbeitstagen („End - Saldo 2,34 Arbeitstage“, „Resturlaub 2,34 Tage“): geht in die Urlaubskartei
     var us = false;
@@ -79,6 +81,7 @@
       var key = null, pos = 0, rk = null;
       if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length || (gelernt['@' + n] !== undefined && gelernt['@' + n] !== nums.length)) pos = 0; }
       else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
+      if (lines.foto && !rk && gelernt[n] === undefined) return; // Foto: nur Zeilen mit bekannter Bezeichnung, sonst entstehen Zeilen aus Lesefehlern
       var euroZ = rk && rk[1] === 'dStd' && /verpfleg|ubernacht|spesen|auslos/.test(n); if (euroZ && key === null && nums.length > 1) pos = nums.length - 1; // „12 Tage × 28,00 = 336,00“: der Betrag steht hinten
       var menge = zahl(nums[pos]); if (isNaN(menge)) return;
       if (key === null && rk) { if (rk[1] === 'dStd' && (nums.length === 1 || euroZ)) { key = 'dEuro'; } else if (menge <= 400) key = rk[1]; }
@@ -92,7 +95,7 @@
     // Sonderzahlungen (Urlaubszuschuss, Weihnachtsremuneration, 13./14. Gehalt): Zeile ohne Stunden, der Euro-Betrag steht am Zeilenende („Urlaubszuschuss 1 804,15“)
     var sonder = [];
     lines.forEach(function (ln) {
-      var t = String(ln).trim(), mb = /(\d{1,3}(?:[. \u00a0]\d{3})*,\d{2})\s*€?\s*$/.exec(t); if (!mb || PERS.test(t)) return;
+      var t = String(ln).trim(), mb = /(\d+(?:[. \u00a0]\d{3})*,\d{2})\s*€?\s*$/.exec(t); if (!mb || PERS.test(t)) return;
       var lab = norm(t.slice(0, mb.index)), art = /^urlaubszuschuss|^urlaubsgeld|^urlaubsbeihilfe/.test(lab) ? 'urlaub' : /^weihnachts(remuneration|geld|zuwendung)|^weihnachtsgratifikation/.test(lab) ? 'weihnacht' : /^13(gehalt|monatsgehalt|monatslohn)|^dreizehnt/.test(lab) ? 'd13' : /^14(gehalt|monatsgehalt|monatslohn)|^vierzehnt/.test(lab) ? 'd14' : /^sonderzahlung/.test(lab) ? 'andere' : null;
       if (!art || /\d{1,3},\d{2}\s*h\b/i.test(t)) return;
       var b = zahl(mb[1].replace(/[ \u00a0]/g, '')); if (isNaN(b) || b <= 0) return;
@@ -243,6 +246,101 @@
     }
     return out;
   }
-  var api = { kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  /* ------------------------------------------------------------ Lohnzettel vom Foto */
+  // Zahl aus der Texterkennung: „2 415,84“, „294.79“, „14,3800“
+  function fotoZahl(t) { t = String(t).replace(/\s/g, ''); var i = Math.max(t.lastIndexOf(','), t.lastIndexOf('.')); if (i < 0) return parseFloat(t); return parseFloat(t.slice(0, i).replace(/[.,]/g, '') + '.' + t.slice(i + 1)); }
+  // Rechenprobe: Menge mal Satz muss den Betrag ergeben. So fallen Lesefehler bei Zahlen auf.
+  function rechenprobe(menge, rest) {
+    var nums = String(rest || '').match(/\d{1,3}(?:[ .]\d{3})*[.,]\d{2,5}|\d+[.,]\d{2,5}/g); if (!nums || nums.length < 2) return null;
+    var satz = fotoZahl(nums[0]), betrag = fotoZahl(nums[nums.length - 1]);
+    if (!(satz > 0) || !(betrag > 0) || isNaN(menge)) return null;
+    if (Math.abs(menge * satz - betrag) <= 0.03) return { ok: true };
+    var soll = Math.round(betrag / satz * 100) / 100;
+    return { ok: false, soll: Math.abs(soll * satz - betrag) <= 0.03 && Math.abs(soll * 4 - Math.round(soll * 4)) < 0.001 ? soll : null };
+  }
+  function lev(a, b) { var m = a.length, n = b.length, d = [], i, j; if (Math.abs(m - n) > 2) return 9; for (i = 0; i <= m; i++) d[i] = [i]; for (j = 0; j <= n; j++) d[0][j] = j; for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1)); return d[m][n]; }
+  var FOTO_WORT = ['Lohn', 'Gehalt', 'Überstunden', 'Grundlohn', 'Feiertagslohn', 'Feiertagsentgelt', 'Urlaubsentgelt', 'Urlaubszuschuss', 'Weihnachtsremuneration', 'Weihnachtsgeld', 'Sonderzahlung', 'Diäten', 'Taggeld', 'Krankenentgelt', 'Krankenstand', 'Zeitausgleich', 'Mehrarbeit', 'Pflegefreistellung', 'Sonderurlaub', 'Normalstunden', 'Aufwandsentschädigung', 'Anfangsstand', 'Urlaubsanspruch', 'Arbeitstage', 'Eintritt', 'Tarifgruppe'];
+  var FOTO_NORM = FOTO_WORT.map(norm);
+  function fotoWort(w) {
+    var n = norm(w); if (n.length < 5) return w;
+    var best = -1, bd = 9;
+    for (var i = 0; i < FOTO_NORM.length; i++) { if (FOTO_NORM[i] === n) return w; var d = lev(n, FOTO_NORM[i]); if (d < bd) { bd = d; best = i; } }
+    return best >= 0 && bd <= (n.length >= 10 ? 2 : 1) ? FOTO_WORT[best] : w;
+  }
+  // Rohtext der Texterkennung in saubere Zeilen: Leerzeichen, typische Lesefehler in Bezeichnungen und bei Stundenzahlen.
+  function fotoZeilen(text) {
+    var out = [];
+    String(text || '').split(/\r?\n/).forEach(function (ln) {
+      var t = ln.replace(/[|_]{1,}/g, ' ').replace(/\s+/g, ' ').trim(); if (t.length < 3) return;
+      t = t.replace(/(\d)[.,](\d\d)\s?[hH](?=\s|$)/g, '$1,$2 h'); // „8.00h“ -> „8,00 h“
+      if (/\d[.,]\d\d/.test(t)) { var i0 = t.search(/\d/); t = t.slice(0, i0).replace(/[A-Za-zÄÖÜäöüß]{5,}/g, fotoWort) + t.slice(i0); }
+      out.push(t);
+    });
+    out.foto = true; return out;
+  }
+  // Bild für die Texterkennung vorbereiten: verkleinern, Graustufen, Schatten und graue Flächen ausgleichen, Kontrast anheben.
+  function fotoVorbereiten(quelle, bw, bh) {
+    var lang = Math.max(bw, bh), sc = lang > 2400 ? 2400 / lang : 1, w = Math.round(bw * sc), h = Math.round(bh * sc);
+    var c = document.createElement('canvas'); c.width = w; c.height = h; var cx = c.getContext('2d', { willReadFrequently: true });
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(quelle, 0, 0, w, h);
+    var id = cx.getImageData(0, 0, w, h), px = id.data, g = new Uint8Array(w * h), i, x, y;
+    for (i = 0; i < w * h; i++) g[i] = (px[i * 4] * 77 + px[i * 4 + 1] * 150 + px[i * 4 + 2] * 29) >> 8;
+    var Z = 16, gw = Math.ceil(w / Z), gh = Math.ceil(h / Z), bg = new Float32Array(gw * gh), tmp = new Float32Array(gw * gh);
+    for (y = 0; y < h; y++) { var gy = (y / Z) | 0; for (x = 0; x < w; x++) { var k = gy * gw + ((x / Z) | 0), v = g[y * w + x]; if (v > bg[k]) bg[k] = v; } }
+    function pass(src, dst, fn, r) { for (var yy = 0; yy < gh; yy++) for (var xx = 0; xx < gw; xx++) { var acc = fn === 'max' ? 0 : 0, n = 0; for (var dy = -r; dy <= r; dy++) { var y2 = yy + dy; if (y2 < 0 || y2 >= gh) continue; for (var dx = -r; dx <= r; dx++) { var x2 = xx + dx; if (x2 < 0 || x2 >= gw) continue; var q = src[y2 * gw + x2]; if (fn === 'max') { if (q > acc) acc = q; } else { acc += q; n++; } } } dst[yy * gw + xx] = fn === 'max' ? acc : acc / n; } }
+    pass(bg, tmp, 'max', 2); pass(tmp, bg, 'avg', 2); pass(bg, tmp, 'avg', 2); bg = tmp;
+    for (y = 0; y < h; y++) {
+      var fy = Math.min(gh - 1.001, Math.max(0, y / Z - 0.5)), y0 = fy | 0, wy = fy - y0, y1 = Math.min(gh - 1, y0 + 1);
+      for (x = 0; x < w; x++) {
+        var fx = Math.min(gw - 1.001, Math.max(0, x / Z - 0.5)), x0 = fx | 0, wx = fx - x0, x1 = Math.min(gw - 1, x0 + 1);
+        var b = (bg[y0 * gw + x0] * (1 - wx) + bg[y0 * gw + x1] * wx) * (1 - wy) + (bg[y1 * gw + x0] * (1 - wx) + bg[y1 * gw + x1] * wx) * wy;
+        var nv = g[y * w + x] / Math.max(b, 1) * 255; nv = (nv - 110) * 255 / 125; nv = nv < 0 ? 0 : nv > 255 ? 255 : nv;
+        var o = (y * w + x) * 4; px[o] = px[o + 1] = px[o + 2] = nv; px[o + 3] = 255;
+      }
+    }
+    cx.putImageData(id, 0, 0);
+    return new Promise(function (ok, fail) { c.toBlob(function (bl) { if (!bl) { fail(new Error('Bild')); return; } var fr = new FileReader(); fr.onload = function () { ok(new Uint8Array(fr.result)); }; fr.onerror = fail; fr.readAsArrayBuffer(bl); }, 'image/png'); });
+  }
+  function bildLaden(file) {
+    if (root.createImageBitmap) return root.createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { return { q: b, w: b.width, h: b.height }; }, function () { return bildLadenImg(file); });
+    return bildLadenImg(file);
+  }
+  function bildLadenImg(file) { return new Promise(function (ok, fail) { var u = URL.createObjectURL(file), im = new Image(); im.onload = function () { ok({ q: im, w: im.naturalWidth, h: im.naturalHeight }); setTimeout(function () { URL.revokeObjectURL(u); }, 1000); }; im.onerror = function () { URL.revokeObjectURL(u); fail(new Error('Bild')); }; im.src = u; }); }
+  var ocrW = null, ocrNr = 0, ocrWait = {};
+  function ocrText(bytes, basis) {
+    return new Promise(function (ok, fail) {
+      try {
+        if (!ocrW) { ocrW = new Worker((basis || '') + 'lib/ocr/worker.js'); ocrW.onmessage = function (ev) { var d = ev.data || {}, w = ocrWait[d.id]; if (!w) return; delete ocrWait[d.id]; if (d.ok) w[0](d.text); else w[1](new Error(d.msg || 'Texterkennung')); }; ocrW.onerror = function (e) { Object.keys(ocrWait).forEach(function (k) { ocrWait[k][1](new Error('Texterkennung konnte nicht starten')); }); ocrWait = {}; ocrW = null; }; }
+        var id = ++ocrNr; ocrWait[id] = [ok, fail]; ocrW.postMessage({ id: id, bytes: bytes }, [bytes.buffer]);
+      } catch (e) { fail(e); }
+    });
+  }
+  // Ein oder mehrere Fotos (Seiten desselben Lohnzettels) lesen. Alles bleibt auf dem Gerät.
+  function leseFotos(files, basis) {
+    var all = [], p = Promise.resolve();
+    Array.prototype.forEach.call(files, function (f) { p = p.then(function () { return bildLaden(f); }).then(function (b) { return fotoVorbereiten(b.q, b.w, b.h); }).then(function (by) { return ocrText(by, basis); }).then(function (t) { all = all.concat(fotoZeilen(t)); }); });
+    return p.then(function () { all.foto = true; all.cells = []; return { lines: all, foto: true, hatText: all.join('').replace(/\s/g, '').length > 50 }; });
+  }
+  // Eingescanntes PDF (ohne Text): Seiten als Bild zeichnen und wie ein Foto lesen.
+  function lesePdfBild(buf, fragePasswort, basis) {
+    return ladeLib(basis).then(function (lib) {
+      return new Promise(function (ok, fail) {
+        var task = lib.getDocument({ data: buf.slice(0) });
+        task.onPassword = function (cb, grund) { fragePasswort(grund === 2 ? 'falsch' : 'noetig').then(function (pw) { cb(pw); }, function () { fail(new Error('abgebrochen')); }); };
+        task.promise.then(function (doc) {
+          var all = [], p = Promise.resolve(), n = Math.min(doc.numPages, 4);
+          for (var i = 1; i <= n; i++) (function (nr) {
+            p = p.then(function () { return doc.getPage(nr); }).then(function (pg) {
+              var v0 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: 2400 / Math.max(v0.width, v0.height) });
+              var c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+              return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.then(function () { return fotoVorbereiten(c, c.width, c.height); });
+            }).then(function (by) { return ocrText(by, basis); }).then(function (t) { all = all.concat(fotoZeilen(t)); });
+          })(i);
+          p.then(function () { all.foto = true; all.cells = []; ok({ lines: all, foto: true, hatText: all.join('').replace(/\s/g, '').length > 50 }); }, fail);
+        }, fail);
+      });
+    });
+  }
+  var api = { fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);

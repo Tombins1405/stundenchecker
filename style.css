@@ -868,3 +868,8 @@ h3[data-ico="plan"]::before { background: #12b886; }
 #pl-jahre .btn { flex: 1 1 0; text-align: center; padding: 10px 6px; }
 #pl-jahre .btn.on { padding-right: 6px; }
 #pl-jahre .btn.on::after { display: none; }
+
+/* Lohnzettel vom Foto: Rechenprobe je Zeile */
+.lzrow small.lzok { display: block; color: #12864f; font-weight: 600; font-size: .8rem; }
+.lzrow small.lzbad { display: block; color: var(--bad, #c62828); font-weight: 600; font-size: .8rem; }
+.lzrow > small.lzok, .lzrow > small.lzbad { grid-column: 1 / -1; }

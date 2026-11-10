@@ -1106,6 +1106,7 @@
       if (s === null || e === null) return;
       if (s < von) s += 1440;
       if (e < s) e += 1440;
+      if (e < s) { warn.push('Eine Pause endet vor ihrem Beginn. Sie wird nicht gezählt.'); return; } // falsch eingetragene Pause darf die Arbeitszeit nie verlängern
       pausen += e - s;
     });
     // Automatischer Pausenabzug (zum Beispiel 60 Minuten), wenn der Tag keine eigene Pause hat. Die Diäten zählen weiter ab Beginn bis Ende.
