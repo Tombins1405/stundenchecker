@@ -876,3 +876,9 @@ h3[data-ico="plan"]::before { background: #12b886; }
 
 /* Gegenüberstellung Firma / Kollektivvertrag: dezent, nicht rot */
 #k-abw ul.rot li[data-abw="kvref"] { color: var(--ink-2); }
+
+/* Abweichungen: zwei Blöcke mit eigener Überschrift */
+#k-abw .abwh { font-weight: 700; margin: 12px 0 4px; }
+#k-abw ul.kvl li { color: var(--ink-2); margin-bottom: 4px; }
+#k-abw table.cmp td.no { white-space: nowrap; }
+#k-abw .notice:not(.warn) table.cmp td.no { color: var(--ink); }

@@ -452,7 +452,7 @@
   function abw1(tpl, a, de) { var d = !de && uiDict(uiLang()), t = (d && d[tpl]) || tpl; return t.replace(/\{(\d)\}/g, function (_, i) { return a[+i]; }); }
   function abwLab(l) { var t = uiTr(l, uiLang()); return t || l; }
   // Zwei Abrechnungen: nach der Handhabung der Firma (Einstellungen) und nach Kollektivvertrag und Gesetz. Liefert den Unterschied je Regel.
-  var KV_GRUND = { zu: 'Zuschläge an Sonn- und Feiertagen', betrieb: 'Betrieb geschlossen als bezahlte Zeit', frei: 'Freistellung durch die Firma bezahlt', rund: 'Zeiten ohne Rundung', lohn: 'Lohn laut Lohngruppe im Kollektivvertrag', za: 'Zuschlag für Überstunden im Zeitausgleich' };
+  var KV_GRUND = { zu: 'Zuschläge an Sonn- und Feiertagen', betrieb: 'Betrieb geschlossen als bezahlte Zeit', frei: 'Freistellung durch die Firma bezahlt', rund: 'Zeiten ohne Rundung', lohn: 'Lohn laut Lohngruppe im Kollektivvertrag', za: 'Zuschlag für Überstunden im Zeitausgleich', diaet: 'Diäten nach den Werten des Kollektivvertrags' };
   var KV_BRUTTO = ['zu', 'betrieb', 'frei', 'rund', 'lohn'];
   function kvVergleich(y, m, sm, wmm) {
     try {
@@ -482,9 +482,9 @@
     var out = [], kg = kvVergleich(y, m, sm, wmm), kd = kvDiaeten(y, m, sm);
     if (kg) { var fmtT = function (lab) { return kg.teile.map(function (t) { return lab(KV_GRUND[t.key]) + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; '); }, kgA = [eur.format(kg.firma), eur.format(kg.kv), eur.format(Math.abs(kg.diff))];
       var kgT = kg.diff > 0 ? 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} mehr. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.' : 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} weniger. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.';
-      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kg.diff, text: abw1(kgT, kgA.concat([fmtT(abwLab)])), de: abw1(kgT, kgA.concat([fmtT(function (x) { return x; })]), 1) }); }
-    if (kd) { var kdA = [eur.format(kd.firma), eur.format(kd.kv), eur.format(Math.abs(kd.diff))], kdT = kd.diff > 0 ? 'Gegenüberstellung Diäten: Nach der Zählweise deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} mehr. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.' : 'Gegenüberstellung Diäten: Nach der Zählweise deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} weniger. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.';
-      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kd.diff, text: abw1(kdT, kdA), de: abw1(kdT, kdA, 1) }); }
+      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kg.diff, teile: kg.teile, text: abw1(kgT, kgA.concat([fmtT(abwLab)])), de: abw1(kgT, kgA.concat([fmtT(function (x) { return x; })]), 1) }); }
+    if (kd) { var kdA = [eur.format(kd.firma), eur.format(kd.kv), eur.format(Math.abs(kd.diff))], kdT = kd.diff > 0 ? 'Gegenüberstellung Diäten: Nach der Handhabung deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} mehr. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.' : 'Gegenüberstellung Diäten: Nach der Handhabung deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} weniger. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.';
+      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kd.diff, teile: [{ key: 'diaet', delta: kd.diff }], text: abw1(kdT, kdA), de: abw1(kdT, kdA, 1) }); }
     return out;
   }
   function abwListe() {
@@ -547,15 +547,37 @@
     if (z.length) z.push(['Summe der Differenzen in Euro (geschätzt)', eur.format(t.eur) + (t.ohneEuro ? ' (ohne Posten ohne Stundenlohn)' : ''), '']);
     return z;
   }
-  function abwFirmaZeile(l) { var t = abwSumme(l); return t.firma > 0 ? ['Stunden, die die Firma abgezogen hat (nicht bezahlt, nicht als Urlaub gerechnet)', fh(t.firma) + ' h' + (t.firmaEur > 0 ? ', ca. ' + eur.format(t.firmaEur) : ''), 'firma'] : null; }
-  function abwKvZeile(l) { var d = 0, n = 0; l.forEach(function (x) { if (x.kat === 'kvref') { d += x.kvDiff; n++; } }); d = Math.round(d * 100) / 100; return n ? [d >= 0 ? 'Gegenüberstellung: nach Kollektivvertrag und Gesetz mehr als nach Handhabung der Firma (Schätzung, unter Vorbehalt)' : 'Gegenüberstellung: nach Kollektivvertrag und Gesetz weniger als nach Handhabung der Firma (Schätzung, unter Vorbehalt)', eur.format(Math.abs(d)), 'kvref'] : null; }
-  function abwSummeText(l) { var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); return (kz ? kz[0] + ': ' + kz[1] + '\n\n' : '') + (z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') + (f ? f[0] + ': ' + f[1] + '\n\n' : ''); }
+  // Zwei Blöcke, überall gleich: A = Aufzeichnung gegen Lohnzettel, B = Handhabung der Firma gegen Kollektivvertrag und Gesetz
+  var ABW_A = 'Aufzeichnung gegen Lohnzettel', ABW_B = 'Handhabung der Firma gegen Kollektivvertrag und Gesetz', ABW_BV = 'Schätzung aus deinen Eingaben und Einstellungen, unter Vorbehalt. Prüfe bitte auch deine Eingaben.';
+  function abwIstB(x) { return x.kat === 'firma' || x.kat === 'kvref'; }
+  function abwEuroPm(d) { return (d > 0 ? '+' : d < 0 ? '−' : '') + eur.format(Math.abs(d)); }
+  function abwKvZeilen(l, lab) {
+    var sum = {}, tot = 0, hat = false, z = [], t = abwSumme(l);
+    l.forEach(function (x) { if (x.kat !== 'kvref') return; hat = true; tot += x.kvDiff; (x.teile || []).forEach(function (p) { sum[p.key] = (sum[p.key] || 0) + p.delta; }); });
+    if (t.firma > 0) z.push([lab('Stunden, die die Firma abgezogen hat (nicht bezahlt, nicht als Urlaub gerechnet)'), fh(t.firma) + ' h', 'kvref']);
+    Object.keys(KV_GRUND).forEach(function (k) { if (sum[k] != null && Math.abs(sum[k]) >= 0.5) z.push([lab(KV_GRUND[k]), abwEuroPm(Math.round(sum[k] * 100) / 100), 'kvref']); });
+    if (hat) z.push([lab('Unterschied gesamt: nach Kollektivvertrag und Gesetz gegenüber der Handhabung der Firma'), abwEuroPm(Math.round(tot * 100) / 100), 'kvref']);
+    return z;
+  }
+  function abwSummeText(l) {
+    var z = abwSummeZeilen(l), k = abwKvZeilen(l, function (x) { return x; });
+    return (z.length ? ABW_A + '\nBislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') +
+      (k.length ? ABW_B + '\n(' + ABW_BV + ')\n' + k.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '');
+  }
+  function abwListeText(l) {
+    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), f = function (x) { return MON[x.m - 1] + ' ' + x.y + ': ' + (x.de || x.text); };
+    return (a.length ? ABW_A + ':\n' + a.map(f).join('\n') + '\n\n' : '') + (b.length ? ABW_B + ':\n' + b.map(f).join('\n') + '\n' : '');
+  }
   function abwSummeHtml(l) {
-    var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); if (!z.length && !f && !kz) return '';
+    var z = abwSummeZeilen(l), k = abwKvZeilen(l, abwLab); if (!z.length && !k.length) return '';
     function tr(r) { return '<tr' + (r[2] ? ' class="abwk" data-abw="' + r[2] + '"' : '') + '><td>' + esc(r[0]) + '</td><td class="no">' + esc(r[1]) + '</td></tr>'; }
-    return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>Bislang fehlen dir gegenüber deinen Aufzeichnungen:</strong><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
-      (f ? '<div class="notice warn" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(f) + '</tbody></table></div>' : '') +
-      (kz ? '<div class="notice" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(kz) + '</tbody></table></div>' : '');
+    return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_A)) + '</strong><p style="margin:4px 0 0">Bislang fehlen dir gegenüber deinen Aufzeichnungen:</p><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
+      (k.length ? '<div class="notice" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_B)) + '</strong><p class="hint" style="margin:4px 0 0">' + esc(abwLab(ABW_BV)) + '</p><table class="cmp" style="margin-top:6px"><tbody>' + k.map(tr).join('') + '</tbody></table></div>' : '');
+  }
+  function abwListeHtml(l) {
+    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; };
+    return (a.length ? '<p class="abwh">' + esc(abwLab(ABW_A)) + '</p><ul class="rot" style="margin:0;padding-left:20px">' + a.map(li).join('') + '</ul>' : '') +
+      (b.length ? '<p class="abwh">' + esc(abwLab(ABW_B)) + '</p><ul class="kvl" style="margin:0;padding-left:20px">' + b.map(li).join('') + '</ul>' : '');
   }
   /* ============================================================ LOHNZETTEL (eigener Reiter) */
   function renderLohn() {
@@ -1080,10 +1102,10 @@
     var ui2 = $('#ue-info'); if (ui2) { var us = document.createElement('small'); us.hidden = true; us.textContent = 'Von dir: deine aufgeschriebenen Überstunden. Bezahlt: so viele stehen auf dem Lohnzettel. Konto: so viele wurden aufs Zeitausgleich-Konto gebucht. Unterschied = bezahlt plus Konto minus von dir. Plus (orange): Der Lohnzettel hat mehr als du aufgeschrieben hast. Minus (rot): weniger. Grün: passt.'; ui2._sm = us; }
     // Überstunden im Überblick
     var abw = abwListe();
-    $('#k-abw').innerHTML = abw.length ? abwSummeHtml(abw) + '<ul class="rot" style="margin:0;padding-left:20px">' + abw.map(function (x) { return '<li data-abw="' + x.kat + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; }).join('') + '</ul><button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    $('#k-abw').innerHTML = abw.length ? abwSummeHtml(abw) + abwListeHtml(abw) + '<button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
     var kb = $('#k-abw'); if (kb) kb.onclick = function (ev) { var r = ev.target.closest && ev.target.closest('tr.abwk'); if (!r) return; var k = r.dataset.abw, an = kb.dataset.hl === k; kb.dataset.hl = an ? '' : k; kb.classList.toggle('abwdim', !an); $$('#k-abw [data-abw]').forEach(function (e) { e.classList.toggle('abwhl', !an && e.dataset.abw === k); }); };
     var ac = $('#abw-copy'); if (ac) ac.onclick = function () {
-      var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + abwSummeText(abw) + abw.map(function (x) { return MON[x.m - 1] + ' ' + x.y + ': ' + (x.de || x.text); }).join('\n') + '\n\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
+      var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + abwSummeText(abw) + abwListeText(abw) + '\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
       var done = function () { ac.textContent = 'Kopiert'; };
       try { navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Text markieren und kopieren:', txt); }); } catch (e) { window.prompt('Text markieren und kopieren:', txt); }
     };
