@@ -1239,6 +1239,7 @@
   ['w', 'st', 'ooe', 'sbg', 'k', 'v', 'b', 't'].forEach(function (k) {
     var z = PR_VOR.konditor.slice();
     z[0] = k === 'w' ? ['Erschwerniszulage Tiefkühlanlage', 'tag', 'Tage mit Arbeit in begehbaren Tiefkühlanlagen, mehr als 2 Stunden', 16] : k === 'b' ? ['Erschwerniszulage Tiefkühlanlage', 'tag', 'Tage mit Arbeit in begehbaren Tiefkühlanlagen, mehr als 1,5 Stunden', 11.29] : ['Erschwerniszulage Tiefkühlanlage', 'tag', 'Tage mit Arbeit in begehbaren Tiefkühlanlagen (Betrag und Mindestdauer laut Lohnordnung)'];
+    if (k === 'w') z.splice(1, 0, ['Meisterzuschlag (Meisterprüfung und 5 Jahre Praxis)', 'monat', 'einmal pro Monat', 48]);
     PR_VOR['konditor_' + k] = z;
     PAKET_KURZ['konditor_' + k] = 'Konditorgewerbe';
   });
@@ -1975,6 +1976,7 @@
   var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], handel_arb: ['weste', 'paket'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
   function miaFor(date) { if (data.profil && data.profil.mia && data.profil.mia.eigen === true) return miaOutfitEigen(); var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
   function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); if (k === 'name' || k === 'figur') uiMiaNamen(); }
+  function lgSt(lg, g) { return (g && g.stufen) || (lg && lg.stufen) || null; }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
@@ -2679,7 +2681,7 @@
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0];
     var h = '<div class="field"><label for="wz-lg">' + (w.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><small>Die Lohngruppe (oder Einstufung) bestimmt, welchen Mindestlohn dir der Kollektivvertrag zusteht. Du musst sie nicht kennen: Trage einfach deinen Stundenlohn vom Lohnzettel ein. Kennst du sie, kann die App prüfen, ob dein Lohn dem Kollektivvertrag entspricht. Du findest sie oben auf dem Lohnzettel (bei „Einstufung“, „Lohngruppe“ oder „Verwendungsgruppe“) oder im Dienstvertrag. Steht sie nirgends, frag in der Firma nach.</small><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
       gl.map(function (x) { return '<option value="' + esc(x.id) + '"' + (w.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
-    if (g && lg.stufen && g.l.length > 1) h += '<div class="field"><label for="wz-ls">Stufe</label><select id="wz-ls" data-wf="ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(w.ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
+    if (g && lg.stufen && g.l.length > 1) h += '<div class="field"><label for="wz-ls">Stufe</label><select id="wz-ls" data-wf="ls"><option value="">Bitte wählen</option>' + lgSt(lg, g).map(function (s, i) { return '<option value="' + i + '"' + (String(w.ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
     return h;
   }
   function lohnVorschlag(w) {
@@ -2889,7 +2891,7 @@
     if (cur) { // schon gewählte Angaben gleich anzeigen
       var lgx = E.lgFuer(E.LOHNGRUPPEN[cur.paket], cur.gueltigAb), gx = lgx && lgx.gruppen.filter(function (x) { return x.id === cur.lg; })[0];
       kvv.name = (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || '';
-      kvv.gruppe = cur.einstufung || (gx ? gx.name + (lgx.stufen && cur.ls != null && cur.ls !== '' ? ', ' + lgx.stufen[+cur.ls] : '') : '');
+      kvv.gruppe = cur.einstufung || (gx ? gx.name + (lgx.stufen && cur.ls != null && cur.ls !== '' ? ', ' + (lgSt(lgx, gx)[+cur.ls] || '') : '') : '');
       kvv.branche = cwb || PAKET_KURZ[cur.paket] || '';
       kvv.wst = String(E.wochenStd(cur.ueberstunden) || '');
     }
@@ -3046,7 +3048,7 @@
     var stuf = !!(g && lg.stufen && g.l.length > 1);
     if (stuf) {
       var ls = en.ls == null || en.ls === '' ? (lg.eintritt ? stufeAusEintritt(en.gueltigAb, lg) : '') : en.ls;
-      h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lg.stufen.map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
+      h += '<div class="field"><label for="s-ls">Stufe</label><select id="s-ls"><option value="">Bitte wählen</option>' + lgSt(lg, g).map(function (s, i) { return '<option value="' + i + '"' + (String(ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
       en._lsVor = ls;
     }
     var i = stuf ? (en._lsVor === '' || en._lsVor == null ? -1 : +en._lsVor) : 0, val = g && i >= 0 ? g.l[i] : null, mon = !!(g && g.m);
@@ -4227,7 +4229,7 @@
       if (k.firma) rows.push(zl('Firma', k.firma, pr ? (P.firma || '') : null, 'firma'));
       if (k.eintritt) rows.push(zl('Eintritt in die Firma', fmtDate(k.eintritt), pr ? (P.eintritt ? fmtDate(P.eintritt) : '') : null, 'eintritt'));
       if (k.geb) rows.push(zl('Geburtsdatum', fmtDate(k.geb), pr ? (P.geb ? fmtDate(P.geb) : '') : null, 'geb'));
-      if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (tr.ls != null && E.LOHNGRUPPEN[tr.paket].stufen ? ', ' + esc(E.LOHNGRUPPEN[tr.paket].stufen[tr.ls]) : '') + '</span></li>');
+      if (tr) rows.push('<li><span style="flex:1"><strong>Lohngruppe laut Tabelle</strong><br>' + esc(tr.name) + (function () { var lgT = E.LOHNGRUPPEN[tr.paket], gT = (lgT.gruppen || []).filter(function (x) { return x.id === tr.lg; })[0], st = lgSt(lgT, gT); return tr.ls != null && st && st[tr.ls] ? ', ' + esc(st[tr.ls]) : ''; })() + '</span></li>');
       b.innerHTML = svg + (lzUi.msg2 ? '<div class="notice"><strong>Geändert.</strong></div>' : '') + (lzUi.msg ? '<div class="notice"><strong>Geändert.</strong> <span>Das gilt für alle Monate ab dem</span> <b>' + esc(lzUi.msg) + '</b></div>' : '') + (rows.length ? '<div class="notice warn">Beim Lesen können Fehler passieren. Bitte vergleiche mit deinem Lohnzettel.</div><ul class="legende">' + rows.join('') + '</ul>' + (lzUi.treff === null && (lzUi.kopf.treffer || []).length > 1 ? '<p class="hint">Der Stundenlohn passt zu mehreren Lohngruppen. Bitte wähle die Lohngruppe danach selbst aus.</p>' : '') : '<p>Auf diesem Lohnzettel habe ich keinen Kollektivvertrag und keinen Stundenlohn gefunden. Bitte stelle alles selbst ein. Ich helfe dir dabei.</p>') +
         '<p class="hint">Gelesen wurde nur hier auf deinem Handy. Es wurde nichts hochgeladen und nichts gespeichert, außer was du übernimmst.</p>' + (rows.length ? '<p class="hint">Wenn du übernimmst, merke ich mir die Namen der Zeilen auf deinem Lohnzettel, ohne Zahlen. Dann lese ich ihn nächstes Mal sofort.</p>' : '');
       bt.innerHTML = (!pr && rows.length ? lzBtn('Übernehmen', 'lz-einr-ok', 'primary') : '') + lzBtn(pr ? 'Schließen' : 'Selbst einstellen', 'lz-cancel');
