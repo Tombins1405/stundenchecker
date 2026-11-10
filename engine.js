@@ -981,7 +981,7 @@
   // Eisenbahn-KV (Kollektivvertrag Eisenbahnunternehmen, Arbeiter/innen und Angestellte, Gehaltsordnung ab 1.12.2025, Quelle: wko.at)
   PAKETE.bahn = {
     name: 'Eisenbahn (ÖBB, Westbahn und andere Eisenbahnunternehmen)',
-    hinweis: 'Eisenbahn-KV für Arbeiter/innen und Angestellte, Gehaltsordnung ab 1.12.2025 (Quelle: wko.at). Er gilt österreichweit für Eisenbahnunternehmen mit Berechtigung nach dem Eisenbahngesetz, zum Beispiel ÖBB-Gesellschaften und die Westbahn, für Dienstverhältnisse, die nach dem 31.12.2010 begonnen haben. Nicht erfasst sind unter anderem Lehrlinge teilweise, die städtischen Verkehrsbetriebe und die Privatbahnen mit eigener Dienst- und Besoldungsordnung (zum Beispiel Wiener Lokalbahnen): dafür habe ich die Tabellen noch nicht hinterlegt. 40 Stunden/Woche (38,5 mit Betriebsvereinbarung), Stundenlohn = Monatsgehalt geteilt durch 173. Nachtarbeitszulage 4,10 € je Stunde (22 bis 5 Uhr) und Sonn- und Feiertagszulage 7,00 € je Stunde sind bei den Prämien als Vorschlag hinterlegt. Die Verwendungsgruppen A bis J und ihre Stufen (Vorrückung nach 3, dann alle 4 Jahre) sind hinterlegt. Welche Tätigkeit in welche Gruppe fällt, konnte ich nicht belegen: die Gruppe steht auf deinem Dienstzettel oder Lohnzettel. Die Höhe des Überstundenzuschlags steht nicht in der Quelle, die App rechnet mit 50 %: bitte laut Lohnzettel prüfen. Die Gastronomie auf Schienenbahnen und der Schlafwagenbereich haben eigene Tabellen, die noch fehlen.',
+    hinweis: 'Eisenbahn-KV für Arbeiter/innen und Angestellte, Gehaltsordnung ab 1.12.2025 (Quelle: wko.at). Er gilt österreichweit für Eisenbahnunternehmen mit Berechtigung nach dem Eisenbahngesetz, zum Beispiel ÖBB-Gesellschaften und die Westbahn, für Dienstverhältnisse, die nach dem 31.12.2010 begonnen haben. Nicht erfasst sind unter anderem Lehrlinge teilweise, die städtischen Verkehrsbetriebe und die Privatbahnen mit eigener Dienst- und Besoldungsordnung (zum Beispiel Wiener Lokalbahnen): dafür habe ich die Tabellen noch nicht hinterlegt. 40 Stunden/Woche (38,5 mit Betriebsvereinbarung), Stundenlohn = Monatsgehalt geteilt durch 173. Nachtarbeitszulage 4,10 € je Stunde (22 bis 5 Uhr) und Sonn- und Feiertagszulage 7,00 € je Stunde sind bei den Prämien als Vorschlag hinterlegt. Die Verwendungsgruppen A bis J und ihre Stufen (Vorrückung nach 3, dann alle 4 Jahre) sind hinterlegt. Welche Tätigkeit in welche Gruppe fällt, konnte ich nicht belegen: die Gruppe steht auf deinem Dienstzettel oder Lohnzettel. Die Höhe des Überstundenzuschlags steht nicht in der Quelle, die App rechnet mit 50 %: bitte laut Lohnzettel prüfen. Die Bordgastronomie (Anlage 7A) und die Schlaf- und Liegewagen (Anlage 8A) haben eigene Tabellen, beide sind hinterlegt. Für Küche und Kantine gibt es im Eisenbahn-KV keine eigenen Berufsbezeichnungen wie Küchenchef oder Koch: Du wirst einer Verwendungsgruppe (A bis J) zugeordnet, die auf deinem Dienstzettel oder Lohnzettel steht.',
     pruefen: true,
     werte: {
       diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -1013,7 +1013,16 @@
       { id: 'K1', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 1. Lehrjahr', l: [952.42] },
       { id: 'K2', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 2. Lehrjahr', l: [1037.56] },
       { id: 'K3', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 3. Lehrjahr', l: [1387.44] },
-      { id: 'K4', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 4. Lehrjahr', l: [1869.78] }
+      { id: 'K4', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 4. Lehrjahr', l: [1869.78] },
+      { id: 'G7U', m: true, name: 'Gastronomische Betreuung (Anlage 7A), ungelernt', l: [2491.25, 2540.87, 2589.23, 2637.63, 2688.31] },
+      { id: 'G7G', m: true, name: 'Gastronomische Betreuung (Anlage 7A), gelernt', l: [2631.43, 2685.62, 2740.72, 2797.14, 2853.55] },
+      { id: 'S8A', m: true, name: 'Schlaf- und Liegewagen 8A', l: [2310.66, 2353.55, 2396.44, 2450.05, 2503.66] },
+      { id: 'S8B', m: true, name: 'Schlaf- und Liegewagen 8B', l: [2332.11, 2374.99, 2417.88, 2471.5, 2525.11] },
+      { id: 'S8C', m: true, name: 'Schlaf- und Liegewagen 8C', l: [2808.93, 2937.89, 3003.1, 3133.48, 3198.63] },
+      { id: 'S8D', m: true, name: 'Schlaf- und Liegewagen 8D', l: [2825.73, 2948.65, 3010.62, 3133.53, 3198.63] },
+      { id: 'S8E', m: true, name: 'Schlaf- und Liegewagen 8E', l: [3132.52, 3276.37, 3352.86, 3510.7, 3587.45] },
+      { id: 'S8F', m: true, name: 'Schlaf- und Liegewagen 8F', l: [3455.43, 3615.43, 3694.55, 3851.77, 3931.08] },
+      { id: 'S8G', m: true, name: 'Schlaf- und Liegewagen 8G', l: [4093.94, 4350.75, 4486.99, 4748.41, 4876.56] }
   ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
@@ -1145,6 +1154,8 @@
         bahnhof: { name: 'Bahnhof, Service und Verkauf', b: { fahrzeug: false, kunden: false, praemien: true } },
         technik: { name: 'Werkstätte, Gleisbau und Technik', b: { fahrzeug: false, kunden: false, praemien: true } },
         buero: { name: 'Büro und Verwaltung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        kueche: { name: 'Küche und Kantine (Küchenchef, Stellvertretung, Koch, Küchenhilfe)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        bordgastro: { name: 'Bordgastronomie und Schlafwagen', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Bahn)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
