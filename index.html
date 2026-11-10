@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261110125214">
+<link rel="stylesheet" href="style.css?v=20261110133315">
 </head>
 <body>
 
@@ -520,6 +520,7 @@
           <option value="offen">Weiß ich noch nicht</option>
           <option value="eingerechnet">1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)</option>
           <option value="getrennt">1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt</option>
+          <option value="ohne">1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird nicht bezahlt</option>
         </select>
         <small>In Österreich gilt nach § 10 Arbeitszeitgesetz: Der Überstundenzuschlag ist beim Zeitausgleich zu berücksichtigen oder gesondert auszuzahlen. Bei 50 % Zuschlag heißt das entweder 1:1,5 oder 1:1 und der Zuschlag wird bezahlt. Dein Kollektivvertrag kann es anders regeln, zum Beispiel 1:2 bei 100 % Zuschlag. Beim Freinehmen wird der Zeitausgleich immer Stunde für Stunde abgezogen. In Deutschland gibt es kein gesetzliches Verhältnis, es hängt von deinem Tarif- oder Arbeitsvertrag ab. Auf deinem Lohnzettel steht beim Zeitausgleich-Konto zum Beispiel 15 Stunden für 10 Überstunden: dann wähle die Auswahl mit 1,5 Stunden.</small><div id="s-zauinfo" class="notice" hidden><span data-g="1" hidden>Dein Kollektivvertrag nennt für Überstunden als Zeitausgleich 1:1,5 (Zuschlag ist drin), bei Nacht oder Sonntag teils 1:2. Wähle 1:1,5.</span><span data-g="2" hidden>Dein Kollektivvertrag legt dafür kein festes Verhältnis fest. Überstunden werden normalerweise in Geld bezahlt, Zeitausgleich gibt es nur nach Vereinbarung. Schau auf deinen Lohnzettel.</span><span data-g="3" hidden>Dein Kollektivvertrag: Zeitausgleich 1:1,5 bei 50 % Zuschlag und 1:2 bei 100 % Zuschlag. Die App hat nur eine Auswahl für alles: nimm 1:1,5 und prüfe deinen Lohnzettel.</span><span data-g="4" hidden>Im Bundesdienst gibt es für Überstunden an Werktagen je nach Anordnung Freizeit 1:1,5, Geld oder beides. Sonntag und Feiertag werden bezahlt. Mehrdienstleistungen werden 1:1 ausgeglichen.</span><span data-g="5" hidden>In Deutschland gibt es dafür kein gesetzliches Verhältnis. Es gilt dein Tarif- oder Arbeitsvertrag.</span></div></div>
       <div class="field" id="s-gleitbox" hidden><label id="s-gleit-l">Sollzeit je Wochentag (Stunden)</label>
@@ -740,21 +741,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261110125214";</script>
-<script src="engine.js?v=20261110125214"></script>
+<script>window.APP_VERSION="20261110133315";</script>
+<script src="engine.js?v=20261110133315"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261110125214"></script>
-<script src="timepicker.js?v=20261110125214"></script>
-<script src="datepicker.js?v=20261110125214"></script>
-<script src="selectpicker.js?v=20261110125214"></script>
-<script src="pdf.js?v=20261110125214"></script>
-<script src="lzread.js?v=20261110125214"></script>
-<script src="app.js?v=20261110125214"></script>
-<script src="auth.js?v=20261110125214"></script>
-<script src="sync.js?v=20261110125214"></script>
-<script src="insights.js?v=20261110125214"></script>
+<script src="firebase-config.js?v=20261110133315"></script>
+<script src="timepicker.js?v=20261110133315"></script>
+<script src="datepicker.js?v=20261110133315"></script>
+<script src="selectpicker.js?v=20261110133315"></script>
+<script src="pdf.js?v=20261110133315"></script>
+<script src="lzread.js?v=20261110133315"></script>
+<script src="app.js?v=20261110133315"></script>
+<script src="auth.js?v=20261110133315"></script>
+<script src="sync.js?v=20261110133315"></script>
+<script src="insights.js?v=20261110133315"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

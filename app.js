@@ -452,18 +452,40 @@
   function abw1(tpl, a, de) { var d = !de && uiDict(uiLang()), t = (d && d[tpl]) || tpl; return t.replace(/\{(\d)\}/g, function (_, i) { return a[+i]; }); }
   function abwLab(l) { var t = uiTr(l, uiLang()); return t || l; }
   // Zwei Abrechnungen: nach der Handhabung der Firma (Einstellungen) und nach Kollektivvertrag und Gesetz. Liefert den Unterschied je Regel.
-  var KV_GRUND = { zu: 'Zuschläge an Sonn- und Feiertagen', betrieb: 'Betrieb geschlossen als bezahlte Zeit', frei: 'Freistellung durch die Firma bezahlt', rund: 'Zeiten ohne Rundung', lohn: 'Lohn laut Lohngruppe im Kollektivvertrag' };
+  var KV_GRUND = { zu: 'Zuschläge an Sonn- und Feiertagen', betrieb: 'Betrieb geschlossen als bezahlte Zeit', frei: 'Freistellung durch die Firma bezahlt', rund: 'Zeiten ohne Rundung', lohn: 'Lohn laut Lohngruppe im Kollektivvertrag', za: 'Zuschlag für Überstunden im Zeitausgleich' };
+  var KV_BRUTTO = ['zu', 'betrieb', 'frei', 'rund', 'lohn'];
   function kvVergleich(y, m, sm, wmm) {
     try {
       if (!wmm || !sm || sm.gleit) return null;
       var bF = E.bruttoVorschau(sm, wmm, false); if (!bF.ok) return null;
       var dat = E.iso(y, m, E.daysInMonth(y, m)), opt = function (k) { return { ohneSpaeter: true, kvRef: k }; };
-      var sA = E.calcMonth(data, y, m, todayISO(), opt(true)).summe, bA = E.bruttoVorschau(sA, E.kvWert(wmm, dat), false); if (!bA.ok) return null;
-      var diff = Math.round((bA.brutto - bF.brutto) * 100) / 100; if (Math.abs(diff) < 0.5) return null;
-      var teile = [];
-      E.KV_REGELN.forEach(function (k) { var sk = E.calcMonth(data, y, m, todayISO(), opt([k])).summe, bk = E.bruttoVorschau(sk, E.kvWert(wmm, dat, [k]), false); if (!bk.ok) return; var d = Math.round((bk.brutto - bF.brutto) * 100) / 100; if (Math.abs(d) >= 0.5) teile.push({ key: k, delta: d }); });
-      return { firma: bF.brutto, kv: bA.brutto, diff: diff, teile: teile };
+      var sA = E.calcMonth(data, y, m, todayISO(), opt(KV_BRUTTO)).summe, bA = E.bruttoVorschau(sA, E.kvWert(wmm, dat, KV_BRUTTO), false); if (!bA.ok) return null;
+      var teile = [], kv = bA.brutto;
+      // Zeitausgleich 1:1 ohne Zuschlag: Der Zuschlag für die aufs Konto gebuchten Überstunden fehlt (§ 10 Arbeitszeitgesetz).
+      var lzK = (data.abgleich || {})[y + '-' + (m < 10 ? '0' : '') + m] || {}, zaD = 0;
+      if (wmm.zaUmr === 'ohne' && +lzK.zaKonto > 0 && +wmm.stundenlohn > 0) { zaD = Math.round(+lzK.zaKonto * (wmm.ueberstunden.zuschlagPct != null ? +wmm.ueberstunden.zuschlagPct : 50) / 100 * +wmm.stundenlohn * 100) / 100; kv = Math.round((kv + zaD) * 100) / 100; }
+      var diff = Math.round((kv - bF.brutto) * 100) / 100; if (Math.abs(diff) < 0.5) return null;
+      KV_BRUTTO.forEach(function (k) { var sk = E.calcMonth(data, y, m, todayISO(), opt([k])).summe, bk = E.bruttoVorschau(sk, E.kvWert(wmm, dat, [k]), false); if (!bk.ok) return; var d = Math.round((bk.brutto - bF.brutto) * 100) / 100; if (Math.abs(d) >= 0.5) teile.push({ key: k, delta: d }); });
+      if (zaD >= 0.5) teile.push({ key: 'za', delta: zaD });
+      return { firma: bF.brutto, kv: kv, diff: diff, teile: teile };
     } catch (e) { return null; }
+  }
+  // Diäten: Zählweise der Firma (eigene Einstellungen und von Hand geänderte Diätenstunden) gegen die Werte des Kollektivvertrags
+  function kvDiaeten(y, m, sm) {
+    try {
+      if (!sm) return null; var sk = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true, kvRef: ['diaet'] }).summe;
+      var d = Math.round((sk.diaetenBetrag - sm.diaetenBetrag) * 100) / 100; return Math.abs(d) >= 0.5 ? { firma: sm.diaetenBetrag, kv: sk.diaetenBetrag, diff: d } : null;
+    } catch (e) { return null; }
+  }
+  // Texte der Gegenüberstellung eines Monats (für Abweichungen, Kontrollbericht und die Liste für die Arbeiterkammer)
+  function kvTexte(y, m, sm, wmm) {
+    var out = [], kg = kvVergleich(y, m, sm, wmm), kd = kvDiaeten(y, m, sm);
+    if (kg) { var fmtT = function (lab) { return kg.teile.map(function (t) { return lab(KV_GRUND[t.key]) + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; '); }, kgA = [eur.format(kg.firma), eur.format(kg.kv), eur.format(Math.abs(kg.diff))];
+      var kgT = kg.diff > 0 ? 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} mehr. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.' : 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} weniger. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.';
+      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kg.diff, text: abw1(kgT, kgA.concat([fmtT(abwLab)])), de: abw1(kgT, kgA.concat([fmtT(function (x) { return x; })]), 1) }); }
+    if (kd) { var kdA = [eur.format(kd.firma), eur.format(kd.kv), eur.format(Math.abs(kd.diff))], kdT = kd.diff > 0 ? 'Gegenüberstellung Diäten: Nach der Zählweise deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} mehr. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.' : 'Gegenüberstellung Diäten: Nach der Zählweise deiner Firma sind es {0}. Nach den Werten des Kollektivvertrags wären es {1}, das sind {2} weniger. Unter Vorbehalt: Prüfe bitte deine Diäten-Einstellungen und die von Hand geänderten Diätenstunden.';
+      out.push({ y: y, m: m, kat: 'kvref', kvDiff: kd.diff, text: abw1(kdT, kdA), de: abw1(kdT, kdA, 1) }); }
+    return out;
   }
   function abwListe() {
     var out = [], mon = {};
@@ -475,10 +497,7 @@
     Object.keys(mon).sort().forEach(function (k) {
       var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
-      var kg = kvVergleich(y, m, sm, wmm);
-      if (kg) { var kgA = [eur.format(kg.firma), eur.format(kg.kv), eur.format(Math.abs(kg.diff)), kg.teile.map(function (t) { return abwLab(KV_GRUND[t.key]) + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; ')], kgD = [kgA[0], kgA[1], kgA[2], kg.teile.map(function (t) { return KV_GRUND[t.key] + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; ')];
-        var kgT = kg.diff > 0 ? 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} mehr. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.' : 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} weniger. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.';
-        out.push({ y: y, m: m, kat: 'kvref', kvDiff: kg.diff, text: abw1(kgT, kgA), de: abw1(kgT, kgD, 1) }); }
+      kvTexte(y, m, sm, wmm).forEach(function (x) { out.push(x); });
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
         if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -818,8 +837,9 @@
       var MT = { bezahlt: 'Freistellung bezahlt, nichts abgezogen', za: 'Freistellung vom Zeitausgleich abgezogen', unbezahlt: 'Freistellung unbezahlt, Soll entfällt', offen: 'Freistellung noch nicht geklärt, nichts abgezogen' };
       Object.keys(fm).forEach(function (k) { how.push('<li' + (k === 'za' || k === 'unbezahlt' ? ' class="rot"' : '') + '><span>' + esc(MT[k] || MT.offen) + '</span>: <b>' + fh(fm[k]) + '</b> h' + (k === 'za' || k === 'unbezahlt' ? ' <span>Wird als Abweichung festgehalten.</span>' : '') + '</li>'); });
     }
+    kvTexte(ui.y, ui.m, sm, wAt(E.iso(ui.y, ui.m, 1))).forEach(function (x) { how.push('<li>' + esc(x.text) + '</li>'); });
     if (sm.zaUmr && sm.zaUmr !== 'offen') {
-      var ZT = { offen: 'Weiß ich noch nicht', eingerechnet: '1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)', getrennt: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt' };
+      var ZT = { offen: 'Weiß ich noch nicht', eingerechnet: '1 Überstunde = 1,5 Stunden Zeitausgleich (Zuschlag ist drin)', getrennt: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird ausbezahlt', ohne: '1 Überstunde = 1 Stunde Zeitausgleich, der Zuschlag wird nicht bezahlt' };
       how.push('<li><span>Zeitausgleich-Umrechnung</span>: <span>' + esc(ZT[sm.zaUmr] || ZT.offen) + '</span></li>');
     }
     var todo = bad.map(function (r) { return '<li><span>Frag im Büro nach dieser Zeile:</span> <b>' + esc(r.label) + '</b></li>'; });

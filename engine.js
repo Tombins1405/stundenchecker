@@ -1059,7 +1059,7 @@
   // Vergleichsrechnung "nach Kollektivvertrag und Gesetz": dieselben Tage, aber ohne die Handhabung der Firma.
   // opts.kvRef = true (alle Regeln) oder eine Liste: 'zu' Zuschläge nach KV, 'betrieb' Betrieb geschlossen ist bezahlte Zeit,
   // 'frei' Freistellung durch die Firma ist bezahlt, 'rund' Zeiten ungerundet, 'lohn' mindestens der Lohn der hinterlegten Lohngruppe.
-  var KV_REGELN = ['zu', 'betrieb', 'frei', 'rund', 'lohn'];
+  var KV_REGELN = ['zu', 'betrieb', 'frei', 'rund', 'lohn', 'diaet']; // 'diaet': Diäten nach den Werten des Kollektivvertrags, ohne die von Hand geänderten Diätenstunden
   function kvLohn(w, dateStr) { // Mindestlohn laut hinterlegter Lohngruppe: { std, mon } oder null
     var lg0 = w && LOHNGRUPPEN[w.paket]; if (!lg0 || !w.lg) return null;
     var lg = lgFuer(lg0, dateStr || w.gueltigAb || '0000-00-00'), g = null; lg.gruppen.forEach(function (x) { if (x.id === w.lg) g = x; }); if (!g) return null;
@@ -1078,6 +1078,7 @@
     if (hat('betrieb') && w.betriebFrei === 'ueberstunden') kopie().betriebFrei = 'urlaub';
     if (hat('frei')) kopie().kvFrei = true;
     if (hat('rund') && w.runAn) kopie().runAn = false;
+    if (hat('diaet') && p && w.paket !== 'eigen' && p.werte && p.werte.diaeten && w.diaeten) { kopie().diaeten = clone(p.werte.diaeten); c.kvDiaet = true; }
     if (hat('lohn')) { var kl = kvLohn(w, dateStr); if (kl) { if (+w.monatslohn > 0 && kl.mon && +w.monatslohn < kl.mon - 0.005) { kopie().monatslohn = kl.mon; c.stundenlohn = kl.std; } else if (!(+w.monatslohn > 0) && w.stundenlohn != null && +w.stundenlohn > 0 && +w.stundenlohn < kl.std - 0.005) kopie().stundenlohn = kl.std; } }
     return c || w;
   }
@@ -1206,7 +1207,7 @@
     var d = w.diaeten;
     if (d.modell !== 'aus' && m.brutto > 0) {
       var std;
-      if (day.diaeten !== null && day.diaeten !== undefined && day.diaeten !== '') std = +day.diaeten;
+      if (day.diaeten !== null && day.diaeten !== undefined && day.diaeten !== '' && !w.kvDiaet) std = +day.diaeten;
       else if (d.vorschlag === 'netto') std = m.netto / 60;
       else if (d.vorschlag === 'leer') std = 0;
       else std = m.brutto / 60;
