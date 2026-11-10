@@ -185,6 +185,19 @@
         schlechtwetter: false
       }
     },
+    metall_ang: {
+      name: 'Metallgewerbe (Angestellte)',
+      hinweis: 'KV Metallgewerbe, Angestellte, Gehaltsordnung 2026/2027 (Quelle: wko.at): Mindestgrundgehälter der Verwendungsgruppen I bis V und der Meistergruppe nach Verwendungsgruppenjahren, die Gehälter ab 1.1.2027 sind mit Datum hinterlegt, dazu die Lehrlingseinkommen. Die Sonderverläufe (Verwendungsgruppe IV für Meister, V Obermeister, VI) sind nicht hinterlegt: trage dort dein Gehalt selbst ein. Arbeitszeit, Überstundenzuschläge und Teiler stehen nicht in der Gehaltsordnung: die Werte hier (38,5 Stunden, Überstunden 50 %, Sonn- und Feiertag 100 %) sind nur ein Vorschlag, bitte laut Dienstzettel prüfen. Sondervergütung Nachtarbeit 2,71 € je Stunde (ab 2027: 2,76 €): lege sie bei Bedarf als Prämie an.',
+      pruefen: true,
+      werte: {
+        diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+        ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+        stundenlohn: null,
+        betriebFrei: 'urlaub',
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+        schlechtwetter: false
+      }
+    },
     industrie_ang: {
       name: 'Büro: Metalltechnische Industrie (Angestellte)',
       hinweis: 'KV Metalltechnische Industrie, Angestellte, 2025/2026 (Quelle: metalltechnischeindustrie.at): 38,5 Stunden/Woche, Überstunden 50 %, zwischen 20 und 6 Uhr 100 %, ebenso die dritte und jede weitere Überstunde am Tag. Sonntag über der Wochennormalarbeitszeit 100 %. Grundstunde 1/143 des Monatsgehalts (Normalstunde 1/167). Zeitausgleich nach § 5 Abs. 3c. Bitte vergleiche mit deinem Dienstzettel.',
@@ -740,6 +753,28 @@
       { id: 'L3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [8.70] },
       { id: 'L4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [10.50] }
     ] },
+    metall_ang: { stand: 'ab 1.1.2026', stufen: ['1. bis 2. Jahr in der Verwendungsgruppe', 'ab dem 2. Jahr', 'ab dem 4. Jahr', 'ab dem 6. Jahr', 'ab dem 8. Jahr', 'ab dem 10. Jahr', 'ab dem 12. Jahr', 'ab dem 15. Jahr'], gruppen: [
+      { id: 'GI', m: true, name: 'Verwendungsgruppe I', l: [1960.54, 2058.43, 2190.76, 2323.12, 2455.45, 2588.72, 2703.75, 2914.69] },
+      { id: 'GII', m: true, name: 'Verwendungsgruppe II', l: [2199.15, 2350.62, 2502.07, 2655.45, 2809.08, 2962.72, 3094.32, 3335.74] },
+      { id: 'GIII', m: true, name: 'Verwendungsgruppe III', l: [2727.40, 2918.34, 3109.21, 3300.16, 3491.06, 3682.00, 3845.61, 4145.62] },
+      { id: 'GIV', m: true, name: 'Verwendungsgruppe IV', l: [3415.01, 3654.05, 3893.09, 4132.15, 4371.19, 4610.26, 4815.15, 5190.77] },
+      { id: 'GV', m: true, name: 'Verwendungsgruppe V', l: [4299.70, 4594.04, 4888.37, 5182.71, 5477.00, 5771.34, 6023.65, 6486.15] },
+      { id: 'GMG', m: true, name: 'Meistergruppe', l: [4130.76, 4130.76, 4303.13, 4475.48, 4647.84, 4820.17, 4992.53, 5270.29] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [935.66] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1097.97] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1443.27] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1948.23] }
+    ], folgt: [{ ab: '2027-01-01', stand: 'ab 1.1.2027', gruppen: {
+      GI: [1999.75, 2099.60, 2234.58, 2369.58, 2504.56, 2640.49, 2757.83, 2972.98],
+      GII: [2243.13, 2397.63, 2552.11, 2708.56, 2865.26, 3021.97, 3156.21, 3402.45],
+      GIII: [2781.95, 2976.71, 3171.39, 3366.16, 3560.88, 3755.64, 3922.52, 4228.53],
+      GIV: [3483.31, 3727.13, 3970.95, 4214.79, 4458.61, 4702.47, 4911.45, 5294.59],
+      GV: [4385.69, 4685.92, 4986.14, 5286.36, 5586.54, 5886.77, 6144.12, 6615.87],
+      GMG: [4213.38, 4213.38, 4389.19, 4564.99, 4740.80, 4916.57, 5092.38, 5375.70],
+      L1: [954.37],
+      L2: [1119.93],
+      L3: [1472.14],
+      L4: [1987.19] } }] },
     gewerbe_ang: { stand: 'ab 1.1.2026', stufen: null, gruppen: [
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [856.14] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1080.87] },
@@ -1018,6 +1053,13 @@
         verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
         fahrer: { name: 'Zustellung / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Konditor)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    optiker: { name: 'Augenoptik (Beratung, Werkstatt)', paket: 'metall_ang', kvs: ['metall_ang', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        beratung: { name: 'Beratung / Verkauf', b: { fahrzeug: false, kunden: false, praemien: true } },
+        werkstatt: { name: 'Werkstatt / Brillenfertigung', kv: 'metall', b: { fahrzeug: false, kunden: false, praemien: true } },
+        leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Augenoptik)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
