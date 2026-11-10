@@ -978,6 +978,43 @@
     d.l.forEach(function (v, i) { gr.push({ id: 'L' + (i + 1), m: true, lehrling: true, name: 'Lehrling, ' + (i + 1) + '. Lehrjahr', l: [v] }); });
     LOHNGRUPPEN[key] = { stand: 'ab 1.7.2026', stufen: null, teiler: 173.2, gruppen: gr };
   });
+  // Eisenbahn-KV (Kollektivvertrag Eisenbahnunternehmen, Arbeiter/innen und Angestellte, Gehaltsordnung ab 1.12.2025, Quelle: wko.at)
+  PAKETE.bahn = {
+    name: 'Eisenbahn (ÖBB, Westbahn und andere Eisenbahnunternehmen)',
+    hinweis: 'Eisenbahn-KV für Arbeiter/innen und Angestellte, Gehaltsordnung ab 1.12.2025 (Quelle: wko.at). Er gilt österreichweit für Eisenbahnunternehmen mit Berechtigung nach dem Eisenbahngesetz, zum Beispiel ÖBB-Gesellschaften und die Westbahn, für Dienstverhältnisse, die nach dem 31.12.2010 begonnen haben. Nicht erfasst sind unter anderem Lehrlinge teilweise, die städtischen Verkehrsbetriebe und die Privatbahnen mit eigener Dienst- und Besoldungsordnung (zum Beispiel Wiener Lokalbahnen): dafür habe ich die Tabellen noch nicht hinterlegt. 40 Stunden/Woche (38,5 mit Betriebsvereinbarung), Stundenlohn = Monatsgehalt geteilt durch 173. Nachtarbeitszulage 4,10 € je Stunde (22 bis 5 Uhr) und Sonn- und Feiertagszulage 7,00 € je Stunde sind bei den Prämien als Vorschlag hinterlegt. Die Verwendungsgruppen A bis J und ihre Stufen (Vorrückung nach 3, dann alle 4 Jahre) sind hinterlegt. Welche Tätigkeit in welche Gruppe fällt, konnte ich nicht belegen: die Gruppe steht auf deinem Dienstzettel oder Lohnzettel. Die Höhe des Überstundenzuschlags steht nicht in der Quelle, die App rechnet mit 50 %: bitte laut Lohnzettel prüfen. Die Gastronomie auf Schienenbahnen und der Schlafwagenbereich haben eigene Tabellen, die noch fehlen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.bahn = { stand: 'ab 1.12.2025', stufen: ['Stufe 1 (3 Jahre)', 'Stufe 2 (4 Jahre)', 'Stufe 3 (4 Jahre)', 'Stufe 4 (4 Jahre)', 'Stufe 5 (danach)'], teiler: 173, gruppen: [
+      { id: 'A', m: true, name: 'Verwendungsgruppe A', l: [2528.58, 2563.09, 2581.70, 2614.89, 2633.48] },
+      { id: 'B', m: true, name: 'Verwendungsgruppe B', l: [2816.97, 2950.72, 3018.29, 3153.50, 3219.67] },
+      { id: 'C', m: true, name: 'Verwendungsgruppe C', l: [2996.74, 3130.46, 3198.10, 3333.29, 3400.85] },
+      { id: 'D', m: true, name: 'Verwendungsgruppe D', l: [3146.32, 3280.07, 3347.65, 3481.41, 3549.00] },
+      { id: 'E', m: true, name: 'Verwendungsgruppe E', l: [3369.23, 3520.25, 3595.84, 3749.18, 3826.74] },
+      { id: 'F', m: true, name: 'Verwendungsgruppe F', l: [3717.85, 3874.49, 3952.05, 4105.71, 4183.31] },
+      { id: 'G', m: true, name: 'Verwendungsgruppe G', l: [4074.40, 4308.86, 4425.91, 4674.05, 4800.49] },
+      { id: 'H', m: true, name: 'Verwendungsgruppe H', l: [4435.05, 4851.36, 5066.45, 5481.74, 5688.96] },
+      { id: 'I', m: true, name: 'Verwendungsgruppe I', l: [5441.87, 5888.20, 6112.99, 6559.27, 6784.06] },
+      { id: 'J', m: true, name: 'Verwendungsgruppe J', l: [6434.95, 7064.60, 7378.60, 8008.24, 8323.87] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1080.83] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1272.83] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1616.67] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2162.95] },
+      { id: 'G1', m: true, lehrling: true, name: 'Lehrling (Gleisbautechnik), 1. Lehrjahr', l: [1115.98] },
+      { id: 'G2', m: true, lehrling: true, name: 'Lehrling (Gleisbautechnik), 2. Lehrjahr', l: [1550.31] },
+      { id: 'G3', m: true, lehrling: true, name: 'Lehrling (Gleisbautechnik), 3. Lehrjahr', l: [2065.23] },
+      { id: 'K1', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 1. Lehrjahr', l: [952.42] },
+      { id: 'K2', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 2. Lehrjahr', l: [1037.56] },
+      { id: 'K3', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 3. Lehrjahr', l: [1387.44] },
+      { id: 'K4', m: true, lehrling: true, name: 'Lehrling (Büro und Mobilitätsservice), 4. Lehrjahr', l: [1869.78] }
+  ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1099,6 +1136,16 @@
         verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
         fahrer: { name: 'Zustellung / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Fleischer)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    bahn: { name: 'Bahn (Fahrdienst, Zug, Bahnhof, Werkstätte, Bordservice)', paket: 'bahn', kvs: ['bahn', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        lokfuehrer: { name: 'Triebfahrzeugführer / Lokführer', b: { fahrzeug: false, kunden: false, praemien: true } },
+        zugbegleiter: { name: 'Zugbegleiter / Schaffner', b: { fahrzeug: false, kunden: false, praemien: true } },
+        fahrdienst: { name: 'Fahrdienstleiter / Verschub', b: { fahrzeug: false, kunden: false, praemien: true } },
+        bahnhof: { name: 'Bahnhof, Service und Verkauf', b: { fahrzeug: false, kunden: false, praemien: true } },
+        technik: { name: 'Werkstätte, Gleisbau und Technik', b: { fahrzeug: false, kunden: false, praemien: true } },
+        buero: { name: 'Büro und Verwaltung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Bahn)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {

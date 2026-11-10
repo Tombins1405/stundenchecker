@@ -179,7 +179,7 @@
     [/sozialwirtschaft|swoe|swö|pflege|gesundheit/, 'sozial'],
     [/reinigung|denkmal|fassaden/, 'reinigung'],
     [/bewachung|sicherheit|security/, 'bewachung'],
-    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/fleischer|metzger|fleischerei/, 'fleischer'], [/friseur/, 'friseur'],
+    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/eisenbahn|westbahn|\b(oe|ö)bb\b/, 'bahn'], [/fleischer|metzger|fleischerei/, 'fleischer'], [/friseur/, 'friseur'],
     [/holzbau/, 'holzbau'], [/dachdecker/, 'dachdecker'], [/pflasterer/, 'pflasterer'], [/fliesenleger/, 'fliesenleger'],
     [/tischler|holzverarbeit/, 'tischler'], [/maler|lackierer|anstreicher/, 'maler'],
     [/bank/, 'banken_ang'], [/versicherung/, 'versicherung_ang'], [/informationstechn|it-|edv/, 'it_ang'],
