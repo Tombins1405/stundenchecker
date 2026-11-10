@@ -1065,6 +1065,74 @@
       { id: 'DIXb', m: true, name: 'Gehaltsgruppe IXb', stufen: ['Gehaltsstufe 7', 'Gehaltsstufe 8', 'Gehaltsstufe 9', 'Gehaltsstufe 10', 'Gehaltsstufe 11', 'Gehaltsstufe 12', 'Gehaltsstufe 13', 'Gehaltsstufe 14', 'Gehaltsstufe 15', 'Gehaltsstufe 16', '1. Dienstalterszulage', '2. Dienstalterszulage'], l: [5470.93, 5848.23, 6228.52, 6609.01, 6926.07, 7295.98, 7628.91, 8184.91, 8740.56, 9296.86, 10409.59, 11522.18] },
       { id: 'DX', m: true, name: 'Gehaltsgruppe X', stufen: ['Gehaltsstufe 9', 'Gehaltsstufe 10', 'Gehaltsstufe 11', 'Gehaltsstufe 12', 'Gehaltsstufe 13', 'Gehaltsstufe 14', 'Gehaltsstufe 15', 'Gehaltsstufe 16', '1. Dienstalterszulage', '2. Dienstalterszulage'], l: [7067.91, 7625.44, 8182.04, 8736.95, 9248.15, 9944.80, 10641.13, 11336.71, 12727.42, 14118.49] }
     ] };
+  // Autobus und Taxi (KV private Autobusbetriebe und KV Personenbeförderung mit Pkw, beide ab 1.1.2026, Quelle: wko.at)
+  PAKETE.autobus = {
+    name: 'Autobus, Linienverkehr (Arbeiter)',
+    hinweis: 'KV private Autobusbetriebe, Arbeiter, Lohnordnung ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden ab der 41. Wochenstunde 50 %, zwischen 22 und 6 Uhr 100 %. Arbeit am wöchentlichen Ruhetag und Überstunden am Feiertag 100 %. Nachtstunden: im Linienverkehr 22 bis 24 Uhr 50 %, von 0 bis 5 Uhr 100 %. Stehzeiten bis 6 Stunden am Tag zählen voll, darüber nach 1 Stunde Abzug zur Hälfte. Tagesgeld je 24 Stunden: Linienverkehr 25,44 €, Gelegenheitsverkehr 30,00 € (Ausland 31,44 € und 34,68 €), bei mehr als 3 Stunden Abwesenheit ein Zwölftel je angefangener Stunde, Nächtigung 6,26 €. Urlaubs- und Weihnachtsgeld je 4,33 Wochenlöhne plus 30 %. Vordienstzeiten als Buslenker zählen bis 10 Jahre. Lehrlingseinkommen stehen nicht in der Lohnordnung. Die App rechnet Überstunden mit 50 % und Feiertag mit 100 %: Ruhetags- und Nachtzuschläge bitte laut Lohnzettel prüfen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'stunde', satz: 2.12, maxStd: 12, minStd: 3, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  PAKETE.autobus_g = {
+    name: 'Autobus, Gelegenheitsverkehr und Reisebus (Arbeiter)',
+    hinweis: 'KV private Autobusbetriebe, Arbeiter, Lohnordnung ab 1.1.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden ab der 41. Wochenstunde 50 %, zwischen 22 und 6 Uhr 100 %. Arbeit am wöchentlichen Ruhetag und Überstunden am Feiertag 100 %. Nachtstunden: im Linienverkehr 22 bis 24 Uhr 50 %, von 0 bis 5 Uhr 100 %. Stehzeiten bis 6 Stunden am Tag zählen voll, darüber nach 1 Stunde Abzug zur Hälfte. Tagesgeld je 24 Stunden: Linienverkehr 25,44 €, Gelegenheitsverkehr 30,00 € (Ausland 31,44 € und 34,68 €), bei mehr als 3 Stunden Abwesenheit ein Zwölftel je angefangener Stunde, Nächtigung 6,26 €. Urlaubs- und Weihnachtsgeld je 4,33 Wochenlöhne plus 30 %. Vordienstzeiten als Buslenker zählen bis 10 Jahre. Lehrlingseinkommen stehen nicht in der Lohnordnung. Die App rechnet Überstunden mit 50 % und Feiertag mit 100 %: Ruhetags- und Nachtzuschläge bitte laut Lohnzettel prüfen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'stunde', satz: 2.50, maxStd: 12, minStd: 3, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.autobus = { stand: 'ab 1.1.2026', stufen: ['1. bis 10. Jahr im Betrieb', '11. bis 20. Jahr im Betrieb', 'ab dem 21. Jahr im Betrieb'], gruppen: [
+      { id: 'B1', name: 'Kraftfahrer/in (Buslenker/in)', stufen: ['1. bis 10. Jahr im Betrieb', '11. bis 20. Jahr im Betrieb', 'ab dem 21. Jahr im Betrieb'], l: [17.14, 17.25, 17.40] },
+      { id: 'B2', name: 'Berufskraftfahrer/in mit Lehrabschlussprüfung', stufen: ['1. bis 10. Jahr im Betrieb', '11. bis 20. Jahr im Betrieb', 'ab dem 21. Jahr im Betrieb'], l: [17.25, 17.40, 17.57] },
+      { id: 'B3', name: 'Facharbeiter/in', stufen: ['1. Jahr im Betrieb', '2. bis 10. Jahr im Betrieb', '11. bis 20. Jahr im Betrieb', 'ab dem 21. Jahr im Betrieb'], l: [15.73, 15.80, 15.94, 16.01] },
+      { id: 'B4', name: 'Angelernte Arbeiter/innen im Werkstättenbetrieb', l: [15.03] },
+      { id: 'B5', name: 'Garagenvorarbeiter/in', l: [15.73] },
+      { id: 'B6', name: 'Garagenarbeiter/innen, Tankwarte, Kassiere', l: [13.43] }
+    ] };
+  LOHNGRUPPEN.autobus_g = LOHNGRUPPEN.autobus;
+  PAKETE.taxi = {
+    name: 'Taxi und Mietwagen (Arbeiter)',
+    hinweis: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). In manchen Bundesländern gibt es eigene Landes-KVs mit Tagesgeldern, die ich nicht hinterlegt habe: bitte laut Lohnzettel prüfen. Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 55, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  PAKETE.taxi_b = {
+    name: 'Schülertransport und Krankenbeförderung mit Pkw (Arbeiter)',
+    hinweis: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). In manchen Bundesländern gibt es eigene Landes-KVs mit Tagesgeldern, die ich nicht hinterlegt habe: bitte laut Lohnzettel prüfen. Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 45, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.taxi = { stand: 'ab 1.1.2026', stufen: null, teiler: 238, gruppen: [
+      { id: 'T1', m: true, name: 'Mindestlohn (alle Arbeiter/innen)', l: [2060.00] }
+    ] };
+  LOHNGRUPPEN.taxi_b = { stand: 'ab 1.1.2026', stufen: null, teiler: 173, gruppen: [
+      { id: 'T1', m: true, name: 'Mindestlohn (alle Arbeiter/innen)', l: [2060.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1198,6 +1266,14 @@
         kueche: { name: 'Küche und Kantine (Küchenchef, Stellvertretung, Koch, Küchenhilfe)', b: { fahrzeug: false, kunden: false, praemien: true } },
         bordgastro: { name: 'Bordgastronomie und Schlafwagen', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Bahn)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    bus: { name: 'Bus und Taxi', paket: 'autobus', kvs: ['autobus', 'autobus_g', 'taxi', 'taxi_b', 'eigen'], einfach: true, diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: true },
+      arten: {
+        linie: { name: 'Linienbus', b: { fahrzeug: true, kunden: false, praemien: true } },
+        reise: { name: 'Reisebus / Gelegenheitsverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
+        taxi: { name: 'Taxi / Mietwagen', b: { fahrzeug: true, kunden: false, praemien: true } },
+        schueler: { name: 'Schülertransport / Krankenbeförderung', b: { fahrzeug: true, kunden: false, praemien: true } },
+        werkstatt: { name: 'Werkstätte und Garage (Bus)', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
