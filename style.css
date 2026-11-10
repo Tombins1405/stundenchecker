@@ -889,3 +889,19 @@ h3[data-ico="plan"]::before { background: #12b886; }
 #k-abw ul.kvl { border-left: 4px solid var(--accent); padding-left: 26px !important; }
 #k-abw ul.kvl li { color: var(--ink); }
 .sub.kvz { border-left: 4px solid var(--accent); padding-left: 8px; font-weight: 600; }
+
+.miakarte { position: fixed; inset: 0; z-index: 90; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; padding: 14px; }
+.miakarte .mk-box { background: #fff; color: #1f2937; border: 3px solid #f59e0b; border-radius: 18px; width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto; padding: 14px; box-shadow: 0 10px 34px rgba(0,0,0,.35); animation: mkpop .28s ease-out; }
+.miakarte .mk-kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; background: linear-gradient(90deg,#fef3c7,#fff7ed); border-radius: 12px; padding: 8px 10px; }
+.miakarte .mk-mia { width: 56px; height: 56px; flex: none; }
+.miakarte .mk-mia svg { width: 100%; height: 100%; }
+.miakarte .mk-titel { display: flex; align-items: center; gap: 8px; font-size: 1.15rem; flex-wrap: wrap; }
+.miakarte .mk-zahl { background: #dc2626; color: #fff; border-radius: 999px; min-width: 26px; height: 26px; line-height: 26px; text-align: center; font-weight: 700; font-size: .9rem; padding: 0 6px; }
+.miakarte .mk-zeile { border: 1px solid #fcd34d; border-left: 6px solid #f59e0b; border-radius: 12px; padding: 10px; margin-bottom: 8px; background: #fffbeb; }
+.miakarte .mk-zeile p { margin: 0 0 8px; font-size: .95rem; }
+.miakarte .mk-btns { display: flex; gap: 8px; }
+.miakarte .mk-btns .btn { flex: 1; }
+.miakarte .mk-zu { width: 100%; margin-top: 4px; }
+@keyframes mkpop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .miakarte .mk-box { animation: none; } }
+.miakarte .mk-zeile p.mk-rot { color: #b91c1c; font-weight: 600; }

@@ -2044,7 +2044,28 @@
     if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
-    return out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || (c.skip[s.k] || 0) < 2; })[0] || null;
+    ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || (c.skip[s.k] || 0) < 2; });
+    return ui.miaListe[0] || null;
+  }
+  // Start-Karte: sind beim Start mindestens zwei Dinge offen, zeigt Mia alle auf einen Blick (statt nur eine Sprechblase)
+  function miaKarte() {
+    var L = (ui.miaListe || []).filter(function (o) { return o.k !== 'fberledigt' && o.k.indexOf('news_') !== 0 && o.k !== 'newsfrage'; }).slice(0, 4);
+    if (L.length < 2 || $('#mia-karte')) return false;
+    var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
+    function zeichne() {
+      ov.innerHTML = '<div class="mk-box" role="dialog" aria-modal="true"><div class="mk-kopf"><span class="mk-mia">' + miaSvg(c.figur, miaFor(), 'eyes') + '</span><div class="mk-titel"><b>Das wartet auf dich</b><span class="mk-zahl">' + L.length + '</span></div></div>' +
+        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">Zeig mir</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
+        '<button type="button" class="btn mk-zu" data-mz="1">Schließen</button></div>';
+      try { uiApply(ov); } catch (e) { }
+    }
+    function zu() { if (ov.parentNode) ov.parentNode.removeChild(ov); ui.miaAuto = true; }
+    ov.addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b) { if (ev.target === ov) zu(); return; }
+      if (b.dataset.mz) { zu(); return; }
+      if (b.dataset.mg != null) { var k = L[+b.dataset.mg].k; zu(); miaGo(k); return; }
+      if (b.dataset.ms != null) { var o = L[+b.dataset.ms]; if (o.k.indexOf('frist_') === 0) fristSpaet(o.k.slice(6)); else miaSkipInc(o.k); L.splice(+b.dataset.ms, 1); if (L.length < 1) zu(); else zeichne(); }
+    });
+    zeichne(); document.body.appendChild(ov); miaSag('Das wartet auf dich'); return true;
   }
   function umfrageFaellig() {
     if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length || (data.profil && data.profil.umfrage)) return false;
@@ -2168,7 +2189,7 @@
   }
   function miaAuto() {
     if (ui.wiz || ui.miaAuto || TOUR) return; var c = miaCfg(); if (c.ruhig || !miaNext()) return;
-    ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !TOUR && !miaCfg().ruhig) miaOpen(true); }, 1200);
+    ui.miaAuto = true; setTimeout(function () { if (!ui.wiz && !TOUR && !miaCfg().ruhig) { if (!(miaNext() && miaKarte())) miaOpen(true); } }, 1200);
   }
   (function () {
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
@@ -4434,6 +4455,15 @@
     $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
   })();
   /* Hinweis, wenn eine Rückmeldung erledigt ist: beim ersten Mal werden schon erledigte still als gesehen gemerkt */
+  // Beim Start (höchstens einmal pro Tag): Mia sagt, was offen ist. Mehrere Dinge als Karte, eines als Sprechblase.
+  setTimeout(function () {
+    try {
+      if (PROBE || ui.miaAuto || ui.wiz || TOUR || miaCfg().ruhig || !data.settings.length) return;
+      var pf = data.profil || (data.profil = {}); if (pf.miaStartTag === todayISO()) return;
+      if (!miaNext()) return; pf.miaStartTag = todayISO(); save(); ui.miaAuto = true;
+      if (!miaKarte()) miaOpen(true);
+    } catch (e) { }
+  }, 3200);
   function fbErledigtPruefen() {
     if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
     window.StundenInsights.erledigt().then(function (ids) {
