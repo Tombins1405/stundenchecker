@@ -873,3 +873,6 @@ h3[data-ico="plan"]::before { background: #12b886; }
 .lzrow small.lzok { display: block; color: #12864f; font-weight: 600; font-size: .8rem; }
 .lzrow small.lzbad { display: block; color: var(--bad, #c62828); font-weight: 600; font-size: .8rem; }
 .lzrow > small.lzok, .lzrow > small.lzbad { grid-column: 1 / -1; }
+
+/* Gegenüberstellung Firma / Kollektivvertrag: dezent, nicht rot */
+#k-abw ul.rot li[data-abw="kvref"] { color: var(--ink-2); }

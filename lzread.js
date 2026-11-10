@@ -6,6 +6,8 @@
   function normMon(s) { return String(s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss'); }
   // Bezeichnung -> Zeile im Lohnzettel-Abgleich. Reihenfolge zählt. null = nicht übernehmen.
   var REGELN = [
+    [/feiertagsarbeit/, 'ftarbeit'],
+    [/^(sonntags?|feiertags?|sonnundfeiertags?|sonnfeiertags?|sonnufeiertags?)zusch/, 'zuschlag'], // eigener Zuschlag für Sonn- und Feiertagsstunden
     [/zuschl|zusch|zuschlag/, null],
     [/lohnsteuer|sozialvers|brutto|netto|auszahlung|beitrag|kosten|sechstel|pendler|bemessung/, null],
     [/^monatlveranderung|^zeitausgleichveranderung|^zaveranderung/, 'zaKonto'], // Block „Zeitausgleich“ unten links: Veränderung des Kontos in diesem Monat
@@ -22,7 +24,7 @@
     [/diaten|aufwandsentsch|taggeld|tagesgeld|reisekosten|verpflegung|ubernacht|spesen|auslosung/, 'dStd'],
     [/^lohn$|^stundenlohn|^normalstunden|^arbeitszeit|^normalarbeitszeit|^gehalt|^lohn/, 'lohn']
   ];
-  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub', zaKonto: 'Zeitausgleich-Konto (Zuwachs)', urlaubSaldo: 'Resturlaub (Arbeitstage)' };
+  var NAMEN = { lohn: 'Lohn', ueber: 'Überstunden', feiertag: 'Feiertagslohn', ftarbeit: 'Feiertagsarbeit (gearbeitete Stunden am Feiertag)', zuschlag: 'Sonn- und Feiertagszuschlag (Stunden mit Zuschlag)', ueberHoch: 'davon Überstunden mit höherem Zuschlag (Sonntag, Feiertag)', urlaub: 'Urlaub', krank: 'Krankenstand', pflege: 'Pflegefreistellung', dStd: 'Diäten (Stunden)', dEuro: 'Diäten (Betrag in Euro)', sonder: 'Sonderurlaub', zaKonto: 'Zeitausgleich-Konto (Zuwachs)', urlaubSaldo: 'Resturlaub (Arbeitstage)' };
   function zahl(s) { return parseFloat(String(s).replace(/\./g, '').replace(',', '.')); }
   function monat(lines) {
     for (var i = 0; i < lines.length; i++) {

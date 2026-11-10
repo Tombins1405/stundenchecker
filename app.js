@@ -285,13 +285,14 @@
     var cm = E.calcMonth(data, ui.y, ui.m, todayISO()), s = cm.summe, w = wAt(E.iso(ui.y, ui.m, 1));
 
     var sub = '';
-    if (s.zuschlagStd !== 0) sub = fh(s.istStd) + ' h gearbeitet, dazu ' + fh(s.zuschlagStd) + ' h Zuschlag';
+    if (s.ftArbeitStd > 0 || s.zuTagStd > 0) sub = abw1(s.zuTagStd > 0 ? '{0} h gearbeitet, davon {1} h mit Sonn- oder Feiertagszuschlag' : '{0} h gearbeitet, mit bezahltem Feiertag', [fh(s.istStd), fh(s.zuTagStd)]);
+    else if (s.zuschlagStd !== 0) sub = fh(s.istStd) + ' h gearbeitet, dazu ' + fh(s.zuschlagStd) + ' h Zuschlag';
     else if (s.lohnStd !== s.istStd) sub = fh(s.istStd) + ' h gearbeitet, dazu bezahlte Abwesenheit';
     else sub = 'tatsächlich gearbeitet';
     var jetzt = new Date(), laufend = ui.y > jetzt.getFullYear() || (ui.y === jetzt.getFullYear() && ui.m >= jetzt.getMonth() + 1); // Überstunden gibt es erst, wenn der Monat vorbei ist
     var diaetenBetrag = w.diaeten.modell === 'aus' ? '–' : eur.format(s.diaetenBetrag);
     var html = '<div class="panel">' +
-      '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(s.lohnStd) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
+      '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(Math.round((s.lohnStd + (s.ftArbeitStd || 0)) * 100) / 100) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
       (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') + (s.gleitKontoStd != null ? '<div><dt>Gleitzeitkonto</dt><dd class="hl">' + (s.gleitKontoStd > 0 ? '+' : '') + fh(s.gleitKontoStd) + '<small>h</small></dd></div>' : '') + (s.gleitVerfallStd > 0 ? '<div><dt>Über der Grenze</dt><dd>' + fh(s.gleitVerfallStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd - (s.mehrStd || 0)) + '<small>h</small></dd>') + '</div>' + (!laufend && s.mehrStd > 0 ? '<div><dt>Mehrarbeit</dt><dd class="hl">' + fh(s.mehrStd) + '<small>h</small></dd></div>' : '') + (!laufend && s.mehrFreiStd > 0 ? '<div><dt>Mehrarbeit ohne Zuschlag</dt><dd class="hl">' + fh(s.mehrFreiStd) + '<small>h</small></dd></div>' : '')) +
       (w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
@@ -459,6 +460,11 @@
     Object.keys(mon).sort().forEach(function (k) {
       var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
+      if (sm.zuArt === 'stunden' && sm.zuAltTage > 0 && wmm && wmm.paket !== 'eigen') {
+        var smK = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true, kvRef: true }).summe, bF = E.bruttoVorschau(sm, wmm, false), bK = E.bruttoVorschau(smK, wmm, false);
+        if (bF.ok && bK.ok && smK.zuArt === 'kv' && Math.abs(bK.brutto - bF.brutto) >= 0.5) { var kvA = [eur.format(bF.brutto), eur.format(bK.brutto), eur.format(Math.abs(bK.brutto - bF.brutto))], kvT = bK.brutto > bF.brutto ? 'Zuschläge an Sonn- und Feiertagen: Mit der Zählweise deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz gerechnet wären es etwa {1}, das sind {2} mehr. Unter Vorbehalt: Schätzung aus deinen Eingaben, prüfe bitte auch deine Eingaben und die Prozentsätze.' : 'Zuschläge an Sonn- und Feiertagen: Mit der Zählweise deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz gerechnet wären es etwa {1}, das sind {2} weniger. Unter Vorbehalt: Schätzung aus deinen Eingaben, prüfe bitte auch deine Eingaben und die Prozentsätze.';
+          out.push({ y: y, m: m, kat: 'kvref', kvDiff: Math.round((bK.brutto - bF.brutto) * 100) / 100, text: abw1(kvT, kvA), de: abw1(kvT, kvA, 1) }); }
+      }
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
         if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -509,12 +515,14 @@
     return z;
   }
   function abwFirmaZeile(l) { var t = abwSumme(l); return t.firma > 0 ? ['Stunden, die die Firma abgezogen hat (nicht bezahlt, nicht als Urlaub gerechnet)', fh(t.firma) + ' h' + (t.firmaEur > 0 ? ', ca. ' + eur.format(t.firmaEur) : ''), 'firma'] : null; }
-  function abwSummeText(l) { var z = abwSummeZeilen(l), f = abwFirmaZeile(l); return (z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') + (f ? f[0] + ': ' + f[1] + '\n\n' : ''); }
+  function abwKvZeile(l) { var d = 0, n = 0; l.forEach(function (x) { if (x.kat === 'kvref') { d += x.kvDiff; n++; } }); d = Math.round(d * 100) / 100; return n ? [d >= 0 ? 'Zuschläge: nach Kollektivvertrag gerechnet mehr als mit der Zählweise der Firma (Schätzung, unter Vorbehalt)' : 'Zuschläge: nach Kollektivvertrag gerechnet weniger als mit der Zählweise der Firma (Schätzung, unter Vorbehalt)', eur.format(Math.abs(d)), 'kvref'] : null; }
+  function abwSummeText(l) { var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); return (kz ? kz[0] + ': ' + kz[1] + '\n\n' : '') + (z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') + (f ? f[0] + ': ' + f[1] + '\n\n' : ''); }
   function abwSummeHtml(l) {
-    var z = abwSummeZeilen(l), f = abwFirmaZeile(l); if (!z.length && !f) return '';
+    var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); if (!z.length && !f && !kz) return '';
     function tr(r) { return '<tr' + (r[2] ? ' class="abwk" data-abw="' + r[2] + '"' : '') + '><td>' + esc(r[0]) + '</td><td class="no">' + esc(r[1]) + '</td></tr>'; }
     return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>Bislang fehlen dir gegenüber deinen Aufzeichnungen:</strong><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
-      (f ? '<div class="notice warn" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(f) + '</tbody></table></div>' : '');
+      (f ? '<div class="notice warn" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(f) + '</tbody></table></div>' : '') +
+      (kz ? '<div class="notice" style="margin-bottom:10px"><table class="cmp"><tbody>' + tr(kz) + '</tbody></table></div>' : '');
   }
   /* ============================================================ LOHNZETTEL (eigener Reiter) */
   function renderLohn() {
@@ -1937,6 +1945,8 @@
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
     if (data.profil && data.profil.assistDone && !data.profil.lzEinstFrage) out.push({ k: 'lzeinst', text: 'Soll ich deine Einstellungen mit deinem Lohnzettel prüfen? Du zeigst mir die PDF-Datei oder ein Foto, ich lese es nur hier auf deinem Handy, und du bestätigst jede Änderung.' });
+    var zuW = data.settings.length ? E.wertAt(data.settings, todayISO()) : null;
+    if (zuW && zuW.zuschlag && zuW.zuschlag.art !== 'kv' && (+zuW.zuschlag.so > 0 || +zuW.zuschlag.ft > 0 || +zuW.zuschlag.sa > 0) && !(data.profil && data.profil.zuartFrage)) out.push({ k: 'zuart', text: 'Neu: Zuschläge für Sonn- und Feiertage kann ich jetzt nach Kollektivvertrag und Gesetz rechnen, in einer eigenen Zeile. Bei dir zählen sie noch als zusätzliche Stunden. Wenn deine Firma so zählt, lass es so: Ich zeige dir dann bei den Abweichungen daneben, was nach Kollektivvertrag herauskäme. Soll ich stattdessen ganz auf Kollektivvertrag umstellen? Das kannst du in den Einstellungen bei den Zuschlägen jederzeit ändern.' });
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
@@ -2003,6 +2013,11 @@
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
+    if (k === 'zuart') {
+      data.settings.forEach(function (en) { if (!en.zuschlag || en.zuschlag.art === 'kv') return; var p = E.PAKETE[en.paket]; if (p && en.paket !== 'eigen') en.zuschlag = E.clone(p.werte.zuschlag); else en.zuschlag.art = 'kv'; });
+      if (!data.profil) data.profil = {}; data.profil.zuartFrage = true; save(); renderSettings(); neuZeichnen();
+      toast('Umgestellt: Zuschläge werden jetzt nach Kollektivvertrag gerechnet. Prüfe die Prozentsätze in den Einstellungen.', 7000); return;
+    }
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
     if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
@@ -2063,7 +2078,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -2794,12 +2809,13 @@
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
-      if (inp.type === 'checkbox') inp.checked = inp.dataset.path === 'ueberstunden.zaAusgleich' ? v !== false : !!v;
+      if (inp.dataset.type === 'zuart') inp.checked = v !== 'kv';
+      else if (inp.type === 'checkbox') inp.checked = inp.dataset.path === 'ueberstunden.zaAusgleich' ? v !== false : !!v;
       else inp.value = (v === null || v === undefined) ? '' : v;
     });
     
     $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
-    paketInfo(en);
+    paketInfo(en); zuHint(en);
     renderStufen(en);
     (function () { // Hinweis: Was fehlt für den Lohnzettel-Vergleich
       var c = $('#s-need'), l = $('#s-needl'); if (!c || !l) return;
@@ -2959,15 +2975,24 @@
     }).join('');
   }
 
+  var ZU_KV = 'Zuschlag in Prozent für Stunden an diesem Tag, wie im Kollektivvertrag. Die Stunden zählen einfach, der Zuschlag steht in einer eigenen Zeile. Überstunden am Sonntag bekommen nur den höheren Zuschlag, nicht beide. Am Feiertag kommt die gesetzliche Bezahlung von selbst dazu (Feiertagsentgelt plus gearbeitete Stunden), trage hier nur einen Zuschlag ein, den es darüber hinaus gibt. Wenn du es nicht weißt, lass 0 stehen.';
+  var ZU_FIRMA = 'Deine Firma zählt die Zuschläge als zusätzliche Stunden: Bei 100 % zählt eine Stunde doppelt und läuft in die Überstunden. Die App rechnet so mit und zeigt bei den Abweichungen daneben, was nach Kollektivvertrag und Gesetz herauskäme.';
+  function zuHint(en) { var h = $('#s-zu-hint'); if (h) h.textContent = en && en.zuschlag && en.zuschlag.art === 'kv' ? ZU_KV : ZU_FIRMA; }
   function onSettingInput(inp) {
     var en = curEntry(); if (!en) return;
     var t = inp.dataset.type, v;
     if (inp.dataset.path === 'gueltigAb') return; // wird bei "change" behandelt
-    if (t === 'bool') v = inp.checked;
+    if (t === 'zuart') v = inp.checked ? 'stunden' : 'kv';
+    else if (t === 'bool') v = inp.checked;
     else if (t === 'num') { v = parseFloat(String(inp.value).replace(',', '.')); if (isNaN(v)) v = 0; }
     else if (t === 'numnull') { v = String(inp.value).trim() === '' ? null : parseFloat(String(inp.value).replace(',', '.')); if (v !== null && isNaN(v)) v = null; }
     else v = inp.value;
-    setPath(en, inp.dataset.path, v); if (inp.dataset.path === 'stundenlohn' || inp.dataset.path === 'monatslohn') en.lgAuto = false;
+    setPath(en, inp.dataset.path, v);
+    if (t === 'zuart' && v === 'kv') { // Umstellen auf Kollektivvertrag: auch die Prozentsätze des Kollektivvertrags nehmen (bei 'als Stunden' hieß 100 % am Feiertag "zählt doppelt")
+      var pz = E.PAKETE[en.paket]; if (pz && en.paket !== 'eigen') en.zuschlag = E.clone(pz.werte.zuschlag);
+      [['#s-zsa', 'sa'], ['#s-zso', 'so'], ['#s-zft', 'ft']].forEach(function (x) { var el = $(x[0]); if (el) el.value = en.zuschlag[x[1]]; });
+    }
+    if (inp.dataset.path === 'stundenlohn' || inp.dataset.path === 'monatslohn') en.lgAuto = false;
     if (inp.dataset.path === 'monatslohn' || inp.dataset.path === 'monatsStd') {
       var ms = en.monatsStd > 0 ? en.monatsStd : 173;
       if (en.monatslohn > 0) { en.stundenlohn = Math.round(en.monatslohn / ms * 100) / 100; var sl = $('#s-lohn'); if (sl) sl.value = en.stundenlohn; }
@@ -2978,7 +3003,7 @@
     }
     delete en.test;
     save();
-    settingsVisibility(en);
+    settingsVisibility(en); zuHint(en);
   }
   function onDateChange(inp) {
     var en = curEntry(); if (!en) return;
@@ -3028,7 +3053,7 @@
     var box = $('#t-check');
     if (!box) return;
     if (!hasTest()) { box.innerHTML = '<p class="hint">Noch keine Beispieldaten geladen.</p>'; return; }
-    var ex = E.neuerWertesatz('gueter', '2026-01-01'); ex.zuschlag.so = 100; ex.ueberstunden.modell = 'tag-saldo'; // so rechnet die Excel
+    var ex = E.neuerWertesatz('gueter', '2026-01-01'); ex.zuschlag = { sa: 0, so: 100, ft: 100 }; ex.ueberstunden.modell = 'tag-saldo'; // so rechnet die Excel
     var s = E.calcMonth({ settings: [ex], days: data.days }, 2026, 3).summe;
     var rows = [
       ['Lohnstunden', EXPECT.lohn, s.lohnStd, fh],

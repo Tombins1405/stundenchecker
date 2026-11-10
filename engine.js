@@ -24,7 +24,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -38,7 +38,7 @@
         ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 50 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 50 },
         schlechtwetter: true
       }
     },
@@ -51,7 +51,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -64,7 +64,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -77,7 +77,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -90,7 +90,7 @@
         ueberstunden: { modell: 'gleit', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, sollProTag: {} },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -103,7 +103,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -116,7 +116,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 165 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -129,7 +129,7 @@
         ueberstunden: { modell: 'gleit', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, sollProTag: {} },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -142,7 +142,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -155,7 +155,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 150, mehrPct: 16.67, zaAusgleich: false },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -168,7 +168,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -181,7 +181,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 150 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -194,7 +194,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -207,7 +207,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 146 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -220,7 +220,7 @@
         ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 50 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 50 },
         schlechtwetter: true
       }
     },
@@ -233,7 +233,7 @@
         ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: true
       }
     },
@@ -246,7 +246,7 @@
         ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 10, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: true
       }
     },
@@ -259,7 +259,7 @@
         ueberstunden: { modell: 'bau', wochenStd: 39, tagesGrenze: 9, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -272,7 +272,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -285,7 +285,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -298,7 +298,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -311,7 +311,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -324,7 +324,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -337,7 +337,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 100 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
         schlechtwetter: false
       }
     },
@@ -350,7 +350,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 100, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 100, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -363,7 +363,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     },
@@ -376,7 +376,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 37, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 160.21 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 50, ft: 50 },
+        zuschlag: { art: 'kv', sa: 0, so: 50, ft: 50 },
         schlechtwetter: false
       }
     },
@@ -389,7 +389,7 @@
         ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
         stundenlohn: null,
         betriebFrei: 'urlaub',
-        zuschlag: { sa: 0, so: 0, ft: 0 },
+        zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
         schlechtwetter: false
       }
     }
@@ -402,7 +402,7 @@
     var w = {
       diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
       ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 },
-      stundenlohn: null, betriebFrei: 'urlaub', zuschlag: { sa: 0, so: 0, ft: 0 }, schlechtwetter: false
+      stundenlohn: null, betriebFrei: 'urlaub', zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 }, schlechtwetter: false
     };
     for (var k in o) w[k] = o[k];
     return w;
@@ -411,38 +411,38 @@
   PAKETE.de_spedition = {
     name: 'Deutschland: Spedition und Logistik, Berlin (Kraftfahrer)', land: 'DE', pruefen: true,
     hinweis: 'Tarif Spedition und Logistik Berlin, gewerbliche Arbeitnehmer (Quelle: Tarifbroschüre des Landes Berlin, Entgelt ab 1.2.2026, mindestens bis 31.12.2026): 38 Stunden/Woche (Brandenburg 39). Monatsentgelt je Gruppe und Dauer, für Zuschläge gilt Monatsentgelt ÷ 165. Überstunden 25 % (von 22 bis 6 Uhr 60 %), Nachtarbeit außerhalb von Schichtarbeit 50 %, Sonntag 70 %, Feiertag 120 %, 24. und 31.12. ab 12 Uhr 70 %; beim Zusammentreffen zählt nur der höchste Zuschlag. Wichtig: Dieser Tarif gilt nicht für Fahrer im Güterfernverkehr, dafür gibt es eigene Verträge (in Brandenburg zuletzt 12,65 € Berufskraftfahrer und 12,30 € Kraftfahrer je Stunde, Stand 10.2022, vermutlich überholt): trage dann deinen Lohn selbst ein. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden unterwegs, dazu 9 € je Nacht im Lkw (selbst eintragen). Gilt nur, wenn dein Betrieb tarifgebunden ist. Bitte vergleiche alles mit deiner Abrechnung.',
-    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 70, ft: 120 } })
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 70, ft: 120 } })
   };
   // Tarifregister Nordrhein-Westfalen (Speditions-, Logistik- und Transportwirtschaft): Lohntarif ab 1.10.2026, Manteltarif Stand 29.4.2024
   var NRW_VERPFL = { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 8, satz: 12 }, { ab: 23.99, satz: 24 }] };
   PAKETE.de_spedition_nrw = {
     name: 'Deutschland: Spedition und Logistik, Nordrhein-Westfalen (Kraftfahrer)', land: 'DE', pruefen: true,
     hinweis: 'Tarif Speditions-, Logistik- und Transportwirtschaft Nordrhein-Westfalen (Quelle: Tarifregister NRW, Lohntarif ab 1.10.2026, kündbar zum 28.2.2027): Kraftfahrer 40 Stunden/Woche (39 bei Fahrten unter 100 km Luftlinie vom Standort). Mehrarbeit 25 % für jede Stunde über 40 pro Woche. Nachtarbeit (22 bis 6 Uhr) 25 %; Fernfahrer (über 100 km) bekommen stattdessen 5 € je Nachtschicht mit mehr als 2 Stunden Arbeit. Sonntag 75 % (ab 1.1.2026), Feiertag 100 % (ab 1.1.2027 125 %), beim Zusammentreffen zählt nur der höhere Zuschlag, Nacht kommt dazu. Warte- und Anwesenheitszeiten zählen 100 %, Kabinen- und Beifahrerzeit 70 %. Verpflegung laut Tarif 12 € bei mehr als 8 Stunden, 24 € bei 24 Stunden Abwesenheit. Weihnachtsgeld ein Monatsverdienst, Urlaubsgeld und Zulagen je Betrieb: lege sie als Prämie an. Die Nachtzuschläge sind nicht hinterlegt: lege sie als Prämie an. Von den Stundenlöhnen sind die unterste und die oberste Stufe hinterlegt: trage bei Zwischenstufen deinen Lohn laut Lohnzettel ein. Gilt nur, wenn dein Betrieb tarifgebunden ist. Bitte vergleiche alles mit deiner Abrechnung.',
-    werte: deWerte({ diaeten: NRW_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 100 } })
+    werte: deWerte({ diaeten: NRW_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 75, ft: 100 } })
   };
 
   // Bayern: ver.di Bayern und Landesverein Bayerischer Spediteure, Lohntarif ab 1.1.2026 (läuft bis 30.11.2026). Zuschläge des Manteltarifs nicht belegt: Überstunden 25 % und 40 Stunden nur angenommen.
   PAKETE.de_spedition_by = {
     name: 'Deutschland: Spedition und Logistik, Bayern (Kraftfahrer)', land: 'DE', pruefen: true,
     hinweis: 'Tarif Speditions- und Logistikgewerbe Bayern, gewerbliche Arbeitnehmer (Quellen: ver.di Bayern, Landesverein Bayerischer Spediteure): Stundenlöhne ab 1.1.2026 (plus 3,5 %). Der Lohntarif läuft bis 30.11.2026, danach wird neu verhandelt (ver.di fordert 230 € mehr ab 1.12.2026): Nach einem Abschluss musst du den Lohn selbst anpassen. Dazu gibt es eine Betriebszugehörigkeitszulage von 80, 100 oder 110 € im Monat, je nach Dauer im Betrieb: lege sie als Prämie an. Die Zuschläge laut Manteltarif konnte ich nicht belegen: Überstunden 25 % und 40 Stunden/Woche sind nur angenommen, Nacht-, Sonn- und Feiertagszuschläge stehen bei 0: trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden unterwegs, dazu 9 € je Nacht im Lkw (selbst eintragen). Gilt nur, wenn dein Betrieb tarifgebunden ist. Für Fahrer im Fernverkehr gibt es oft eigene Regeln. Bitte vergleiche alles mit deiner Abrechnung.',
-    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 0, ft: 0 } })
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 } })
   };
   // Sachsen: ZEFAS Sachsen, Lohntarif Verkehrsgewerbe Logistikunternehmen (gültig ab 1.10.2025). Zuschläge nicht im Auszug.
   PAKETE.de_logistik_sn = {
     name: 'Deutschland: Logistikunternehmen, Sachsen (Kraftfahrer)', land: 'DE', pruefen: true,
     hinweis: 'Lohntarif für das Verkehrsgewerbe Sachsen, Bereich Logistikunternehmen (Quelle: Tarifdaten der ZEFAS Sachsen, Stand Dezember 2025): Stundenlöhne ab 1.11.2026. Am 1.7.2027 steigen sie um knapp 3 %, dann musst du den Lohn selbst anpassen. Der Auszug nennt nur die Entgeltgruppen 2 und 3: in Gruppe 2 fahren Kraftfahrer im Shuttle- oder Nahverkehr, in Gruppe 3 Kraftfahrer mit höheren Anforderungen (Fernverkehr, ADR) und Berufskraftfahrer. Regelarbeitszeit sind 173 Stunden im Monat, ich rechne mit 40 Stunden pro Woche. Zuschläge (Überstunden, Nacht, Sonn- und Feiertag) stehen nicht im Auszug und sind auf 0: trage sie nach deinem Arbeitsvertrag oder Lohnzettel ein. Lehrlinge bekommen 37, 42 und 47 % des Ecklohns, die Beträge habe ich daraus berechnet. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden (Steuerrecht, nicht Tarif). Gilt nur, wenn dein Betrieb tarifgebunden ist. Bitte vergleiche alles mit deiner Abrechnung.',
-    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 0, ft: 0 } })
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 } })
   };
   // Andere Bundesländer: kein öffentlicher Lohntarif gefunden, Lohn selbst eintragen.
   PAKETE.de_spedition_sonst = {
     name: 'Deutschland: Spedition und Logistik, anderes Bundesland (Lohn selbst eintragen)', land: 'DE', pruefen: true,
     hinweis: 'Für dein Bundesland habe ich keinen öffentlich nachlesbaren Lohntarif gefunden, die Tabellen gibt es oft nur für Mitglieder der Verbände. Trage deinen Stundenlohn und die Zuschläge aus Arbeitsvertrag oder Lohnzettel selbst ein. Bekannte Erhöhungen laut ver.di: Baden-Württemberg (Württemberg und Nordbaden): plus 2,5 % ab 1.5.2026, mindestens 100 € im Monat, und plus 2 % ab 1.5.2027. Thüringen: plus 3,7 % ab 1.1.2026, plus 3,4 % ab 1.10.2026, plus 2,9 % ab 1.6.2027. Sachsen-Anhalt: plus 3,7 % ab Dezember 2025, plus 3,4 % ab September 2026, plus 2,9 % ab Juni 2027. Schleswig-Holstein: zweimal plus 3,5 %. Niedersachsen: Abschluss im Oktober 2025, Zahlen nur für Mitglieder. Für Bayern, Sachsen, Berlin und Nordrhein-Westfalen gibt es eigene Tarife in der Liste. Verpflegung: 14 € bei mehr als 8 Stunden, 28 € bei 24 Stunden (Steuerrecht). 40 Stunden pro Woche und 25 % Überstundenzuschlag sind nur angenommen. Bitte vergleiche alles mit deiner Abrechnung.',
-    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 0, ft: 0 } })
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 } })
   };
   PAKETE.de_bau = {
     name: 'Deutschland: Bauhauptgewerbe (Baumaschinenführer, Bau)', land: 'DE', pruefen: true,
     hinweis: 'Bundesweiter Tarif für das Bauhauptgewerbe, Löhne ab 1.4.2026 (Gesamttarifstundenlohn): Lohngruppe 2 (Maschinenführer) 18,73 €, Lohngruppe 4 (Baumaschinenführer) 26,05 € je Stunde. Zuschläge laut einer Auskunft zum Tarif: Überstunden 25 %, Nacht 20 %, Sonntag 75 %, Feiertag 200 %. Wochenarbeitszeit 40 Stunden angenommen, bitte prüfen. Schlechtwetter läuft in Deutschland nicht über die BUAK, sondern über Saison-Kurzarbeitergeld; das ist hier nicht abgebildet. Verpflegungspauschale: 14 € bei mehr als 8 Stunden unterwegs, 28 € bei 24 Stunden.',
-    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { sa: 0, so: 75, ft: 200 } })
+    werte: deWerte({ diaeten: DE_VERPFL, ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 25 }, zuschlag: { art: 'kv', sa: 0, so: 75, ft: 200 } })
   };
   PAKETE.de_handel = {
     name: 'Deutschland: Einzelhandel', land: 'DE', pruefen: true,
@@ -1056,6 +1056,12 @@
     });
     return hit;
   }
+  // Vergleichsrechnung: dieselben Tage, aber Zuschläge nach Kollektivvertrag (Werte des Pakets) statt nach der Zählweise der Firma.
+  function wRef(w, opts) {
+    if (!opts || !opts.kvRef || !w || !w.zuschlag || w.zuschlag.art === 'kv') return w;
+    var p = PAKETE[w.paket]; if (!p || w.paket === 'eigen' || !p.werte || !p.werte.zuschlag) return w;
+    var c = {}; Object.keys(w).forEach(function (k) { c[k] = w[k]; }); c.zuschlag = clone(p.werte.zuschlag); return c;
+  }
   function wertAt(settings, dateStr) {
     if (!settings || !settings.length) return neuerWertesatz('gueter', '1900-01-01');
     var list = settings.slice().sort(function (a, b) { return a.gueltigAb < b.gueltigAb ? -1 : 1; });
@@ -1151,12 +1157,26 @@
 
     var z = w.zuschlag, pct = 0;
     if (typ === 'sonntag') pct = z.so; else if (typ === 'feiertag') pct = z.ft; else if (typ === 'samstag') pct = z.sa;
-    res.faktor = 1 + (pct || 0) / 100;
-    res.wertMin = m.netto * res.faktor;
+    pct = +pct || 0;
+    if (z.art === 'kv') {
+      // Nach Kollektivvertrag: Die Stunden zählen einfach. Der Zuschlag steht in einer eigenen Zeile und wird nicht zu Überstunden.
+      res.kv = true; res.faktor = 1; res.wertMin = m.netto; res.zuPct = pct; res.zuMin = pct > 0 ? m.netto : 0;
+      var solltag = istSollTag(w.ueberstunden, wd), de = !!(PAKETE[w.paket] && PAKETE[w.paket].land === 'DE');
+      if (typ === 'feiertag' && status === 'arbeit' && solltag && !de) {
+        // Österreich (§ 9 Arbeitsruhegesetz): Feiertagsentgelt für die ausgefallenen Sollstunden plus Bezahlung der gearbeiteten Stunden.
+        // Gearbeitete Stunden bis zum Tagessoll sind "Feiertagsarbeit" (einfach bezahlt), nur die Stunden darüber zählen in die Überstunden.
+        res.ftArbeitMin = Math.min(m.netto, sollMin); res.ftCreditMin = sollMin;
+        res.wertMin = m.netto - res.ftArbeitMin; res.hochMin = res.wertMin;
+      } else if ((typ === 'sonntag' || typ === 'feiertag' || typ === 'samstag') && !solltag) res.hochMin = m.netto; // Arbeit an einem freien Tag: kommt als Mehrstunden in den Monat
+      if (!(pct >= (w.ueberstunden.zuschlagPct != null ? +w.ueberstunden.zuschlagPct : 50)) || !(pct > 0)) res.hochMin = 0; // nur wenn der Tageszuschlag den Überstundenzuschlag ersetzt (es gilt der höhere)
+    } else {
+      res.faktor = 1 + pct / 100;
+      res.wertMin = m.netto * res.faktor;
+    }
     // Zusätzlich bezahlte Stunden am selben Tag (zum Beispiel Sonderurlaub plus Arbeit): werden einfach dazugezählt.
     var ex = +day.extra; if (isNaN(ex) || ex < 0) ex = 0;
     if (status === 'ersatzruhe') ex = 0; // beim Ersatzruhetag ist "extra" schon die Gutschrift des Tages
-    if (status !== 'ersatzruhe') res.extraMin = Math.round(ex * 60); res.creditMin = credBase + (status === 'ersatzruhe' ? 0 : res.extraMin);
+    if (status !== 'ersatzruhe') res.extraMin = Math.round(ex * 60); res.creditMin = credBase + (status === 'ersatzruhe' ? 0 : res.extraMin) + (res.ftCreditMin || 0);
 
     // Überstunden-Beitrag des Tages (Modell "tag-saldo": Arbeitsstunden minus Tagessoll, kürzere Tage gleichen aus)
     if (w.ueberstunden.modell === 'tag-saldo' && (res.wertMin > 0 || res.swMin > 0 || res.extraMin > 0)) {
@@ -1337,19 +1357,20 @@
     Object.keys(days).forEach(function (k) { if (days[k] && (!firstKey || k < firstKey)) firstKey = k; });
     var s = { istMin: 0, lohnMin: 0, ueberMin: 0, diaetenStd: 0, diaetenBetrag: 0, swMin: 0,
       arbeitstage: 0, urlaub: 0, krank: 0, pflege: 0, schule: 0, za: 0, freiTage: 0, freiListe: [], betriebListe: [], feiertageBezahlt: 0, zuschlagMin: 0,
-      feMin: 0, urMin: 0, krMin: 0, pfMin: 0, soMin: 0, sonderTage: 0, feExtraMin: 0 };
+      feMin: 0, urMin: 0, krMin: 0, pfMin: 0, soMin: 0, sonderTage: 0, feExtraMin: 0, zuTagMin: 0, zuEqMin: 0, ftArbMin: 0, hochKandMin: 0, kvTage: 0, altTage: 0 };
     var bauWochen = false, monatModell = false, gleitModell = false, anyEntry = false;
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
 
     for (var d = 1; d <= n; d++) {
-      var ds = iso(y, m, d), w = wertAt(settings, ds), r = calcDay(days[ds], ds, w);
+      var ds = iso(y, m, d), w = wRef(wertAt(settings, ds), opts), r = calcDay(days[ds], ds, w);
       tage.push(r);
       if (r.leer) continue;
       // Automatischer Feiertag ohne Eintrag: vor dem ersten Eintrag und in der Zukunft noch nicht mitzählen (nur Modell "monat").
       if (!days[ds] && (w.ueberstunden.modell === 'monat' || w.ueberstunden.modell === 'gleit') && ((heute && ds > heute) || (live && firstKey && ds < firstKey))) continue;
       s.istMin += r.nettoMin;
       s.lohnMin += r.wertMin + r.creditMin;
-      s.zuschlagMin += r.wertMin - r.nettoMin;
+      if (r.kv) { s.zuTagMin += r.zuMin || 0; s.zuEqMin += (r.zuMin || 0) * (r.zuPct || 0) / 100; s.ftArbMin += r.ftArbeitMin || 0; s.hochKandMin += r.hochMin || 0; if (r.zuPct > (s.hochPct || 0) && r.hochMin > 0) s.hochPct = r.zuPct; if (r.nettoMin > 0) s.kvTage++; }
+      else { s.zuschlagMin += r.wertMin - r.nettoMin; if (r.nettoMin > 0 && r.faktor !== 1) s.altTage++; }
       s.swMin += r.swMin;
       s.diaetenStd += r.diaetenStd;
       s.diaetenBetrag += r.diaetenBetrag;
@@ -1363,7 +1384,8 @@
       if (r.betriebAbzugMin > 0) s.betriebListe.push({ datum: ds, std: h2(r.betriebAbzugMin) });
       if (r.status === 'freistellung') { s.freiTage++; s.freiListe.push({ datum: ds, modus: r.freiModus, std: h2(r.freiSollMin || 0) }); }
       if (r.status === 'feiertag') { s.feiertageBezahlt++; s.feMin += r.creditMin; }
-      if (r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Feiertagslohn gibt es auch, wenn man am Feiertag arbeitet (nur Anzeige, nicht in den Stunden)
+      if (r.ftCreditMin) s.feMin += r.ftCreditMin; // nach KV: Feiertagsentgelt zählt wie ein bezahlter Feiertag
+      else if (!r.kv && r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0 && r.faktor === 1) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Firmen-Zählweise ohne Feiertagszuschlag: Feiertagslohn gibt es zusätzlich (nur Anzeige). Mit Zuschlag steckt er schon in den doppelt gezählten Stunden.
       if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
       if (r.status === 'sonderurlaub') s.soMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
       if (r.status === 'krank') s.krMin += r.creditMin;
@@ -1438,6 +1460,8 @@
 
     // Aufteilung wie auf dem Lohnzettel: Lohn = alle Stunden minus Überstunden minus Feiertag, Urlaub, Krankenstand, Pflege.
     var credMin = s.feMin + s.urMin + s.krMin + s.pfMin + s.soMin;
+    // Überstunden, die auf einen Sonn- oder Feiertag fallen: Dort gilt der höhere Tageszuschlag statt des Überstundenzuschlags (nicht beide).
+    s.ueberHochMin = Math.min(Math.max(0, s.ueberMin - (s.mehrMin || 0) - (s.mehrFreiMin || 0)), s.hochKandMin);
     var normalMin = Math.max(0, s.lohnMin - Math.max(0, s.ueberMin) - credMin) + (s.mehrFreiMin || 0);
     // Dienste (Bereitschaft, Notdienst, frei benannt): zählen an jedem Tagestyp, auch ohne Arbeitszeit. Die Bezahlung legt der Nutzer fest.
     var dList = (data.profil && data.profil.dienste) || [], dSum = {};
@@ -1459,6 +1483,7 @@
         diaetenStd: r2(s.diaetenStd), diaetenBetrag: r2(s.diaetenBetrag), swStd: h2(s.swMin), dienste: dArr, dienstDef: dList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name, einheit: p.einheit, betrag: +p.betrag || 0 }; }), praemien: prArr, praemienDef: prList.filter(function (p) { return p.name; }).map(function (p) { return { id: p.id, name: p.name }; }), praemienEuro: r2(prEuro),
         arbeitstage: s.arbeitstage, urlaub: s.urlaub, krank: s.krank, pflege: s.pflege, schule: s.schule, za: s.za, freiTage: s.freiTage, betriebListe: s.betriebListe, freiListe: s.freiListe, zaUmr: (wertAt(settings, iso(y, m, n)) || {}).zaUmr || 'offen',
         feiertageBezahlt: s.feiertageBezahlt, sollStd: h2(s.sollMin || 0), sollAb: s.sollAb || 1,
+        zuArt: s.kvTage > 0 || !s.altTage ? 'kv' : 'stunden', zuTagStd: h2(s.zuTagMin), zuEqStd: h2(s.zuEqMin), ftArbeitStd: h2(s.ftArbMin), ueberHochStd: h2(s.ueberHochMin || 0), hochPct: s.hochPct || 0, zuAltTage: s.altTage,
         normalStd: h2(normalMin), feiertagStd: h2(s.feMin + s.feExtraMin), urlaubStd: h2(s.urMin), krankStd: h2(s.krMin), pflegeStd: h2(s.pfMin), sonderStd: h2(s.soMin), sonderTage: s.sonderTage
       },
       schlechtwetter: { verbrauchtStd: h2(sw.min), kontingentStd: sw.kontingentStd, von: sw.vonDatum, bis: sw.bisDatum }
@@ -1470,8 +1495,11 @@
   var AB_ZEILEN = [
     { key: 'lohn',     label: 'Lohn',          pflicht: true,  faktor: 1, hole: function (s) { return s.normalStd; } },
     { key: 'ueber',    label: 'Überstunden',   pflicht: true,  faktor: 'ueber', hole: function (s) { return Math.max(0, s.ueberStd - (s.mehrStd || 0) - (s.mehrFreiStd || 0)); } },
+    { key: 'ueberHoch', label: 'davon Überstunden mit höherem Zuschlag (Sonntag, Feiertag)', pflicht: false, faktor: 'hoch', hole: function (s) { return s.ueberHochStd || 0; } },
     { key: 'mehr',     label: 'Mehrarbeit (Teilzeit)', pflicht: false, faktor: 'mehr', hole: function (s) { return s.mehrStd || 0; } },
     { key: 'feiertag', label: 'Feiertagslohn', pflicht: false, faktor: 1, hole: function (s) { return s.feiertagStd; } },
+    { key: 'ftarbeit', label: 'Feiertagsarbeit (gearbeitete Stunden am Feiertag)', pflicht: false, faktor: 1, hole: function (s) { return s.ftArbeitStd || 0; } },
+    { key: 'zuschlag', label: 'Sonn- und Feiertagszuschlag (Stunden mit Zuschlag)', pflicht: false, faktor: 'zu', hole: function (s) { return s.zuTagStd || 0; } },
     { key: 'urlaub',   label: 'Urlaub',        pflicht: false, faktor: 1, hole: function (s) { return s.urlaubStd; } },
     { key: 'krank',    label: 'Krankenstand',  pflicht: false, faktor: 1, hole: function (s) { return s.krankStd; } },
     { key: 'pflege',   label: 'Pflegefreistellung', pflicht: false, faktor: 1, hole: function (s) { return s.pflegeStd; } },
@@ -1512,7 +1540,7 @@
       if (!has) { rows.push({ key: z.key, label: eigenSo ? 'Sonderurlaub' : z.label, unit: z.unit, app: app, lz: null, diff: null, status: 'offen', faktor: z.faktor }); return; }
       var lzWert = +v + (z.key === 'ueber' ? za : 0) + (z.key === 'lohn' ? so : 0); // Überstunden + Zeitausgleich-Konto, Lohn + Sonderurlaub
       var diff = r2(lzWert - app), a = Math.abs(diff);
-      rows.push({ key: z.key, label: eigenSo ? 'Sonderurlaub' : z.label, unit: z.unit, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor,
+      rows.push({ key: z.key, label: eigenSo ? 'Sonderurlaub' : z.label, unit: z.unit, app: app, lz: +v, lzGesamt: lzWert, diff: diff, faktor: z.faktor, rate: z.key === 'zuschlag' ? (summe.zuTagStd > 0 ? summe.zuEqStd / summe.zuTagStd : 1) : z.key === 'ueberHoch' ? (summe.hochPct || 100) / 100 : undefined,
         status: a < 0.005 ? 'gleich' : a <= 0.5 ? 'klein' : diff < 0 ? 'weniger' : 'mehr' });
     });
     // Prämien: Betrag in Euro gegen die Zeile auf dem Lohnzettel (Toleranz 50 Cent wegen Rundung)
@@ -1625,6 +1653,8 @@
       if (f === 'euro') eur = -r.diff;
       else if (f === 'diaeten') { if (w && w.diaeten && w.diaeten.modell === 'stunde' && w.diaeten.satz) eur = -r.diff * w.diaeten.satz; }
       else if (lohn === null) { out.fehltStundenlohn = true; return; }
+      else if (f === 'zu') eur = -r.diff * lohn * (r.rate != null ? r.rate : 1);
+      else if (f === 'hoch') eur = -r.diff * lohnUeber * Math.max(0, (r.rate != null ? r.rate : 1) - zus / 100); // nur der Unterschied zwischen dem höheren und dem normalen Überstundenzuschlag
       else eur = -r.diff * (f === 'ueber' ? lohnUeber : lohn) * (f === 'ueber' ? 1 + zus / 100 : f === 'mehr' ? 1 + (w && w.ueberstunden && w.ueberstunden.mehrPct != null ? +w.ueberstunden.mehrPct : 25) / 100 : f);
       if (eur === null) return;
       eur = Math.round(eur * 100) / 100; out.zeilen[r.key] = eur; out.summe = Math.round((out.summe + eur) * 100) / 100;
@@ -1649,9 +1679,13 @@
     else teile.push({ key: 'lohn', euro: r2(((summe.normalStd || 0) + (summe.feiertagStd || 0) + (summe.urlaubStd || 0) + (summe.krankStd || 0) + (summe.pflegeStd || 0) + (summe.sonderStd || 0)) * lohn) });
     if (!laufend && lohnUeber) {
       var u = Math.max(0, (summe.ueberStd || 0) - (summe.mehrStd || 0) - (summe.mehrFreiStd || 0));
-      if (u > 0) teile.push({ key: 'ueber', euro: r2(u * lohnUeber * (1 + zus / 100)) });
+      var hoch = Math.min(u, summe.ueberHochStd || 0);
+      if (u > 0) teile.push({ key: 'ueber', euro: r2((u - hoch) * lohnUeber * (1 + zus / 100) + hoch * lohnUeber) }); // Überstunden am Sonn- oder Feiertag: Grundlohn hier, der höhere Zuschlag steht in der Zuschlagszeile
       if ((summe.mehrStd || 0) > 0 && (lohn || lohnUeber)) teile.push({ key: 'mehr', euro: r2(summe.mehrStd * (lohn || lohnUeber) * (1 + (w.ueberstunden.mehrPct != null ? +w.ueberstunden.mehrPct : 25) / 100)) });
     }
+    var lz1 = lohn || lohnUeber;
+    if ((summe.ftArbeitStd || 0) > 0 && lz1) teile.push({ key: 'ftarbeit', euro: r2(summe.ftArbeitStd * lz1) });
+    if ((summe.zuEqStd || 0) > 0 && lz1) teile.push({ key: 'zuschlag', euro: r2(summe.zuEqStd * lz1) });
     if (summe.praemienEuro > 0) teile.push({ key: 'praemien', euro: r2(summe.praemienEuro) });
     var dEuro = 0; (summe.dienste || []).forEach(function (x) { dEuro += +x.euro || 0; });
     if (dEuro > 0) teile.push({ key: 'dienste', euro: r2(dEuro) });
