@@ -468,7 +468,7 @@
   // Freistellung durch die Firma (keine Arbeit): Verrechnung je Tag (day.fv) oder laut Einstellung (w.freiVerr): bezahlt | za | unbezahlt | offen
   // Zeitausgleich-Konto: Wie viele Überstunden stecken in einem Zuwachs? Bei 1:1,5 (Zuschlag im Zeitausgleich enthalten) sind es 2/3 davon. Abzüge (Freinehmen) zählen immer Stunde für Stunde.
   function zaUeber(za, umr) { za = +za || 0; return (za > 0 && umr === 'eingerechnet') ? r2(za / 1.5) : za; }
-  function freiModus(day, w) { var m = (day && day.fv) || (w && w.freiVerr) || 'offen'; return ['bezahlt', 'za', 'unbezahlt', 'offen'].indexOf(m) >= 0 ? m : 'offen'; }
+  function freiModus(day, w) { if (w && w.kvFrei) return 'bezahlt'; var m = (day && day.fv) || (w && w.freiVerr) || 'offen'; return ['bezahlt', 'za', 'unbezahlt', 'offen'].indexOf(m) >= 0 ? m : 'offen'; }
   var UNBEZAHLT_FREI = ['frei', 'mutterschutz', 'karenz', 'papamonat']; // kein Lohn von der Firma, keine Sollstunden
   // Status eines Tages. credit = Tag wird mit den Sollstunden gutgeschrieben (bezahlte Abwesenheit).
   var STATUS = {
@@ -1056,11 +1056,30 @@
     });
     return hit;
   }
-  // Vergleichsrechnung: dieselben Tage, aber Zuschläge nach Kollektivvertrag (Werte des Pakets) statt nach der Zählweise der Firma.
-  function wRef(w, opts) {
-    if (!opts || !opts.kvRef || !w || !w.zuschlag || w.zuschlag.art === 'kv') return w;
-    var p = PAKETE[w.paket]; if (!p || w.paket === 'eigen' || !p.werte || !p.werte.zuschlag) return w;
-    var c = {}; Object.keys(w).forEach(function (k) { c[k] = w[k]; }); c.zuschlag = clone(p.werte.zuschlag); return c;
+  // Vergleichsrechnung "nach Kollektivvertrag und Gesetz": dieselben Tage, aber ohne die Handhabung der Firma.
+  // opts.kvRef = true (alle Regeln) oder eine Liste: 'zu' Zuschläge nach KV, 'betrieb' Betrieb geschlossen ist bezahlte Zeit,
+  // 'frei' Freistellung durch die Firma ist bezahlt, 'rund' Zeiten ungerundet, 'lohn' mindestens der Lohn der hinterlegten Lohngruppe.
+  var KV_REGELN = ['zu', 'betrieb', 'frei', 'rund', 'lohn'];
+  function kvLohn(w, dateStr) { // Mindestlohn laut hinterlegter Lohngruppe: { std, mon } oder null
+    var lg0 = w && LOHNGRUPPEN[w.paket]; if (!lg0 || !w.lg) return null;
+    var lg = lgFuer(lg0, dateStr || w.gueltigAb || '0000-00-00'), g = null; lg.gruppen.forEach(function (x) { if (x.id === w.lg) g = x; }); if (!g) return null;
+    var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : +w.ls) : 0, v = i >= 0 ? g.l[i] : null; if (v == null) return null;
+    if (!g.m) return { std: v, mon: null };
+    var tl = lg.teiler || Math.round((wochenStd(w.ueberstunden) > 0 ? wochenStd(w.ueberstunden) : 38.5) * 52 / 12 * 100) / 100, vz = +w.ueberstunden.vollzeitStd > wochenStd(w.ueberstunden) ? wochenStd(w.ueberstunden) / +w.ueberstunden.vollzeitStd : 1;
+    return { std: Math.round(v / tl * 100) / 100, mon: Math.round(v * vz * 100) / 100 };
+  }
+  function wRef(w, opts, dateStr) {
+    if (!opts || !opts.kvRef || !w) return w;
+    var keys = opts.kvRef === true ? KV_REGELN : opts.kvRef, c = null;
+    function kopie() { if (!c) { c = {}; Object.keys(w).forEach(function (k) { c[k] = w[k]; }); } return c; }
+    function hat(k) { return keys.indexOf(k) >= 0; }
+    var p = PAKETE[w.paket];
+    if (hat('zu') && w.zuschlag && w.zuschlag.art !== 'kv' && p && w.paket !== 'eigen' && p.werte && p.werte.zuschlag) kopie().zuschlag = clone(p.werte.zuschlag);
+    if (hat('betrieb') && w.betriebFrei === 'ueberstunden') kopie().betriebFrei = 'urlaub';
+    if (hat('frei')) kopie().kvFrei = true;
+    if (hat('rund') && w.runAn) kopie().runAn = false;
+    if (hat('lohn')) { var kl = kvLohn(w, dateStr); if (kl) { if (+w.monatslohn > 0 && kl.mon && +w.monatslohn < kl.mon - 0.005) { kopie().monatslohn = kl.mon; c.stundenlohn = kl.std; } else if (!(+w.monatslohn > 0) && w.stundenlohn != null && +w.stundenlohn > 0 && +w.stundenlohn < kl.std - 0.005) kopie().stundenlohn = kl.std; } }
+    return c || w;
   }
   function wertAt(settings, dateStr) {
     if (!settings || !settings.length) return neuerWertesatz('gueter', '1900-01-01');
@@ -1362,7 +1381,7 @@
     var prList = (data.profil && data.profil.praemien) || [], prSum = {};
 
     for (var d = 1; d <= n; d++) {
-      var ds = iso(y, m, d), w = wRef(wertAt(settings, ds), opts), r = calcDay(days[ds], ds, w);
+      var ds = iso(y, m, d), w = wRef(wertAt(settings, ds), opts, ds), r = calcDay(days[ds], ds, w);
       tage.push(r);
       if (r.leer) continue;
       // Automatischer Feiertag ohne Eintrag: vor dem ersten Eintrag und in der Zukunft noch nicht mitzählen (nur Modell "monat").
@@ -1411,7 +1430,7 @@
       var ab = 1; if (live && firstKey) { var fp = parseISO(firstKey); if (fp.y === y && fp.m === m) ab = fp.d; else if (fp.y > y || (fp.y === y && fp.m > m)) ab = n + 1; }
       for (var q = ab; q <= bis; q++) {
         var dq = iso(y, m, q), wq = weekday(dq);
-        if (istSollTag(wertAt(settings, dq).ueberstunden, wq) && !(days[dq] && (UNBEZAHLT_FREI.indexOf(days[dq].status) >= 0 || (days[dq].status === 'freistellung' && freiModus(days[dq], wertAt(settings, dq)) === 'unbezahlt')))) sollMin += Math.round(sollFuer(wertAt(settings, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
+        if (istSollTag(wRef(wertAt(settings, dq), opts, dq).ueberstunden, wq) && !(days[dq] && (UNBEZAHLT_FREI.indexOf(days[dq].status) >= 0 || (days[dq].status === 'freistellung' && freiModus(days[dq], wRef(wertAt(settings, dq), opts, dq)) === 'unbezahlt')))) sollMin += Math.round(sollFuer(wRef(wertAt(settings, dq), opts, dq).ueberstunden, wq) * 60); // unbezahlter freier Tag zählt nicht zum Soll
       }
       s.ueberMin = s.lohnMin + s.swMin - sollMin;
       s.sollMin = sollMin; s.sollAb = ab;
@@ -1426,7 +1445,7 @@
             if (mz === m) { qSum += s.ueberMin; qMehr += s.mehrMin; continue; }
             var pre = y + '-' + (mz < 10 ? '0' : '') + mz + '-', hat = Object.keys(days).some(function (k) { return k.indexOf(pre) === 0 && days[k]; });
             if (!hat) continue; // Monat ohne Einträge (noch nicht begonnen): zählt nicht als Minus
-            var oz = { noQ: true, noZa: true }; if (opts && opts.ohneSpaeter) oz.ohneSpaeter = true;
+            var oz = { noQ: true, noZa: true }; if (opts && opts.ohneSpaeter) oz.ohneSpaeter = true; if (opts && opts.kvRef) oz.kvRef = opts.kvRef;
             var cz = calcMonth(data, y, mz, heute, oz);
             qSum += Math.round(cz.summe.ueberStd * 60); qMehr += Math.round(cz.summe.mehrStd * 60);
           }
@@ -1445,7 +1464,7 @@
         var tagesSumme = 0, ueber = 0, wb = wertAt(settings, sonntag).ueberstunden;
         var grenze = Math.round((wb.tagesGrenze || 9) * 60), normal = Math.round(wochenStd(wb) * 60);
         for (var k = -6; k <= 0; k++) {
-          var dk = addDays(sonntag, k), rk = calcDay(days[dk], dk, wertAt(settings, dk));
+          var dk = addDays(sonntag, k), rk = calcDay(days[dk], dk, wRef(wertAt(settings, dk), opts, dk));
           if (rk.leer || rk.typ === 'sonntag' || rk.typ === 'feiertag') { // Zuschlagstage zählen nicht doppelt
             if (!rk.leer && rk.creditMin) tagesSumme += Math.min(rk.creditMin, grenze);
             continue;
@@ -1697,7 +1716,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });

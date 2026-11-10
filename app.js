@@ -276,6 +276,7 @@
     return '<div class="brutto"><p class="eyebrow"><span>Brutto (geschätzt)</span><button type="button" class="info" id="br-info" aria-label="Info"></button></p><p class="big">' + eur.format(bv.brutto) + '</p>' +
       '<p class="sub">' + (laufend ? '<span>Stand heute, Überstunden kommen am Monatsende dazu</span>' : '<span>für den ganzen Monat</span>') + '</p>' +
       (bv.diaeten > 0 ? '<p class="sub"><span>plus Diäten</span> ' + eur.format(bv.diaeten) + '</p>' : '') + zl +
+      (function () { var kg = kvVergleich(ui.y, ui.m, s, w); return kg ? '<p class="sub kvz">' + esc(abw1('Nach Kollektivvertrag und Gesetz gerechnet: etwa {0}. Einzelheiten stehen unter „Jahr und Konten“ bei den Abweichungen.', [eur.format(kg.kv)])) + '</p>' : ''; })() +
       '<div class="nbrow"><a class="btn" id="nb-link" href="https://www.bmf.gv.at/services/berechnungsprogramme.html" target="_blank" rel="noopener noreferrer">'+ esc('Netto im BMF-Rechner prüfen') +'</a> <button type="button" class="info" id="nb-info" aria-label="Info"></button></div></div>';
   }
   function renderMonat() {
@@ -450,6 +451,20 @@
   // kat: diaeten, praemien, stunden, ueber. fehl: so viel fehlt dir (Stunden oder Euro, nur positiv). eur: geschätzter Wert in Euro (ohne Gewähr).
   function abw1(tpl, a, de) { var d = !de && uiDict(uiLang()), t = (d && d[tpl]) || tpl; return t.replace(/\{(\d)\}/g, function (_, i) { return a[+i]; }); }
   function abwLab(l) { var t = uiTr(l, uiLang()); return t || l; }
+  // Zwei Abrechnungen: nach der Handhabung der Firma (Einstellungen) und nach Kollektivvertrag und Gesetz. Liefert den Unterschied je Regel.
+  var KV_GRUND = { zu: 'Zuschläge an Sonn- und Feiertagen', betrieb: 'Betrieb geschlossen als bezahlte Zeit', frei: 'Freistellung durch die Firma bezahlt', rund: 'Zeiten ohne Rundung', lohn: 'Lohn laut Lohngruppe im Kollektivvertrag' };
+  function kvVergleich(y, m, sm, wmm) {
+    try {
+      if (!wmm || !sm || sm.gleit) return null;
+      var bF = E.bruttoVorschau(sm, wmm, false); if (!bF.ok) return null;
+      var dat = E.iso(y, m, E.daysInMonth(y, m)), opt = function (k) { return { ohneSpaeter: true, kvRef: k }; };
+      var sA = E.calcMonth(data, y, m, todayISO(), opt(true)).summe, bA = E.bruttoVorschau(sA, E.kvWert(wmm, dat), false); if (!bA.ok) return null;
+      var diff = Math.round((bA.brutto - bF.brutto) * 100) / 100; if (Math.abs(diff) < 0.5) return null;
+      var teile = [];
+      E.KV_REGELN.forEach(function (k) { var sk = E.calcMonth(data, y, m, todayISO(), opt([k])).summe, bk = E.bruttoVorschau(sk, E.kvWert(wmm, dat, [k]), false); if (!bk.ok) return; var d = Math.round((bk.brutto - bF.brutto) * 100) / 100; if (Math.abs(d) >= 0.5) teile.push({ key: k, delta: d }); });
+      return { firma: bF.brutto, kv: bA.brutto, diff: diff, teile: teile };
+    } catch (e) { return null; }
+  }
   function abwListe() {
     var out = [], mon = {};
     Object.keys(data.days).forEach(function (d) { mon[d.slice(0, 7)] = 1; });
@@ -460,11 +475,10 @@
     Object.keys(mon).sort().forEach(function (k) {
       var y = +k.slice(0, 4), m = +k.slice(5, 7); if (!(y > 2000 && m >= 1 && m <= 12)) return;
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
-      if (sm.zuArt === 'stunden' && sm.zuAltTage > 0 && wmm && wmm.paket !== 'eigen') {
-        var smK = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true, kvRef: true }).summe, bF = E.bruttoVorschau(sm, wmm, false), bK = E.bruttoVorschau(smK, wmm, false);
-        if (bF.ok && bK.ok && smK.zuArt === 'kv' && Math.abs(bK.brutto - bF.brutto) >= 0.5) { var kvA = [eur.format(bF.brutto), eur.format(bK.brutto), eur.format(Math.abs(bK.brutto - bF.brutto))], kvT = bK.brutto > bF.brutto ? 'Zuschläge an Sonn- und Feiertagen: Mit der Zählweise deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz gerechnet wären es etwa {1}, das sind {2} mehr. Unter Vorbehalt: Schätzung aus deinen Eingaben, prüfe bitte auch deine Eingaben und die Prozentsätze.' : 'Zuschläge an Sonn- und Feiertagen: Mit der Zählweise deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz gerechnet wären es etwa {1}, das sind {2} weniger. Unter Vorbehalt: Schätzung aus deinen Eingaben, prüfe bitte auch deine Eingaben und die Prozentsätze.';
-          out.push({ y: y, m: m, kat: 'kvref', kvDiff: Math.round((bK.brutto - bF.brutto) * 100) / 100, text: abw1(kvT, kvA), de: abw1(kvT, kvA, 1) }); }
-      }
+      var kg = kvVergleich(y, m, sm, wmm);
+      if (kg) { var kgA = [eur.format(kg.firma), eur.format(kg.kv), eur.format(Math.abs(kg.diff)), kg.teile.map(function (t) { return abwLab(KV_GRUND[t.key]) + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; ')], kgD = [kgA[0], kgA[1], kgA[2], kg.teile.map(function (t) { return KV_GRUND[t.key] + ' ' + (t.delta > 0 ? '+' : '−') + eur.format(Math.abs(t.delta)); }).join('; ')];
+        var kgT = kg.diff > 0 ? 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} mehr. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.' : 'Gegenüberstellung: Nach der Handhabung deiner Firma ergibt der Monat etwa {0} brutto. Nach Kollektivvertrag und Gesetz wären es etwa {1}, das sind {2} weniger. Im Einzelnen: {3}. Unter Vorbehalt: Schätzung aus deinen Eingaben und Einstellungen, prüfe bitte auch diese.';
+        out.push({ y: y, m: m, kat: 'kvref', kvDiff: kg.diff, text: abw1(kgT, kgA), de: abw1(kgT, kgD, 1) }); }
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
         if (x.modus === 'unbezahlt' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und den Tag nicht bezahlt.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -515,7 +529,7 @@
     return z;
   }
   function abwFirmaZeile(l) { var t = abwSumme(l); return t.firma > 0 ? ['Stunden, die die Firma abgezogen hat (nicht bezahlt, nicht als Urlaub gerechnet)', fh(t.firma) + ' h' + (t.firmaEur > 0 ? ', ca. ' + eur.format(t.firmaEur) : ''), 'firma'] : null; }
-  function abwKvZeile(l) { var d = 0, n = 0; l.forEach(function (x) { if (x.kat === 'kvref') { d += x.kvDiff; n++; } }); d = Math.round(d * 100) / 100; return n ? [d >= 0 ? 'Zuschläge: nach Kollektivvertrag gerechnet mehr als mit der Zählweise der Firma (Schätzung, unter Vorbehalt)' : 'Zuschläge: nach Kollektivvertrag gerechnet weniger als mit der Zählweise der Firma (Schätzung, unter Vorbehalt)', eur.format(Math.abs(d)), 'kvref'] : null; }
+  function abwKvZeile(l) { var d = 0, n = 0; l.forEach(function (x) { if (x.kat === 'kvref') { d += x.kvDiff; n++; } }); d = Math.round(d * 100) / 100; return n ? [d >= 0 ? 'Gegenüberstellung: nach Kollektivvertrag und Gesetz mehr als nach Handhabung der Firma (Schätzung, unter Vorbehalt)' : 'Gegenüberstellung: nach Kollektivvertrag und Gesetz weniger als nach Handhabung der Firma (Schätzung, unter Vorbehalt)', eur.format(Math.abs(d)), 'kvref'] : null; }
   function abwSummeText(l) { var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); return (kz ? kz[0] + ': ' + kz[1] + '\n\n' : '') + (z.length ? 'Bislang fehlen mir gegenüber meinen Aufzeichnungen:\n' + z.map(function (r) { return '- ' + r[0] + ': ' + r[1]; }).join('\n') + '\n\n' : '') + (f ? f[0] + ': ' + f[1] + '\n\n' : ''); }
   function abwSummeHtml(l) {
     var z = abwSummeZeilen(l), f = abwFirmaZeile(l), kz = abwKvZeile(l); if (!z.length && !f && !kz) return '';
