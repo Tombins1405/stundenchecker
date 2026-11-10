@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261109190214">
+<link rel="stylesheet" href="style.css?v=20261110072919">
 </head>
 <body>
 
@@ -264,32 +264,6 @@
           <button type="button" class="btn" id="e-addpause">+ Pause hinzufügen</button>
         </div>
 
-        <div class="field">
-          <label for="e-diaeten">Diätenstunden</label>
-          <input type="number" id="e-diaeten" inputmode="decimal" step="0.25" min="0">
-          <small>Leer lassen übernimmt den Vorschlag. Trage eine Zahl ein, wenn deine Firma anders zählt.</small>
-        </div>
-
-        <details class="field" id="e-extra-box">
-          <summary>Besonderheit: zusätzlich bezahlte Stunden</summary>
-          <label for="e-extra">Stunden</label>
-          <input type="number" id="e-extra" inputmode="decimal" step="0.25" min="0">
-          <small>Sehr selten, zum Beispiel Sonderurlaub, wenn du am selben Tag trotzdem gearbeitet hast. Die Stunden werden zur Arbeitszeit dazugezählt.</small>
-        </details>
-
-        <div class="field" id="e-swgroup" hidden>
-          <label class="check" for="e-swon"><input type="checkbox" id="e-swon"><span id="e-swonl">Ich wurde früher heimgeschickt</span></label>
-          <div id="e-swbox" hidden>
-            <div class="field"><label for="e-swgrund">Warum?</label><input type="text" id="e-swgrund" maxlength="160" autocomplete="off" placeholder="zum Beispiel Regen, keine Arbeit, um 11:00 heimgeschickt"></div>
-            <div class="field"><label for="e-sw"><span id="e-swlbl">Ausfallstunden</span></label><input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0"><small id="e-swhint">Die App rechnet die Ausfallstunden selbst aus: die normalen Stunden des Tages minus die Stunden, die du gearbeitet hast. Du kannst die Zahl ändern.</small></div>
-          </div>
-        </div>
-
-        <div class="field" id="e-praemiengroup" hidden>
-          <span class="lbl">Prämien</span>
-          <div id="e-praemien"></div>
-        </div>
-
         <div class="field" id="e-fzgroup">
           <span class="lbl">Fahrzeug (optional)</span>
           <div id="e-fahrzeuge" class="pausen"></div>
@@ -303,6 +277,32 @@
           <datalist id="e-notiz-list"></datalist>
           <button type="button" class="btn" id="e-copykunde" hidden>Kunden und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)</button>
           <button type="button" class="btn" id="e-addkunde">+ Kunde / Baustelle hinzufügen</button>
+        </div>
+
+        <div class="field" id="e-praemiengroup" hidden>
+          <span class="lbl">Prämien</span>
+          <div id="e-praemien"></div>
+        </div>
+
+        <div class="field" id="e-swgroup" hidden>
+          <label class="check" for="e-swon"><input type="checkbox" id="e-swon"><span id="e-swonl">Ich wurde früher heimgeschickt</span></label>
+          <div id="e-swbox" hidden>
+            <div class="field"><label for="e-swgrund">Warum?</label><input type="text" id="e-swgrund" maxlength="160" autocomplete="off" placeholder="zum Beispiel Regen, keine Arbeit, um 11:00 heimgeschickt"></div>
+            <div class="field"><label for="e-sw"><span id="e-swlbl">Ausfallstunden</span></label><input type="number" id="e-sw" inputmode="decimal" step="0.5" min="0"><small id="e-swhint">Die App rechnet die Ausfallstunden selbst aus: die normalen Stunden des Tages minus die Stunden, die du gearbeitet hast. Du kannst die Zahl ändern.</small></div>
+          </div>
+        </div>
+
+        <details class="field" id="e-extra-box">
+          <summary>Besonderheit: zusätzlich bezahlte Stunden</summary>
+          <label for="e-extra">Stunden</label>
+          <input type="number" id="e-extra" inputmode="decimal" step="0.25" min="0">
+          <small>Sehr selten, zum Beispiel Sonderurlaub, wenn du am selben Tag trotzdem gearbeitet hast. Die Stunden werden zur Arbeitszeit dazugezählt.</small>
+        </details>
+
+        <div class="field">
+          <label for="e-diaeten">Diätenstunden</label>
+          <input type="number" id="e-diaeten" inputmode="decimal" step="0.25" min="0">
+          <small>Leer lassen übernimmt den Vorschlag. Trage eine Zahl ein, wenn deine Firma anders zählt.</small>
         </div>
       </div>
 
@@ -321,13 +321,14 @@
             <button type="button" class="chip pick" data-an="firma" aria-pressed="false">Die Firma hat es angeordnet</button>
           </div>
         </div>
-        <textarea id="e-an" rows="3" maxlength="500" placeholder="Zum Beispiel: Grund, wer was gesagt hat, wann du gefragt hast"></textarea>
+        <button type="button" class="linkbtn" id="e-an-zeit" style="align-self:flex-start;margin-bottom:6px">+ Jetzt mit Uhrzeit festhalten</button>
+        <textarea id="e-an" rows="4" maxlength="1000" placeholder="Zum Beispiel: Grund, wer was gesagt hat, wann du gefragt hast"></textarea>
         <small id="e-an-ts"></small>
       </details>
 
       <div id="e-preview" class="result" aria-live="polite"></div>
-      <details class="field" id="e-kz-box" hidden>
-        <summary><span id="e-kz-title">Zeit pro Kunde</span><b id="e-kz-sum"></b></summary>
+      <details class="field" id="e-kz-box" open hidden>
+        <summary><span><i class="kzpf" aria-hidden="true"></i><span id="e-kz-title">Zeit pro Kunde</span></span><b id="e-kz-sum"></b></summary>
         <div id="e-kz" class="result" aria-live="polite"></div>
       </details>
       <div id="e-warn"></div>
@@ -738,21 +739,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261109190214";</script>
-<script src="engine.js?v=20261109190214"></script>
+<script>window.APP_VERSION="20261110072919";</script>
+<script src="engine.js?v=20261110072919"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261109190214"></script>
-<script src="timepicker.js?v=20261109190214"></script>
-<script src="datepicker.js?v=20261109190214"></script>
-<script src="selectpicker.js?v=20261109190214"></script>
-<script src="pdf.js?v=20261109190214"></script>
-<script src="lzread.js?v=20261109190214"></script>
-<script src="app.js?v=20261109190214"></script>
-<script src="auth.js?v=20261109190214"></script>
-<script src="sync.js?v=20261109190214"></script>
-<script src="insights.js?v=20261109190214"></script>
+<script src="firebase-config.js?v=20261110072919"></script>
+<script src="timepicker.js?v=20261110072919"></script>
+<script src="datepicker.js?v=20261110072919"></script>
+<script src="selectpicker.js?v=20261110072919"></script>
+<script src="pdf.js?v=20261110072919"></script>
+<script src="lzread.js?v=20261110072919"></script>
+<script src="app.js?v=20261110072919"></script>
+<script src="auth.js?v=20261110072919"></script>
+<script src="sync.js?v=20261110072919"></script>
+<script src="insights.js?v=20261110072919"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

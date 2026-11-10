@@ -837,3 +837,34 @@ h3[data-ico="plan"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.
 h3[data-ico="plan"]::before { background: #12b886; }
 #pl-liste .plrow { padding: 8px 0; border-top: 1px solid var(--line, #ddd); }
 #pl-liste .plrow b { display: block; }
+
+/* Zeit pro Kunde: sichtbarer Pfeil zum Auf- und Zuklappen */
+#e-kz-box > summary { list-style: none; align-items: center; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+#e-kz-box > summary::-webkit-details-marker { display: none; }
+#e-kz-box .kzpf { display: inline-block; width: 0; height: 0; border-left: 7px solid var(--accent); border-top: 5px solid transparent; border-bottom: 5px solid transparent; margin-right: 8px; transition: transform .15s; }
+#e-kz-box[open] .kzpf { transform: rotate(90deg); }
+#e-kz-box[open] > summary { margin-bottom: 8px; }
+/* Freie Tage planen: kleiner Kalender mit Kalenderwoche */
+#pl-liste .plrow span.pltx { display: block; }
+.plkal { display: grid; grid-template-columns: 44px repeat(7, 1fr); gap: 3px; margin: 8px 0 6px; font-size: .8rem; text-align: center; font-variant-numeric: tabular-nums; }
+.plkal > * { padding: 5px 0; border-radius: 6px; line-height: 1.15; }
+.plkal .plh { font-weight: 700; color: var(--ink-2); padding: 2px 0; }
+.plkal .plkw { color: var(--ink-2); font-weight: 600; text-align: left; }
+.plkal .pld { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.plkal .pld.we { background: color-mix(in srgb, #12b886 22%, transparent); }
+.plkal .pld.ft { background: #12b886; color: #fff; font-weight: 700; }
+.plkal .pld.ur { background: #1e6fd9; color: #fff; font-weight: 700; }
+.plkal .pld.aus { opacity: .35; }
+.plleg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .8rem; color: var(--ink-2); margin-bottom: 6px; }
+.plleg i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; }
+.plft { font-size: .88rem; margin: 2px 0 6px; }
+.plrow .btns { margin-top: 6px; }
+.plrow .plok { color: #12864f; font-weight: 700; }
+/* Vorschau: Beschriftung bricht nie mitten im Wort, lange Werte dürfen umbrechen */
+.result .line span:first-child { overflow-wrap: normal; flex: 0 0 auto; max-width: 62%; }
+.result .line span:last-child { white-space: normal; min-width: 0; }
+.kzd > summary > span { white-space: nowrap; flex: 0 0 auto; }
+#pl-jahre { display: flex; flex-direction: row; gap: 8px; margin-bottom: 10px; }
+#pl-jahre .btn { flex: 1 1 0; text-align: center; padding: 10px 6px; }
+#pl-jahre .btn.on { padding-right: 6px; }
+#pl-jahre .btn.on::after { display: none; }

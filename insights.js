@@ -29,7 +29,7 @@
         var doc = {
           uid: u.uid, email: u.email || null, created: u.metadata && u.metadata.creationTime || null, lastLogin: u.metadata && u.metadata.lastSignInTime || null,
           lastSeen: stamp(), lang: info.lang || null, version: window.APP_VERSION || null, beruf: info.beruf || null, paket: info.paket || null, land: info.land || null,
-          tage: info.tage || 0, geraet: info.geraet || null, features: stats(), consent: consent()
+          tage: info.tage || 0, geraet: info.geraet || null, mia: info.mia || null, features: stats(), consent: consent()
         };
         db().collection('profiles').doc(u.uid).set(doc, { merge: true }).then(function () { wr('stundenchecker.profpush', String(Date.now())); wr('stundenchecker.profdev', info.geraet || ''); }, function () {});
       } catch (e) {}

@@ -129,9 +129,10 @@
     profil: function () { return data.profil || {}; },
     info: function () {
       var w = wAt(todayISO()), pk = E.PAKETE[w.paket];
-      return { beruf: w.beruf || null, paket: w.paket || null, land: pk && pk.land === 'DE' ? 'DE' : 'AT', lang: (window.localStorage && localStorage.getItem('stundenchecker.lang')) || (navigator.language || '').slice(0, 2), tage: Object.keys(data.days).length, view: ui.view, geraet: data.profil && data.profil.consent && data.profil.consent.statistik ? geraetInfo() : null };
+      return { beruf: w.beruf || null, paket: w.paket || null, land: pk && pk.land === 'DE' ? 'DE' : 'AT', lang: (window.localStorage && localStorage.getItem('stundenchecker.lang')) || (navigator.language || '').slice(0, 2), tage: Object.keys(data.days).length, view: ui.view, geraet: data.profil && data.profil.consent && data.profil.consent.statistik ? geraetInfo() : null, mia: data.profil && data.profil.consent && data.profil.consent.statistik ? miaInfo() : null };
     }
   };
+  function miaInfo() { try { var m = (data.profil && data.profil.mia) || {}; return (m.figur === 'm' ? 'Milo' : 'Mia') + ((m.name || '').trim() ? ', eigener Name' : '') + (m.eigen === true ? ', selbst gestaltet' : '') + (m.spricht === true ? ', spricht' : '') + (m.ruhig ? ', ruhig gestellt' : ''); } catch (e) { return null; } }
   function ins(name) { try { if (window.StundenInsights) window.StundenInsights.count(name); } catch (e) {} }
 
   /* Offener Dienst (Beginn da, Ende fehlt): Erinnerung beim Öffnen */
@@ -949,16 +950,48 @@
     out.sort(function (a, b) { return a.von < b.von ? -1 : 1; });
     return out;
   }
+  function plKw(d0) { var p = E.parseISO(d0), d = new Date(Date.UTC(p.y, p.m - 1, p.d)), n = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - n); var y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil(((d - y0) / 86400000 + 1) / 7); }
+  function plFt(d0) { return E.feiertage(+d0.slice(0, 4))[d0] || ''; }
+  function plKalender(r) {
+    var wd0 = (E.weekday(r.von) + 6) % 7, mo = E.addDays(r.von, -wd0), wdE = (E.weekday(r.bis) + 6) % 7, so = E.addDays(r.bis, 6 - wdE);
+    var h = '<div class="plkal"><span class="plh plkw">' + esc(abwLab('KW')) + '</span>' + [1, 2, 3, 4, 5, 6, 0].map(function (w) { return '<span class="plh">' + esc(abwLab(WD[w])) + '</span>'; }).join('');
+    for (var d = mo; d <= so; d = E.addDays(d, 1)) {
+      if (E.weekday(d) === 1) h += '<span class="plkw">' + plKw(d) + '</span>';
+      var wd = E.weekday(d), ft = plFt(d), ur = r.tage.indexOf(d) >= 0, p = E.parseISO(d);
+      h += '<span class="pld' + (ur ? ' ur' : ft ? ' ft' : (wd === 0 || wd === 6) ? ' we' : '') + (d < r.von || d > r.bis ? ' aus' : '') + '">' + p.d + '.' + p.m + '.</span>';
+    }
+    return h + '</div>';
+  }
   function renderPlaner() {
     var box = $('#pl-liste'), jb = $('#pl-jahre'); if (!box || !jb) return;
     var y0 = +todayISO().slice(0, 4); if (!ui.plJahr) ui.plJahr = y0 + (+todayISO().slice(5, 7) >= 10 ? 1 : 0);
     jb.innerHTML = [y0, y0 + 1, y0 + 2].map(function (y) { return '<button type="button" class="btn wzopt' + (ui.plJahr === y ? ' on' : '') + '" data-plj="' + y + '">' + y + '</button>'; }).join('');
     var l = planerBerechne(ui.plJahr);
-    box.innerHTML = l.length ? l.map(function (r) {
-      return '<div class="plrow"><b>' + esc(abw1('{0} Tage frei am Stück: {1} bis {2}', [r.len, fmtShort(r.von), fmtShort(r.bis)])) + '</b><span>' + esc(r.k === 1 ? abw1('Du brauchst dafür 1 Tag Urlaub oder Zeitausgleich: {0}', [r.tage.map(fmtShort).join(', ')]) : abw1('Du brauchst dafür {0} Tage Urlaub oder Zeitausgleich: {1}', [r.k, r.tage.map(fmtShort).join(', ')])) + '</span></div>';
+    var leg = '<div class="plleg"><span><i style="background:#1e6fd9"></i>' + esc(abwLab('Urlaub oder Zeitausgleich nötig')) + '</span><span><i style="background:#12b886"></i>' + esc(abwLab('Feiertag')) + '</span><span><i style="background:color-mix(in srgb,#12b886 22%,transparent)"></i>' + esc(abwLab('Wochenende')) + '</span></div>';
+    box.innerHTML = l.length ? leg + l.map(function (r, i) {
+      var fts = []; for (var d = r.von; d <= r.bis; d = E.addDays(d, 1)) { var f = plFt(d); if (f) fts.push(fmtShort(d) + ' ' + abwLab(f)); }
+      var st = r.tage.map(function (d) { return data.days[d] ? data.days[d].status : ''; }), alle = st.every(function (x) { return x === 'urlaub' || x === 'za'; }), frei = st.filter(function (x) { return !x; }).length;
+      var kn = alle ? '<p class="plok">✓ ' + esc(abwLab('Schon eingetragen')) + '</p>'
+        : ui.plOffen === i ? '<div class="btns"><button type="button" class="btn primary" data-plgo="urlaub" data-pli="' + i + '">' + esc(abwLab('Als Urlaub eintragen')) + '</button><button type="button" class="btn primary" data-plgo="za" data-pli="' + i + '">' + esc(abwLab('Als Zeitausgleich eintragen')) + '</button><button type="button" class="btn" data-plx="1">' + esc(abwLab('Abbrechen')) + '</button></div>'
+        : frei ? '<div class="btns"><button type="button" class="btn" data-plauf="' + i + '">' + esc(frei === 1 ? abwLab('Diesen Tag eintragen') : abwLab('Diese Tage eintragen')) + '</button></div>' : '';
+      return '<div class="plrow"><b>' + esc(abw1('{0} Tage frei am Stück: {1} bis {2}', [r.len, fmtShort(r.von), fmtShort(r.bis)])) + '</b><span class="pltx">' + esc(r.k === 1 ? abw1('Du brauchst dafür 1 Tag Urlaub oder Zeitausgleich: {0}', [r.tage.map(fmtShort).join(', ')]) : abw1('Du brauchst dafür {0} Tage Urlaub oder Zeitausgleich: {1}', [r.k, r.tage.map(fmtShort).join(', ')])) + '</span>' +
+        plKalender(r) + (fts.length ? '<p class="plft">' + esc(abw1('Feiertage in dieser Zeit: {0}', [fts.join(', ')])) + '</p>' : '') + kn + '</div>';
     }).join('') : '<p class="hint">Keine Vorschläge für dieses Jahr.</p>';
   }
-  (function () { var jb = $('#pl-jahre'); if (jb) jb.addEventListener('click', function (ev) { var b = ev.target.closest('[data-plj]'); if (!b) return; ui.plJahr = +b.dataset.plj; renderPlaner(); }); var dt = $('#pl-det'); if (dt) dt.addEventListener('toggle', function () { if (dt.open) renderPlaner(); }); })();
+  (function () {
+    var jb = $('#pl-jahre'); if (jb) jb.addEventListener('click', function (ev) { var b = ev.target.closest('[data-plj]'); if (!b) return; ui.plJahr = +b.dataset.plj; ui.plOffen = null; renderPlaner(); });
+    var dt = $('#pl-det'); if (dt) dt.addEventListener('toggle', function () { if (dt.open) renderPlaner(); });
+    var li = $('#pl-liste'); if (li) li.addEventListener('click', function (ev) {
+      var a = ev.target.closest('[data-plauf]'), x = ev.target.closest('[data-plx]'), g = ev.target.closest('[data-plgo]');
+      if (a) { ui.plOffen = +a.dataset.plauf; renderPlaner(); return; }
+      if (x) { ui.plOffen = null; renderPlaner(); return; }
+      if (!g) return;
+      var r = planerBerechne(ui.plJahr)[+g.dataset.pli]; if (!r) return;
+      var n = 0, schon = 0; r.tage.forEach(function (d) { if (data.days[d]) { schon++; return; } data.days[d] = { status: g.dataset.plgo, an: { w: 'wunsch', t: AN_TEXT.wunsch, ts: new Date().toISOString() } }; n++; });
+      ui.plOffen = null; if (n) { save(); ins('planer_eingetragen'); } renderPlaner();
+      toast(abw1(schon ? '{0} Tage eingetragen. {1} Tage waren schon belegt und bleiben unverändert. Kläre die freien Tage noch mit deiner Firma.' : '{0} Tage eingetragen. Kläre die freien Tage noch mit deiner Firma.', [n, schon]), 7000);
+    });
+  })();
   function renderKonten() {
     renderJahr();
     try { renderBruttoJahr(); } catch (e) { }
@@ -1604,6 +1637,10 @@
     el.addEventListener('click', function (ev) { var b = ev.target.closest('[data-fx]'); if (!b) return; festListe().splice(+b.dataset.fx, 1); save(); renderFest(); });
     $('#fest-add').addEventListener('click', function () { festListe().push({ wd: 2, art: 'schule' }); save(); renderFest(); });
     $('#e-mehr').addEventListener('click', mehrTage);
+    $('#e-an-zeit').addEventListener('click', function () {
+      var ta = $('#e-an'), n = new Date(), z = (n.getHours() < 10 ? '0' : '') + n.getHours() + ':' + (n.getMinutes() < 10 ? '0' : '') + n.getMinutes() + ' Uhr: ';
+      var v = ta.value; ta.value = (v && !/\n$/.test(v) ? v + '\n' : v) + z; anSet('t', ta.value); ta.focus(); try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
+    });
   })();
   function mitArbeit(st) { return st !== 'feiertag'; } // an jedem freien Tag darf zusätzlich gearbeitet worden sein (Feiertag ist ohnehin ein Arbeitstag mit Zuschlag)
   // Sonderurlaub oder Urlaub mit Arbeitszeit: Mia fragt einmal nach, ob das wirklich beides stimmt (oder nur ein Versehen war)
@@ -1853,7 +1890,7 @@
   }
   var MIA_PAKET = { gueter: ['kappe'], bau: ['helm', 'weste'], klein: ['kappe', 'klemmbrett'], handel: ['schuerze'], handel_arb: ['weste', 'paket'], buero: ['krawatte'], metall: ['overall', 'schluessel'], gastro: ['schuerze'] };
   function miaFor(date) { if (data.profil && data.profil.mia && data.profil.mia.eigen === true) return miaOutfitEigen(); var w = wAt(date || todayISO()); return w.beruf ? miaOutfit(w.beruf, w.art) : (MIA_PAKET[String(w.paket).replace(/^de_/, '')] || MIA_PAKET[{ spedition: 'gueter' }[String(w.paket).replace(/^de_/, '')]] || []); }
-  function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); }
+  function miaSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; data.profil.mia[k] = v; delete data.profil.test; save(); renderMia(); if (k === 'name' || k === 'figur') uiMiaNamen(); }
   function miaSkipInc(k) { if (!data.profil) data.profil = {}; if (!data.profil.mia) data.profil.mia = {}; var s = data.profil.mia.skip || (data.profil.mia.skip = {}); s[k] = (s[k] || 0) + 1; save(); }
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
@@ -3564,11 +3601,17 @@
     var out = de.replace(rx, function (k) { var v = d[k]; if (v) { ch = true; return v; } return k; });
     return ch ? out : null;
   }
+  // Eigener Name der Begleiterin: ersetzt „Mia“ in allen Beschriftungen (nicht in der Auswahl Mia/Milo und nicht im Namensfeld)
+  function uiMiaName() { try { var c = miaCfg(); return c.name && c.name !== 'Mia' ? c.name : ''; } catch (e) { return ''; } }
+  function uiMiaNamen() { if (!uiMiaName() && uiLang() === 'de') { try { uiApply(document.body); } catch (e) {} return; } uiLoad('en', function () { try { uiApply(document.body); } catch (e) {} }); }
+  var UI_MIA_RX = /\bMia\b|Миа|Мія/g;
   function uiTextNode(n, L) {
     var cur = n.nodeValue, de = UI_ORIG.get(n);
     if (de !== undefined && UI_SET.get(n) !== cur) de = undefined;
     if (de === undefined) de = cur;
     var t = L !== 'de' ? uiTr(de, L) : null;
+    var nm = uiMiaName();
+    if (nm && de.indexOf('Mia') >= 0 && de.indexOf('Milo') < 0 && (t || (uiDict('en') && uiTr(de, 'en'))) && !(n.parentNode && n.parentNode.closest && n.parentNode.closest('#mia-choose, .miachoose, [data-wf="mia"], .wzmia'))) { var bs = t || de; UI_MIA_RX.lastIndex = 0; if (UI_MIA_RX.test(bs)) { UI_MIA_RX.lastIndex = 0; t = bs.replace(UI_MIA_RX, nm); } }
     if (t) { UI_ORIG.set(n, de); UI_SET.set(n, t); if (cur !== t) n.nodeValue = t; }
     else if (UI_ORIG.has(n) && UI_SET.get(n) === cur) { n.nodeValue = de; UI_ORIG.delete(n); UI_SET.delete(n); }
   }
@@ -3609,14 +3652,14 @@
     document.documentElement.lang = uiLang(); document.documentElement.dir = UI_RTL[uiLang()] ? 'rtl' : 'ltr';
     if (window.MutationObserver) {
       var mo = new MutationObserver(function (ms) {
-        if (uiBusy || uiLang() === 'de' && !uiDict('de')) { if (uiLang() === 'de') return; }
+        if (uiLang() === 'de' && !uiMiaName()) return;
         if (uiBusy) return; uiBusy = true; mo.disconnect();
         try { ms.forEach(function (m) { if (m.type === 'characterData') uiTextNode(m.target, uiLang()); else if (m.type === 'attributes') uiAttrs(m.target, uiLang()); else m.addedNodes.forEach(function (nd) { if (nd.nodeType === 3) uiTextNode(nd, uiLang()); else if (nd.nodeType === 1) uiWalk(nd, uiLang()); }); }); }
         finally { mo.observe(document.body, { childList: true, subtree: true, characterData: true }); uiBusy = false; }
       });
       mo.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
-    uiLoad(uiLang(), function () { if (uiLang() !== 'de') { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); } });
+    uiLoad(uiLang(), function () { if (uiLang() !== 'de') { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); } uiMiaNamen(); });
   })();
   /* ---- Profilbild und Geburtstagsgruß (optional) ---- */
   function fotoGet() { try { return localStorage.getItem('stundenchecker.foto') || ''; } catch (e) { return ''; } }
