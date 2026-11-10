@@ -1416,7 +1416,7 @@
       if (r.status === 'freistellung') { s.freiTage++; s.freiListe.push({ datum: ds, modus: r.freiModus, std: h2(r.freiSollMin || 0) }); }
       if (r.status === 'feiertag') { s.feiertageBezahlt++; s.feMin += r.creditMin; }
       if (r.ftCreditMin) s.feMin += r.ftCreditMin; // nach KV: Feiertagsentgelt zählt wie ein bezahlter Feiertag
-      else if (!r.kv && r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0 && r.faktor === 1) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Firmen-Zählweise ohne Feiertagszuschlag: Feiertagslohn gibt es zusätzlich (nur Anzeige). Mit Zuschlag steckt er schon in den doppelt gezählten Stunden.
+      else if (!r.kv && r.status === 'arbeit' && r.typ === 'feiertag' && r.nettoMin > 0) s.feExtraMin += Math.round(tagesSoll(w.ueberstunden) * 60); // Bisherige Rechenweise (Zuschlag als Stunden): bleibt genau wie vor der Umstellung, damit sich bei bestehenden Nutzern keine Zahl ändert.
       if (r.status === 'urlaub' || r.status === 'betriebsurlaub') s.urMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
       if (r.status === 'sonderurlaub') s.soMin += Math.min(r.creditMin, Math.round(sollFuer(w.ueberstunden, weekday(ds)) * 60));
       if (r.status === 'krank') s.krMin += r.creditMin;
