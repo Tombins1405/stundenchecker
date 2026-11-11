@@ -3873,7 +3873,7 @@
   var UI_ORIG = new WeakMap(), UI_SET = new WeakMap(), UI_RX = {}, uiBusy = false;
 
   /* ---- Schnell erfassen: Text oder Sprache ---- */
-  var sqRec = null, sqLast = null;
+  var sqRec = null, sqLast = null, sqAusFoto = false;
   function sqInit() {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = $('#sq-mic');
     if (mic && SR) mic.hidden = false;
@@ -3881,7 +3881,7 @@
   function sqNamen() { var out = []; try { Object.keys(data.days).sort().reverse().slice(0, 60).forEach(function (k) { kundenNamen(data.days[k]).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); } catch (e) { } return out; }
   function sqVerstehen() {
     var t = ($('#sq-text').value || '').trim(), box = $('#sq-res'); if (!t) return;
-    var r = E.parseSchnell(t, todayISO(), sqNamen()); sqLast = r;
+    var r = E.parseSchnell(t, todayISO(), sqNamen()); if (sqAusFoto) r.kunden = []; sqLast = r;
     var h = '';
     if (r.status === 'arbeit' ? !r.von : false) {
       h = '<div>Ich habe keine Uhrzeit und keine Art des Tages gefunden. Schreib zum Beispiel „von 6 bis 15 Uhr“.</div>'; sqLast = null;
@@ -3937,11 +3937,13 @@
     window.StundenLz.leseFotos([file]).then(function (o) {
       var t = (o.lines || []).join(', ').replace(/\s+/g, ' ').trim();
       if (!o.hatText || !t) { st.textContent = 'Auf dem Foto konnte ich nichts lesen. Versuche es mit mehr Licht und halte das Handy ruhig.'; return; }
-      st.textContent = 'Das habe ich gelesen. Du kannst den Text ändern.'; $('#sq-text').value = t; sqVerstehen();
+      st.textContent = 'Das habe ich gelesen. Du kannst den Text ändern.'; $('#sq-text').value = t; sqAusFoto = true; sqVerstehen();
     }, function () { st.textContent = 'Auf dem Foto konnte ich nichts lesen. Versuche es mit mehr Licht und halte das Handy ruhig.'; });
   }
+  document.addEventListener('input', function (ev) { if (ev.target && ev.target.id === 'sq-text') sqAusFoto = false; });
   document.addEventListener('change', function (ev) {
     var t = ev.target; if (!t || !t.id) return;
+    if (t.id === 'sq-text') sqAusFoto = false;
     if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; save(); sqApply(); }
     else if (t.id === 'sq-set-foto') { data.profil.sqFoto = !!t.checked; save(); sqApply(); }
     else if (t.id === 'sq-file' && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
