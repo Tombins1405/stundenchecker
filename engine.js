@@ -1184,6 +1184,39 @@
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1832.22] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [2156.93] }
     ] };
+  // Metalltechnische Industrie: einheitliche Mindestlohn- und Mindestgehaltstabelle (Arbeiter und Angestellte), ab 1.11.2025 und 1.11.2026
+  PAKETE.metall_ind = {
+    name: 'Metalltechnische Industrie (Arbeiter)',
+    hinweis: 'KV Metalltechnische Industrie, Arbeiter, Mindestlöhne ab 1.11.2025 und ab 1.11.2026 (Quellen: wko.at, metalltechnischeindustrie.at): 38,5 Stunden/Woche. Überstunden 50 %, die dritte und jede weitere Überstunde am Tag, Überstunden zwischen 20 und 6 Uhr und ab der 51. Wochenstunde 100 %. Sonntagsarbeit 100 %. Überstunden-Grundlohn 1/143 des Monatslohns. Nachtarbeitszulage (22 bis 6 Uhr) und Schichtzulage 3. Schicht 3,754 € je Stunde, 2. Schicht 1,085 €, Schmutz-, Erschwernis- und Gefahrenzulage je 0,741 €, Montagezulage 1,146 €, Vorarbeiterzuschlag 10 %: als Vorschläge bei den Prämien hinterlegt. Aufwandsentschädigung bei Arbeit außer Haus: 21,99 € bei mehr als 5 Stunden, 36,24 € bei mehr als 11 Stunden, 72,41 € mit Nächtigung, Nächtigungsgeld 24,41 €. Urlaubszuschuss und Weihnachtsremuneration je ein Monatsverdienst. Die Gruppe und die Vorrückungsstufe stehen auf deinem Lohnzettel. Gilt nicht für die Gießereiindustrie. Die Sondergruppe I für Meister (M III minus 5 %) ist nicht hinterlegt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 5, satz: 21.99 }, { ab: 11, satz: 36.24 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.metall_ind = { stand: 'ab 1.11.2025', stufen: ['Grundstufe', 'nach 2 Jahren', 'nach 4 Jahren', 'nach 6 Jahren', 'nach 9 Jahren', 'nach 12 Jahren'], teiler: 167, gruppen: [
+      { id: 'IA', m: true, name: 'Beschäftigungsgruppe A: ohne Zweckausbildung, sehr einfache Tätigkeiten', stufen: ['Grundstufe', 'nach 2 Jahren', 'nach 4 Jahren'], l: [2568.80, 2608.44, 2648.08] },
+      { id: 'IB', m: true, name: 'Beschäftigungsgruppe B: mit Zweckausbildung, einfache Tätigkeiten', l: [2568.80, 2608.73, 2648.66, 2668.62, 2688.58, 2708.54] },
+      { id: 'IC', m: true, name: 'Beschäftigungsgruppe C: nach arbeitsspezifischen Anweisungen, mit längerer Zweckausbildung', l: [2698.59, 2741.24, 2783.89, 2805.23, 2826.57, 2847.91] },
+      { id: 'ID', m: true, name: 'Beschäftigungsgruppe D: mit Berufsausbildung (Lehrabschluss)', l: [2947.89, 3001.51, 3055.13, 3081.96, 3108.79, 3135.62] },
+      { id: 'IE', m: true, name: 'Beschäftigungsgruppe E: selbständige Tätigkeiten mit zusätzlichen Fachkenntnissen', l: [3396.21, 3458.06, 3519.91, 3550.81, 3581.71, 3612.61] },
+      { id: 'IF', m: true, name: 'Beschäftigungsgruppe F: selbständige schwierige Tätigkeiten', l: [3802.93, 3893.31, 3983.69, 4028.89, 4074.09, 4119.29] },
+      { id: 'IG', m: true, name: 'Beschäftigungsgruppe G: schwierige, verantwortungsvolle Tätigkeiten, Projektleitung', l: [4354.45, 4492.58, 4630.71, 4699.78, 4768.85, 4837.92] },
+      { id: 'IH', m: true, name: 'Beschäftigungsgruppe H: schwierige Tätigkeiten mit beträchtlichem Entscheidungsspielraum', l: [4767.21, 4918.43, 5069.65, 5145.23, 5220.81, 5296.39] },
+      { id: 'II', m: true, name: 'Beschäftigungsgruppe I: sehr schwierige Tätigkeiten mit hohem Entscheidungsspielraum', l: [5804.36, 5988.46, 6172.56, 6264.60, 6356.64, 6448.68] },
+      { id: 'IJ', m: true, name: 'Beschäftigungsgruppe J: leitende Stellung', l: [6372.64, 6574.97, 6777.30, 6878.45, 6979.60, 7080.75] },
+      { id: 'IK', m: true, name: 'Beschäftigungsgruppe K: leitende Stellung mit entscheidendem Einfluss auf das Unternehmen', stufen: ['Grundstufe', 'nach 2 Jahren', 'nach 4 Jahren', 'nach 6 Jahren', 'nach 9 Jahren'], l: [8424.77, 8692.26, 8825.98, 8959.70, 9093.42] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1071.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1295.40] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1657.50] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2152.20] }
+    ], folgt: [{ ab: '2026-11-01', stand: 'ab 1.11.2026', gruppen: {
+      IA: [2622.74, 2662.38, 2702.02], IB: [2622.74, 2662.67, 2702.60, 2722.56, 2742.52, 2762.48], IC: [2755.26, 2797.91, 2840.56, 2861.90, 2883.24, 2904.58], ID: [3009.80, 3063.42, 3117.04, 3143.87, 3170.70, 3197.53], IE: [3467.53, 3529.38, 3591.23, 3622.13, 3653.03, 3683.93], IF: [3882.79, 3973.17, 4063.55, 4108.75, 4153.95, 4199.15], IG: [4445.89, 4584.02, 4722.15, 4791.22, 4860.29, 4929.36], IH: [4867.32, 5018.54, 5169.76, 5245.34, 5320.92, 5396.50], II: [5926.25, 6110.35, 6294.45, 6386.49, 6478.53, 6570.57], IJ: [6506.47, 6708.80, 6911.13, 7012.28, 7113.43, 7214.58], IK: [8601.69, 8869.18, 9002.90, 9136.62, 9270.34], L1: [1093.49], L2: [1322.60], L3: [1692.31], L4: [2197.40] } }] };
+  LOHNGRUPPEN.industrie_ang = LOHNGRUPPEN.metall_ind;
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1228,7 +1261,7 @@
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Lagerlogistik)', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
-    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    mechaniker: { name: 'Mechaniker / Werkstatt', paket: 'metall', kvs: ['metall', 'metall_ind', 'gueter', 'de_metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         kfz: { name: 'Kfz-Mechaniker / Werkstatt', b: { fahrzeug: false, kunden: false, praemien: false } },
         schlosser: { name: 'Schlosser / Schweißer', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -1333,6 +1366,15 @@
         greenkeeper: { name: 'Greenkeeper / Sportplatz', b: { fahrzeug: true, kunden: true, praemien: true } },
         forst: { name: 'Forstarbeit / Holzernte', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Gärtner / Forst)', b: { fahrzeug: true, kunden: true, praemien: true } }
+      } },
+    industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        produktion: { name: 'Produktion / Maschinenbedienung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        schicht: { name: 'Schichtarbeit', b: { fahrzeug: false, kunden: false, praemien: true } },
+        instandhaltung: { name: 'Instandhaltung / Werkstätte', b: { fahrzeug: false, kunden: false, praemien: true } },
+        montage: { name: 'Montage', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lager: { name: 'Lager / Logistik (Industrie)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Industrie)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {

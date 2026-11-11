@@ -179,7 +179,7 @@
     [/sozialwirtschaft|swoe|swö|pflege|gesundheit/, 'sozial'],
     [/reinigung|denkmal|fassaden/, 'reinigung'],
     [/bewachung|sicherheit|security/, 'bewachung'],
-    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/privatbahn|besoldungsordnung|lokalbahn/, 'bahn_dbo'], [/eisenbahn|westbahn|\b(oe|ö)bb\b/, 'bahn'], [/fleischer|metzger|fleischerei/, 'fleischer'], [/autobus|omnibus/, 'autobus'], [/taxi|personenbef(oe|ö)rderungsgewerbe/, 'taxi'], [/g(ae|ä)rtner|landschaftsg/, 'gaertner'], [/forstunternehm/, 'forst'], [/friseur/, 'friseur'],
+    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/privatbahn|besoldungsordnung|lokalbahn/, 'bahn_dbo'], [/eisenbahn|westbahn|\b(oe|ö)bb\b/, 'bahn'], [/fleischer|metzger|fleischerei/, 'fleischer'], [/autobus|omnibus/, 'autobus'], [/taxi|personenbef(oe|ö)rderungsgewerbe/, 'taxi'], [/g(ae|ä)rtner|landschaftsg/, 'gaertner'], [/forstunternehm/, 'forst'], [/metalltechnische industrie.*arbeiter|arbeiter.*metalltechnische industrie/, 'metall_ind'], [/friseur/, 'friseur'],
     [/holzbau/, 'holzbau'], [/dachdecker/, 'dachdecker'], [/pflasterer/, 'pflasterer'], [/fliesenleger/, 'fliesenleger'],
     [/tischler|holzverarbeit/, 'tischler'], [/maler|lackierer|anstreicher/, 'maler'],
     [/bank/, 'banken_ang'], [/versicherung/, 'versicherung_ang'], [/informationstechn|it-|edv/, 'it_ang'],
