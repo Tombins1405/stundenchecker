@@ -1919,8 +1919,8 @@
     // Arbeitszeit
     var sawRange = nimm(new RegExp('(?:\\bvon\\s+|\\bfrom\\s+|\\b)' + T + '\\s*(?:uhr|h)?\\s*(?:bis|-|–|to|until|till)\\s*' + T + '\\s*(?:uhr|h)?', 'i'), function (m) { var a = zeit(m[1], m[2]), b = zeit(m[3], m[4]); if (a && b) { res.von = a; res.bis = b; res.gefunden += 2; } });
     if (!sawRange) {
-      nimm(new RegExp('\\b(?:ab|beginn|start(?:ed)?|von|from|at)\\s+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var a = zeit(m[1], m[2]); if (a) { res.von = a; res.gefunden++; } });
-      nimm(new RegExp('\\b(?:bis|ende|end(?:ed)?|until)\\s+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var b = zeit(m[1], m[2]); if (b) { res.bis = b; res.gefunden++; } });
+      nimm(new RegExp('\\b(?:ab|beginn|start(?:ed)?|von|from|at)[:\\s]+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var a = zeit(m[1], m[2]); if (a) { res.von = a; res.gefunden++; } });
+      nimm(new RegExp('\\b(?:bis|ende|end(?:ed)?|until)[:\\s]+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var b = zeit(m[1], m[2]); if (b) { res.bis = b; res.gefunden++; } });
     }
     if (!res.von) for (var k = 0; k < ST.length; k++) { if (ST[k][0].test(rest)) { res.status = ST[k][1]; res.gefunden++; rest = rest.replace(ST[k][0], ' '); break; } }
     if (res.von && res.bis && res.bis < res.von && +res.bis.slice(0, 2) <= 12 && +res.bis.slice(0, 2) + 12 > +res.von.slice(0, 2) && +res.bis.slice(0, 2) + 12 <= 24) res.bis = ((+res.bis.slice(0, 2) + 12) + '').padStart(2, '0') + res.bis.slice(2);
@@ -1936,13 +1936,15 @@
     var teile = rest.split(/[,;\n]+/), bk = (bekannt || []).filter(Boolean).sort(function (a, b) { return b.length - a.length; });
     teile.forEach(function (t) {
       t = t.replace(/\b(?:war|waren|habe|hab|ich|am|um|den|der|die|das|heute|gearbeitet|worked|i|was|at)\b/gi, ' ').replace(/\s+/g, ' ').trim();
-      var m = /^(?:kunden?|bei|für|fuer|auftrag|baustelle|customer|for|at|site)[:\s]+(.+)$/i.exec(t), body = m ? m[1] : null;
-      if (!body) { var c = /^([^:]{2,40}):\s*(.+)$/.exec(t); if (c) body = c[1] + ' ' + c[2]; }
+      var tl = /^(?:t(?:ä|ae)tigkeit|arbeit|beschreibung|work|task)\s*:\s*(.+)$/i.exec(t);
+      if (tl && res.kunden.length) { var lk = res.kunden[res.kunden.length - 1]; lk.tat = (lk.tat ? lk.tat + ' ' : '') + tl[1].trim(); return; }
+      var m = /^(?:kunden?|bei|für|fuer|auftrag|baustelle|customer|for|at|site)(\s*:\s*|\s+)(.+)$/i.exec(t), body = m ? m[2] : null, mitDoppelpunkt = !!(m && /:/.test(m[1]));
       if (!body) return;
       body = body.replace(/^[:\s]+/, '').trim(); if (!body) return;
       var name = '', tat = '', low = body.toLowerCase();
       for (var j = 0; j < bk.length; j++) { var bl = bk[j].toLowerCase(); if (low.indexOf(bl) === 0) { name = bk[j]; tat = body.slice(bk[j].length).replace(/^[:\s,-]+/, '').trim(); break; } }
-      if (!name) { var parts = body.split(/\s+/); name = parts.shift(); if (/^(?:firma|fa\.?|herr|frau|company|mr|mrs)$/i.test(name) && parts.length) name += ' ' + parts.shift(); tat = parts.join(' '); }
+      if (!name && mitDoppelpunkt) { name = body; }
+      else if (!name) { var parts = body.split(/\s+/); name = parts.shift(); if (/^(?:firma|fa\.?|herr|frau|company|mr|mrs)$/i.test(name) && parts.length) name += ' ' + parts.shift(); tat = parts.join(' '); }
       name = name.replace(/[:,;]+$/, ''); res.kunden.push({ name: name, tat: tat }); res.gefunden++;
     });
     return res;
