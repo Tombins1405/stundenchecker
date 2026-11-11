@@ -1501,6 +1501,37 @@
       { id: 'M2', m: true, name: 'Berufsgruppe 2: Medizinische Fachassistenz, Pflegefachassistenz, medizinisch-technischer Fachdienst; Heilmasseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1853.00, 1861.00, 1870.00, 1878.00, 1885.00, 1891.00, 1902.00, 1910.00, 1917.00, 1925.00, 1932.00, 1941.00, 1949.00, 1964.00, 2006.00, 2051.00] },
       { id: 'M3', m: true, name: 'Berufsgruppe 3: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1886.00, 1895.00, 1906.00, 1914.00, 1923.00, 1930.00, 1937.00, 1944.00, 1951.00, 1964.00, 2007.00, 2067.00, 2142.00, 2219.00, 2288.00, 2367.00] }
     ] };
+  // Zahntechnikergewerbe (Lohn-/Gehaltsordnung ab 1.1.2026, Quelle: wko.at)
+  PAKETE.zahntechnik = {
+    name: 'Zahntechnikergewerbe (Arbeiter und Angestellte)',
+    hinweis: 'KV Zahntechnikergewerbe, Arbeiter und Angestellte, Lohn- und Gehaltsordnung ab 1.1.2026 (Quelle: wko.at): Mindestlöhne und Mindestgehälter als Monatsbeträge, Lehrlinge nach Lehrjahr. Wochenstunden (hier 40) und Teiler stehen nicht in der Quelle: bitte mit dem Dienstzettel vergleichen. Die Zulage für Nacht- und Sonntagsarbeit (3,82 € je angefangene Stunde) ist als Prämie vorgeschlagen. Zuschläge sonst: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.zahntechnik = { stand: '1.1.2026', stufen: null, gruppen: [
+      { id: 'ZL1', m: true, name: 'Lohngruppe I: Facharbeiter/in mit Meisterprüfung', l: [3693.53] },
+      { id: 'ZL2', m: true, name: 'Lohngruppe II: Facharbeiter/in mit besonderen Qualifikationen', l: [2572.78] },
+      { id: 'ZL3', m: true, name: 'Lohngruppe III: Facharbeiter/in Zahntechniker/in', l: [2323.03] },
+      { id: 'ZL4', m: true, name: 'Lohngruppe IV: Zahntechnische Fachassistenz', l: [2139.34] },
+      { id: 'ZL5', m: true, name: 'Lohngruppe V: Hilfsarbeiter/in, angelernte Tätigkeiten ohne Lehrabschluss', l: [1971.12] },
+      { id: 'ZA1', m: true, name: 'Verwendungsgruppe I: Laborleiter/in', l: [5013.46] },
+      { id: 'ZA2', m: true, name: 'Verwendungsgruppe II: Meister/in', l: [3693.53] },
+      { id: 'ZA3', m: true, name: 'Verwendungsgruppe III: Weitere Angestellte', l: [2572.78] },
+      { id: 'ZZ1', m: true, lehrling: true, name: 'Lehrling Zahntechniker/in, 1. Lehrjahr', l: [756.46] },
+      { id: 'ZZ2', m: true, lehrling: true, name: 'Lehrling Zahntechniker/in, 2. Lehrjahr', l: [949.44] },
+      { id: 'ZZ3', m: true, lehrling: true, name: 'Lehrling Zahntechniker/in, 3. Lehrjahr', l: [1276.58] },
+      { id: 'ZZ4', m: true, lehrling: true, name: 'Lehrling Zahntechniker/in, 4. Lehrjahr', l: [1499.50] },
+      { id: 'ZF1', m: true, lehrling: true, name: 'Lehrling Zahntechnische Fachassistenz, 1. Lehrjahr', l: [756.46] },
+      { id: 'ZF2', m: true, lehrling: true, name: 'Lehrling Zahntechnische Fachassistenz, 2. Lehrjahr', l: [949.44] },
+      { id: 'ZF3', m: true, lehrling: true, name: 'Lehrling Zahntechnische Fachassistenz, 3. Lehrjahr', l: [1276.58] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1673,6 +1704,13 @@
         assistenz: { name: 'Ordinationsassistenz / Medizinische Assistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
         labor: { name: 'Labor / Röntgen / Therapie / Pflege in der Praxis', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Ordination, Praxis)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    zahntechnik: { name: 'Zahntechnik (Labor)', paket: 'zahntechnik', kvs: ['zahntechnik', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        labor: { name: 'Zahntechniker/in (Labor)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        assistenz: { name: 'Zahntechnische Fachassistenz / Hilfskraft', b: { fahrzeug: false, kunden: false, praemien: true } },
+        leitung: { name: 'Laborleitung / Meister / Büro', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Zahntechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
