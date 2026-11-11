@@ -2443,7 +2443,8 @@
     { id: 'pausen', k: ['pausenabzug', 'automatische pause', 'pause abziehen', 'pausen automatisch'], sel: '#s-pauseauto', pfad: ['Einstellungen', 'Meine Werte', 'Automatischer Pausenabzug (Minuten pro Tag)'], unter: 'Mein Beruf' },
     { id: 'runden', k: ['runden', 'aufrunden', 'abrunden', 'rounding'], sel: '#s-runan', pfad: ['Einstellungen', 'Meine Werte', 'Zeiten runden'], unter: 'Mein Beruf' },
     { id: 'lohnzettel', k: ['lohnzettel', 'stimmt mein lohnzettel', 'abrechnung vergleichen', 'payslip', 'abgleich'], sel: '#m-abgleich', pfad: ['Lohnzettel', 'Stimmt mein Lohnzettel?'] },
-    { id: 'schnell', k: ['sprachnachricht', 'sprache', 'sprechen', 'diktieren', 'einsprechen', 'spracheingabe', 'whatsapp', 'per text', 'textnachricht', 'schnell erfassen', 'voice', 'dictate', 'quick entry'], sel: '#sq-card', pfad: ['Erfassen', 'Schnell erfassen (Text oder Sprache)'] },
+    { id: 'schnell', k: ['sprachnachricht', 'sprache', 'sprechen', 'diktieren', 'einsprechen', 'spracheingabe', 'whatsapp', 'per text', 'textnachricht', 'schnell erfassen', 'voice', 'dictate', 'quick entry'], sel: '#sq-card', pfad: ['Erfassen', 'Schnell erfassen'] },
+    { id: 'eingabehilfen', k: ['eingabehilfen', 'schnell erfassen ausschalten', 'sprache ausschalten', 'foto ausschalten', 'tagesbericht foto', 'foto tagesbericht', 'foto einlesen', 'karte ausblenden'], sel: '#s-eingabe', pfad: ['Einstellungen', 'Eingabehilfen'], unter: 'Bereitschaft und Notdienst' },
     { id: 'erfassen', k: ['stunden eintragen', 'tag eintragen', 'arbeitszeit eintragen', 'tag erfassen', 'log hours'], sel: '#e-status', pfad: ['Erfassen'] },
     { id: 'urlaub', k: ['urlaub eintragen', 'krankenstand eintragen', 'art des tages', 'zeitausgleich eintragen', 'urlaub', 'krankenstand'], sel: '#e-status', pfad: ['Erfassen', 'Art des Tages'] },
     { id: 'fristen', k: ['fristen', 'code 95', 'code95', 'ausweise', 'fahrerkarte', 'staplerschein', 'ablaufdatum', 'ausbildungen'], sel: '#fr-card', pfad: ['Profil', 'Ausbildungen, Ausweise und Fristen'] },
@@ -3923,9 +3924,29 @@
   function uebersetzt(t) { var d = uiDict(uiLang()); return (d && d[t]) || t; }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest && ev.target.closest('button'); if (!b) return;
-    if (b.id === 'sq-go') sqVerstehen(); else if (b.id === 'sq-ja') sqUebernehmen(); else if (b.id === 'sq-nein') { $('#sq-res').hidden = true; $('#sq-text').focus(); } else if (b.id === 'sq-mic') sqSprechen();
+    if (b.id === 'sq-go') sqVerstehen(); else if (b.id === 'sq-foto') { $('#sq-file').click(); } else if (b.id === 'sq-ja') sqUebernehmen(); else if (b.id === 'sq-nein') { $('#sq-res').hidden = true; $('#sq-text').focus(); } else if (b.id === 'sq-mic') sqSprechen();
   });
-  sqInit();
+
+  function sqApply() {
+    var p = data.profil || {}, t = p.sqText !== false, f = p.sqFoto !== false, c = $('#sq-card'); if (!c) return;
+    c.hidden = !t; var fb = $('#sq-foto'), fp = $('#sq-fotop'); if (fb) fb.hidden = !f; if (fp) fp.hidden = !f;
+    var a = $('#sq-set-text'), b = $('#sq-set-foto'); if (a) a.checked = t; if (b) { b.checked = f; b.disabled = !t; }
+  }
+  function sqFoto(file) {
+    var st = $('#sq-fstate'); st.hidden = false; st.textContent = 'Das Foto wird gelesen …'; $('#sq-res').hidden = true;
+    window.StundenLz.leseFotos([file]).then(function (o) {
+      var t = (o.lines || []).join(', ').replace(/\s+/g, ' ').trim();
+      if (!o.hatText || !t) { st.textContent = 'Auf dem Foto konnte ich nichts lesen. Versuche es mit mehr Licht und halte das Handy ruhig.'; return; }
+      st.textContent = 'Das habe ich gelesen. Du kannst den Text ändern.'; $('#sq-text').value = t; sqVerstehen();
+    }, function () { st.textContent = 'Auf dem Foto konnte ich nichts lesen. Versuche es mit mehr Licht und halte das Handy ruhig.'; });
+  }
+  document.addEventListener('change', function (ev) {
+    var t = ev.target; if (!t || !t.id) return;
+    if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; save(); sqApply(); }
+    else if (t.id === 'sq-set-foto') { data.profil.sqFoto = !!t.checked; save(); sqApply(); }
+    else if (t.id === 'sq-file' && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
+  });
+  sqInit(); sqApply();
   function uiLang() {
     try { var l = localStorage.getItem('stundenchecker.lang'); if (l && MIA_LANGS[l]) return l; } catch (e) {}
     var n = ((navigator.language || 'de').slice(0, 2)).toLowerCase(); n = UI_ALIAS[n] || n; return MIA_LANGS[n] ? n : 'de';
