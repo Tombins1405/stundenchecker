@@ -1300,6 +1300,33 @@
       { id: 'M3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [1829.00] },
       { id: 'M4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [2108.00] }
     ] };
+  // Post AG (KV Neu Teil 2, Gehaltsflyer GPF ab 15.9.2026)
+  PAKETE.post = {
+    name: 'Post AG (KV Neu Teil 2)',
+    hinweis: 'KV Post AG, Angestellte, "KV Neu Teil 2" laut Gehaltsflyer der Gewerkschaft GPF, gültig ab 15.9.2026: Mindestgehalt nach Funktionsgruppe und Dienstjahren, Lehrlinge nach Lehrjahr. Welche Funktionsgruppe für dich gilt, steht im Dienstzettel. Die Tabellen "KV Neu Teil 1" (Gebiet A und B) und die Beamten-Schemata sind nicht hinterlegt. Zuschläge nicht in der Quelle: es gilt das Gesetz (Überstunden 50 %). Private Paketdienste und Kurierdienste laufen unter Güterbeförderung.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.post = { stand: '15.9.2026', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], gruppen: [
+      { id: 'A0', m: true, name: 'Funktionsgruppe A0', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2061.50, 2098.88, 2144.08, 2186.77, 2237.03] },
+      { id: 'A', m: true, name: 'Funktionsgruppe A', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2123.35, 2161.85, 2208.40, 2252.37, 2304.14] },
+      { id: 'B1', m: true, name: 'Funktionsgruppe B1', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2123.35, 2161.85, 2208.40, 2252.37, 2304.13] },
+      { id: 'B2', m: true, name: 'Funktionsgruppe B2', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2170.11, 2208.40, 2252.37, 2311.90, 2363.64] },
+      { id: 'B3', m: true, name: 'Funktionsgruppe B3', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2216.85, 2252.37, 2311.90, 2363.64, 2407.64] },
+      { id: 'B4', m: true, name: 'Funktionsgruppe B4', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2216.85, 2252.37, 2311.90, 2363.64, 2407.64] },
+      { id: 'B5', m: true, name: 'Funktionsgruppe B5', stufen: ['bis 5 Dienstjahre', 'über 5 bis 10 Dienstjahre', 'über 10 bis 15 Dienstjahre', 'über 15 bis 20 Dienstjahre', 'über 20 Dienstjahre'], l: [2320.74, 2363.64, 2407.64, 2461.97, 2508.54] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1058.84] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1368.80] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1737.70] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1919.10] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1458,6 +1485,13 @@
         montage: { name: 'Montage', b: { fahrzeug: false, kunden: false, praemien: true } },
         lager: { name: 'Lager / Logistik (Industrie)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Industrie)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    post: { name: 'Post und Paketdienst', paket: 'post', kvs: ['post', 'gueter', 'klein', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
+      arten: {
+        zustellung: { name: 'Zustellung (Brief, Paket)', b: { fahrzeug: true, kunden: true, praemien: true } },
+        verteil: { name: 'Verteilzentrum / Sortierung', b: { fahrzeug: true, kunden: true, praemien: true } },
+        filiale: { name: 'Postpartner / Schalter / Filiale', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Post, Logistik)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
