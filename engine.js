@@ -1661,6 +1661,157 @@
       { id: 'LT3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1180.61] },
       { id: 'LT4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1341.60] }
     ] };
+  // Rauchfangkehrer (Lohnordnungen je Bundesland, wko.at 2026)
+  PAKETE.rk_noe = {
+    name: 'Rauchfangkehrer Niederösterreich (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Niederösterreich, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_noe = { stand: 'ab 1.1.2026', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'ab dem 5. Berufsjahr'], gruppen: [
+      { id: 'RN1', m: true, name: 'Geselle/Gesellin mit Meisterprüfung', l: [2932.50, 2932.50, 2932.50] },
+      { id: 'RN2', m: true, name: 'Geselle/Gesellin mit den Modulen 1 bis 3 der Meisterprüfung', l: [2821.00, 2821.00, 2821.00] },
+      { id: 'RN3', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2291.50, 2613.50, 2686.00] },
+      { id: 'RN4', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2102.50, 2613.50, 2613.50] },
+      { id: 'RLn1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [888.50] },
+      { id: 'RLn2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1106.50] },
+      { id: 'RLn3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1408.50] }
+    ] };
+  PAKETE.rk_w = {
+    name: 'Rauchfangkehrer Wien (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Wien, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_w = { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'RW1', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2926.00] },
+      { id: 'RW2', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2000.00] },
+      { id: 'RLw1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1172.00] },
+      { id: 'RLw2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1318.00] },
+      { id: 'RLw3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1610.00] }
+    ] };
+  PAKETE.rk_stmk = {
+    name: 'Rauchfangkehrer Steiermark (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Steiermark, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'stunde', satz: 1.37, maxStd: null, minStd: 3, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_stmk = { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'RS1', m: true, name: 'Qualifizierte/r Geselle/Gesellin', l: [2631.42] },
+      { id: 'RS2', m: true, name: 'Geselle/Gesellin mit besonderen Fähigkeiten', l: [2447.39] },
+      { id: 'RS3', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2265.48] },
+      { id: 'RS4', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2062.41] },
+      { id: 'RS5', m: true, name: 'Geschäftsführer/in (Rauchfangkehrer)', l: [3272.02] },
+      { id: 'RLs1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [800.00] },
+      { id: 'RLs2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1000.00] },
+      { id: 'RLs3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1300.00] }
+    ] };
+  PAKETE.rk_ktn = {
+    name: 'Rauchfangkehrer Kärnten (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Kärnten, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_ktn = { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'RK1', m: true, name: 'Geselle/Gesellin mit Meisterprüfung', l: [2236.88] },
+      { id: 'RK2', m: true, name: 'Geselle/Gesellin, darf Überprüfungs- und Wartungsarbeiten selbständig ausführen', l: [2182.97] },
+      { id: 'RK3', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2091.81] },
+      { id: 'RK4', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2037.90] },
+      { id: 'RLk1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [970.33] },
+      { id: 'RLk2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1078.14] },
+      { id: 'RLk3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1185.95] }
+    ] };
+  PAKETE.rk_sbg = {
+    name: 'Rauchfangkehrer Salzburg (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Salzburg, Arbeiter, Löhne ab 1.9.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 9.00 }, { ab: 5, satz: 13.00 }, { ab: 7, satz: 16.00 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_sbg = { stand: 'ab 1.9.2026', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'ab dem 5. Berufsjahr'], gruppen: [
+      { id: 'RZ1', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2245.68, 2445.58, 2629.92] },
+      { id: 'RZ2', m: true, name: 'Gehilfe/Gehilfin (85 % des Gesellenlohns)', l: [1908.83, 2078.74, 2235.43] },
+      { id: 'RLs1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1000.00] },
+      { id: 'RLs2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200.00] },
+      { id: 'RLs3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1400.00] }
+    ] };
+  PAKETE.rk_bgld = {
+    name: 'Rauchfangkehrer Burgenland (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Burgenland, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_bgld = { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'RB1', m: true, name: 'Geselle/Gesellin mit Meisterprüfung', l: [3224.68] },
+      { id: 'RB2', m: true, name: 'Geselle/Gesellin, darf Überprüfungs- und Wartungsarbeiten selbständig ausführen', l: [3030.14] },
+      { id: 'RB3', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2946.31] },
+      { id: 'RB4', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2453.98] },
+      { id: 'RLb1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [883.89] },
+      { id: 'RLb2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1325.84] },
+      { id: 'RLb3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1767.79] }
+    ] };
+  PAKETE.rk_ooe = {
+    name: 'Rauchfangkehrer Oberösterreich (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Oberösterreich, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 1, satz: 20.00 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_ooe = { stand: 'ab 1.1.2026', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'ab dem 5. Berufsjahr'], gruppen: [
+      { id: 'RO1', m: true, name: 'Qualifizierte/r Geselle/Gesellin', l: [2647.60, 2647.60, 2647.60] },
+      { id: 'RO2', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2377.30, 2459.80, 2531.00] },
+      { id: 'RO3', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2277.10, 2352.80, 2419.00] },
+      { id: 'RLo1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [718.50] },
+      { id: 'RLo2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [980.40] },
+      { id: 'RLo3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1250.70] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1850,6 +2001,12 @@
         reiniger: { name: 'Textilreiniger/in / Wäscher/in / Färber/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         hilfskraft: { name: 'Hilfskraft / Ladner/in / Bügler/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Textilreinigung)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    rauchfangkehrer: { name: 'Rauchfangkehrer', paket: 'rk_noe', kvs: ['rk_noe', 'rk_w', 'rk_stmk', 'rk_ktn', 'rk_sbg', 'rk_bgld', 'rk_ooe', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        geselle: { name: 'Geselle/Gesellin mit Lehrabschluss', b: { fahrzeug: false, kunden: false, praemien: true } },
+        ohne: { name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Rauchfangkehrer)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
