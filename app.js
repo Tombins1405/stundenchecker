@@ -2443,6 +2443,7 @@
     { id: 'pausen', k: ['pausenabzug', 'automatische pause', 'pause abziehen', 'pausen automatisch'], sel: '#s-pauseauto', pfad: ['Einstellungen', 'Meine Werte', 'Automatischer Pausenabzug (Minuten pro Tag)'], unter: 'Mein Beruf' },
     { id: 'runden', k: ['runden', 'aufrunden', 'abrunden', 'rounding'], sel: '#s-runan', pfad: ['Einstellungen', 'Meine Werte', 'Zeiten runden'], unter: 'Mein Beruf' },
     { id: 'lohnzettel', k: ['lohnzettel', 'stimmt mein lohnzettel', 'abrechnung vergleichen', 'payslip', 'abgleich'], sel: '#m-abgleich', pfad: ['Lohnzettel', 'Stimmt mein Lohnzettel?'] },
+    { id: 'schnell', k: ['sprachnachricht', 'sprache', 'sprechen', 'diktieren', 'einsprechen', 'spracheingabe', 'whatsapp', 'per text', 'textnachricht', 'schnell erfassen', 'voice', 'dictate', 'quick entry'], sel: '#sq-card', pfad: ['Erfassen', 'Schnell erfassen (Text oder Sprache)'] },
     { id: 'erfassen', k: ['stunden eintragen', 'tag eintragen', 'arbeitszeit eintragen', 'tag erfassen', 'log hours'], sel: '#e-status', pfad: ['Erfassen'] },
     { id: 'urlaub', k: ['urlaub eintragen', 'krankenstand eintragen', 'art des tages', 'zeitausgleich eintragen', 'urlaub', 'krankenstand'], sel: '#e-status', pfad: ['Erfassen', 'Art des Tages'] },
     { id: 'fristen', k: ['fristen', 'code 95', 'code95', 'ausweise', 'fahrerkarte', 'staplerschein', 'ablaufdatum', 'ausbildungen'], sel: '#fr-card', pfad: ['Profil', 'Ausbildungen, Ausweise und Fristen'] },
@@ -3869,6 +3870,62 @@
 
   /* ---- Oberfläche in vielen Sprachen: ersetzt deutsche Texte anhand der Dateien lang-xx.js; was fehlt, bleibt deutsch ---- */
   var UI_ORIG = new WeakMap(), UI_SET = new WeakMap(), UI_RX = {}, uiBusy = false;
+
+  /* ---- Schnell erfassen: Text oder Sprache ---- */
+  var sqRec = null, sqLast = null;
+  function sqInit() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = $('#sq-mic');
+    if (mic && SR) mic.hidden = false;
+  }
+  function sqNamen() { var out = []; try { Object.keys(data.days).sort().reverse().slice(0, 60).forEach(function (k) { kundenNamen(data.days[k]).forEach(function (n) { if (out.indexOf(n) < 0) out.push(n); }); }); } catch (e) { } return out; }
+  function sqVerstehen() {
+    var t = ($('#sq-text').value || '').trim(), box = $('#sq-res'); if (!t) return;
+    var r = E.parseSchnell(t, todayISO(), sqNamen()); sqLast = r;
+    var h = '';
+    if (r.status === 'arbeit' ? !r.von : false) {
+      h = '<div>Ich habe keine Uhrzeit und keine Art des Tages gefunden. Schreib zum Beispiel „von 6 bis 15 Uhr“.</div>'; sqLast = null;
+    } else {
+      var L = [['Datum', fmtLong(r.datum)]];
+      if (r.status !== 'arbeit') L.push(['Art des Tages', E.STATUS[r.status] ? E.STATUS[r.status].name : r.status]);
+      else {
+        L.push(['Beginn', r.von]); if (r.bis) L.push(['Ende', r.bis]);
+        if (r.pause === 0) L.push(['Pause', 'keine']); else if (r.pause) L.push(['Pause', r.pauseVon + ' – ' + r.pauseBis + ' (' + r.pause + ' min)']);
+        if (r.kunden.length) L.push(['Kunden', r.kunden.map(function (k) { return k.name + (k.tat ? ' (' + k.tat + ')' : ''); }).join(', ')]);
+      }
+      h = '<div><strong>Habe ich das richtig verstanden?</strong></div><dl>' + L.map(function (x) { return '<dt>' + x[0] + '</dt><dd>' + esc(x[1]) + '</dd>'; }).join('') + '</dl><div class="btns"><button type="button" class="btn primary" id="sq-ja">Ja, übernehmen</button><button type="button" class="btn" id="sq-nein">Nein, ich ändere den Text</button></div>';
+    }
+    box.innerHTML = h; box.hidden = false;
+  }
+  function sqUebernehmen() {
+    var r = sqLast; if (!r) return;
+    openEditor(r.datum, 'erfassen', true);
+    var d = ui.edDraft; d.status = r.status;
+    if (r.status === 'arbeit') {
+      d.von = r.von; if (r.bis) d.bis = r.bis;
+      if (r.pause === 0) d.pausen = [];
+      else if (r.pause && r.pauseVon) d.pausen = [{ von: r.pauseVon, bis: r.pauseBis }];
+      if (r.kunden.length) d.kunden = r.kunden.map(function (k) { return { name: k.name, taet: [{ tat: k.tat || '', von: '', bis: '' }] }; });
+    }
+    renderEditor(); $('#sq-res').hidden = true; $('#sq-text').value = ''; sqLast = null;
+    toast('Bitte prüfe die Angaben im Formular und tippe dann auf „Speichern“.');
+  }
+  function sqSprechen() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = $('#sq-mic'), st = $('#sq-state');
+    if (sqRec) { try { sqRec.stop(); } catch (e) { } return; }
+    if (!SR) return;
+    var rec = new SR(); sqRec = rec; rec.lang = (MIA_LANGS[uiLang()] || MIA_LANGS.de).sr; rec.interimResults = false; rec.maxAlternatives = 1;
+    function ende() { sqRec = null; mic.classList.remove('live'); mic.textContent = uebersetzt('Sprechen'); st.hidden = true; }
+    rec.onresult = function (ev) { var t = ''; for (var i = 0; i < ev.results.length; i++) t += ev.results[i][0].transcript + ' '; var ta = $('#sq-text'); ta.value = ((ta.value ? ta.value + ' ' : '') + t.trim()).trim(); sqVerstehen(); };
+    rec.onerror = function () { ende(); toast('Die Spracheingabe hat nicht funktioniert. Du kannst auch tippen oder das Mikrofon deiner Tastatur benutzen.'); };
+    rec.onend = ende;
+    try { rec.start(); mic.classList.add('live'); mic.textContent = uebersetzt('Aufnahme beenden'); st.hidden = false; } catch (e) { ende(); }
+  }
+  function uebersetzt(t) { var d = uiDict(uiLang()); return (d && d[t]) || t; }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('button'); if (!b) return;
+    if (b.id === 'sq-go') sqVerstehen(); else if (b.id === 'sq-ja') sqUebernehmen(); else if (b.id === 'sq-nein') { $('#sq-res').hidden = true; $('#sq-text').focus(); } else if (b.id === 'sq-mic') sqSprechen();
+  });
+  sqInit();
   function uiLang() {
     try { var l = localStorage.getItem('stundenchecker.lang'); if (l && MIA_LANGS[l]) return l; } catch (e) {}
     var n = ((navigator.language || 'de').slice(0, 2)).toLowerCase(); n = UI_ALIAS[n] || n; return MIA_LANGS[n] ? n : 'de';

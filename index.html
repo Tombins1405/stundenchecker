@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261111165531">
+<link rel="stylesheet" href="style.css?v=20261111172901">
 </head>
 <body>
 
@@ -232,6 +232,16 @@
       <button type="button" class="iconbtn" id="e-prev" aria-label="Vorheriger Tag"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
       <div class="when"><strong id="e-title"></strong><span id="e-tags"></span></div>
       <button type="button" class="iconbtn" id="e-next" aria-label="Nächster Tag"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+
+    <div class="card" id="sq-card">
+      <details class="how" id="sq-det"><summary>Schnell erfassen (Text oder Sprache)</summary>
+        <p>Schreib oder sprich, was du gearbeitet hast. Zum Beispiel: „Gestern von 6 bis 15 Uhr, 30 Minuten Pause, Kunde Müller Aushub“. Zeiten und Pausen verstehe ich in jeder Sprache, Wörter wie „Kunde“, „Pause“ oder „gestern“ derzeit auf Deutsch und Englisch.</p>
+        <textarea id="sq-text" rows="3" maxlength="600" style="font-family:inherit;font-size:1rem;min-height:84px"></textarea>
+        <div class="btns" style="margin-top:8px"><button type="button" class="btn" id="sq-mic" hidden>Sprechen</button><button type="button" class="btn primary" id="sq-go">Verstehen</button></div>
+        <div id="sq-state" class="muted" hidden>Es wird zugehört … sprich jetzt.</div>
+        <div id="sq-res" class="askgo" hidden></div>
+      </details>
     </div>
 
     <form id="e-form" class="card" autocomplete="off" novalidate>
@@ -743,21 +753,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261111165531";</script>
-<script src="engine.js?v=20261111165531"></script>
+<script>window.APP_VERSION="20261111172901";</script>
+<script src="engine.js?v=20261111172901"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261111165531"></script>
-<script src="timepicker.js?v=20261111165531"></script>
-<script src="datepicker.js?v=20261111165531"></script>
-<script src="selectpicker.js?v=20261111165531"></script>
-<script src="pdf.js?v=20261111165531"></script>
-<script src="lzread.js?v=20261111165531"></script>
-<script src="app.js?v=20261111165531"></script>
-<script src="auth.js?v=20261111165531"></script>
-<script src="sync.js?v=20261111165531"></script>
-<script src="insights.js?v=20261111165531"></script>
+<script src="firebase-config.js?v=20261111172901"></script>
+<script src="timepicker.js?v=20261111172901"></script>
+<script src="datepicker.js?v=20261111172901"></script>
+<script src="selectpicker.js?v=20261111172901"></script>
+<script src="pdf.js?v=20261111172901"></script>
+<script src="lzread.js?v=20261111172901"></script>
+<script src="app.js?v=20261111172901"></script>
+<script src="auth.js?v=20261111172901"></script>
+<script src="sync.js?v=20261111172901"></script>
+<script src="insights.js?v=20261111172901"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

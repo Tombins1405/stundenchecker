@@ -1881,6 +1881,72 @@
       { id: 'LK3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1603.20] },
       { id: 'LK4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2049.12] }
     ] };
+  /* ---- Schnell erfassen: Text oder Sprache in einen Tageseintrag verwandeln (Deutsch und Englisch) ---- */
+  function parseSchnell(text, heute, bekannt) {
+    var res = { datum: heute, status: 'arbeit', von: '', bis: '', pause: null, pauseVon: '', pauseBis: '', kunden: [], gefunden: 0 };
+    var s = String(text || '').replace(/\s+/g, ' ').trim();
+    if (!s) return res;
+    var W = { null: 0, eins: 1, zwei: 2, drei: 3, vier: 4, fuenf: 5, 'fünf': 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, 'zwölf': 12, zwoelf: 12, dreizehn: 13, vierzehn: 14, fuenfzehn: 15, 'fünfzehn': 15, sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19, zwanzig: 20, einundzwanzig: 21, zweiundzwanzig: 22, dreiundzwanzig: 23, vierundzwanzig: 24, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+    // „halb sieben“ = 6:30
+    s = s.replace(/\bhalb\s+(\d{1,2}|[a-zäöüß]+)\b(?!\s*(?:stunde|std))/gi, function (m, w) { var n = /^\d/.test(w) ? +w : W[w.toLowerCase()]; return n === undefined || n < 1 ? m : (n - 1) + ':30'; });
+    s = s.replace(/\b([a-zäöüß]+)(?=\s*(?:uhr\b|bis\b|-|–|\s+(?:minuten|min)\b))/gi, function (m, w) { var n = W[w.toLowerCase()]; return n === undefined ? m : String(n); });
+    s = s.replace(/\bvon\s+([a-zäöüß]+)\s+bis\s+([a-zäöüß]+)\b/gi, function (m, a, b) { var x = W[a.toLowerCase()], y = W[b.toLowerCase()]; return (x === undefined || y === undefined) ? m : 'von ' + x + ' bis ' + y; });
+    s = s.replace(/(\d{1,2})\s*(?:uhr|h|o'clock)\s*(\d{2})\b/gi, '$1:$2');
+    var rest = s;
+    function nimm(rx, fn) { var m = rx.exec(rest); if (!m) return false; rest = rest.slice(0, m.index) + ' ' + rest.slice(m.index + m[0].length); fn(m); return true; }
+    function zeit(h, mi) { h = +h; mi = mi === undefined || mi === '' ? 0 : +mi; if (h > 24 || mi > 59) return ''; return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi; }
+    // Datum
+    var ISO = function (y, m, d) { return y + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d; };
+    if (!nimm(/\b(\d{1,2})\.\s?(\d{1,2})\.(?:\s?(\d{4}|\d{2}))?(?!\d)/, function (m) { var y = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : +heute.slice(0, 4), d = +m[1], mo = +m[2]; if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12) { res.datum = ISO(y, mo, d); if (!m[3] && res.datum > heute) res.datum = ISO(y - 1, mo, d); res.gefunden++; } })) {
+      if (nimm(/\bvorgestern\b|\bday before yesterday\b/i, function () { res.datum = addDays(heute, -2); res.gefunden++; })) { } else if (nimm(/\bgestern\b|\byesterday\b/i, function () { res.datum = addDays(heute, -1); res.gefunden++; })) { } else if (nimm(/\bheute\b|\btoday\b/i, function () { res.gefunden++; })) { } else {
+        var WT = [['sonntag', 0], ['sunday', 0], ['montag', 1], ['monday', 1], ['dienstag', 2], ['tuesday', 2], ['mittwoch', 3], ['wednesday', 3], ['donnerstag', 4], ['thursday', 4], ['freitag', 5], ['friday', 5], ['samstag', 6], ['saturday', 6]];
+        for (var i = 0; i < WT.length; i++) { if (nimm(new RegExp('\\b' + WT[i][0] + '\\b', 'i'), function () { var d = heute, g = 0; while (weekday(d) !== WT[i][1] && g++ < 7) d = addDays(d, -1); res.datum = d; res.gefunden++; })) break; }
+      }
+    }
+    // Pause (zuerst, damit ihre Zahlen nicht als Arbeitszeit gelesen werden)
+    var T = '(\\d{1,2})(?:[:.](\\d{2}))?';
+    if (nimm(/\b(?:keine|ohne|no)\s+(?:pause|break)\b/i, function () { res.pause = 0; res.gefunden++; })) { }
+    else if (nimm(new RegExp('\\b(?:pause|break)\\s*(?:von|:|from)?\\s*' + T + '\\s*(?:uhr)?\\s*(?:bis|-|–|to|until)\\s*' + T + '\\s*(?:uhr)?', 'i'), function (m) { var a = zeit(m[1], m[2]), b = zeit(m[3], m[4]); if (a && b) { res.pauseVon = a; res.pauseBis = b; var x = a.split(':'), y = b.split(':'); res.pause = (+y[0] * 60 + +y[1]) - (+x[0] * 60 + +x[1]); if (res.pause < 0) res.pause += 1440; res.gefunden++; } })) { }
+    else {
+      var P = function (n, u) { u = (u || 'min').toLowerCase(); return u.charAt(0) === 's' || u.charAt(0) === 'h' ? Math.round(+String(n).replace(',', '.') * 60) : Math.round(+String(n).replace(',', '.')); };
+      var okp = function (v) { return v >= 0 && v <= 300; };
+      if (nimm(/\b(?:pause|break)\s*(?:von|:|of)?\s*(\d+(?:[.,]\d+)?)\s*(min(?:uten|utes)?|stunden?|std\.?|h(?:ours?)?)?(?![:\d])/i, function (m) { var v = P(m[1], m[2]); if (okp(v)) { res.pause = v; res.gefunden++; } })) { }
+      else if (nimm(/\b(\d+(?:[.,]\d+)?)\s*(min(?:uten|utes)?|stunden?|std\.?|h(?:ours?)?)\s*(?:pause|break)\b/i, function (m) { var v = P(m[1], m[2]); if (okp(v)) { res.pause = v; res.gefunden++; } })) { }
+      else if (nimm(/\b(?:eine\s+)?(halbe|dreiviertel|viertel|eine|half an?|an|one)\s*(?:stunde|hour)?\s*(?:pause|break)\b|\b(?:pause|break)\s*(?:von|:|of)?\s*(?:eine\s+)?(halbe|dreiviertel|viertel|eine|half an?|an|one)\s*(?:stunde|hour)\b/i, function (m) { var w = (m[1] || m[2] || '').toLowerCase(); res.pause = /^halbe|^half/.test(w) ? 30 : /^dreiviertel/.test(w) ? 45 : /^viertel/.test(w) ? 15 : 60; res.gefunden++; })) { }
+    }
+    // Art des Tages ohne Arbeitszeit
+    var ST = [[/\b(?:urlaub|vacation|holiday)\b/i, 'urlaub'], [/\b(?:krankenstand|krank|sick)\b/i, 'krank'], [/\b(?:zeitausgleich|time off in lieu)\b/i, 'za'], [/\b(?:berufsschule|schulung|schule|training)\b/i, 'schule'], [/\b(?:arztbesuch|arzt|doctor)\b/i, 'arzt'], [/\b(?:pflegefreistellung)\b/i, 'pflege'], [/\b(?:feiertag|public holiday)\b/i, 'feiertag']];
+    // Arbeitszeit
+    var sawRange = nimm(new RegExp('(?:\\bvon\\s+|\\bfrom\\s+|\\b)' + T + '\\s*(?:uhr|h)?\\s*(?:bis|-|–|to|until|till)\\s*' + T + '\\s*(?:uhr|h)?', 'i'), function (m) { var a = zeit(m[1], m[2]), b = zeit(m[3], m[4]); if (a && b) { res.von = a; res.bis = b; res.gefunden += 2; } });
+    if (!sawRange) {
+      nimm(new RegExp('\\b(?:ab|beginn|start(?:ed)?|von|from|at)\\s+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var a = zeit(m[1], m[2]); if (a) { res.von = a; res.gefunden++; } });
+      nimm(new RegExp('\\b(?:bis|ende|end(?:ed)?|until)\\s+' + T + '\\s*(?:uhr)?', 'i'), function (m) { var b = zeit(m[1], m[2]); if (b) { res.bis = b; res.gefunden++; } });
+    }
+    if (!res.von) for (var k = 0; k < ST.length; k++) { if (ST[k][0].test(rest)) { res.status = ST[k][1]; res.gefunden++; rest = rest.replace(ST[k][0], ' '); break; } }
+    if (res.von && res.bis && res.bis < res.von && +res.bis.slice(0, 2) <= 12 && +res.bis.slice(0, 2) + 12 > +res.von.slice(0, 2) && +res.bis.slice(0, 2) + 12 <= 24) res.bis = ((+res.bis.slice(0, 2) + 12) + '').padStart(2, '0') + res.bis.slice(2);
+    // Pause in die Schicht legen, wenn keine Uhrzeit genannt wurde
+    if (res.pause && !res.pauseVon && res.von && res.bis) {
+      var v = res.von.split(':'), b2 = res.bis.split(':'), vm = +v[0] * 60 + +v[1], bm = +b2[0] * 60 + +b2[1]; if (bm <= vm) bm += 1440;
+      var pm = (vm < 720 && bm > 720 + res.pause) ? 720 : Math.round((vm + (bm - vm - res.pause) / 2) / 5) * 5;
+      var f = function (x) { x = x % 1440; var h = Math.floor(x / 60), mi = x % 60; return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi; };
+      res.pauseVon = f(pm); res.pauseBis = f(pm + res.pause);
+    }
+    // Kunden und Tätigkeiten
+    rest = rest.replace(/\b(?:und dann|und|and|dann|then)\b(?=\s+(?:kunde|bei|customer|for))/gi, ',');
+    var teile = rest.split(/[,;\n]+/), bk = (bekannt || []).filter(Boolean).sort(function (a, b) { return b.length - a.length; });
+    teile.forEach(function (t) {
+      t = t.replace(/\b(?:war|waren|habe|hab|ich|am|um|den|der|die|das|heute|gearbeitet|worked|i|was|at)\b/gi, ' ').replace(/\s+/g, ' ').trim();
+      var m = /^(?:kunden?|bei|für|fuer|auftrag|baustelle|customer|for|at|site)[:\s]+(.+)$/i.exec(t), body = m ? m[1] : null;
+      if (!body) { var c = /^([^:]{2,40}):\s*(.+)$/.exec(t); if (c) body = c[1] + ' ' + c[2]; }
+      if (!body) return;
+      body = body.replace(/^[:\s]+/, '').trim(); if (!body) return;
+      var name = '', tat = '', low = body.toLowerCase();
+      for (var j = 0; j < bk.length; j++) { var bl = bk[j].toLowerCase(); if (low.indexOf(bl) === 0) { name = bk[j]; tat = body.slice(bk[j].length).replace(/^[:\s,-]+/, '').trim(); break; } }
+      if (!name) { var parts = body.split(/\s+/); name = parts.shift(); if (/^(?:firma|fa\.?|herr|frau|company|mr|mrs)$/i.test(name) && parts.length) name += ' ' + parts.shift(); tat = parts.join(' '); }
+      name = name.replace(/[:,;]+$/, ''); res.kunden.push({ name: name, tat: tat }); res.gefunden++;
+    });
+    return res;
+  }
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2835,6 +2901,6 @@
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
-    wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
+    parseSchnell: parseSchnell, wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
