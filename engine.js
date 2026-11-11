@@ -1812,6 +1812,75 @@
       { id: 'RLo2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [980.40] },
       { id: 'RLo3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1250.70] }
     ] };
+  // Bauhilfsgewerbe, Schädlingsbekämpfung, Kunststoffverarbeiter (wko.at 2026)
+  PAKETE.bauhilfsgewerbe = {
+    name: 'Bauhilfsgewerbe (Arbeiter)',
+    hinweis: 'KV Bauhilfsgewerbe (Fassader, Stuckateure, Gipser, Dämmung), Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Die Zulagen sind in Prozent angegeben (zum Beispiel Schmutzzulage 10 %, nur die zwei höchsten werden gezahlt), den Betrag nimmst du vom Lohnzettel.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.bauhilfsgewerbe = { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'BH1', name: 'Vorarbeiter/in (Bauhilfsgewerbe)', l: [19.63] },
+      { id: 'BH2', name: 'Fassader/in, Stuckateur/in, Gipser/in', l: [19.63] },
+      { id: 'BH3', name: 'Facharbeiter/in mit Lehrabschluss im erlernten Beruf', l: [18.70] },
+      { id: 'BH4', name: 'Facharbeiter/in ohne Lehrabschluss im erlernten Beruf', l: [18.32] },
+      { id: 'BH5', name: 'Angelernte/r Arbeiter/in', l: [17.22] },
+      { id: 'BH6', name: 'Hilfsarbeiter/in (Bauhilfsgewerbe)', l: [15.45] },
+      { id: 'BH7', name: 'Aufsteller/in und Monteur/in mobiler Trennwände', l: [19.63] },
+      { id: 'LB1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [6.42] },
+      { id: 'LB2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [9.63] },
+      { id: 'LB3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [14.18] }
+    ] };
+  PAKETE.schaedling = {
+    name: 'Schädlingsbekämpfung (Arbeiter)',
+    hinweis: 'KV Schädlingsbekämpfung, Arbeiter, Löhne ab 1.3.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.schaedling = { stand: 'ab 1.3.2026', stufen: null, gruppen: [
+      { id: 'SB1', name: 'Absolvent/in der Lehre ohne Lehrabschluss, Beschäftigte/r in der Schädlingsbekämpfung', l: [12.54] },
+      { id: 'SB2', name: 'Schädlingsbekämpfer/in, Facharbeiter/in', l: [15.15] },
+      { id: 'LS1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [974.00] },
+      { id: 'LS2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1218.00] },
+      { id: 'LS3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1497.00] }
+    ] };
+  PAKETE.kunststoff = {
+    name: 'Kunststoffverarbeitung (Arbeiter)',
+    hinweis: 'KV Kunststoffverarbeiter, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Der Monatslohn wird aus dem Stundenlohn mit dem Faktor 173,2 berechnet; Lehrlinge bekommen monatliche Beträge.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kunststoff = { stand: '1.5.2026 bis 30.4.2027', stufen: null, teiler: 173.2, gruppen: [
+      { id: 'KU1', name: 'Lohngruppe I: Spitzenfacharbeiter/in', l: [14.97] },
+      { id: 'KU2', name: 'Lohngruppe II: Facharbeiter/in mit Lehrabschluss', l: [13.97] },
+      { id: 'KU3', name: 'Lohngruppe III: Angelernte Tätigkeiten, Maschinenarbeiter/in, Kraftfahrer/in', l: [13.17] },
+      { id: 'KU4', name: 'Lohngruppe IV: Arbeitnehmer/in ohne Zweckausbildung (Hilfs- und Reinigungsarbeiten)', l: [12.37] },
+      { id: 'LK1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [955.54] },
+      { id: 'LK2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1231.59] },
+      { id: 'LK3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1603.20] },
+      { id: 'LK4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2049.12] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1823,7 +1892,7 @@
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Berufskraftfahrer (Lehrling)', b: { fahrzeug: true, kunden: true, praemien: false } }
       } },
-    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'tischler', 'maler', 'glaser', 'tapezierer', 'steinmetz', 'bodenleger', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
+    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'tischler', 'maler', 'glaser', 'tapezierer', 'steinmetz', 'bodenleger', 'bauhilfsgewerbe', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
       arten: {
         maurer: { name: 'Maurer / Hochbau / Tiefbau / Bauarbeiter', kv: 'bau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         zimmerer: { name: 'Zimmerer / Holzbau / Dachstuhl', kv: 'holzbau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
@@ -1839,6 +1908,7 @@
         tapezierer: { name: 'Tapezierer', kv: 'tapezierer', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         steinmetz: { name: 'Steinmetz / Steinarbeiter', kv: 'steinmetz', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         bodenleger: { name: 'Bodenleger', kv: 'bodenleger', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        bauhilfsgewerbe: { name: 'Fassader / Stuckateur / Gipser / Dämmung', kv: 'bauhilfsgewerbe', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         anderes: { name: 'Anderes Handwerk (Eigene Werte)', kv: 'eigen', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Bau und Handwerk)', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: false } }
       } },
@@ -2007,6 +2077,17 @@
         geselle: { name: 'Geselle/Gesellin mit Lehrabschluss', b: { fahrzeug: false, kunden: false, praemien: true } },
         ohne: { name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Rauchfangkehrer)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    schaedling: { name: 'Schädlingsbekämpfung', paket: 'schaedling', kvs: ['schaedling', 'eigen'], einfach: true, diaeten: true, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        bekaempfer: { name: 'Schädlingsbekämpfer/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Schädlingsbekämpfung)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    kunststoff: { name: 'Kunststoffverarbeitung', paket: 'kunststoff', kvs: ['kunststoff', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        maschine: { name: 'Maschinenarbeiter/in / Facharbeiter/in (Kunststoff)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        hilfskraft: { name: 'Hilfskraft (Verpacken, Reinigung, Lager)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Kunststoffverarbeitung)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
