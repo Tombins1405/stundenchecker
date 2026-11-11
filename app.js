@@ -2446,7 +2446,14 @@
     setTimeout(function () {
       var t = $(e.sel); if (!t || t.closest('[hidden]')) { toast('Das gibt es für deinen Beruf nicht.'); return; }
       var d = t.closest('details'); while (d) { d.open = true; d = d.parentElement && d.parentElement.closest('details'); }
-      t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var card = t.closest('.card'), anchor = t;
+      if (card) {
+        var hs = card.querySelectorAll('h3'), head = null, k;
+        if (t === card) head = hs[0] || null;
+        else for (k = 0; k < hs.length; k++) { if (hs[k] !== t && (hs[k].compareDocumentPosition(t) & 4)) head = hs[k]; }
+        if (head) anchor = head; else if (t !== card) anchor = card;
+      }
+      window.scrollTo({ top: Math.max(0, anchor.getBoundingClientRect().top + window.pageYOffset - 70), behavior: 'smooth' });
       var box = (t.tagName === 'INPUT' || t.tagName === 'SELECT') ? (t.closest('.field') || t) : t;
       box.classList.add('mia-treffer'); setTimeout(function () { box.classList.remove('mia-treffer'); }, 3200);
       if (t.tagName === 'INPUT' || t.tagName === 'SELECT') { try { t.focus({ preventScroll: true }); } catch (x) { } }
