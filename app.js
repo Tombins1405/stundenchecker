@@ -2094,6 +2094,7 @@
     if (zuW) { var ukT = unterKvTexte(zuW, todayISO()); if (ukT.length) out.push({ k: 'unterkv_' + (zuW.gueltigAb || ''), text: ukT.join(' ') }); }
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
+    if (data.profil && data.profil.assistDone && !data.profil.sqIntro) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Soll ich dich hinführen?' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
@@ -2178,6 +2179,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
+    if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqIntro = true; save(); show('erfassen'); setTimeout(function () { var d = $('#sq-det'); if (d) d.open = true; var el = $('#sq-card'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); else { show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); } }, 200); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
     if (k.indexOf('unterkv_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#s-kvwarn'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); return; }
     if (k === 'zuart') {
