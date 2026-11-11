@@ -1859,7 +1859,7 @@
 
 
   /* ============================================================ MIA (Begleiterin, weiblich oder männlich, eigener Name, Outfit je Beruf, aktiv bis ruhiggestellt) */
-  var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'],
+  var MIA_OUT = { 'lkw:baustelle': ['barhaupt', 'weste', 'lenkrad'], 'lkw:tour': ['kappe', 'paket', 'lenkrad'], 'lkw:fern': ['kappe', 'lenkrad'], 'lkw:muell': ['kappe', 'weste', 'lenkrad'], lkw: ['kappe', 'lenkrad'], bund: ['krawatte', 'klemmbrett'], optiker: ['kittel'], bahn: ['kappe', 'weste', 'klemmbrett'], anderes: ['klemmbrett'],
     bagger: ['barhaupt', 'weste', 'ohren', 'joystick'], klein: ['kappe', 'klemmbrett'], mechaniker: ['overall', 'maulschluessel'], lager: ['weste', 'paket'], handel: ['schuerze'], buero: ['krawatte', 'laptop'], aussendienst: ['krawatte', 'koffer'],
     'gastro:service': ['schuerze', 'tablett_glas'], 'gastro:kueche': ['kochhaube', 'schuerze', 'pfanne'], 'gastro:chef': ['kochhaube', 'schuerze', 'messer'], 'gastro:rezeption': ['krawatte', 'mappe'], 'gastro:housekeeping': ['schuerze'], 'gastro:betrieb': ['kochhaube', 'schuerze'],
     handwerk: ['helm', 'weste'], 'handwerk:maurer': ['helm', 'weste', 'kelle'], 'handwerk:zimmerer': ['helm', 'weste', 'hammer'], 'handwerk:elektro': ['helm', 'overall', 'maulschluessel'], 'handwerk:installateur': ['helm', 'overall', 'maulschluessel'], 'handwerk:spengler': ['helm', 'overall', 'hammer'], 'handwerk:tischler': ['kappe', 'overall', 'hammer'], 'handwerk:maler': ['kappe', 'overall', 'eimer'], 'handwerk:anderes': ['helm', 'weste', 'wasserwaage'], 'handwerk:lehrling': ['helm', 'weste', 'hammer'],
