@@ -1949,6 +1949,53 @@
     });
     return res;
   }
+  // Garagen/Tankstellen/Service und Fußpfleger/Kosmetiker/Masseure (wko.at 2026)
+  PAKETE.garage = {
+    name: 'Garagen, Tankstellen, Service (Arbeiter und Angestellte)',
+    hinweis: 'KV Garagen, Tankstellen und Serviceunternehmungen, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Die Lehrlinge stehen nicht in der Quelle: gib dann deinen Lehrlingslohn selbst ein.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.garage = { stand: 'ab 1.1.2026', stufen: ['bis zum vollendeten 3. Dienstjahr', 'bis zum vollendeten 6. Dienstjahr', 'bis zum vollendeten 9. Dienstjahr', 'ab dem 10. Dienstjahr'], gruppen: [
+      { id: 'GA1', m: true, name: 'Verwendungsgruppe 1 (Arbeiter/innen)', l: [2081.00, 2133.00, 2186.00, 2239.00] },
+      { id: 'GA2', m: true, name: 'Verwendungsgruppe 2 (Arbeiter/innen)', l: [2117.00, 2192.00, 2268.00, 2345.00] },
+      { id: 'GA3', m: true, name: 'Verwendungsgruppe 3 (Angestellte)', l: [2161.00, 2250.00, 2341.00, 2429.00] },
+      { id: 'GA4', m: true, name: 'Verwendungsgruppe 4 (Angestellte)', l: [2210.00, 2312.00, 2414.00, 2517.00] },
+      { id: 'GA5', m: true, name: 'Verwendungsgruppe 5 (Angestellte)', l: [2376.00, 2484.00, 2597.00, 2705.00] },
+      { id: 'GA6', m: true, name: 'Verwendungsgruppe 6 (Angestellte)', l: [2564.00, 2685.00, 2803.00, 2922.00] }
+    ] };
+  PAKETE.kosmetik = {
+    name: 'Fußpfleger-, Kosmetiker- und Masseurgewerbe (Arbeiter)',
+    hinweis: 'KV Fußpfleger, Kosmetiker und Masseure, Arbeiter, Löhne ab 1.7.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Gilt in allen Bundesländern außer Tirol, die Lehrlingssätze steigen am 1.9.2026. Für Tirol bitte Eigene Werte verwenden.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kosmetik = { stand: 'ab 1.7.2026', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–5', 'ab dem 6. Berufsjahr'], gruppen: [
+      { id: 'KF1', m: true, name: 'Facharbeiter/in mit Prüfung (Kosmetik, Fußpflege, Massage)', l: [2078.28, 2143.41, 2208.54] },
+      { id: 'KF2', m: true, name: 'Facharbeiter/in mit mehreren Prüfungen (Kosmetik, Fußpflege, Massage, Friseur)', l: [2131.57, 2196.70, 2273.67] },
+      { id: 'KF3', m: true, name: 'Angelernte/r mit fachspezifischer Ausbildung, ohne Lehrabschluss', l: [2042.75, 2042.75, 2042.75] },
+      { id: 'KF4', m: true, name: 'Mit Ausbildung laut Fußpflege- oder Massage-Verordnung (Kosmetik: mindestens 650 Stunden)', stufen: ['Berufsjahr 1', 'Berufsjahre 2–3', 'ab dem 4. Berufsjahr'], l: [2013.15, 2066.44, 2143.41] },
+      { id: 'KF5', m: true, name: 'Handpflege, Nagelmodellage, Visagistik, Wickeltechniken, Haarentfernung, Schlankheitsstudio', l: [2054.59, 2054.59, 2054.59] },
+      { id: 'KF6', m: true, name: 'Hilfskraft ohne fachspezifische Ausbildung (Reinigung, Hilfsarbeiten)', l: [2001.30, 2001.30, 2001.30] },
+      { id: 'KFL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [800.00] },
+      { id: 'KFL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [900.00] },
+      { id: 'KFL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1200.00] },
+      { id: 'KFL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1400.00] }
+    ], folgt: [{ ab: '2026-09-01', stand: 'ab 1.9.2026', gruppen: { KFL1: [816.00], KFL2: [930.00], KFL3: [1240.00], KFL4: [1445.00] } }] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2156,6 +2203,18 @@
         maschine: { name: 'Maschinenarbeiter/in / Facharbeiter/in (Kunststoff)', b: { fahrzeug: false, kunden: false, praemien: true } },
         hilfskraft: { name: 'Hilfskraft (Verpacken, Reinigung, Lager)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Kunststoffverarbeitung)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    garage: { name: 'Garage, Tankstelle, Service', paket: 'garage', kvs: ['garage', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        arbeiter: { name: 'Garage / Tankstelle (Arbeiter/in)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        angestellte: { name: 'Garage / Tankstelle (Angestellte/r)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    kosmetik: { name: 'Kosmetik, Fußpflege, Massage', paket: 'kosmetik', kvs: ['kosmetik', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        kosmetik: { name: 'Kosmetiker/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        fusspflege: { name: 'Fußpfleger/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        massage: { name: 'Masseur/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Kosmetik, Fußpflege, Massage)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
