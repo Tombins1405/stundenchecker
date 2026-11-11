@@ -1401,7 +1401,7 @@
         fahrer: { name: 'Zustellung / Brotausführer / Kraftfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Bäcker)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    konditor: { name: 'Konditorei (Backstube, Verkauf, Zustellung)', paket: 'konditor', kvs: ['konditor', 'konditor_w', 'konditor_st', 'konditor_ooe', 'konditor_sbg', 'konditor_k', 'konditor_v', 'konditor_b', 'konditor_t', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    konditor: { name: 'Konditorei (Backstube, Verkauf, Zustellung)', paket: 'konditor', kvs: ['konditor', 'konditor_w', 'konditor_st', 'konditor_ooe', 'konditor_sbg', 'konditor_k', 'konditor_v', 'konditor_b', 'konditor_t', 'gewerbe_ang', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         backstube: { name: 'Backstube / Produktion', b: { fahrzeug: false, kunden: false, praemien: true } },
         verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -1415,7 +1415,7 @@
         leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Augenoptik)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    fleischer: { name: 'Fleischerei (Produktion, Verkauf, Zustellung)', paket: 'fleischer', kvs: ['fleischer', 'fleischer_w', 'fleischer_st', 'fleischer_ooe', 'fleischer_sbg', 'fleischer_k', 'fleischer_v', 'fleischer_b', 'fleischer_t', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    fleischer: { name: 'Fleischerei (Produktion, Verkauf, Zustellung)', paket: 'fleischer', kvs: ['fleischer', 'fleischer_w', 'fleischer_st', 'fleischer_ooe', 'fleischer_sbg', 'fleischer_k', 'fleischer_v', 'fleischer_b', 'fleischer_t', 'gewerbe_ang', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         produktion: { name: 'Fleischer / Wurstherstellung', b: { fahrzeug: false, kunden: false, praemien: true } },
         verkauf: { name: 'Verkauf / Ladner', b: { fahrzeug: false, kunden: false, praemien: true } },
