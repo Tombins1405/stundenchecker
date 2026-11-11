@@ -2047,6 +2047,7 @@
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
   var NEWS = [
+    { id: 'n11', d: '2026-11-11', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst deine Arbeitszeit, oder du fotografierst den Tagesbericht (nur die Zeiten werden gelesen). Probiere es aus und sag mir danach, wie es bei dir klappt, mit „Rückmeldung an den Entwickler“ im Profil. Das hilft mir sehr.' },
     { id: 'n10', d: '2026-11-06', text: 'Neu: Kollektivverträge für Lkw-Fahrer in Deutschland: Nordrhein-Westfalen, Bayern, Sachsen und Berlin, dazu eine Auswahl für alle anderen Länder.' },
     { id: 'n9', d: '2026-11-05', text: 'Neu: Zeitausgleich-Konto und Resturlaub werden vom Lohnzettel gelesen und mit deiner Aufzeichnung verglichen.' },
     { id: 'n8', d: '2026-11-05', text: 'Neu: Brutto (geschätzt) für abgeschlossene Monate. Trage das Brutto vom Lohnzettel ein, dann siehst du, wie weit die Schätzung danebenliegt.' },
@@ -2058,7 +2059,7 @@
     { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
-  var NEWS_B = { n10: ['lkw', 'klein', 'lager'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
+  var NEWS_B = { n11: null, n10: ['lkw', 'klein', 'lager'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
   function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }); }
   function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, alle: n.alle, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
   function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }
@@ -2094,7 +2095,7 @@
     if (zuW) { var ukT = unterKvTexte(zuW, todayISO()); if (ukT.length) out.push({ k: 'unterkv_' + (zuW.gueltigAb || ''), text: ukT.join(' ') }); }
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
-    if (data.profil && data.profil.assistDone && !data.profil.sqIntro) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Soll ich dich hinführen?' });
+    if (data.profil && data.profil.assistDone && !data.profil.sqIntro) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich hinführen?' });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
     if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
@@ -2190,6 +2191,7 @@
     if (k === 'mithelfen') { if (!data.profil) data.profil = {}; data.profil.consent = { statistik: true, miaFragen: true }; save(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke, das hilft sehr!'); return; }
     if (k === 'fberledigt') { var pf = data.profil || (data.profil = {}); pf.fbGesehen = (pf.fbGesehen || []).concat(ui.fbNeu || []); ui.fbNeu = []; save(); return; }
     if (k === 'newsfrage') { newsSet('an', true); newsSet('freq', 'woche'); toast('Gern. Wie oft, stellst du im Profil ein.'); return; }
+    if (k === 'news_n11') { newsSet('gelesen', newsListe().map(function (x) { return x.id; })); show('konten'); setTimeout(function () { var fc = $('#fb-card'), fd = $('#fb-det'), el = (fc && !fc.hidden) ? fc : $('#news-card'); if (fd && fc && !fc.hidden) { fd.open = true; var sel = $('#fb-art'); if (sel) sel.value = 'wunsch'; } if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150); return; }
     if (k.indexOf('news_') === 0) { newsSet('gelesen', newsListe().map(function (x) { return x.id; })); show('konten'); renderNews(); setTimeout(function () { var el = $('#news-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); return; }
     if (k === 'lzeinst') { var pz = data.profil || (data.profil = {}); pz.lzEinstFrage = true; save(); lzUi.modus = 'pruef'; lzOpen(); return; }
     if (k === 'rundgang') { tourStart(); }
@@ -2456,11 +2458,37 @@
     { id: 'news', k: ['neuigkeiten', 'news'], sel: '#news-card', pfad: ['Profil', 'Neuigkeiten'] },
     { id: 'sicherung', k: ['sicherung', 'backup', 'daten sichern', 'wiederherstellen'], sel: '#b-card', open: true, pfad: ['Einstellungen', 'Sicherung'], unter: true }
   ];
+  var MIA_WO_X = {
+    lohn: 'godzinowa|stawka za godzine|oraria|hodinova mzda|hodinova sadzba|satnica|paga oraria|salariu pe ora|tarif orar|zarplata v chas|pochasova|pochasova stavka|ставка в час|почасова|оплата за час|saatlik ucret|saat basi',
+    monatslohn: 'pensja miesieczna|stala pensja|havi fizetes|havi ber|aylik maas|sabit maas|mesicni plat|mesacny plat|mjesecna placa|mesecna plata|stipendio mensile|salariu lunar|месячная зарплата|оклад|місячна зарплата|oklad',
+    diaeten: 'dieta dzienna|dieta krajowa|napi dij|kiküldetési|kikuldetesi|harcirak|gundelik|yevmiye|dnevnice|dnevnica|indennita di trasferta|diurna|суточные|командировочные|добові|відрядні|gunluk harcirah',
+    praemien: 'premia|dodatki|premie|bonusz|премия|надбавка|доплата|премія|надбавки|доплати',
+    ueberstunden: 'orele suplimentare|suplimentare|nadgodziny|tulora|fazla mesai|prescas|nadcas|prekovremeni|sati viska|straordinari|ore suplimentare|сверхурочные|переработка|понаднормові|надурочні|tuloraszamitas',
+    zuschlaege: 'dodatek za niedziele|dodatek za swieta|dodatek do nadgodzin|vasarnapi potlek|unnepnapi potlek|zamlar|pazar zammi|bayram zammi|priplatek za nedeli|priplatek za svatek|prirazka|dodatak za nedjelju|dodatak za praznik|dodatak za nedelju|maggiorazione|supplemento|spor de duminica|spor de sarbatoare|надбавка за воскресенье|надбавка за праздник|доплата за выходные|надбавка за неділю|доплата за свято',
+    wochenstunden: 'godziny tygodniowo|tygodniowy czas pracy|heti oraszam|heti munkaido|haftalik saat|haftalik calisma|tydenni hodiny|tyzdenne hodiny|tjedni sati|nedeljni sati|sedmicni sati|ore settimanali|ore pe saptamana|saptamanale|часов в неделю|недельные часы|годин на тиждень|тижневі години|tydenni pracovni doba',
+    einstufung: 'grupa placowa|zaszeregowanie|besorolas|berkategoria|bergrup|kademe|ucret grubu|kategoria platova|platova trida|platova skupina|placovy stupen|placovni razred|platni razred|inquadramento|categoria salariale|incadrare|grupa de salarizare|тарифная группа|разряд|категория|тарифна група|розряд|категорія',
+    beruf: 'zmiana zawodu|zmienic zawod|foglalkozas valtas|munkakor valtas|meslek degistir|is degistir|zmena povolani|zmena zamestnani|promjena zanimanja|promena zanimanja|cambio lavoro|cambiare lavoro|schimbare meserie|schimba meseria|смена профессии|сменить профессию|змінити професію|зміна професії',
+    kv: 'uklad zbiorowy|kollektiv szerzodes|kollektivvertrag|toplu sozlesme|kolektivni smlouva|kolektivna zmluva|kolektivni ugovor|kolektivni ugovor|contratto collettivo|ccnl|contract colectiv|коллективный договор|колективний договір|collective agreement',
+    bereitschaft: 'dyzur|dyzur domowy|ugyelet|keszenlet|nobet|hazir bekleme|pohotovost|pohotovost|dezurstvo|pripravnost|reperibilita|disponibilita|permanenta|дежурство|дежурство на дому|чергування|черговий',
+    pausen: 'automatyczna przerwa|przerwa automatycznie|automatikus szunet|szunet levonas|otomatik mola|mola kesinti|automaticka prestavka|automaticka pauza|automatska stanka|automatska pauza|pauza automatski|pausa automatica|pauza automata|scadere pauza|автоматический перерыв|вычет перерыва|автоматична перерва|вирахування перерви',
+    runden: 'zaokraglanie|zaokraglic|kerekites|kerekit|yuvarlama|yuvarla|zaokrouhlovani|zaokruhlovanie|zaokruzivanje|zaokruzi|arrotondamento|arrotondare|rotunjire|rotunjeste|округление|округлять|округлення|округляти',
+    lohnzettel: 'pasek wyplaty|odcinek wyplaty|berszamfejtes|fizetesi jegyzek|berlap|maas bordrosu|bordro|vyuctovani mzdy|vyplatna paska|vyuctovanie mzdy|obracun place|platna lista|isplatna lista|obracun plate|busta paga|cedolino|fluturas de salariu|stat de plata|расчетный листок|расчётный лист|зарплатная ведомость|розрахунковий листок|платіжна відомість',
+    schnell: 'hlasovou zpravu|hlasovu spravu|mesajul vocal|inregistrarea rapida|gyors rogzit|hangosan|szybkie wpisywanie|wiadomosc glosowa|nagranie glosowe|dyktowanie|wpisz glosem|szybkie rogzites|hangüzenet|hanguzenet|diktalas|diktál|hizli kayit|sesli mesaj|sesli giris|yazarak|rychle zadani|hlasova zprava|diktovat|nadiktovat|rychle zadanie|hlasova sprava|diktovat|brzi unos|glasovna poruka|diktirati|izgovoriti|brzi unos|glasovna poruka|diktirati|registrazione rapida|messaggio vocale|dettare|inregistrare rapida|mesaj vocal|dictare|dicteaza|быстрая запись|голосовое сообщение|голосом|диктовать|продиктовать|швидкий запис|голосове повідомлення|голосом|диктувати|whatsapp',
+    eingabehilfen: 'pomoc w wprowadzaniu|wylaczyc szybkie|wylacz foto|wylacz zdjecie|beviteli segedek|gyors rogzites kikapcsol|foto kikapcsol|giris yardimlari|hizli kayit kapat|fotografi kapat|pomucky pro zadavani|vypnout rychle|vypnut rychle|pomocky na zadavanie|pomagala za unos|iskljuci brzi|ugasiti brzi|aiuti all inserimento|disattiva registrazione|disattiva foto|ajutoare de introducere|dezactiveaza|помощники ввода|отключить быструю|выключить фото|помічники вводу|вимкнути швидкий|вимкнути фото|fotografia raportu|napi jelentes foto|gunluk rapor foto|foto denniho hlaseni|foto dnevnog izvjestaja|foto rapporto giornaliero|foto raport zilnic|фото дневного отчета|фото денного звіту',
+    erfassen: 'wpisac godziny|wpisz dzien|zapisac godziny|rogzit|idot rogzit|munkaidot rogzit|saat gir|gun gir|calisma saati gir|zadat hodiny|zapsat hodiny|zadat den|zadat hodiny|upisati sate|unijeti sate|upisati dan|inserire le ore|inserire giornata|registrare ore|introdu orele|introdu ziua|inregistreaza ore|ввести часы|внести часы|записать день|ввести день|внести години|записати день|ввести години',
+    urlaub: 'urlop|zwolnienie lekarskie|szabadsag|betegszabadsag|tappenz|hastalik izni|dovolena|nemocenska|dovolenka|godisnji odmor|congedo|malattia|concediu|concediu medical|отпуск|больничный|лист нетрудоспособности|відпустка|лікарняний',
+    fristen: 'terminy waznosci|kod 95|legitymacja|prawo jazdy|karta kierowcy|hataridok|lejarat|lejarati datum|son kullanma|surucu karti|lhuty|termin platnosti|prukazy|kartu ridice|lehoty|platnost|vozacka kartica|patente|carta del conducente|termene|expirare|card sofer|сроки|срок действия|удостоверения|карта водителя|строки|термін дії|посвідчення|картка водія',
+    news: 'nowosci|aktualnosci|ujdonsagok|hirek|yenilikler|haberler|novinky|novosti|vijesti|notizie|noutati|stiri|новости|новинки|новини',
+    sicherung: 'kopia zapasowa|zabezpieczenie danych|przywracanie|biztonsagi mentes|adatmentes|visszaallitas|yedek|yedekleme|geri yukleme|zaloha|zalohovani|obnoveni|zaloha dat|obnovenie|sigurnosna kopija|pohrana|vracanje|rezervna kopija|backup dei dati|ripristino|salvataggio|copie de rezerva|restaurare|salvare date|резервная копия|бэкап|восстановление|резервна копія|відновлення'
+  };
+  MIA_WO.forEach(function (e) { var x = MIA_WO_X[e.id]; if (x) e.k = e.k.concat(x.split('|')); });
   var MIA_WO_FAQ = { 'Prämie anlegen': 'praemien', 'Überstunden und Zuschläge': 'ueberstunden', 'Diäten / Taggeld': 'diaeten', 'Lohn oder Beruf ändern': 'lohn', 'Urlaub oder Krankenstand': 'urlaub', 'Stunden eintragen': 'erfassen', 'Sicherung': 'sicherung', 'Fristen und Ausweise': 'fristen', 'Neuigkeiten': 'news', 'Lohnzettel prüfen': 'lohnzettel', 'Was ist die Lohngruppe und brauche ich sie?': 'einstufung', 'Gleitzeit': 'ueberstunden', 'Nachzahlung, Aufrollung, Sonderzahlungen': 'lohnzettel' };
   function miaWoGet(id) { for (var i = 0; i < MIA_WO.length; i++) if (MIA_WO[i].id === id) return MIA_WO[i]; return null; }
   function miaWoScore(n) {
     var best = null, bs = 0;
-    MIA_WO.forEach(function (e) { var sc = 0; e.k.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = e; } });
+    var f = function (x) { return x.replace(/oe/g, 'o').replace(/ue/g, 'u'); }, nf = f(n);
+    MIA_WO.forEach(function (e) { var sc = 0; e.k.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && (n.indexOf(nk) >= 0 || nf.indexOf(f(nk)) >= 0)) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = e; } });
+    if (best && best.id === 'schnell' && /ausschalt|abschalt|deaktiv|ausblend|turn off|switch off|disable|hide|wylacz|ukryj|kikapcs|kapcsolom ki|kapcsol ki|elrejt|kapat|gizle|vypn|vypin|skryt|iskljuc|ugasi|sakri|disattiv|spegn|nascond|dezactiv|ascund|отключ|выключ|скры|вимкн|вимик|сховат/.test(n)) best = miaWoGet('eingabehilfen');
     return { e: best, s: bs };
   }
   function miaPfadZeigen(e) {
@@ -2494,7 +2522,7 @@
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
     MIA_FAQ.forEach(function (e, i) { var sc = 0, ks = e.k.concat(tr && tr[i] && tr[i][2] ? tr[i][2].split(' ') : []); ks.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = i; } });
-    var wo = miaWoScore(n), loc = /\bwo\b|finde|finden|anleg|einstell|eintrag|aender|zeig|komme|wohin|where|find|set up|gdzie|hol|nerede|unde|gde|dove|kde|де|где/.test(n);
+    var wo = miaWoScore(n), loc = /\bwo\b|finde|finden|anleg|einstell|eintrag|aender|zeig|komme|wohin|where|find|set up|gdzie|hol|hogyan|nerede|nasil|unde|gde|gdje|dove|kde|де|где|как|як/.test(n);
     ins('mia_frage'); ui.miaZiel = null;
     if (wo.e && wo.s >= 1 && (loc || wo.s > bs)) { ui.miaZiel = wo.e.id; ins('mia_wo_' + wo.e.id); return 'Das findest du hier:'; }
     if (best == null) { try { if (window.StundenInsights) window.StundenInsights.miaOffen(q, L); } catch (e) {} }
