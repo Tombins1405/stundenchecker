@@ -1133,6 +1133,57 @@
   LOHNGRUPPEN.taxi_b = { stand: 'ab 1.1.2026', stufen: null, teiler: 173, gruppen: [
       { id: 'T1', m: true, name: 'Mindestlohn (alle Arbeiter/innen)', l: [2060.00] }
     ] };
+  // Gärtner/Landschaftsgärtner und gewerbliche Forstunternehmen (Lohnordnungen 1.3.2026 bis 28.2.2027, Quelle: wko.at)
+  PAKETE.gaertner = {
+    name: 'Gärtner und Landschaftsgärtner (Arbeiter)',
+    hinweis: 'KV Gärtner und Landschaftsgärtner, Arbeiter, Lohnordnung von 1.3.2026 bis 28.2.2027 (Quelle: wko.at): 39 Stunden/Woche, in der Saison ungleich verteilbar (32 bis 48 Stunden, im Schnitt 39). Überstunden 50 %, zwischen 20 und 5 Uhr 100 %, Sonntagsarbeit 100 %, Feiertag nach dem Gesetz. Es zählt nur der höchste Zuschlag. Taggeld auf Baustellen außerhalb des Betriebs: 11,00 € bei mehr als 3 Stunden, 17,50 € bei mehr als 9 Stunden, Übernachtungsgeld 17,00 €. Bei Schlechtwetter wird der begonnene Halbtag bezahlt. Weihnachtsgeld und Urlaubszuschuss je 4,3 Wochenlöhne (im ersten Jahr 3). Pflichtpraktikanten bekommen das Lehrlingseinkommen des 2. Lehrjahres. Einen Teiler für das Lehrlingseinkommen nennt der KV nicht, die App teilt durch 169.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 3, satz: 11.00 }, { ab: 9, satz: 17.50 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 39, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: true
+    }
+  };
+  LOHNGRUPPEN.gaertner = { stand: '1.3.2026 bis 28.2.2027', stufen: null, teiler: 169, gruppen: [
+      { id: 'G1', name: 'Position 1: Obergärtner/in, Greenkeeper/in', l: [18.55] },
+      { id: 'G2', name: 'Position 2: Anlagenleiter/in, gewerbliche/r Gärtnermeister/in', l: [17.15] },
+      { id: 'G3', name: 'Position 3: 1. Gärtner/in und Kraftwagenlenker/in', l: [16.07] },
+      { id: 'G4', name: 'Position 4: 2. Gärtner/in mit Lehrabschluss, ab dem 2. Verwendungsjahr', l: [15.60] },
+      { id: 'G5', name: 'Position 5: Gärtner/in mit Lehrabschluss, im 1. Verwendungsjahr', l: [15.28] },
+      { id: 'G6', name: 'Position 6: Vorarbeiter/in (qualifizierte Gartenarbeiter/innen ohne Lehrabschluss)', l: [14.82] },
+      { id: 'G7', name: 'Position 7: Gartenarbeiter/in ohne Lehrabschluss', l: [14.14] },
+      { id: 'G8', name: 'Position 8: Gartenarbeiter/in in den ersten 6 Monaten im Betrieb', l: [13.20] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [800.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1045.00] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1455.00] }
+    ] };
+  PAKETE.forst = {
+    name: 'Gewerbliche Forstunternehmen (Arbeiter)',
+    hinweis: 'KV gewerbliche Forstunternehmen, Arbeiter, von 1.3.2026 bis 28.2.2027 (Quelle: wko.at): 40 Stunden/Woche. Überstunden 50 %, Nacht- und Sonntagsarbeit 100 %, Feiertag nach dem Gesetz. Hinterlegt sind die Zeitlöhne, im Akkord gelten um ein Viertel höhere Sätze. Gerätefahrer- und Partieführerzulage je 1,85 € pro Stunde, Motorsägenpauschale 2,15 € je Festmeter bei eigener Motorsäge, Werkzeugpauschale 8 % des Barlohns. Taggeld bei Dienstreisen mit Quartier: 30,00 € je 24 Stunden (über 5 Stunden ein Drittel, über 8 Stunden zwei Drittel, über 12 Stunden voll), Nächtigungsgeld 17,00 €. Bei Schlechtwetter wird mindestens ein halber Tag bezahlt. Urlaubszuschuss und Weihnachtsgeld je ein Monatslohn (das 173-Fache des Stundenverdienstes), Anspruch erst nach 60 Arbeitstagen. Der KV gilt nicht für land- und forstwirtschaftliche Betriebe nach dem Landarbeitsgesetz.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 5, satz: 10.00 }, { ab: 8, satz: 20.00 }, { ab: 12, satz: 30.00 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: true
+    }
+  };
+  LOHNGRUPPEN.forst = { stand: '1.3.2026 bis 28.2.2027', stufen: null, teiler: 173, gruppen: [
+      { id: 'F1', name: 'Kategorie 1: Hilfsarbeiter/in', l: [11.92] },
+      { id: 'F2', name: 'Kategorie 2: Waldarbeiter/in mit Zweckausbildung', l: [12.22] },
+      { id: 'F3', name: 'Kategorie 3: Waldarbeiter/in mit Forstfacharbeiterprüfung', l: [14.08] },
+      { id: 'F4', name: 'Kategorie 4: Professionist/in (Mechaniker, Schlosser, Schmied)', l: [14.36] },
+      { id: 'F5', name: 'Kategorie 5: Maschinist/in für Holzerntemaschinen (Harvester, Forwarder, Seilkran)', l: [17.55] },
+      { id: 'F6', m: true, name: 'Forsttechniker/in', l: [2487.15] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1507.52] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1832.22] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [2156.93] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1274,6 +1325,14 @@
         taxi: { name: 'Taxi / Mietwagen', b: { fahrzeug: true, kunden: false, praemien: true } },
         schueler: { name: 'Schülertransport / Krankenbeförderung', b: { fahrzeug: true, kunden: false, praemien: true } },
         werkstatt: { name: 'Werkstätte und Garage (Bus)', b: { fahrzeug: true, kunden: false, praemien: true } }
+      } },
+    gaertner: { name: 'Gärtner und Forst', paket: 'gaertner', kvs: ['gaertner', 'forst', 'eigen'], einfach: true, diaeten: true, sw: true, b: { fahrzeug: true, kunden: true, praemien: true },
+      arten: {
+        garten: { name: 'Garten- und Landschaftsbau', b: { fahrzeug: true, kunden: true, praemien: true } },
+        gaertnerei: { name: 'Gärtnerei / Pflanzenproduktion', b: { fahrzeug: true, kunden: true, praemien: true } },
+        greenkeeper: { name: 'Greenkeeper / Sportplatz', b: { fahrzeug: true, kunden: true, praemien: true } },
+        forst: { name: 'Forstarbeit / Holzernte', b: { fahrzeug: true, kunden: true, praemien: true } },
+        lehrling: { name: 'Lehrling (Gärtner / Forst)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
