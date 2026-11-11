@@ -2402,16 +2402,68 @@
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaNorm(s) { return (s || '').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/ł/g, 'l').replace(/ı/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
   function miaTopic(i) { return String(MIA_FAQ[i].t).replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
+
+  /* ---- Mia: "Wo finde ich ...?" Konkrete Antwort mit Pfad und Hinbringen ---- */
+  var MIA_WO = [
+    { id: 'lohn', k: ['stundenlohn', 'stundensatz', 'verdienst pro stunde', 'euro pro stunde', 'hourly', 'hourly rate', 'wage', 'stawka godzinowa', 'oraria'], sel: '#s-lohn', pfad: ['Einstellungen', 'Meine Werte', 'Stundenlohn (€ pro Stunde)'], unter: 'Mein Beruf' },
+    { id: 'monatslohn', k: ['monatslohn', 'fixlohn', 'fixer lohn', 'monatsgehalt', 'fixgehalt', 'monthly salary'], sel: '#s-monat', pfad: ['Einstellungen', 'Meine Werte', 'Fixer Monatslohn (€ brutto, optional)'], unter: 'Mein Beruf' },
+    { id: 'diaeten', k: ['diäten', 'diaeten', 'diaet', 'taggeld', 'tagesgeld', 'spesen', 'per diem', 'allowance', 'dieta'], sel: '#s-form2', pfad: ['Einstellungen', 'Diäten'], unter: 'Meine Werte' },
+    { id: 'praemien', k: ['prämie', 'praemie', 'praemien', 'bonus', 'zulage', 'zulagen', 'schmutzzulage', 'bonuses'], sel: '#s-praemien', pfad: ['Einstellungen', 'Meine Prämien'], unter: 'Diäten' },
+    { id: 'ueberstunden', k: ['überstunden', 'ueberstunden', 'überstundenmodell', 'tagessoll', 'overtime', 'nadgodziny'], sel: '#s-umodell', pfad: ['Einstellungen', 'Meine Werte', 'Wie zählt deine Firma Überstunden?'], unter: 'Mein Beruf' },
+    { id: 'zuschlaege', k: ['zuschlag', 'zuschlaege', 'zuschläge', 'sonntagszuschlag', 'feiertagszuschlag', 'samstagszuschlag', 'surcharge'], sel: '#s-zsa', pfad: ['Einstellungen', 'Meine Werte', 'Zuschläge für Stunden'], unter: 'Mein Beruf' },
+    { id: 'wochenstunden', k: ['wochenstunden', 'wochenarbeitszeit', 'normalarbeitszeit', 'weekly hours'], sel: '#s-woche', pfad: ['Einstellungen', 'Meine Werte', 'Wochenstunden'], unter: 'Mein Beruf' },
+    { id: 'einstufung', k: ['einstufung', 'lohngruppe', 'verwendungsgruppe', 'beschaeftigungsgruppe', 'beschäftigungsgruppe', 'job group', 'classification'], sel: '#s-einst', pfad: ['Einstellungen', 'Meine Werte', 'Einstufung auf deinem Lohnzettel'], unter: 'Mein Beruf' },
+    { id: 'beruf', k: ['beruf wechseln', 'beruf aendern', 'beruf ändern', 'berufswechsel', 'jobwechsel', 'job wechsel', 'neuer job', 'arbeitsweise', 'change job'], sel: '#s-beruf', pfad: ['Einstellungen', 'Mein Beruf'], unter: 'Meine Daten' },
+    { id: 'kv', k: ['kollektivvertrag', 'kv wechseln', 'kv aendern', 'kv ändern', 'collective agreement'], sel: '#s-kv', open: true, pfad: ['Einstellungen', 'Mein Beruf', 'Mein Kollektivvertrag'], unter: 'Meine Daten' },
+    { id: 'bereitschaft', k: ['bereitschaft', 'notdienst', 'rufbereitschaft', 'standby', 'on call'], sel: '#s-dienste', pfad: ['Einstellungen', 'Bereitschaft und Notdienst'], unter: 'Meine Prämien' },
+    { id: 'pausen', k: ['pausenabzug', 'automatische pause', 'pause abziehen', 'pausen automatisch'], sel: '#s-pauseauto', pfad: ['Einstellungen', 'Meine Werte', 'Automatischer Pausenabzug (Minuten pro Tag)'], unter: 'Mein Beruf' },
+    { id: 'runden', k: ['runden', 'aufrunden', 'abrunden', 'rounding'], sel: '#s-runan', pfad: ['Einstellungen', 'Meine Werte', 'Zeiten runden'], unter: 'Mein Beruf' },
+    { id: 'lohnzettel', k: ['lohnzettel', 'stimmt mein lohnzettel', 'abrechnung vergleichen', 'payslip', 'abgleich'], sel: '#m-abgleich', pfad: ['Lohnzettel', 'Stimmt mein Lohnzettel?'] },
+    { id: 'erfassen', k: ['stunden eintragen', 'tag eintragen', 'arbeitszeit eintragen', 'tag erfassen', 'log hours'], sel: '#e-status', pfad: ['Erfassen'] },
+    { id: 'urlaub', k: ['urlaub eintragen', 'krankenstand eintragen', 'art des tages', 'zeitausgleich eintragen', 'urlaub', 'krankenstand'], sel: '#e-status', pfad: ['Erfassen', 'Art des Tages'] },
+    { id: 'fristen', k: ['fristen', 'code 95', 'code95', 'ausweise', 'fahrerkarte', 'staplerschein', 'ablaufdatum', 'ausbildungen'], sel: '#fr-card', pfad: ['Profil', 'Ausbildungen, Ausweise und Fristen'] },
+    { id: 'news', k: ['neuigkeiten', 'news'], sel: '#news-card', pfad: ['Profil', 'Neuigkeiten'] },
+    { id: 'sicherung', k: ['sicherung', 'backup', 'daten sichern', 'wiederherstellen'], sel: '#b-card', open: true, pfad: ['Einstellungen', 'Sicherung'], unter: true }
+  ];
+  var MIA_WO_FAQ = { 'Prämie anlegen': 'praemien', 'Überstunden und Zuschläge': 'ueberstunden', 'Diäten / Taggeld': 'diaeten', 'Lohn oder Beruf ändern': 'lohn', 'Urlaub oder Krankenstand': 'urlaub', 'Stunden eintragen': 'erfassen', 'Sicherung': 'sicherung', 'Fristen und Ausweise': 'fristen', 'Neuigkeiten': 'news', 'Lohnzettel prüfen': 'lohnzettel', 'Was ist die Lohngruppe und brauche ich sie?': 'einstufung', 'Gleitzeit': 'ueberstunden', 'Nachzahlung, Aufrollung, Sonderzahlungen': 'lohnzettel' };
+  function miaWoGet(id) { for (var i = 0; i < MIA_WO.length; i++) if (MIA_WO[i].id === id) return MIA_WO[i]; return null; }
+  function miaWoScore(n) {
+    var best = null, bs = 0;
+    MIA_WO.forEach(function (e) { var sc = 0; e.k.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = e; } });
+    return { e: best, s: bs };
+  }
+  function miaPfadZeigen(e) {
+    var g = $('#mia-goask'); if (!g) return;
+    if (!e) { g.hidden = true; return; }
+    var p = $('#mia-pfad'); if (p) p.innerHTML = e.pfad.map(function (x) { return '<b>' + esc(x) + '</b>'; }).join(' › ');
+    if (e.unter) p.innerHTML += '<div class="miaunter">' + (e.unter === true ? esc('Ganz unten auf der Seite') : esc('Weiter unten, direkt unter der Karte') + ' <b>' + esc(e.unter) + '</b>') + '</div>';
+    g.hidden = false;
+  }
+  function miaOrtGo(e) {
+    try { miaClose(); } catch (x) { }
+    var el = $(e.sel); if (!el) { toast('Das gibt es für deinen Beruf nicht.'); return; }
+    var v = el.closest('section.view'); if (v) show(v.id.replace('v-', ''));
+    setTimeout(function () {
+      var t = $(e.sel); if (!t || t.closest('[hidden]')) { toast('Das gibt es für deinen Beruf nicht.'); return; }
+      var d = t.closest('details'); while (d) { d.open = true; d = d.parentElement && d.parentElement.closest('details'); }
+      t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var box = (t.tagName === 'INPUT' || t.tagName === 'SELECT') ? (t.closest('.field') || t) : t;
+      box.classList.add('mia-treffer'); setTimeout(function () { box.classList.remove('mia-treffer'); }, 3200);
+      if (t.tagName === 'INPUT' || t.tagName === 'SELECT') { try { t.focus({ preventScroll: true }); } catch (x) { } }
+    }, 220);
+  }
   function miaAnswer(q) {
     var n = miaNorm(q), best = null, bs = 0;
     var L = miaLang(), tr = MIA_TR[L];
     MIA_FAQ.forEach(function (e, i) { var sc = 0, ks = e.k.concat(tr && tr[i] && tr[i][2] ? tr[i][2].split(' ') : []); ks.forEach(function (k) { var nk = miaNorm(k); if (nk.length > 2 && n.indexOf(nk) >= 0) sc += nk.length > 5 ? 2 : 1; }); if (sc > bs) { bs = sc; best = i; } });
-    ins('mia_frage');
+    var wo = miaWoScore(n), loc = /\bwo\b|finde|finden|anleg|einstell|eintrag|aender|zeig|komme|wohin|where|find|set up|gdzie|hol|nerede|unde|gde|dove|kde|де|где/.test(n);
+    ins('mia_frage'); ui.miaZiel = null;
+    if (wo.e && wo.s >= 1 && (loc || wo.s > bs)) { ui.miaZiel = wo.e.id; ins('mia_wo_' + wo.e.id); return 'Das findest du hier:'; }
     if (best == null) { try { if (window.StundenInsights) window.StundenInsights.miaOffen(q, L); } catch (e) {} }
-    else { ins('mia_antwort'); ins('mia_t_' + miaTopic(best)); }
+    else { ins('mia_antwort'); ins('mia_t_' + miaTopic(best)); ui.miaZiel = MIA_WO_FAQ[MIA_FAQ[best].t] || null; }
     return best != null ? miaFaqText(best, 'a') : (MIA_UI[L] || MIA_UI.de).unk;
   }
-  function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
+  function miaShowAns(t) { var el = $('#mia-ans'); if (!el) return; el.textContent = t; el.hidden = false; miaPfadZeigen(miaWoGet(ui.miaZiel)); var r = $('#mia-read'); if (r) r.hidden = !('speechSynthesis' in window); miaPose(''); }
   (function () {
     function on(id, ev, fn) { var el = $(id); if (el) el.addEventListener(ev, fn); }
     function paintAsk() {
@@ -2424,11 +2476,13 @@
     var ls = $('#mia-lang'); if (ls) { ls.innerHTML = Object.keys(MIA_LANGS).map(function (k) { return '<option value="' + k + '">' + MIA_LANGS[k].n + '</option>'; }).join(''); ls.addEventListener('change', function () { uiSetLang(this.value); $('#mia-ans').hidden = true; paintAsk(); }); }
     paintAsk(); ui.miaPaint = paintAsk;
     on('#mia-askbtn', 'click', function () { var p = $('#mia-ask'); paintAsk(); p.hidden = !p.hidden; if (!p.hidden) { var q = $('#mia-q'); if (q) q.focus(); } });
-    on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) { var qa2 = $('#mia-asked'); if (qa2) qa2.hidden = true; ins('mia_chip'); ins('mia_t_' + miaTopic(+b.dataset.faq)); miaShowAns(miaFaqText(+b.dataset.faq, 'a')); } });
+    on('#mia-chips', 'click', function (ev) { var b = ev.target.closest('[data-faq]'); if (b) { var qa2 = $('#mia-asked'); if (qa2) qa2.hidden = true; ins('mia_chip'); ins('mia_t_' + miaTopic(+b.dataset.faq)); ui.miaZiel = MIA_WO_FAQ[MIA_FAQ[+b.dataset.faq].t] || null; miaShowAns(miaFaqText(+b.dataset.faq, 'a')); } });
     function send() { var q = $('#mia-q').value.trim(); if (q) { var qa = $('#mia-asked'); if (qa) { qa.textContent = '„' + q + '“'; qa.hidden = false; } miaShowAns(miaAnswer(q)); } }
     on('#mia-q', 'input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 160) + 'px'; });
     on('#mia-send', 'click', send);
     on('#mia-q', 'keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); send(); } });
+    on('#mia-goyes', 'click', function () { var e = miaWoGet(ui.miaZiel); if (e) { ins('mia_hin_' + e.id); miaOrtGo(e); } });
+    on('#mia-gono', 'click', function () { ui.miaZiel = null; miaPfadZeigen(null); });
     on('#mia-read', 'click', function () {
       miaSag($('#mia-ans').textContent, true);
     });
@@ -2440,7 +2494,7 @@
         try {
           rec = new SR(); rec.lang = MIA_LANGS[miaLang()].sr; rec.interimResults = false; rec.maxAlternatives = 1;
           rec.onresult = function (ev) { ins('mia_sprache'); var t = ev.results[0][0].transcript; var qe = $('#mia-q'); qe.value = t; qe.style.height = 'auto'; qe.style.height = Math.min(qe.scrollHeight, 160) + 'px'; send(); };
-          rec.onerror = function () { miaShowAns((MIA_UI[miaLang()] || MIA_UI.de).mic); };
+          rec.onerror = function () { ui.miaZiel = null; miaShowAns((MIA_UI[miaLang()] || MIA_UI.de).mic); };
           rec.onend = function () { rec = null; mic.classList.remove('rec'); };
           mic.classList.add('rec'); rec.start();
         } catch (e) { rec = null; mic.classList.remove('rec'); }

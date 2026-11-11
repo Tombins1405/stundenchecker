@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap">
-<link rel="stylesheet" href="style.css?v=20261111113324">
+<link rel="stylesheet" href="style.css?v=20261111131234">
 </head>
 <body>
 
@@ -79,6 +79,7 @@
       <div class="askrow"><textarea id="mia-q" rows="2" maxlength="300" autocomplete="off" placeholder="Deine Frage"></textarea><button type="button" class="btn" id="mia-mic" aria-label="Sprechen" hidden>🎤</button><button type="button" class="btn primary" id="mia-send">Los</button></div>
       <div id="mia-asked" class="askasked" hidden></div>
       <div id="mia-ans" class="askans" hidden></div>
+      <div id="mia-goask" class="askgo" hidden><div id="mia-pfad" class="miapfad"></div><div>Soll ich dich dorthin bringen?</div><div class="btns"><button type="button" class="btn" id="mia-goyes">Ja, bring mich hin</button><button type="button" class="btn" id="mia-gono">Nein, danke</button></div></div>
       <button type="button" class="linkbtn" id="mia-read" hidden>Vorlesen</button>
       <div id="mia-chips" class="askchips"></div>
     </div>
@@ -576,23 +577,6 @@
       <label class="check" for="s-zuart"><input type="checkbox" id="s-zuart" data-path="zuschlag.art" data-type="zuart"><span>Meine Firma zählt diese Zuschläge als zusätzliche Stunden</span></label>
     </div>
 
-    <div class="card" id="s-praemien">
-      <h3 data-ico="gift">Meine Prämien</h3>
-      <p class="hint">Alles, was deine Firma zusätzlich zahlt: zum Beispiel pro Mulde, pro Tour oder pro Stunde. Die Beträge gelten für alle Monate gleich.</p>
-      <div id="pr-list"></div>
-      <p class="hint" id="pr-vorh" hidden>Häufige Zulagen in deiner Branche. Tippe darauf, dann trägst du nur noch den Betrag von deinem Lohnzettel ein.</p>
-      <div class="chips" id="pr-vor"></div>
-      <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
-    </div>
-
-    <div class="card" id="s-dienste">
-      <h3 data-ico="bell">Bereitschaft und Notdienst</h3>
-      <p class="hint">Nur, wenn es das bei dir gibt. Wie es bezahlt wird, legst du selbst fest. Kennst du den Betrag nicht, lass ihn leer.</p>
-      <div id="ds-list"></div>
-      <div class="chips" id="ds-vor"><button type="button" class="chip" data-dsneu="bereitschaft">Bereitschaft</button><button type="button" class="chip" data-dsneu="notdienst">Notdiensteinsatz</button></div>
-      <button type="button" class="btn" id="ds-add">+ Eigenen Dienst hinzufügen</button>
-    </div>
-
     <div class="card" id="s-form2" hidden>
       <h3 data-ico="coin">Diäten</h3>
       <div class="field">
@@ -654,6 +638,23 @@
     </div>
 
 
+
+    <div class="card" id="s-praemien">
+      <h3 data-ico="gift">Meine Prämien</h3>
+      <p class="hint">Alles, was deine Firma zusätzlich zahlt: zum Beispiel pro Mulde, pro Tour oder pro Stunde. Die Beträge gelten für alle Monate gleich.</p>
+      <div id="pr-list"></div>
+      <p class="hint" id="pr-vorh" hidden>Häufige Zulagen in deiner Branche. Tippe darauf, dann trägst du nur noch den Betrag von deinem Lohnzettel ein.</p>
+      <div class="chips" id="pr-vor"></div>
+      <button type="button" class="btn" id="pr-add">+ Prämie hinzufügen</button>
+    </div>
+
+    <div class="card" id="s-dienste">
+      <h3 data-ico="bell">Bereitschaft und Notdienst</h3>
+      <p class="hint">Nur, wenn es das bei dir gibt. Wie es bezahlt wird, legst du selbst fest. Kennst du den Betrag nicht, lass ihn leer.</p>
+      <div id="ds-list"></div>
+      <div class="chips" id="ds-vor"><button type="button" class="chip" data-dsneu="bereitschaft">Bereitschaft</button><button type="button" class="chip" data-dsneu="notdienst">Notdiensteinsatz</button></div>
+      <button type="button" class="btn" id="ds-add">+ Eigenen Dienst hinzufügen</button>
+    </div>
 
     <div class="card" id="s-ansicht">
       <h3 data-ico="grid">Ansicht</h3>
@@ -742,21 +743,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261111113324";</script>
-<script src="engine.js?v=20261111113324"></script>
+<script>window.APP_VERSION="20261111131234";</script>
+<script src="engine.js?v=20261111131234"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261111113324"></script>
-<script src="timepicker.js?v=20261111113324"></script>
-<script src="datepicker.js?v=20261111113324"></script>
-<script src="selectpicker.js?v=20261111113324"></script>
-<script src="pdf.js?v=20261111113324"></script>
-<script src="lzread.js?v=20261111113324"></script>
-<script src="app.js?v=20261111113324"></script>
-<script src="auth.js?v=20261111113324"></script>
-<script src="sync.js?v=20261111113324"></script>
-<script src="insights.js?v=20261111113324"></script>
+<script src="firebase-config.js?v=20261111131234"></script>
+<script src="timepicker.js?v=20261111131234"></script>
+<script src="datepicker.js?v=20261111131234"></script>
+<script src="selectpicker.js?v=20261111131234"></script>
+<script src="pdf.js?v=20261111131234"></script>
+<script src="lzread.js?v=20261111131234"></script>
+<script src="app.js?v=20261111131234"></script>
+<script src="auth.js?v=20261111131234"></script>
+<script src="sync.js?v=20261111131234"></script>
+<script src="insights.js?v=20261111131234"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>
