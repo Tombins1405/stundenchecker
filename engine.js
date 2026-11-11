@@ -1327,6 +1327,26 @@
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1737.70] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1919.10] }
     ] };
+  // Angestellte bei Ärzten, Niederösterreich (Mindestgehälter ab 1.1.2026, Ärztekammer NÖ)
+  PAKETE.ordination_noe = {
+    name: 'Angestellte bei Ärzten, Niederösterreich',
+    hinweis: 'KV für Angestellte bei Ärzten in Niederösterreich (Quelle: Ärztekammer NÖ, Mindestgehälter ab 1.1.2026): Mindestgehalt nach Beschäftigungsgruppe und Berufsjahren. Hinterlegt ist nur Niederösterreich, andere Bundesländer haben eigene Tabellen: dort bitte Eigene Werte verwenden. Lehrlinge, Wochenstunden und Zuschläge stehen nicht in der Quelle: es gilt das Gesetz (Überstunden 50 %). Von der Ist-Erhöhung ab 1.7.2026 bleibt dein Ist-Gehalt unberührt, die App meldet nur eine Abweichung unter dem Mindestgehalt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_noe = { stand: '1.1.2026', stufen: ['ab dem 1. Berufsjahr', 'ab dem 4. Berufsjahr', 'ab dem 7. Berufsjahr', 'ab dem 11. Berufsjahr', 'ab dem 15. Berufsjahr', 'ab dem 20. Berufsjahr'], gruppen: [
+      { id: 'BG1', m: true, name: 'Beschäftigungsgruppe 1: Schreibkräfte, Sekretariat, Beschäftigte ohne medizinische Ausbildung', l: [2138.00, 2175.00, 2193.00, 2226.00, 2256.00, 2287.00] },
+      { id: 'BG2', m: true, name: 'Beschäftigungsgruppe 2: Ordinationsassistenz, Pflegehilfe, Heilmasseur, Sanitätshilfsdienst', l: [2174.00, 2254.00, 2338.00, 2429.00, 2515.00, 2610.00] },
+      { id: 'BG3', m: true, name: 'Beschäftigungsgruppe 3: Labor- und Röntgenassistenz, Medizinische Fachassistenz', l: [2218.00, 2309.00, 2391.00, 2482.00, 2570.00, 2665.00] },
+      { id: 'BG4', m: true, name: 'Beschäftigungsgruppe 4: Gehobener medizinisch-technischer Dienst, Krankenpflege, Hebamme', l: [2286.00, 2372.00, 2458.00, 2532.00, 2610.00, 2695.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1492,6 +1512,13 @@
         verteil: { name: 'Verteilzentrum / Sortierung', b: { fahrzeug: true, kunden: true, praemien: true } },
         filiale: { name: 'Postpartner / Schalter / Filiale', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Post, Logistik)', b: { fahrzeug: true, kunden: true, praemien: true } }
+      } },
+    ordination: { name: 'Ordination und Praxis', paket: 'ordination_noe', kvs: ['ordination_noe', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        sekretariat: { name: 'Ordination / Sekretariat / Anmeldung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        assistenz: { name: 'Ordinationsassistenz / Medizinische Assistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
+        labor: { name: 'Labor / Röntgen / Therapie / Pflege in der Praxis', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Ordination, Praxis)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
