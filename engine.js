@@ -1882,10 +1882,53 @@
       { id: 'LK4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2049.12] }
     ] };
   /* ---- Schnell erfassen: Text oder Sprache in einen Tageseintrag verwandeln (Deutsch und Englisch) ---- */
+  // Fremdsprachen: Schlüsselwörter werden vor dem Lesen in die englischen Wörter umgesetzt, die der Leser kennt
+  var FREMD = null;
+  function fremdBau() {
+    var U = 'ui', dig = '(\\d{1,2}(?:[:.]\\d{2})?)', H = '(?:godz(?:in\\p{L}*)?\\.?|óra|órá\\p{L}*|ora|saat|hodin\\p{L}*|hod\\.?|sati|sata|sat|ore|ceas|ceasuri|часов|часа|час|ч\\.?|годин\\p{L}*|год\\.?)';
+    function W(alts, rep) { return [new RegExp('(^|[^\\p{L}\\d])(?:' + alts + ')(?![\\p{L}\\d])', 'giu'), function (m, a) { return a + rep; }]; }
+    var L = [];
+    // Uhrzeitbereiche mit Zahlen zuerst
+    L.push([new RegExp(dig + '\\s*-?\\s*(?:' + H + ')?\\s*-?\\s*(?:órától|tól|től)\\s+' + dig + '\\s*-?\\s*(?:' + H + ')?\\s*-?\\s*(?:óráig|ig)(?![\\p{L}])', 'giu'), '$1 to $2']);
+    L.push([new RegExp(dig + "\\s*['’]?\\s*(?:dan|den|tan|ten)\\s+" + dig + "\\s*['’]?\\s*(?:e|a|ye|ya)\\s+kadar(?![\\p{L}])", 'giu'), '$1 to $2']);
+    L.push([new RegExp('(?:saat\\s+)?' + dig + '\\s+ile\\s+' + dig + '\\s+aras\\p{L}*', 'giu'), '$1 to $2']);
+    L.push([new RegExp('(?:între|intre)\\s+' + dig + '\\s+(?:și|si)\\s+' + dig, 'giu'), 'from $1 to $2']);
+    L.push([new RegExp('(?:^|[^\\p{L}])(?:de la|dalle(?: ore)?|da)\\s+(?=\\d)', 'giu'), ' from ']);
+    L.push([new RegExp('(?:^|[^\\p{L}])(?:od|с|з|від|от)\\s+(?=\\d)', 'giu'), ' from ']);
+    L.push([new RegExp('(\\d)\\s*(?:' + H + ')?\\s+(?:alle(?: ore)?|a|la|pană la|până la|do|až|az|až do|до|по)\\s+(?=\\d)', 'giu'), '$1 to ']);
+    // Pause
+    L.push(W('bez\\s+przerw\\p{L}*|nincs\\s+szünet|mola\\s+yok|bez\\s+pauz\\p{L}*|bez\\s+přestávk\\p{L}*|bez\\s+prestávk\\p{L}*|bez\\s+stanke|bez\\s+pauze|senza\\s+pausa|fără\\s+pauză|fara\\s+pauza|без\\s+перерыв\\p{L}*|без\\s+перерв\\p{L}*', 'no break'));
+    L.push(W('przerw\\p{L}*|szünet\\p{L}*|mola\\p{L}*|přestávk\\p{L}*|prestávk\\p{L}*|stank\\p{L}*|pauz\\p{L}*|pausa|pauză|pauza|перерыв\\p{L}*|перерв\\p{L}*|обед\\p{L}*|обід\\p{L}*', 'break'));
+    L.push([new RegExp('(\\d)\\s*(?:minut\\p{L}*|perc|dakika|dk\\.?|minuta|minuti|minute|минут\\p{L}*|мин\\.?|хвилин\\p{L}*|хв\\.?)(?![\\p{L}])', 'giu'), '$1 minutes']);
+    // Tage
+    L.push(W('przedwczoraj|tegnapelőtt|evvelsi\\s+gün|předevčírem|predvčerom|prekjučer|prekjuče|prekjuce|l.altro\\s+ieri|alaltăieri|позавчера|позавчора', 'day before yesterday'));
+    L.push(W('wczoraj|tegnap|dün|včera|jučer|juče|juce|jucer|ieri|вчера|вчора', 'yesterday'));
+    L.push(W('dziś|dzis|dzisiaj|ma|bugün|bugun|dnes|danas|oggi|azi|сегодня|сьогодні', ''));
+    var T = [['sunday', 'niedziela|vasárnap|pazar|neděle|nedeľa|nedjelja|nedelja|domenica|duminică|duminica|воскресенье|неділя'], ['monday', 'poniedziałek|hétfő|pazartesi|pondělí|pondelok|ponedjeljak|ponedeljak|lunedì|lunedi|luni|понедельник|понеділок'], ['tuesday', 'wtorek|kedd|salı|sali|úterý|utorok|utorak|martedì|martedi|marți|marti|вторник|вівторок'], ['wednesday', 'środa|szerda|çarşamba|carsamba|středa|streda|srijeda|sreda|mercoledì|mercoledi|miercuri|среда|середа'], ['thursday', 'czwartek|csütörtök|perşembe|persembe|čtvrtek|štvrtok|četvrtak|giovedì|giovedi|joi|четверг|четвер'], ['friday', 'piątek|péntek|cuma|pátek|piatok|petak|venerdì|venerdi|vineri|пятница|п.ятниця'], ['saturday', 'sobota|szombat|cumartesi|subota|sabato|sâmbătă|sambata|суббота|субота']];
+    T.forEach(function (t) { L.push(W(t[1], t[0])); });
+    // Art des Tages
+    L.push(W('urlop\\p{L}*|szabadság|izin|dovolená|dovolenka|godišnji(?:\\s+odmor)?|ferie|concediu(?!\\s+medical)|отпуск\\p{L}*|відпустк\\p{L}*', 'vacation'));
+    L.push(W('chorobow\\p{L}*|zwolnieni\\p{L}*\\s+lekarsk\\p{L}*|betegszabadság|beteg|hasta|rapor|nemocenská|nemoc|choroba|bolovanje|bolestan|malattia|malato|boală|concediu\\s+medical|bolnav|больничн\\p{L}*|лікарнян\\p{L}*|болею|хворію', 'sick'));
+    L.push(W('odbiór\\s+nadgodzin|szabadidő|zaman\\s+izni|náhradní\\s+volno|náhradné\\s+voľno|slobodni\\s+dani|riposo\\s+compensativo|timp\\s+liber|отгул\\p{L}*|відгул\\p{L}*', 'time off in lieu'));
+    L.push(W('szkoł\\p{L}*|iskola|okul|škola|škole|scuola|școală|scoala|школ\\p{L}*', 'school'));
+    // Kunde und Tätigkeit
+    L.push(W('klient\\p{L}*|u\\s+klienta|ügyfél\\p{L}*|müşteri\\p{L}*|musteri\\p{L}*|zákazník\\p{L}*|zakaznik\\p{L}*|zákazníka|klijent\\p{L}*|kupac|cliente|client|клиент\\p{L}*|заказчик\\p{L}*|клієнт\\p{L}*|замовник\\p{L}*', 'customer'));
+    L.push([new RegExp('(?:^|[^\\p{L}])(?:czynność|zadanie|tevékenység|feladat|faaliyet|činnost|aktivnost|attività|attivita|activitate|lucrare|деятельность|задача|діяльність)\\s*:', 'giu'), ' task:']);
+    return L;
+  }
+  function normFremd(s) {
+    if (!FREMD) FREMD = fremdBau();
+    var o = ' ' + s + ' ';
+    FREMD.forEach(function (p) { o = o.replace(p[0], p[1]); });
+    o = o.replace(/(\d)\s*(?:godz(?:in\p{L}*)?\.?|óra|ora|saat|hodin\p{L}*|hod\.?|sati|sata|sat|ceas|часов|часа|час|ч\.?|годин\p{L}*|год\.?)(?![\p{L}])(?=\s|,|\.|;|$)/giu, '$1');
+    o = o.replace(/\s(?:di|de)\s+break(?![\p{L}])/giu, ' break');
+    return o.replace(/\s+/g, ' ').trim();
+  }
   function parseSchnell(text, heute, bekannt) {
     var res = { datum: heute, status: 'arbeit', von: '', bis: '', pause: null, pauseVon: '', pauseBis: '', kunden: [], gefunden: 0 };
     var s = String(text || '').replace(/\s+/g, ' ').trim();
     if (!s) return res;
+    s = normFremd(s);
     var W = { null: 0, eins: 1, zwei: 2, drei: 3, vier: 4, fuenf: 5, 'fünf': 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, 'zwölf': 12, zwoelf: 12, dreizehn: 13, vierzehn: 14, fuenfzehn: 15, 'fünfzehn': 15, sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19, zwanzig: 20, einundzwanzig: 21, zweiundzwanzig: 22, dreiundzwanzig: 23, vierundzwanzig: 24, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
     // „halb sieben“ = 6:30
     s = s.replace(/\bhalb\s+(\d{1,2}|[a-zäöüß]+)\b(?!\s*(?:stunde|std))/gi, function (m, w) { var n = /^\d/.test(w) ? +w : W[w.toLowerCase()]; return n === undefined || n < 1 ? m : (n - 1) + ':30'; });
