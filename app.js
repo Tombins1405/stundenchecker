@@ -1883,6 +1883,19 @@
     return out;
   }
   function miaCfg() { var m = (data.profil && data.profil.mia) || {}; var f = m.figur === 'm' ? 'm' : 'w'; return { figur: f, name: (m.name || '').trim() || (f === 'm' ? 'Milo' : 'Mia'), ruhig: !!m.ruhig, spricht: m.spricht === true, skip: m.skip || {} }; }
+  var MIA_FARBEN = [['', 'Standard'], ['blau', 'Blau', '#2563eb'], ['dunkelblau', 'Dunkelblau', '#1e3a8a'], ['gruen', 'Grün', '#16a34a'], ['rot', 'Rot', '#dc2626'], ['schwarz', 'Schwarz', '#374151'], ['grau', 'Grau', '#94a3b8'], ['braun', 'Braun', '#92400e'], ['violett', 'Violett', '#7c3aed'], ['rosa', 'Rosa', '#ec4899'], ['weiss', 'Weiß', '#f1f5f9']];
+  var MIA_WESTE = [['', 'Gelb'], ['orange', 'Orange']];
+  var MIA_FARB_TEIL = { kopf: ['helm', 'kappe', 'muetze', 'stirnband'], oben: ['weste', 'jacke', 'overall', 'trikot'], unten: ['hose_jeans', 'hose_arbeit', 'hose_kurz', 'hose_rock', 'hose_jogging'] };
+  function miaFarbOpts(teil, id) { return id === 'weste' ? MIA_WESTE : MIA_FARB_TEIL[teil].indexOf(id) >= 0 ? MIA_FARBEN : null; }
+  function miaMix(h, t, a) { var c = function (i) { return Math.round(parseInt(h.substr(1 + i * 2, 2), 16) * (1 - a) + t * a); }; var x = function (v) { return (v < 16 ? '0' : '') + v.toString(16); }; return '#' + x(c(0)) + x(c(1)) + x(c(2)); }
+  function miaFarbe(teil) { var m = (data.profil && data.profil.mia) || {}; return m.eigen === true && m.look ? m.look[teil + 'F'] || '' : ''; }
+  // Färbt ein Kleidungsstück um: Grundfarben (haupt, dunkel, hell) werden durch die gewählte Farbe ersetzt
+  function miaFaerbe(frag, teil, haupt, dunkel, hell) {
+    var k = miaFarbe(teil); if (!k) return frag;
+    var c = null; MIA_FARBEN.forEach(function (x) { if (x[0] === k) c = x[2]; }); if (!c) return frag;
+    var rep = function (arr, to) { arr.forEach(function (b) { frag = frag.split(b).join(to); }); };
+    rep(haupt, c); rep(dunkel || [], miaMix(c, 0, 0.4)); rep(hell || [], miaMix(c, 255, 0.45)); return frag;
+  }
   function miaSvg(f, outfit, pose) {
     outfit = outfit || []; var w = f !== 'm', has = function (x) { return outfit.indexOf(x) >= 0; };
     var sh0 = w ? '#f58aa5' : '#4fc0cf', sh1 = w ? '#c4476a' : '#237a89';
@@ -1951,16 +1964,16 @@
     if (has('buch')) arm += '<rect x="94" y="40" width="22" height="24" rx="2" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.500"/><rect x="97" y="44" width="16" height="6" fill="#ede9fe"/><path d="M94 60h22" stroke="#4c1d95"/>';
     if (has('megafon')) arm += '<g transform="translate(96 52) scale(1.3) translate(-100 -52)"><path d="M94 46l16-10v28l-16-10z" fill="#f97316" stroke="#9a3412" stroke-width="1.500"/><rect x="88" y="46" width="8" height="10" rx="2" fill="#374151"/><path d="M114 42q4 6 0 14" fill="none" stroke="#f97316" stroke-width="2"/></g>';
     var armG = '<g transform="translate(9 5)"><g class="mia-arm"><rect x="82" y="78" width="32" height="13" rx="6.5" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="1.500" transform="rotate(-50 86 84)"/>' + (arm ? '<g transform="translate(86 56) scale(1.4) translate(-100 -56)">' + arm + '</g>' : '') + '</g></g>';
-    if (has('hose_jeans')) s += '<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#2563eb"/><path d="M60 106v18" stroke="#1e3a8a" stroke-width="2"/>';
-    if (has('hose_arbeit')) s += '<path d="M32 104h56v8q0 12-20 12H52q-20 0-20-12z" fill="#64748b"/><rect x="36" y="110" width="11" height="7" rx="1.500" fill="#475569"/><rect x="73" y="110" width="11" height="7" rx="1.500" fill="#475569"/><path d="M60 104v20" stroke="#334155" stroke-width="2"/>';
-    if (has('hose_kurz')) s += '<path d="M32 113h56v1q0 10-20 10H52q-20 0-20-10z" fill="#0d9488"/><path d="M60 113v11" stroke="#115e59" stroke-width="2"/>';
-    if (has('hose_rock')) s += '<path d="M33 106q27 8 54 0l7 18H26z" fill="#db2777" stroke="#9d174d" stroke-width="1.500"/>';
-    if (has('hose_jogging')) s += '<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#9ca3af"/><path d="M36 108v14M84 108v14" stroke="#fff" stroke-width="2.500"/>';
-    if (has('trikot')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="#dc2626"/><path d="M50 82l10 10l10-10" fill="none" stroke="#fff" stroke-width="3"/><text x="60" y="114" font-size="22" font-weight="700" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif">7</text>';
+    if (has('hose_jeans')) s += miaFaerbe('<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#2563eb"/><path d="M60 106v18" stroke="#1e3a8a" stroke-width="2"/>', 'unten', ['#2563eb'], ['#1e3a8a'], []);
+    if (has('hose_arbeit')) s += miaFaerbe('<path d="M32 104h56v8q0 12-20 12H52q-20 0-20-12z" fill="#64748b"/><rect x="36" y="110" width="11" height="7" rx="1.500" fill="#475569"/><rect x="73" y="110" width="11" height="7" rx="1.500" fill="#475569"/><path d="M60 104v20" stroke="#334155" stroke-width="2"/>', 'unten', ['#64748b'], ['#475569', '#334155'], []);
+    if (has('hose_kurz')) s += miaFaerbe('<path d="M32 113h56v1q0 10-20 10H52q-20 0-20-10z" fill="#0d9488"/><path d="M60 113v11" stroke="#115e59" stroke-width="2"/>', 'unten', ['#0d9488'], ['#115e59'], []);
+    if (has('hose_rock')) s += miaFaerbe('<path d="M33 106q27 8 54 0l7 18H26z" fill="#db2777" stroke="#9d174d" stroke-width="1.500"/>', 'unten', ['#db2777'], ['#9d174d'], []);
+    if (has('hose_jogging')) s += miaFaerbe('<path d="M32 106h56v6q0 12-20 12H52q-20 0-20-12z" fill="#9ca3af"/><path d="M36 108v14M84 108v14" stroke="#fff" stroke-width="2.500"/>', 'unten', ['#9ca3af'], [], []);
+    if (has('trikot')) s += miaFaerbe('<rect x="32" y="80" width="56" height="44" rx="20" fill="#dc2626"/><path d="M50 82l10 10l10-10" fill="none" stroke="#fff" stroke-width="3"/><text x="60" y="114" font-size="22" font-weight="700" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif">7</text>', 'oben', ['#dc2626'], [], []);
     if (has('kittel')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.500"/><path d="M60 82v42" stroke="#cbd5e1" stroke-width="2"/><rect x="66" y="100" width="12" height="9" rx="1.500" fill="none" stroke="#94a3b8" stroke-width="1.500"/><circle cx="55" cy="94" r="1.800" fill="#94a3b8"/><circle cx="55" cy="106" r="1.800" fill="#94a3b8"/>';
-    if (has('jacke')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="#475569"/><path d="M60 82v42" stroke="#1e293b" stroke-width="2.500"/><path d="M48 82l12 10l12-10" fill="none" stroke="#1e293b" stroke-width="2.500"/><rect x="38" y="104" width="12" height="9" rx="2" fill="#334155"/><rect x="70" y="104" width="12" height="9" rx="2" fill="#334155"/>';
-    if (has('weste')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgOra)"/><path d="M60 82v42" stroke="#8a9a00" stroke-width="2"/><rect x="34" y="97" width="52" height="6" fill="#f3f4f6"/><rect x="36" y="109" width="48" height="6" fill="#f3f4f6"/><path d="M34 97h52M36 109h48" stroke="rgba(0,0,0,.12)" stroke-width="1"/>';
-    if (has('overall')) s += '<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgBlu)"/><rect x="38" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="75" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="48" y="100" width="24" height="14" rx="3" fill="#6ea4ff" stroke="#1b4fb0" stroke-width="1.5"/><circle cx="41.500" cy="103" r="2.2" fill="#facc15"/><circle cx="78.500" cy="103" r="2.2" fill="#facc15"/>';
+    if (has('jacke')) s += miaFaerbe('<rect x="32" y="80" width="56" height="44" rx="20" fill="#475569"/><path d="M60 82v42" stroke="#1e293b" stroke-width="2.500"/><path d="M48 82l12 10l12-10" fill="none" stroke="#1e293b" stroke-width="2.500"/><rect x="38" y="104" width="12" height="9" rx="2" fill="#334155"/><rect x="70" y="104" width="12" height="9" rx="2" fill="#334155"/>', 'oben', ['#475569'], ['#1e293b', '#334155'], []);
+    if (has('weste')) s += (miaFarbe('oben') === 'orange' ? ('<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgOra)"/><path d="M60 82v42" stroke="#8a9a00" stroke-width="2"/><rect x="34" y="97" width="52" height="6" fill="#f3f4f6"/><rect x="36" y="109" width="48" height="6" fill="#f3f4f6"/><path d="M34 97h52M36 109h48" stroke="rgba(0,0,0,.12)" stroke-width="1"/>').split('url(#mgOra)').join('#ff9f1c').split('#8a9a00').join('#9a4d00') : ('<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgOra)"/><path d="M60 82v42" stroke="#8a9a00" stroke-width="2"/><rect x="34" y="97" width="52" height="6" fill="#f3f4f6"/><rect x="36" y="109" width="48" height="6" fill="#f3f4f6"/><path d="M34 97h52M36 109h48" stroke="rgba(0,0,0,.12)" stroke-width="1"/>'));
+    if (has('overall')) s += miaFaerbe('<rect x="32" y="80" width="56" height="44" rx="20" fill="url(#mgBlu)"/><rect x="38" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="75" y="80" width="7" height="22" fill="#1b4fb0"/><rect x="48" y="100" width="24" height="14" rx="3" fill="#6ea4ff" stroke="#1b4fb0" stroke-width="1.5"/><circle cx="41.500" cy="103" r="2.2" fill="#facc15"/><circle cx="78.500" cy="103" r="2.2" fill="#facc15"/>', 'oben', ['url(#mgBlu)'], ['#1b4fb0'], ['#6ea4ff']);
     if (has('schuerze')) s += '<path d="M42 90h36l4 34H38z" fill="#fafafa" stroke="#d1d5db" stroke-width="1.5"/><path d="M42 90q18-6 36 0" fill="none" stroke="#d1d5db" stroke-width="2"/><rect x="50" y="102" width="20" height="10" rx="2" fill="#bfdbfe" stroke="#93c5fd" stroke-width="1.2"/>';
     if (has('krawatte')) s += '<path d="M48 82l12 14l12-14z" fill="#fff" stroke="#d1d5db" stroke-width="1.2"/><path d="M60 88l-7 7l7 6l7-6z" fill="#1e3a8a"/><path d="M60 100l-6 22h12z" fill="#1e40af" stroke="#172554" stroke-width="1"/>';
     // Kopf
@@ -1971,11 +1984,11 @@
       '<circle cx="38" cy="66" r="5.500" fill="#f4a3b5" opacity=".65"/><circle cx="82" cy="66" r="5.500" fill="#f4a3b5" opacity=".65"/>' +
       '<ellipse cx="60" cy="64" rx="4.500" ry="3.300" fill="#6b4226"/><path d="M49 71q11 11 22 0" fill="#fff" stroke="#6b4226" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>';
     if (has('barhaupt')) s += '';
-    else if (has('helm')) s += '<path d="M21 46q2-40 39-40t39 40z" fill="url(#mgYel)" stroke="#a16207" stroke-width="2"/><rect x="17" y="42" width="86" height="9" rx="4.500" fill="#f5b400" stroke="#a16207" stroke-width="2"/><path d="M60 7v34" stroke="#c98a00" stroke-width="5"/><path d="M34 22q6-9 16-12" fill="none" stroke="#fff6c2" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
-    else if (has('kappe')) s += '<path d="M22 40q38-38 76 0z" fill="url(#mgRed)" stroke="#7f1d1d" stroke-width="2"/><path d="M58 36q20-6 48 4q-10 8-48 2z" fill="#991b1b" stroke="#7f1d1d" stroke-width="1.500"/><circle cx="60" cy="7" r="3.500" fill="#991b1b"/><path d="M36 22q8-8 20-10" fill="none" stroke="#ffb4aa" stroke-width="3" stroke-linecap="round" opacity=".8"/>';
-    else if (has('muetze')) s += '<path d="M23 44q-2-38 37-38t37 38z" fill="#7c3aed" stroke="#4c1d95" stroke-width="2"/><rect x="21" y="38" width="78" height="9" rx="4" fill="#a78bfa" stroke="#4c1d95" stroke-width="2"/><circle cx="60" cy="5" r="6" fill="#ede9fe" stroke="#4c1d95" stroke-width="1.500"/>';
+    else if (has('helm')) s += miaFaerbe('<path d="M21 46q2-40 39-40t39 40z" fill="url(#mgYel)" stroke="#a16207" stroke-width="2"/><rect x="17" y="42" width="86" height="9" rx="4.500" fill="#f5b400" stroke="#a16207" stroke-width="2"/><path d="M60 7v34" stroke="#c98a00" stroke-width="5"/><path d="M34 22q6-9 16-12" fill="none" stroke="#fff6c2" stroke-width="3" stroke-linecap="round" opacity=".8"/>', 'kopf', ['url(#mgYel)', '#f5b400'], ['#a16207', '#c98a00'], []);
+    else if (has('kappe')) s += miaFaerbe('<path d="M22 40q38-38 76 0z" fill="url(#mgRed)" stroke="#7f1d1d" stroke-width="2"/><path d="M58 36q20-6 48 4q-10 8-48 2z" fill="#991b1b" stroke="#7f1d1d" stroke-width="1.500"/><circle cx="60" cy="7" r="3.500" fill="#991b1b"/><path d="M36 22q8-8 20-10" fill="none" stroke="#ffb4aa" stroke-width="3" stroke-linecap="round" opacity=".8"/>', 'kopf', ['url(#mgRed)'], ['#991b1b', '#7f1d1d'], ['#ffb4aa']);
+    else if (has('muetze')) s += miaFaerbe('<path d="M23 44q-2-38 37-38t37 38z" fill="#7c3aed" stroke="#4c1d95" stroke-width="2"/><rect x="21" y="38" width="78" height="9" rx="4" fill="#a78bfa" stroke="#4c1d95" stroke-width="2"/><circle cx="60" cy="5" r="6" fill="#ede9fe" stroke="#4c1d95" stroke-width="1.500"/>', 'kopf', ['#7c3aed'], ['#4c1d95'], ['#a78bfa']);
     else if (has('strohhut')) s += '<ellipse cx="60" cy="36" rx="53" ry="10" fill="#f6d77a" stroke="#a16207" stroke-width="2"/><path d="M34 34q2-30 26-30t26 30z" fill="#f9e29a" stroke="#a16207" stroke-width="2"/><rect x="34" y="27" width="52" height="6" fill="#b91c1c"/>';
-    else if (has('stirnband')) s += '<path d="M22 40q38-12 76 0v9q-38-12-76 0z" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>';
+    else if (has('stirnband')) s += miaFaerbe('<path d="M22 40q38-12 76 0v9q-38-12-76 0z" fill="#ef4444" stroke="#7f1d1d" stroke-width="2"/>', 'kopf', ['#ef4444'], ['#7f1d1d'], []);
     else if (has('kochhaube')) s += '<path d="M28 36q-12-20 8-24q5-12 24-8q18-4 24 8q20 4 8 24z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/><rect x="30" y="30" width="60" height="12" rx="4" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.500"/>';
     else if (w) s += '<path d="M54 22q-10-16 -24-6q4 14 24 6z M66 22q10-16 24-6q-4 14 -24 6z" fill="#f06292" stroke="#ad1457" stroke-width="1.500"/><circle cx="60" cy="22" r="6" fill="#ec407a" stroke="#ad1457" stroke-width="1.500"/>';
     else s += '<path d="M22 38q38-38 76 0z" fill="url(#mgBlu)" stroke="#1e3a8a" stroke-width="2"/><path d="M58 34q20-6 48 4q-10 8-48 2z" fill="#1e40af" stroke="#1e3a8a" stroke-width="1.500"/>';
@@ -2209,12 +2222,22 @@
     else if (k === 'lohnzettel') { var pk = miaPrevKey(); ui.y = pk.y; ui.m = pk.m; show('lohn'); setTimeout(function () { var el = $('#m-abgleich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
   }
   function miaPose(p) { var b = $('#mia-btn'); if (b && $('#mia-float')) b.innerHTML = miaSvg(miaCfg().figur, miaFor(), p); }
+  function miaFarbUi() {
+    var lk = miaLook();
+    ['kopf', 'oben', 'unten'].forEach(function (t) {
+      var se = $('#mia-l-' + t + 'F'), wrap = $('#mia-f-' + t); if (!se || !wrap) return;
+      var o = miaFarbOpts(t, lk[t] || (t === 'kopf' ? 'barhaupt' : ''));
+      wrap.hidden = !o; if (!o) return;
+      var cur = lk[t + 'F'] || ''; se.innerHTML = o.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('');
+      se.value = o.some(function (x) { return x[0] === cur; }) ? cur : ''; try { uiApply(se); } catch (e) { }
+    });
+  }
   function renderMia() {
     var c = miaCfg(), f = $('#mia-float'); if (f) f.hidden = !data.settings.length || !!ui.wiz;
     var ch = $('#mia-choose'); if (ch) ch.innerHTML = ['w', 'm'].map(function (x) { return '<button type="button" class="miaopt' + (c.figur === x ? ' on' : '') + '" data-mia="' + x + '" aria-label="' + (x === 'w' ? 'Weiblich' : 'Männlich') + '">' + miaSvg(x, miaFor(), '') + '<span>' + (x === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('');
     var n = $('#mia-name'); if (n && document.activeElement !== n) n.value = (data.profil && data.profil.mia && data.profil.mia.name) || ''; if (n) n.placeholder = c.figur === 'm' ? 'Milo' : 'Mia';
     var ak = $('#mia-aktiv'); if (ak) ak.checked = !c.ruhig;
-    var eg = $('#mia-eigen'); if (eg) { eg.checked = !!(data.profil && data.profil.mia && data.profil.mia.eigen === true); $('#mia-look').hidden = !eg.checked; var lk = miaLook(); ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { var se = $('#mia-l-' + k); if (!se) return; if (!se.options.length) se.innerHTML = MIA_TEILE[k].map(function (x) { return x[0] === null ? '<option disabled>' + x[1] + '</option>' : '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join(''); se.value = lk[k] || ''; }); }
+    var eg = $('#mia-eigen'); if (eg) { eg.checked = !!(data.profil && data.profil.mia && data.profil.mia.eigen === true); $('#mia-look').hidden = !eg.checked; var lk = miaLook(); ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { var se = $('#mia-l-' + k); if (!se) return; if (!se.options.length) se.innerHTML = MIA_TEILE[k].map(function (x) { return x[0] === null ? '<option disabled>' + x[1] + '</option>' : '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join(''); se.value = lk[k] || ''; }); miaFarbUi(); }
     var sp = $('#mia-spricht'); if (sp) { sp.checked = !!c.spricht; $('#mia-vwrap').hidden = !c.spricht || !('speechSynthesis' in window); }
     miaStimmenFuellen();
     if (!ui.miaPose) miaPose(c.ruhig || !miaNext() ? 'mouth' : '');
@@ -2281,7 +2304,8 @@
     on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
     on('#mia-name', 'input', function () { miaSet('name', this.value.slice(0, 20)); });
     on('#mia-eigen', 'change', function () { var on = this.checked; if (on && !miaLook().kopf && !Object.keys(miaLook()).length) { miaSet('look', miaLookAus(miaOutfit((wAt(todayISO()) || {}).beruf, (wAt(todayISO()) || {}).art))); } miaSet('eigen', on); });
-    ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { on('#mia-l-' + k, 'change', function () { var l = Object.assign({}, miaLook()); l[k] = this.value; miaSet('look', l); }); });
+    ['kopf', 'oben', 'unten', 'zubehoer'].forEach(function (k) { on('#mia-l-' + k, 'change', function () { var l = Object.assign({}, miaLook()); l[k] = this.value; if (k !== 'zubehoer') l[k + 'F'] = ''; miaSet('look', l); miaFarbUi(); }); });
+    ['kopf', 'oben', 'unten'].forEach(function (k) { on('#mia-l-' + k + 'F', 'change', function () { var l = Object.assign({}, miaLook()); l[k + 'F'] = this.value; miaSet('look', l); }); });
     on('#mia-spricht', 'change', function () { miaSet('spricht', this.checked); if (this.checked) miaSag('Hallo, so klinge ich.', true); });
     on('#mia-stimme', 'change', function () { miaSet('stimme', this.value); miaSag('Hallo, so klinge ich.', true); });
     on('#mia-klang', 'change', function () { var pr = MIA_KLANG.filter(function (x) { return x[0] === this.value; }.bind(this))[0] || MIA_KLANG[0], m = data.profil && data.profil.mia; if (m) { delete m.pitch; delete m.rate; } miaSet('klang', this.value); miaSag('Hallo, so klinge ich.', true); });
