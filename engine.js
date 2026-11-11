@@ -1347,6 +1347,160 @@
       { id: 'BG3', m: true, name: 'Beschäftigungsgruppe 3: Labor- und Röntgenassistenz, Medizinische Fachassistenz', l: [2218.00, 2309.00, 2391.00, 2482.00, 2570.00, 2665.00] },
       { id: 'BG4', m: true, name: 'Beschäftigungsgruppe 4: Gehobener medizinisch-technischer Dienst, Krankenpflege, Hebamme', l: [2286.00, 2372.00, 2458.00, 2532.00, 2610.00, 2695.00] }
     ] };
+  // Angestellte bei Ärzten, alle Bundesländer (Quelle: GPA)
+  PAKETE.ordination_w = {
+    name: 'Angestellte bei Ärzten, Wien',
+    hinweis: 'KV für Angestellte bei Ärzten, Wien (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.6.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_w = { stand: '1.6.2026', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12', 'Berufsjahre 13–15', 'ab dem 16. Berufsjahr'], teiler: 173, gruppen: [
+      { id: 'WA', m: true, name: 'Berufsgruppe A: Schreibkräfte, Sprechstundenhilfen, Sekretariat', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12', 'Berufsjahre 13–15', 'ab dem 16. Berufsjahr'], l: [2198.00, 2315.00, 2423.00, 2533.00, 2647.00, 2755.00] },
+      { id: 'WB', m: true, name: 'Berufsgruppe B: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12', 'Berufsjahre 13–15', 'ab dem 16. Berufsjahr'], l: [2268.00, 2399.00, 2516.00, 2633.00, 2725.00, 2840.00] },
+      { id: 'WC', m: true, name: 'Berufsgruppe C: Medizinische Fachassistenz, Pflegefachassistenz, medizinisch-technischer Fachdienst', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12', 'Berufsjahre 13–15', 'ab dem 16. Berufsjahr'], l: [2411.00, 2555.00, 2702.00, 2850.00, 3001.00, 3146.00] },
+      { id: 'WD', m: true, name: 'Berufsgruppe D: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12', 'Berufsjahre 13–15', 'ab dem 16. Berufsjahr'], l: [2502.00, 2677.00, 2846.00, 3014.00, 3185.00, 3360.00] },
+      { id: 'WE', m: true, name: 'Berufsgruppe E: Medizinische Masseur/in, Heilmasseur/in', stufen: ['Berufsjahr 1', 'Berufsjahre 2–6', 'ab dem 7. Berufsjahr'], l: [2198.00, 2344.00, 2359.00] }
+    ] };
+  PAKETE.ordination_sbg = {
+    name: 'Angestellte bei Ärzten, Salzburg',
+    hinweis: 'KV für Angestellte bei Ärzten, Salzburg (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.1.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_sbg = { stand: '1.1.2026', stufen: ['Berufsjahre 1–4', 'Berufsjahre 5–8', 'Berufsjahre 9–12', 'ab dem 13. Berufsjahr'], teiler: 173, gruppen: [
+      { id: 'S1', m: true, name: 'Berufsgruppe 1: Schreibkräfte, Sprechstundenhilfen, Sekretariat', stufen: ['Berufsjahre 1–4', 'Berufsjahre 5–8', 'Berufsjahre 9–12', 'ab dem 13. Berufsjahr'], l: [2160.00, 2217.00, 2272.00, 2330.00] },
+      { id: 'S2', m: true, name: 'Berufsgruppe 2: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahre 1–4', 'Berufsjahre 5–8', 'Berufsjahre 9–12', 'ab dem 13. Berufsjahr'], l: [2233.00, 2321.00, 2413.00, 2509.00] },
+      { id: 'S3', m: true, name: 'Berufsgruppe 3: Medizinische Fachassistenz, Pflegefachassistenz, medizinisch-technischer Fachdienst; Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahre 1–4', 'Berufsjahre 5–8', 'Berufsjahre 9–12', 'ab dem 13. Berufsjahr'], l: [2371.00, 2492.00, 2616.00, 2744.00] }
+    ] };
+  PAKETE.ordination_t = {
+    name: 'Angestellte bei Ärzten, Tirol',
+    hinweis: 'KV für Angestellte bei Ärzten, Tirol (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.1.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_t = { stand: '1.1.2026', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 21', 'Berufsjahr 22', 'Berufsjahr 23', 'Berufsjahr 24', 'Berufsjahr 25'], teiler: 173, gruppen: [
+      { id: 'T1', m: true, name: 'Berufsgruppe 1: Schreibkräfte, Sprechstundenhilfen, Sekretariat', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 21', 'Berufsjahr 22', 'Berufsjahr 23', 'Berufsjahr 24', 'Berufsjahr 25'], l: [2082.00, 2099.00, 2122.00, 2135.00, 2153.00, 2171.00, 2188.00, 2205.00, 2225.00, 2243.00, 2258.00, 2275.00, 2295.00, 2310.00, 2329.00, 2348.00, 2368.00, 2384.00, 2403.00, 2423.00, 2443.00, 2464.00, 2485.00, 2508.00, 2529.00] },
+      { id: 'T2', m: true, name: 'Berufsgruppe 2: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 21', 'Berufsjahr 22', 'Berufsjahr 23', 'Berufsjahr 24', 'Berufsjahr 25'], l: [2146.00, 2164.00, 2187.00, 2199.00, 2218.00, 2234.00, 2252.00, 2270.00, 2289.00, 2306.00, 2323.00, 2340.00, 2358.00, 2374.00, 2395.00, 2412.00, 2431.00, 2450.00, 2467.00, 2486.00, 2508.00, 2527.00, 2550.00, 2571.00, 2594.00] },
+      { id: 'T3', m: true, name: 'Berufsgruppe 3: Medizinische Fachassistenz, medizinisch-technischer Fachdienst', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 21', 'Berufsjahr 22', 'Berufsjahr 23', 'Berufsjahr 24', 'Berufsjahr 25'], l: [2275.00, 2296.00, 2319.00, 2342.00, 2363.00, 2383.00, 2408.00, 2429.00, 2450.00, 2475.00, 2497.00, 2521.00, 2542.00, 2566.00, 2588.00, 2613.00, 2638.00, 2661.00, 2685.00, 2709.00, 2736.00, 2761.00, 2786.00, 2814.00, 2841.00] },
+      { id: 'T4', m: true, name: 'Berufsgruppe 4: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 21', 'Berufsjahr 22', 'Berufsjahr 23', 'Berufsjahr 24', 'Berufsjahr 25'], l: [2340.00, 2363.00, 2391.00, 2414.00, 2437.00, 2466.00, 2490.00, 2515.00, 2542.00, 2567.00, 2592.00, 2618.00, 2644.00, 2670.00, 2695.00, 2720.00, 2747.00, 2770.00, 2796.00, 2822.00, 2849.00, 2876.00, 2904.00, 2932.00, 2962.00] }
+    ] };
+  PAKETE.ordination_vbg = {
+    name: 'Angestellte bei Ärzten, Vorarlberg',
+    hinweis: 'KV für Angestellte bei Ärzten, Vorarlberg (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.1.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Überstunden mit Teiler 174: 50 %, nachts (22 bis 6 Uhr) und an Sonn- und Feiertagen 100 %. Lehrlinge nicht in der Quelle.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_vbg = { stand: '1.1.2026', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12'], teiler: 174, gruppen: [
+      { id: 'VA', m: true, name: 'Berufsgruppe A: Angestellte ohne Fachkenntnisse', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12'], l: [2073.00, 2152.00, 2260.00, 2394.00] },
+      { id: 'VB', m: true, name: 'Berufsgruppe B: Ordinationsassistenz, Sekretariat', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12'], l: [2149.00, 2263.00, 2394.00, 2517.00] },
+      { id: 'VC', m: true, name: 'Berufsgruppe C: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahre 1–3', 'Berufsjahre 4–6', 'Berufsjahre 7–9', 'Berufsjahre 10–12'], l: [2301.00, 2484.00, 2686.00, 2891.00] }
+    ] };
+  PAKETE.ordination_ktn = {
+    name: 'Angestellte bei Ärzten, Kärnten',
+    hinweis: 'KV für Angestellte bei Ärzten, Kärnten (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.7.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Die Stände ab 1.1.2027 und 1.7.2027 sind hinterlegt. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_ktn = { stand: '1.7.2026', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'Berufsjahre 5–6', 'Berufsjahre 7–8', 'Berufsjahre 9–10', 'Berufsjahre 11–12', 'ab dem 13. Berufsjahr'], teiler: 172, gruppen: [
+      { id: 'K1', m: true, name: 'Berufsgruppe 1: Schreibkräfte, Sprechstundenhilfen, Sekretariat', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'Berufsjahre 5–6', 'Berufsjahre 7–8', 'Berufsjahre 9–10', 'Berufsjahre 11–12', 'ab dem 13. Berufsjahr'], l: [2180.00, 2243.00, 2307.00, 2370.00, 2435.00, 2499.00, 2562.00] },
+      { id: 'K2', m: true, name: 'Berufsgruppe 2: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'Berufsjahre 5–6', 'Berufsjahre 7–8', 'Berufsjahre 9–10', 'Berufsjahre 11–12', 'ab dem 13. Berufsjahr'], l: [2243.00, 2307.00, 2370.00, 2435.00, 2499.00, 2562.00, 2627.00] },
+      { id: 'K3', m: true, name: 'Berufsgruppe 3: Medizinische Fachassistenz, Pflegefachassistenz, medizinisch-technischer Fachdienst; Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'Berufsjahre 5–6', 'Berufsjahre 7–8', 'Berufsjahre 9–10', 'Berufsjahre 11–12', 'ab dem 13. Berufsjahr'], l: [2370.00, 2435.00, 2499.00, 2562.00, 2627.00, 2755.00, 2819.00] }
+    ], folgt: [{ ab: '2027-01-01', stand: 'ab 1.1.2027', gruppen: {K1: [2330.00, 2393.00, 2457.00, 2520.00, 2585.00, 2649.00, 2712.00], K2: [2393.00, 2457.00, 2520.00, 2585.00, 2649.00, 2712.00, 2777.00], K3: [2520.00, 2585.00, 2649.00, 2712.00, 2777.00, 2905.00, 2969.00]} }, { ab: '2027-07-01', stand: 'ab 1.7.2027', gruppen: {K1: [2480.00, 2543.00, 2607.00, 2670.00, 2735.00, 2799.00, 2862.00], K2: [2543.00, 2607.00, 2670.00, 2735.00, 2799.00, 2862.00, 2927.00], K3: [2670.00, 2735.00, 2799.00, 2862.00, 2927.00, 3055.00, 3119.00]} }] };
+  PAKETE.ordination_ooe = {
+    name: 'Angestellte bei Ärzten, Oberösterreich',
+    hinweis: 'KV für Angestellte bei Ärzten, Oberösterreich (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.2.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Überstunden und Mehrarbeit mit Teiler 165: 50 %, nachts (20 bis 6 Uhr) und an Sonn- und Feiertagen 100 %. Lehrlinge: kaufmännische Lehrlinge laut Tabelle.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_ooe = { stand: '1.2.2026', stufen: ['ab dem 1. Berufsjahr', 'ab dem 3. Berufsjahr', 'ab dem 5. Berufsjahr', 'ab dem 7. Berufsjahr', 'ab dem 9. Berufsjahr', 'ab dem 11. Berufsjahr', 'ab dem 13. Berufsjahr', 'ab dem 15. Berufsjahr', 'ab dem 17. Berufsjahr', 'ab dem 19. Berufsjahr', 'ab dem 21. Berufsjahr'], teiler: 165, gruppen: [
+      { id: 'O1', m: true, name: 'Berufsgruppe 1: Angestellte ohne Fachkenntnisse', stufen: ['Berufsjahr 1'], l: [2079.00] },
+      { id: 'O2', m: true, name: 'Berufsgruppe 2: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['ab dem 1. Berufsjahr', 'ab dem 3. Berufsjahr', 'ab dem 5. Berufsjahr', 'ab dem 7. Berufsjahr', 'ab dem 9. Berufsjahr', 'ab dem 11. Berufsjahr', 'ab dem 13. Berufsjahr', 'ab dem 15. Berufsjahr', 'ab dem 17. Berufsjahr', 'ab dem 19. Berufsjahr', 'ab dem 21. Berufsjahr'], l: [2153.50, 2242.00, 2334.50, 2424.00, 2519.00, 2609.00, 2655.50, 2702.50, 2743.00, 2789.50, 2831.00] },
+      { id: 'O3', m: true, name: 'Berufsgruppe 3: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['ab dem 1. Berufsjahr', 'ab dem 3. Berufsjahr', 'ab dem 5. Berufsjahr', 'ab dem 7. Berufsjahr', 'ab dem 9. Berufsjahr', 'ab dem 11. Berufsjahr', 'ab dem 13. Berufsjahr', 'ab dem 15. Berufsjahr', 'ab dem 17. Berufsjahr', 'ab dem 19. Berufsjahr', 'ab dem 21. Berufsjahr'], l: [2271.50, 2377.50, 2482.00, 2591.50, 2694.50, 2800.50, 2852.50, 2906.00, 2961.00, 3016.00, 3069.00] },
+      { id: 'OL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [932.50] },
+      { id: 'OL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1250.50] },
+      { id: 'OL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1534.00] }
+    ] };
+  PAKETE.ordination_bgld = {
+    name: 'Angestellte bei Ärzten, Burgenland',
+    hinweis: 'KV für Angestellte bei Ärzten, Burgenland (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.1.2026: Mindestgehalt nach Berufsgruppe und Berufsjahren. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_bgld = { stand: '1.1.2026', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 25'], teiler: 173, gruppen: [
+      { id: 'B1', m: true, name: 'Berufsgruppe 1: Angestellte ohne Fachkenntnisse', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1959.00, 1968.00, 1974.00, 1982.00, 1990.00, 1995.00, 2003.00, 2010.00, 2016.00, 2025.00, 2032.00, 2045.00, 2058.00, 2073.00, 2087.00, 2101.00] },
+      { id: 'B2', m: true, name: 'Berufsgruppe 2: Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 25'], l: [2027.00, 2040.00, 2050.00, 2062.00, 2071.00, 2081.00, 2095.00, 2103.00, 2115.00, 2125.00, 2137.00, 2143.00, 2150.00, 2158.00, 2164.00, 2172.00, 2179.00, 2185.00, 2192.00, 2199.00, 2207.00] },
+      { id: 'B3', m: true, name: 'Berufsgruppe 3: Medizinische Fachassistenz, medizinisch-technischer Fachdienst, Heilmasseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 25'], l: [2096.00, 2109.00, 2119.00, 2130.00, 2140.00, 2152.00, 2162.00, 2173.00, 2184.00, 2195.00, 2205.00, 2217.00, 2228.00, 2238.00, 2249.00, 2260.00, 2271.00, 2282.00, 2292.00, 2304.00, 2314.00] },
+      { id: 'B4', m: true, name: 'Berufsgruppe 4: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 25'], l: [2165.00, 2179.00, 2192.00, 2206.00, 2219.00, 2233.00, 2246.00, 2259.00, 2272.00, 2285.00, 2300.00, 2314.00, 2328.00, 2341.00, 2356.00, 2370.00, 2384.00, 2399.00, 2414.00, 2427.00, 2441.00] },
+      { id: 'B5', m: true, name: 'Berufsgruppe 5: wie Gruppe 4, mit Bakkalaureat', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16', 'Berufsjahr 17', 'Berufsjahr 18', 'Berufsjahr 19', 'Berufsjahr 20', 'Berufsjahr 25'], l: [2417.00, 2433.00, 2448.00, 2463.00, 2480.00, 2495.00, 2510.00, 2525.00, 2542.00, 2557.00, 2572.00, 2588.00, 2604.00, 2619.00, 2635.00, 2650.00, 2666.00, 2682.00, 2697.00, 2712.00, 2728.00] }
+    ] };
+  PAKETE.ordination_stmk = {
+    name: 'Angestellte bei Ärzten, Steiermark',
+    hinweis: 'KV für Angestellte bei Ärzten, Steiermark (Quelle: Gewerkschaft GPA), Mindestgehälter ab 1.12.2025: Mindestgehalt nach Berufsgruppe und Berufsjahren. Hinterlegt ist der Stand 1.12.2025, der Stand für 2026 war nicht auffindbar. Normalarbeitszeit 38,5 Stunden, Überstunden mit Teiler 167. Lehrlinge nicht in der Quelle. Zuschläge: es gilt das Gesetz (Überstunden 50 %).',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ordination_stmk = { stand: '1.12.2025', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], teiler: 167, gruppen: [
+      { id: 'M0', m: true, name: 'Ausbildungsstufe: Angestellte in Ausbildung zum Assistenzberuf', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1600.00, 1618.00, 1633.00, 1639.00, 1642.00, 1644.00, 1646.00, 1648.00, 1672.00, 1695.00, 1723.00, 1762.00, 1803.00, 1843.00, 1872.00, 1901.00] },
+      { id: 'M1', m: true, name: 'Berufsgruppe 1: Schreibkräfte, Sprechstundenhilfen, Sekretariat; Ordinationsassistenz, Pflegeassistenz, Masseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1811.00, 1820.00, 1826.00, 1835.00, 1842.00, 1849.00, 1856.00, 1864.00, 1873.00, 1879.00, 1886.00, 1893.00, 1914.00, 1957.00, 2000.00, 2033.00] },
+      { id: 'M2', m: true, name: 'Berufsgruppe 2: Medizinische Fachassistenz, Pflegefachassistenz, medizinisch-technischer Fachdienst; Heilmasseur/in', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1853.00, 1861.00, 1870.00, 1878.00, 1885.00, 1891.00, 1902.00, 1910.00, 1917.00, 1925.00, 1932.00, 1941.00, 1949.00, 1964.00, 2006.00, 2051.00] },
+      { id: 'M3', m: true, name: 'Berufsgruppe 3: Gehobener medizinisch-technischer Dienst, diplomierte Krankenpflege, Hebamme', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15', 'Berufsjahr 16'], l: [1886.00, 1895.00, 1906.00, 1914.00, 1923.00, 1930.00, 1937.00, 1944.00, 1951.00, 1964.00, 2007.00, 2067.00, 2142.00, 2219.00, 2288.00, 2367.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1513,7 +1667,7 @@
         filiale: { name: 'Postpartner / Schalter / Filiale', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Post, Logistik)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
-    ordination: { name: 'Ordination und Praxis', paket: 'ordination_noe', kvs: ['ordination_noe', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    ordination: { name: 'Ordination und Praxis', paket: 'ordination_noe', kvs: ['ordination_noe', 'ordination_w', 'ordination_sbg', 'ordination_t', 'ordination_vbg', 'ordination_ktn', 'ordination_ooe', 'ordination_bgld', 'ordination_stmk', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         sekretariat: { name: 'Ordination / Sekretariat / Anmeldung', b: { fahrzeug: false, kunden: false, praemien: true } },
         assistenz: { name: 'Ordinationsassistenz / Medizinische Assistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
