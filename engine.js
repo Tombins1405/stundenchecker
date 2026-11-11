@@ -1217,6 +1217,89 @@
     ], folgt: [{ ab: '2026-11-01', stand: 'ab 1.11.2026', gruppen: {
       IA: [2622.74, 2662.38, 2702.02], IB: [2622.74, 2662.67, 2702.60, 2722.56, 2742.52, 2762.48], IC: [2755.26, 2797.91, 2840.56, 2861.90, 2883.24, 2904.58], ID: [3009.80, 3063.42, 3117.04, 3143.87, 3170.70, 3197.53], IE: [3467.53, 3529.38, 3591.23, 3622.13, 3653.03, 3683.93], IF: [3882.79, 3973.17, 4063.55, 4108.75, 4153.95, 4199.15], IG: [4445.89, 4584.02, 4722.15, 4791.22, 4860.29, 4929.36], IH: [4867.32, 5018.54, 5169.76, 5245.34, 5320.92, 5396.50], II: [5926.25, 6110.35, 6294.45, 6386.49, 6478.53, 6570.57], IJ: [6506.47, 6708.80, 6911.13, 7012.28, 7113.43, 7214.58], IK: [8601.69, 8869.18, 9002.90, 9136.62, 9270.34], L1: [1093.49], L2: [1322.60], L3: [1692.31], L4: [2197.40] } }] };
   LOHNGRUPPEN.industrie_ang = LOHNGRUPPEN.metall_ind;
+  // Chemische Industrie, Papierindustrie, Textilindustrie (Arbeiter), Lohnordnungen 2026 (Quelle: wko.at)
+  PAKETE.chemie = {
+    name: 'Chemische Industrie (Arbeiter)',
+    hinweis: 'KV Chemische Industrie, Arbeiter, Lohnordnung von 1.5.2026 bis 30.4.2027 (Quelle: wko.at): 38 Stunden/Woche, Grundvergütung für Überstunden, Sonn- und Feiertagsstunden 1/165 des Monatsbezugs. Überstunden 50 %, zwischen 20 und 6 Uhr, ab der dritten Überstunde am Tag und ab der 51. Wochenstunde 100 %. Sonntagsarbeit 100 %, Feiertagsarbeit doppeltes Entgelt zusätzlich. Es zählt nur der höchste Zuschlag. Nachmittagsschichtzulage 2,0728 € und Nachtschichtzulage 4,1409 € je Stunde, Vorarbeiter 15 % Zuschlag: als Vorschläge bei den Prämien hinterlegt. Urlaubszuschuss und Weihnachtsremuneration je ein Monatsverdienst.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 165 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 200 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.chemie = { stand: '1.5.2026 bis 30.4.2027', stufen: null, teiler: 165, gruppen: [
+      { id: 'C2', m: true, name: 'Kategorie 2: Arbeiten nach kurzer Anweisung', l: [2626.26] },
+      { id: 'C2a', m: true, name: 'Kategorie 2a: Arbeiten nach kurzer Anweisung, höhere Komplexität', l: [2735.62] },
+      { id: 'C3', m: true, name: 'Kategorie 3: angelernte Arbeiten, in den ersten 6 Monaten', l: [2735.62] },
+      { id: 'C4', m: true, name: 'Kategorie 4: angelernte Arbeiten, nach 6 Monaten', l: [2827.96] },
+      { id: 'C5', m: true, name: 'Kategorie 5: Maschinenverantwortliche, geprüfte Kesselwärter, qualifizierte Staplerfahrer', l: [3055.51] },
+      { id: 'C6', m: true, name: 'Kategorie 6: Professionisten im 1. Jahr im Betrieb, Spezialarbeiter, Chauffeure', l: [3187.48] },
+      { id: 'C7', m: true, name: 'Kategorie 7: Professionisten und Spezialarbeiter mit qualifizierten Fachkenntnissen', l: [3482.11] },
+      { id: 'C8', m: true, name: 'Kategorie 8: Professionisten und Spezialarbeiter mit hervorragenden Fachkenntnissen', l: [3752.90] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1275.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1594.00] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1912.50] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2231.50] }
+    ] };
+  PAKETE.papier = {
+    name: 'Papierindustrie (Arbeiter)',
+    hinweis: 'KV Papierindustrie, Arbeiter, Monatslöhne ab 1.5.2026 für Papier-, Zellstoff- und Maschinenkartonfabriken (Quelle: wko.at). In Betrieben mit negativem Ergebnis gelten die neuen Löhne erst ab 1.9. oder 1.11.2026, für Pappenfabriken und Holzschleifereien gibt es eine eigene, niedrigere Tabelle, die nicht hinterlegt ist. Die Regeln stammen aus dem Rahmen-KV in der Fassung 2022: 38 Stunden/Woche (Teiler 165), im durchgehenden Schichtbetrieb 36 Stunden (Teiler 156). Überstunden 50 %, zwischen 20 und 6 Uhr, ab der 11. Arbeitsstunde am Tag und ab der 51. Wochenstunde 100 %. Sonntagsarbeit 100 %, Feiertagsarbeit insgesamt das Dreifache. Nachtarbeitszulage 29,74 € und Nachmittagsschichtzulage 12,33 € je voll geleisteter Schicht: als Vorschläge bei den Prämien hinterlegt. Das Lehrlingseinkommen ist ein Prozentsatz der Lohngruppe 1 (40, 50, 55 und 75,5 %), die App hat daraus die Beträge berechnet. Urlaubszuschuss und Weihnachtsremuneration je ein Monatsverdienst.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 165 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 200 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.papier = { stand: 'ab 1.5.2026', stufen: null, teiler: 165, gruppen: [
+      { id: 'PS', m: true, name: 'Spezialarbeiter/in (zum Beispiel Papiermaschinenführer/in)', l: [3407.30] },
+      { id: 'P1', m: true, name: 'Lohngruppe 1: Fachkräfte mit Lehrabschluss, selbständig nach allgemeinen Anweisungen', l: [3119.45] },
+      { id: 'P2', m: true, name: 'Lohngruppe 2: Fachkräfte mit Lehrabschluss, selbständig nach speziellen Anweisungen', l: [2914.27] },
+      { id: 'P3', m: true, name: 'Lohngruppe 3: qualifizierte Tätigkeiten, mehr als 12 Monate Betriebspraxis', l: [2859.35] },
+      { id: 'P4', m: true, name: 'Lohngruppe 4: Tätigkeiten mit 3 bis 12 Monaten Betriebspraxis', l: [2732.41] },
+      { id: 'P5', m: true, name: 'Lohngruppe 5: Tätigkeiten mit kurzer Betriebspraxis', l: [2627.98] },
+      { id: 'P6', m: true, name: 'Lohngruppe 6: Ferialarbeit (höchstens 3 Monate)', l: [2296.05] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1247.78] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1559.73] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1715.70] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2355.18] }
+    ] };
+  PAKETE.textil = {
+    name: 'Textilindustrie (Arbeiter)',
+    hinweis: 'KV Textilindustrie, Arbeiter, Lohnordnung ab 1.4.2026 (Quelle: wko.at). Gilt in Wien, Niederösterreich, Burgenland, Oberösterreich, Salzburg, Steiermark und Kärnten, Tirol und Vorarlberg haben eigene Verträge. 38,5 Stunden/Woche, Stundenlohn = Monatslohn durch 167, Überstunden-Grundlohn 1/143. Überstunden von 6 bis 20 Uhr 50 %, von 20 bis 6 Uhr 100 %, ebenso die 11. und 12. Arbeitsstunde am Tag und ab der 51. Wochenstunde. Sonntagsarbeit 100 %, Feiertag nach dem Gesetz. Nachtschicht (22 bis 6 Uhr): 30 % bei ständiger, 20 % bei wechselnder Nachtschicht. Es zählt nur der höchste Zuschlag. Urlaubszuschuss und Weihnachtsremuneration je ein Monatsverdienst. Bei zweijähriger Lehrzeit gilt im 2. Lehrjahr ein höherer Satz (1.246,00 €), der nicht hinterlegt ist.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.textil = { stand: 'ab 1.4.2026', stufen: null, teiler: 167, gruppen: [
+      { id: 'TA', m: true, name: 'Lohngruppe A: einfache Tätigkeiten', l: [2058.00] },
+      { id: 'TB', m: true, name: 'Lohngruppe B: Tätigkeiten mit kurzer Zweckausbildung', l: [2090.00] },
+      { id: 'TC', m: true, name: 'Lohngruppe C: Tätigkeiten mit längerer Zweckausbildung und Fachkenntnissen', l: [2123.00] },
+      { id: 'TD', m: true, name: 'Lohngruppe D: Fachkenntnisse, selbständige Ausführung, Verantwortung', l: [2163.00] },
+      { id: 'TE', m: true, name: 'Lohngruppe E: Facharbeiter/innen', l: [2206.00] },
+      { id: 'TF', m: true, name: 'Lohngruppe F: Spitzenfacharbeiter/innen', l: [2255.00] },
+      { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [916.00] },
+      { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1116.00] },
+      { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1417.00] },
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1743.00] },
+      { id: 'M1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [1124.00] },
+      { id: 'M2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [1481.00] },
+      { id: 'M3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [1829.00] },
+      { id: 'M4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (Lehrbeginn ab 18 Jahren oder mit Matura)', l: [2108.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1367,7 +1450,7 @@
         forst: { name: 'Forstarbeit / Holzernte', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Gärtner / Forst)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
-    industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'chemie', 'papier', 'textil', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         produktion: { name: 'Produktion / Maschinenbedienung', b: { fahrzeug: false, kunden: false, praemien: true } },
         schicht: { name: 'Schichtarbeit', b: { fahrzeug: false, kunden: false, praemien: true } },
