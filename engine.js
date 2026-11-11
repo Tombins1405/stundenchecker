@@ -1532,6 +1532,135 @@
       { id: 'ZF2', m: true, lehrling: true, name: 'Lehrling Zahntechnische Fachassistenz, 2. Lehrjahr', l: [949.44] },
       { id: 'ZF3', m: true, lehrling: true, name: 'Lehrling Zahntechnische Fachassistenz, 3. Lehrjahr', l: [1276.58] }
     ] };
+  // Glaser, Tapezierer, Steinmetz, Bodenleger, Textilreinigung (wko.at, Stand 2026)
+  PAKETE.glaser = {
+    name: 'Glaser (Arbeiter)',
+    hinweis: 'KV Glaser, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Dachzulagen je Bundesland sind als Prämie vorgeschlagen. Hohlglasveredler haben eigene Löhne: gib dann deinen Stundenlohn selbst ein.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.glaser = { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'GL1', name: 'Glaser/in nach dem 3. Gesellen- und Gehilfenjahr', l: [17.54] },
+      { id: 'GL2', name: 'Glaser/in im 3. Gesellen- und Gehilfenjahr', l: [16.06] },
+      { id: 'GL3', name: 'Glaser/in im 1. und 2. Gesellen- und Gehilfenjahr', l: [14.83] },
+      { id: 'GLQ', name: 'Qualifizierte/r Hilfsarbeiter/in (Glaser)', l: [15.39] },
+      { id: 'GLH', name: 'Hilfsarbeiter/in (Glaser)', l: [14.11] },
+      { id: 'LG1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [5.70] },
+      { id: 'LG2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [7.40] },
+      { id: 'LG3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [11.10] },
+      { id: 'LG4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [12.90] }
+    ] };
+  PAKETE.tapezierer = {
+    name: 'Tapezierer (Arbeiter)',
+    hinweis: 'KV Tapezierer, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.tapezierer = { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'TP1', name: 'Spezialfacharbeiter/in (Tapezierer)', l: [17.38] },
+      { id: 'TP2', name: 'Facharbeiter/in nach dem 2. Jahr nach der Auslehre', l: [15.76] },
+      { id: 'TP3', name: 'Facharbeiter/in nach dem 1. Jahr nach der Auslehre', l: [14.44] },
+      { id: 'TP4', name: 'Facharbeiter/in im 1. Jahr nach der Auslehre', l: [13.96] },
+      { id: 'TP5', name: 'Hilfsarbeiter/in (Tapezierer)', l: [13.93] },
+      { id: 'LT1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [900.00] },
+      { id: 'LT2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1120.00] },
+      { id: 'LT3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1340.00] }
+    ] };
+  PAKETE.steinmetz = {
+    name: 'Steinmetz / Steinarbeiter (Arbeiter)',
+    hinweis: 'KV Steinarbeiter und Steinmetze, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Gerüstzulage (7,5 %) und Staubzulage (8 %) sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Kunststeinerzeuger haben eigene Gruppen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.steinmetz = { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'SM1', name: 'Spezialfacharbeiter/in (Steinmetzmeister, Partieführer, Vorarbeiter, Sprengmeister)', l: [20.11] },
+      { id: 'SM2', name: 'Facharbeiter/in mit Lehrabschluss Steinmetztechnik', l: [19.70] },
+      { id: 'SM3', name: 'Facharbeiter/in mit Lehrabschluss im erlernten Beruf', l: [19.25] },
+      { id: 'SM4', name: 'Facharbeiter/in ohne Lehrabschluss im erlernten Beruf', l: [18.67] },
+      { id: 'SM5', name: 'Angelernte (Schleifer, Säger, Fräser, Kranführer, Helfer)', l: [18.01] },
+      { id: 'SM6', name: 'Hilfsarbeiter/in und Reinigungspersonal', l: [16.22] },
+      { id: 'SM7a', name: 'Steinbildhauer/in, Modelleur/in', l: [22.94] },
+      { id: 'SM7b', name: 'Gipsbildhauer/in, Former/in, Gießer/in', l: [20.11] },
+      { id: 'KS1', name: 'Kunststein: Vorarbeiter/in, Partieführer/in', l: [19.24] },
+      { id: 'KS2', name: 'Kunststein: Facharbeiter/in mit Lehrabschluss', l: [18.71] },
+      { id: 'KS3', name: 'Kunststein: Facharbeiter/in ohne Lehrabschluss', l: [17.85] },
+      { id: 'KS4', name: 'Kunststein: Angelernte (Former, Einschaler, Eisenbieger)', l: [17.22] },
+      { id: 'KS5', name: 'Kunststein: Hilfsarbeiter/in', l: [15.77] },
+      { id: 'KS6', name: 'Kunststein: Sonstiges Hilfspersonal', l: [14.16] },
+      { id: 'LS1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [7.70] },
+      { id: 'LS2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [9.90] },
+      { id: 'LS3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [14.20] },
+      { id: 'LS4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [16.40] }
+    ] };
+  PAKETE.bodenleger = {
+    name: 'Bodenleger (Arbeiter)',
+    hinweis: 'KV Bodenleger, Arbeiter, Löhne ab 1.5.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.bodenleger = { stand: 'ab 1.5.2026', stufen: null, gruppen: [
+      { id: 'BL1', name: 'Facharbeiter/in mit Lehrabschluss ab dem 3. Praxisjahr', l: [18.14] },
+      { id: 'BL2', name: 'Facharbeiter/in mit Lehrabschluss, ohne Lehrabschluss ab dem 2. Praxisjahr', l: [17.29] },
+      { id: 'BL3', name: 'Facharbeiter/in ohne Lehrabschluss (Bodenleger)', l: [16.87] },
+      { id: 'BL4', name: 'Bodenlegerhelfer/in', l: [16.18] },
+      { id: 'BL5', name: 'Hilfsarbeiter/in (Bodenleger)', l: [14.88] },
+      { id: 'LB1', lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [6.85] },
+      { id: 'LB2', lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [8.40] },
+      { id: 'LB3', lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [9.95] },
+      { id: 'LB4', lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [11.60] }
+    ] };
+  PAKETE.textilreinigung = {
+    name: 'Textilreinigung und Wäscherei (Arbeiter)',
+    hinweis: 'KV Textilreiniger, Wäscher und Färber, Arbeiter, Löhne ab 1.1.2026 (Quelle: wko.at): Stundenlöhne und Lehrlingseinkommen (monatlich). Wochenstunden und Teiler stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Sonntagsarbeit zählt 100 %. Die Außer-Haus-Zulage (10 %, nur Teppichreinigung) ist als Prämie vorgeschlagen, Sonntagsarbeit zählt 100 %.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.textilreinigung = { stand: 'ab 1.1.2026', stufen: null, gruppen: [
+      { id: 'TX1', name: 'Lohngruppe I: Waschmeister, gelernte Kräfte', l: [11.87] },
+      { id: 'TX2', name: 'Lohngruppe II: Chauffeure, Heizer, Professionisten, erste Kräfte', l: [11.61] },
+      { id: 'TX3', name: 'Lohngruppe III: Maschin- und Handwaschen, Sortieren, Nähen, erste Ladnerkraft, Angelernte nach einem halben Jahr', l: [11.35] },
+      { id: 'TX4', name: 'Lohngruppe IV: Pressen, Legen, Zentrifugieren, Angelernte bis zu einem halben Jahr', l: [11.22] },
+      { id: 'TX5', name: 'Lohngruppe V: Hilfsarbeiten, Mitfahren, zweite Ladnerkraft, Aufsichtspersonen', l: [11.22] },
+      { id: 'LT1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [804.96] },
+      { id: 'LT2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [912.29] },
+      { id: 'LT3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1180.61] },
+      { id: 'LT4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1341.60] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -1543,7 +1672,7 @@
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Berufskraftfahrer (Lehrling)', b: { fahrzeug: true, kunden: true, praemien: false } }
       } },
-    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'tischler', 'maler', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
+    handwerk: { name: 'Bau und Handwerk', paket: 'bau', kvs: ['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'tischler', 'maler', 'glaser', 'tapezierer', 'steinmetz', 'bodenleger', 'metall', 'de_bau', 'de_metall', 'eigen'], diaeten: true, sw: true, b: { fahrzeug: false, kunden: true, praemien: true },
       arten: {
         maurer: { name: 'Maurer / Hochbau / Tiefbau / Bauarbeiter', kv: 'bau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         zimmerer: { name: 'Zimmerer / Holzbau / Dachstuhl', kv: 'holzbau', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
@@ -1555,6 +1684,10 @@
         dachdecker: { name: 'Dachdecker', kv: 'dachdecker', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         pflasterer: { name: 'Pflasterer', kv: 'pflasterer', sw: true, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
         fliesenleger: { name: 'Fliesenleger / Hafner / Plattenleger', kv: 'fliesenleger', sw: false, diaeten: true, b: { fahrzeug: false, kunden: true, praemien: true } },
+        glaser: { name: 'Glaser', kv: 'glaser', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        tapezierer: { name: 'Tapezierer', kv: 'tapezierer', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        steinmetz: { name: 'Steinmetz / Steinarbeiter', kv: 'steinmetz', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
+        bodenleger: { name: 'Bodenleger', kv: 'bodenleger', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         anderes: { name: 'Anderes Handwerk (Eigene Werte)', kv: 'eigen', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Bau und Handwerk)', sw: false, diaeten: false, b: { fahrzeug: false, kunden: true, praemien: false } }
       } },
@@ -1711,6 +1844,12 @@
         assistenz: { name: 'Zahntechnische Fachassistenz / Hilfskraft', b: { fahrzeug: false, kunden: false, praemien: true } },
         leitung: { name: 'Laborleitung / Meister / Büro', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Zahntechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    textilreinigung: { name: 'Wäscherei und Textilreinigung', paket: 'textilreinigung', kvs: ['textilreinigung', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        reiniger: { name: 'Textilreiniger/in / Wäscher/in / Färber/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        hilfskraft: { name: 'Hilfskraft / Ladner/in / Bügler/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Textilreinigung)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
