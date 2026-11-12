@@ -2310,6 +2310,107 @@
       { id: 'RLv2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200.00] },
       { id: 'RLv3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1400.00] }
     ] };
+  // Hotel- und Gastgewerbe, Angestellte: Gehaltsordnungen ab 1.10.2026 (wko.at), vier Tabellen je nach Bundesland
+  PAKETE.gastro_ang_wh = {
+    name: 'Hotel- und Gastgewerbe, Angestellte: Wien (Hotellerie)',
+    hinweis: 'KV Hotel- und Gastgewerbe, Angestellte, Gehaltsordnung ab 1.10.2026 (Quelle: wko.at): Mindestgehälter nach Beschäftigungsgruppe und Dienstjahren, je nach Bundesland verschieden. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.gastro_ang_wh = { stand: 'ab 1.10.2026', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], gruppen: [
+      { id: 'A0', m: true, name: 'Beschäftigungsgruppe 0', l: [3050.00, 3126.30, 3202.50, 3278.80, 3355.00] },
+      { id: 'A1', m: true, name: 'Beschäftigungsgruppe 1', l: [2771.00, 2840.30, 2909.60, 2978.80, 3048.10] },
+      { id: 'A2', m: true, name: 'Beschäftigungsgruppe 2', l: [2557.00, 2620.90, 2684.90, 2748.80, 2812.70] },
+      { id: 'A3', m: true, name: 'Beschäftigungsgruppe 3', l: [2330.00, 2388.30, 2446.50, 2504.80, 2563.00] },
+      { id: 'A4', m: true, name: 'Beschäftigungsgruppe 4', l: [2153.00, 2206.80, 2260.70, 2314.50, 2368.30] },
+      { id: 'A5', m: true, name: 'Beschäftigungsgruppe 5', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr'], l: [2096.50, 2148.90] },
+      { id: 'AL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090.00] },
+      { id: 'AL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220.00] },
+      { id: 'AL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445.00] },
+      { id: 'AL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550.00] }
+    ] };
+  PAKETE.gastro_ang_w = {
+    name: 'Hotel- und Gastgewerbe, Angestellte: Wien (Gastronomie und Kaffeehäuser)',
+    hinweis: 'KV Hotel- und Gastgewerbe, Angestellte, Gehaltsordnung ab 1.10.2026 (Quelle: wko.at): Mindestgehälter nach Beschäftigungsgruppe und Dienstjahren, je nach Bundesland verschieden. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.gastro_ang_w = { stand: 'ab 1.10.2026', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], gruppen: [
+      { id: 'A0', m: true, name: 'Beschäftigungsgruppe 0', l: [2924.00, 2997.10, 3070.20, 3143.30, 3216.40] },
+      { id: 'A1', m: true, name: 'Beschäftigungsgruppe 1', l: [2771.00, 2840.30, 2909.60, 2978.80, 3048.10] },
+      { id: 'A2', m: true, name: 'Beschäftigungsgruppe 2', l: [2328.00, 2386.20, 2444.40, 2502.60, 2560.80] },
+      { id: 'A3', m: true, name: 'Beschäftigungsgruppe 3', l: [2232.00, 2287.80, 2343.60, 2399.40, 2455.20] },
+      { id: 'A4', m: true, name: 'Beschäftigungsgruppe 4', l: [2153.00, 2206.80, 2260.70, 2314.50, 2368.30] },
+      { id: 'A5', m: true, name: 'Beschäftigungsgruppe 5', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr'], l: [2096.50, 2148.90] },
+      { id: 'AL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090.00] },
+      { id: 'AL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220.00] },
+      { id: 'AL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445.00] },
+      { id: 'AL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550.00] }
+    ] };
+  PAKETE.gastro_ang_c = {
+    name: 'Hotel- und Gastgewerbe, Angestellte: Burgenland, Kärnten, Niederösterreich, Oberösterreich, Steiermark',
+    hinweis: 'KV Hotel- und Gastgewerbe, Angestellte, Gehaltsordnung ab 1.10.2026 (Quelle: wko.at): Mindestgehälter nach Beschäftigungsgruppe und Dienstjahren, je nach Bundesland verschieden. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.gastro_ang_c = { stand: 'ab 1.10.2026', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], gruppen: [
+      { id: 'A0', m: true, name: 'Beschäftigungsgruppe 0', l: [2745.00, 2813.60, 2882.30, 2950.90, 3019.50] },
+      { id: 'A1', m: true, name: 'Beschäftigungsgruppe 1', l: [2618.00, 2683.50, 2748.90, 2814.40, 2879.80] },
+      { id: 'A2', m: true, name: 'Beschäftigungsgruppe 2', l: [2304.00, 2361.60, 2419.20, 2476.80, 2534.40] },
+      { id: 'A3', m: true, name: 'Beschäftigungsgruppe 3', l: [2226.00, 2281.70, 2337.30, 2393.00, 2448.60] },
+      { id: 'A4', m: true, name: 'Beschäftigungsgruppe 4', l: [2153.00, 2206.80, 2260.70, 2314.50, 2368.30] },
+      { id: 'A5', m: true, name: 'Beschäftigungsgruppe 5', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr'], l: [2096.50, 2148.90] },
+      { id: 'AL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090.00] },
+      { id: 'AL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220.00] },
+      { id: 'AL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445.00] },
+      { id: 'AL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550.00] }
+    ] };
+  PAKETE.gastro_ang_d = {
+    name: 'Hotel- und Gastgewerbe, Angestellte: Salzburg, Tirol, Vorarlberg',
+    hinweis: 'KV Hotel- und Gastgewerbe, Angestellte, Gehaltsordnung ab 1.10.2026 (Quelle: wko.at): Mindestgehälter nach Beschäftigungsgruppe und Dienstjahren, je nach Bundesland verschieden. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 0 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.gastro_ang_d = { stand: 'ab 1.10.2026', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], gruppen: [
+      { id: 'A0', m: true, name: 'Beschäftigungsgruppe 0', l: [3050.00, 3126.30, 3202.50, 3278.80, 3355.00] },
+      { id: 'A1', m: true, name: 'Beschäftigungsgruppe 1', l: [2646.00, 2712.20, 2778.30, 2844.50, 2910.60] },
+      { id: 'A2', m: true, name: 'Beschäftigungsgruppe 2', l: [2395.00, 2454.90, 2514.80, 2574.60, 2634.50] },
+      { id: 'A3', m: true, name: 'Beschäftigungsgruppe 3', l: [2330.00, 2388.30, 2446.50, 2504.80, 2563.00] },
+      { id: 'A4', m: true, name: 'Beschäftigungsgruppe 4', l: [2153.00, 2206.80, 2260.70, 2314.50, 2368.30] },
+      { id: 'A5', m: true, name: 'Beschäftigungsgruppe 5', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr'], l: [2096.50, 2148.90] },
+      { id: 'AL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090.00] },
+      { id: 'AL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220.00] },
+      { id: 'AL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445.00] },
+      { id: 'AL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2382,7 +2483,7 @@
         lager: { name: 'Lager / Warenübernahme', kv: 'handel_arb', b: { fahrzeug: false, kunden: false, praemien: true } },
         leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'gastro_w', 'gastro_wh', 'gastro_bgld', 'gastro_ooe', 'gastro_stmk', 'gastro_ktn', 'gastro_sbg', 'gastro_t', 'gastro_vbg', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'gastro_w', 'gastro_wh', 'gastro_bgld', 'gastro_ooe', 'gastro_stmk', 'gastro_ktn', 'gastro_sbg', 'gastro_t', 'gastro_vbg', 'gastro_ang_wh', 'gastro_ang_w', 'gastro_ang_c', 'gastro_ang_d', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Koch, Restaurantfachmann, Hotel)', b: { fahrzeug: false, kunden: false, praemien: false } },

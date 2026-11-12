@@ -1252,6 +1252,7 @@
   ['', '_w', '_st', '_ooe', '_sbg', '_k', '_v', '_b', '_t'].forEach(function (k) { PAKET_KURZ['fleischer' + k] = 'Fleischergewerbe'; });
   PR_VOR.bahn = [['Nachtarbeitszulage', 'stunde', 'Stunden zwischen 22 und 5 Uhr', 4.10], ['Sonn- und Feiertagszulage', 'stunde', 'Stunden an Sonn- und Feiertagen', 7], ['Leistungsprämie', 'monat', 'einmal pro Monat'], ['Zulage Schlafwagen 8C: grenzüberschreitender Einsatz', 'monat', 'einmal pro Monat', 62.71], ['Zulage Schlafwagen 8B: Verantwortung für mehrere Mitarbeiter', 'monat', 'einmal pro Monat', 125.41], ['Zulage Arbeitsunterbrechung (Bordgastronomie)', 'stueck', 'angefangene Viertelstunden über 180 Minuten Unterbrechung', 3.49]];
   PAKET_KURZ.bahn = 'Eisenbahn';
+  ['wh', 'w', 'c', 'd'].forEach(function (k) { PR_VOR['gastro_ang_' + k] = [['Fremdsprachenzulage', 'monat', 'einmal pro Monat', 40], ['Leistungsprämie', 'monat', 'einmal pro Monat']]; PAKET_KURZ['gastro_ang_' + k] = 'Gastgewerbe (Angestellte)'; });
   PR_VOR.rk_t = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Außerhauszulage', 'tag', 'Arbeitstage mit auswärtiger Mittagsverpflegung', 12.76], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.rk_vbg = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PAKET_KURZ.rk_t = 'Rauchfangkehrer Tirol'; PAKET_KURZ.rk_vbg = 'Rauchfangkehrer Vorarlberg';
