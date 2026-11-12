@@ -956,7 +956,7 @@
   var KV_LAND_FIX = { taxi_t: ['t'], taxi_vbg: ['vbg'], taxi_sbg: ['sbg'], taxi_stmk: ['stmk'], textil_t: ['t'], textil_vbg: ['vbg'], textil: ['w', 'noe', 'bgld', 'ooe', 'sbg', 'stmk', 'ktn'], konditor: ['noe'], fleischer: ['noe'], gastro: ['noe'], gastro_ang_c: ['bgld', 'ktn', 'noe', 'ooe', 'stmk'], gastro_ang_d: ['sbg', 't', 'vbg'], gastro_ang_w: ['w'], gastro_ang_wh: ['w'] };
   function kvLand(paket) {
     paket = String(paket || ''); if (KV_LAND_FIX[paket]) return KV_LAND_FIX[paket];
-    var m = /^(konditor|fleischer|ordination|rk|gastro|kino)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
+    var m = /^(konditor|fleischer|ordination|rk|gastro|kino|rettung)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
   }
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
@@ -2663,6 +2663,100 @@
       { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
       { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
     ] };
+  // Rettungsdienst (ÖRK-KV 2026, Landesanhänge NÖ, Burgenland, Steiermark, Salzburg, Tirol; roteskreuz.at)
+  PAKETE.rettung_noe = {
+    name: 'Rettungsdienst (Rotes Kreuz), Niederösterreich',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Niederösterreich (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.7.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_noe = { stand: 'ab 1.7.2026, Niederösterreich', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–12', 'Dienstjahre 13–14', 'Dienstjahre 15–16', 'Dienstjahre 17–18', 'Dienstjahre 19–20', 'Dienstjahre 21–22', 'Dienstjahre 23–24', 'Dienstjahre 25–26', 'Dienstjahre 27–28', 'Dienstjahre 29–30', 'Dienstjahre 31–32', 'Dienstjahre 33–34', 'Dienstjahre 35–36', 'Dienstjahre 37–38', 'Dienstjahre 39–40', 'Dienstjahre 41–42'], teiler: 173, gruppen: [
+      { id: 'RN1', m: true, name: 'A1: Hilfskräfte (Werkstatt, Reinigung, Küche, Betreuungsfahrten)', l: [2233.66, 2257.52, 2282.10, 2306.79, 2332.10, 2357.82, 2384.06, 2410.92, 2437.98, 2467.00, 2498.01, 2529.79, 2562.81, 2596.54, 2630.84, 2665.85, 2701.56, 2736.70, 2772.06, 2807.29, 2842.54] },
+      { id: 'RN2', m: true, name: 'A2: Rettungssanitäter/in, Einsatzfahrer/in (BKTW, KTW, RTW)', l: [2543.33, 2580.20, 2617.54, 2655.82, 2694.80, 2734.47, 2774.97, 2816.98, 2859.81, 2903.22, 2947.45, 2994.64, 3045.03, 3096.42, 3148.56, 3201.96, 3256.73, 3310.62, 3364.76, 3418.78, 3472.80] },
+      { id: 'RN3', m: true, name: 'A3: Notfallsanitäter/in, Einsatzfahrer/in NEF/NAW, Lehrbeauftragte', l: [2734.59, 2775.21, 2817.33, 2860.04, 2903.45, 2947.69, 2994.88, 3045.40, 3096.67, 3148.81, 3202.21, 3256.98, 3313.12, 3370.14, 3428.16, 3487.55, 3547.69, 3607.34, 3666.98, 3726.75, 3786.40] },
+      { id: 'RN4', m: true, name: 'A4: Dienstführende (Haupttätigkeit), Fachbereichsleitung', l: [2849.54, 2892.95, 2936.94, 2982.88, 3033.15, 3084.29, 3136.19, 3189.33, 3243.47, 3299.36, 3356.26, 3414.28, 3473.05, 3533.19, 3593.59, 3655.49, 3718.25, 3780.40, 3842.67, 3904.95, 3967.09] }
+    ] };
+  PAKETE.rettung_bgld = {
+    name: 'Rettungsdienst (Rotes Kreuz), Burgenland',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Burgenland (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.7.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_bgld = { stand: 'ab 1.7.2026, Burgenland', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'Berufsjahre 5–6', 'Berufsjahre 7–8', 'Berufsjahre 9–10', 'Berufsjahre 11–12', 'Berufsjahre 13–14', 'Berufsjahre 15–16', 'Berufsjahre 17–18', 'Berufsjahre 19–20', 'Berufsjahre 21–22', 'Berufsjahre 23–24', 'Berufsjahre 25–26', 'Berufsjahre 27–28', 'Berufsjahre 29–30', 'Berufsjahre 31–32', 'Berufsjahre 33–34', 'Berufsjahre 35–36'], teiler: 173, gruppen: [
+      { id: 'RB4a', m: true, name: 'VG 4a: Urlaubs- und Krankenstandsvertretung', l: [2374.21, 2403.79, 2436.19, 2467.38, 2498.32, 2532.49, 2563.10, 2592.18, 2624.33, 2660.69, 2694.10, 2723.57, 2757.00, 2792.20, 2822.82, 2851.91, 2882.52, 2915.82] },
+      { id: 'RB4', m: true, name: 'VG 4: Rettungssanitäter/in', l: [2724.96, 2777.28, 2827.98, 2878.67, 2929.35, 2978.44, 3031.25, 3078.07, 3153.37, 3211.15, 3263.55, 3466.29, 3522.67, 3581.20, 3638.73, 3696.62, 3753.92, 3811.33] },
+      { id: 'RB5', m: true, name: 'VG 5: Notfallsanitäter/in (NFS-Planposten)', l: [2838.59, 2890.91, 2941.61, 2992.30, 3042.98, 3092.07, 3144.88, 3191.70, 3267.00, 3324.78, 3377.18, 3579.92, 3636.30, 3694.83, 3752.36, 3810.25, 3867.55, 3924.96] }
+    ] };
+  PAKETE.rettung_stmk = {
+    name: 'Rettungsdienst (Rotes Kreuz), Steiermark',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Steiermark (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.7.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_stmk = { stand: 'ab 1.7.2026, Steiermark', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)', 'Stufe 21 (Vorrückung alle 2 Jahre)'], teiler: 173, gruppen: [
+      { id: 'RS2', m: true, name: 'Stufe II: Reinigung und überwiegend manuelle Tätigkeit', l: [2377.40, 2397.90, 2426.70, 2450.90, 2474.90, 2480.50, 2484.80, 2486.00, 2494.50, 2496.10, 2522.70, 2547.20, 2575.50, 2604.60, 2631.00, 2661.20, 2693.30, 2725.40, 2758.30, 2792.30, 2827.00] },
+      { id: 'RS3', m: true, name: 'Stufe III: Rettungssanitäter/in in Ausbildung', l: [2452.00, 2481.70, 2514.00, 2546.20, 2578.40, 2589.70, 2596.90, 2602.80, 2611.60, 2624.40, 2657.90, 2687.40, 2720.70, 2756.00, 2786.50, 2815.70, 2846.20, 2879.50, 2914.30, 2950.10, 2988.70] },
+      { id: 'RS4', m: true, name: 'Stufe IV: Rettungs- und Notfallsanitäter/in, Leitstelle, Kfz-Mechanik', l: [2557.80, 2592.70, 2626.10, 2661.40, 2692.10, 2700.40, 2705.00, 2716.40, 2725.50, 2734.10, 2767.60, 2799.10, 2830.10, 2862.40, 2888.40, 2926.20, 2961.10, 3003.30, 3044.70, 3087.40, 3132.70] },
+      { id: 'RS5', m: true, name: 'Stufe V: wie Stufe IV nach 15 Jahren beim selben Arbeitgeber', l: [2663.00, 2696.20, 2729.70, 2764.90, 2799.70, 2811.70, 2820.30, 2837.60, 2848.00, 2859.00, 2894.60, 2930.80, 2965.60, 3005.00, 3045.20, 3077.00, 3113.70, 3156.90, 3198.30, 3240.00, 3284.80] }
+    ] };
+  PAKETE.rettung_sbg = {
+    name: 'Rettungsdienst (Rotes Kreuz), Salzburg',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Salzburg (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig für 2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_sbg = { stand: 'für 2026, Salzburg', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)'], teiler: 173, gruppen: [
+      { id: 'RZ10', m: true, name: 'VG X: Helfer/in', l: [2333.96, 2351.17, 2368.38, 2384.02, 2443.50, 2502.84, 2562.19, 2618.77, 2676.79, 2736.27, 2792.98, 2852.32, 2910.34, 2969.84, 3027.71, 3088.53, 3145.11, 3203.12] },
+      { id: 'RZ7', m: true, name: 'VG VII: Rettungs- und Notfallsanitäter/in', l: [2751.39, 2853.64, 2944.83, 3037.46, 3131.28, 3221.15, 3303.77, 3397.60, 3488.79, 3581.42, 3673.92, 3766.43, 3857.63, 3950.24, 4042.77, 4133.95, 4226.58, 4320.38] },
+      { id: 'RZ5', m: true, name: 'VG V: Dienstführende', l: [3378.27, 3516.43, 3654.59, 3789.98, 3929.47, 4066.30, 4204.47, 4342.63, 4479.33, 4617.52, 4755.68, 4892.39, 5030.56, 5167.26, 5304.11, 5442.25, 5580.43, 5687.17] }
+    ] };
+  PAKETE.rettung_t = {
+    name: 'Rettungsdienst (Rotes Kreuz), Tirol',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Tirol (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.4.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_t = { stand: 'ab 1.4.2026, Tirol', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–12', 'Dienstjahre 13–14', 'Dienstjahre 15–16', 'Dienstjahre 17–18', 'Dienstjahre 19–20', 'Dienstjahre 21–22', 'Dienstjahre 23–24', 'Dienstjahre 25–26', 'Dienstjahre 27–28', 'Dienstjahre 29–30', 'Dienstjahre 31–32', 'Dienstjahre 33–34', 'Dienstjahre 35–36'], teiler: 173, gruppen: [
+      { id: 'RT1', m: true, name: 'VWG 1: Botendienst, Reinigung, Küchenhilfe', l: [2260.03, 2284.44, 2323.33, 2359.95, 2400.28, 2438.69, 2477.34, 2516.11, 2554.65, 2593.18, 2623.69, 2654.33, 2681.37, 2711.89, 2739.89, 2771.04, 2803.74, 2836.05] },
+      { id: 'RT4', m: true, name: 'VWG 4: Rettungssanitäter/in', l: [2556.20, 2602.87, 2668.69, 2715.84, 2760.18, 2812.78, 2863.06, 2912.04, 2964.25, 3014.91, 3063.38, 3116.11, 3152.30, 3190.04, 3228.03, 3267.71, 3303.90, 3343.57] },
+      { id: 'RT5', m: true, name: 'VWG 5: Notfallsanitäter/in, Leitstelle (Rettungssanitäter/in)', l: [2743.24, 2798.18, 2879.60, 2975.11, 3043.99, 3097.76, 3152.30, 3208.13, 3264.22, 3320.18, 3372.52, 3426.67, 3482.76, 3537.30, 3591.33, 3647.16, 3703.38, 3757.01] },
+      { id: 'RT6', m: true, name: 'VWG 6: Leitstelle (Notfallsanitäter/in), Wachführung', l: [2944.48, 3002.25, 3090.91, 3208.13, 3296.66, 3382.99, 3473.72, 3562.38, 3617.82, 3677.79, 3737.50, 3796.95, 3856.66, 3912.49, 3972.20, 4031.65, 4091.23, 4149.51] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2903,6 +2997,13 @@
       arten: {
         vorfuehrung: { name: 'Filmvorführung und Haustechnik', b: { fahrzeug: false, kunden: false, praemien: true } },
         kassa: { name: 'Kassa, Büffet, Einlass', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    rettung: { name: 'Rettungsdienst', paket: 'rettung_noe', kvs: ['rettung_noe', 'rettung_bgld', 'rettung_stmk', 'rettung_sbg', 'rettung_t', 'sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        rs: { name: 'Rettungssanitäter/in, Einsatzfahrer/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        nfs: { name: 'Notfallsanitäter/in', b: { fahrzeug: false, kunden: false, praemien: true } },
+        leitstelle: { name: 'Leitstelle und Dienstführung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        hilfe: { name: 'Hilfsdienste (Rettung)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
