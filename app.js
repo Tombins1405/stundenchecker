@@ -2099,7 +2099,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
-    if (!(data.profil && data.profil.sqIntro)) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
+    if (!(data.profil && data.profil.sqHinweis)) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
@@ -2193,7 +2193,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
-    if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqIntro = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3000); } }, 250); return; }
+    if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqHinweis = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3000); } }, 250); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
     if (k.indexOf('unterkv_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#s-kvwarn'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); return; }
     if (k === 'zuart') {
@@ -4002,7 +4002,7 @@
   document.addEventListener('change', function (ev) {
     var t = ev.target; if (!t || !t.id) return;
     if (t.id === 'sq-text') sqAusFoto = false;
-    if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; if (t.checked) data.profil.sqIntro = true; save(); sqApply(); if (t.checked) toast('Fertig. Die Karte „Schnell erfassen“ findest du jetzt ganz oben beim Erfassen. Tippe darauf, dann klappt sie auf.'); }
+    if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; if (t.checked) data.profil.sqHinweis = true; save(); sqApply(); if (t.checked) toast('Fertig. Die Karte „Schnell erfassen“ findest du jetzt ganz oben beim Erfassen. Tippe darauf, dann klappt sie auf.'); }
     else if (t.id === 'sq-set-foto') { data.profil.sqFoto = !!t.checked; save(); sqApply(); }
     else if (t.id === 'sq-file' && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
   });
