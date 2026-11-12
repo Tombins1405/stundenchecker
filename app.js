@@ -2159,6 +2159,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
+    if (ui.neueVersion) out.push({ k: 'update', text: 'Es gibt eine neue Version der App. Soll ich sie jetzt laden? Deine Einträge bleiben erhalten.' });
     var wL = wAt(todayISO()), lL = landAT();
     if (wL && wL.paket && lL && !kvPasstLand(wL.paket, lL)) out.push({ k: 'kvland', text: abw1('Dein Kollektivvertrag ({0}) gilt für ein anderes Bundesland als dein Arbeitsort ({1}). Die Löhne sind je Bundesland verschieden. Soll ich dir zeigen, wo du ihn änderst?', [PAKET_KURZ[wL.paket] || (E.PAKETE[wL.paket] && E.PAKETE[wL.paket].name) || '', E.LAENDER_AT[lL]]) });
     else if (wL && wL.paket && lL && !E.kvLand(wL.paket)) { var eig = ((E.BERUFE[wL.beruf] || {}).kvs || []).filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(lL) >= 0 && k.indexOf(wL.paket + '_') === 0; })[0]; if (eig) out.push({ k: 'kvland', text: abw1('Für dein Bundesland ({1}) gibt es einen eigenen Kollektivvertrag ({0}). Soll ich dir zeigen, wo du ihn änderst?', [PAKET_KURZ[eig] || E.PAKETE[eig].name, E.LAENDER_AT[lL]]) }); }
@@ -2194,7 +2195,7 @@
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
     if (!ui.miaManuell) out = out.filter(function (x) { return !x.spaet; }).concat(out.filter(function (x) { return x.spaet; })); // „Später“: beim Start hinten, beim Antippen von Mia wieder vorne
-    ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || (c.skip[s.k] || 0) < 2; });
+    ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || s.k === 'update' || (c.skip[s.k] || 0) < 2; });
     return ui.miaListe[0] || null;
   }
   // Start-Karte: sind beim Start mindestens zwei Dinge offen, zeigt Mia alle auf einen Blick (statt nur eine Sprechblase)
@@ -2204,7 +2205,7 @@
     var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
     function zeichne() {
       ov.innerHTML = '<div class="mk-box" role="dialog" aria-modal="true"><div class="mk-kopf"><span class="mk-mia">' + miaSvg(c.figur, miaFor(), 'eyes') + '</span><div class="mk-titel"><b>Das wartet auf dich</b><span class="mk-zahl">' + L.length + '</span></div></div>' +
-        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' || o.k === 'landfrage' || o.k === 'kvland' || o.k === 'rettungkv' || o.k === 'taxikt' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
+        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' || o.k === 'landfrage' || o.k === 'kvland' || o.k === 'rettungkv' || o.k === 'taxikt' || o.k === 'update' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
         '<button type="button" class="btn mk-zu" data-mz="1">Schließen</button></div>';
       try { uiApply(ov); } catch (e) { }
     }
@@ -2260,6 +2261,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
+    if (k === 'update') { try { if (isDirty()) { toast('Bitte zuerst den Tag speichern.'); return; } } catch (e) { } location.reload(); return; }
     if (k === 'rettungkv' || k === 'taxikt') { var pr = data.profil || (data.profil = {}); pr[k === 'rettungkv' ? 'rkKvHinweis' : 'taxiKtHinweis'] = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $(k === 'rettungkv' ? '#s-paket' : '#s-beruf'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3200); } }, 250); return; }
     if (k === 'landfrage' || k === 'kvland') { show('einstellungen'); setTimeout(function () { var e2 = k === 'kvland' ? $('#s-beruf') : $('#s-land'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); (k === 'kvland' ? e2 : e2.closest('.field')).classList.add('mia-treffer'); setTimeout(function () { (k === 'kvland' ? e2 : e2.closest('.field')).classList.remove('mia-treffer'); }, 3200); } }, 250); return; }
     if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqHinweis = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3000); } }, 250); return; }
@@ -2341,7 +2343,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     ui.miaManuell = !auto; var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaManuell = false; ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland' || nx.k === 'rettungkv' || nx.k === 'taxikt' || nx.k === 'update') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -3942,7 +3944,7 @@
     var bar = $('#updatebar'), last = 0;
     function check() {
       if (Date.now() - last < 60000) return; last = Date.now();
-      fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { if (j && j.v && j.v !== cur) bar.hidden = false; }).catch(function () { });
+      fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { if (j && j.v && j.v !== cur) { bar.hidden = false; ui.neueVersion = true; } }).catch(function () { });
     }
     document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
     setTimeout(check, 4000);
