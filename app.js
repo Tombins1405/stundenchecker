@@ -4835,11 +4835,14 @@
     });
   }
   /* Grundeinstellung: "Anonym mithelfen" ist an, wer nicht selbst entschieden hat (Testphase, Tester sind informiert). Wer Nein gesagt hat, bleibt auf Nein. */
+  // TESTPHASE: nur eingeladene Tester, Mithelfen ist von Anfang an an. Beim offiziellen Start auf false stellen: dann ist alles aus, bis der Nutzer selbst einschaltet.
+  var TESTPHASE = true;
   function standardMithelfen() {
-    if (PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
+    if (!TESTPHASE || PROBE || !window.StundenInsights || !window.StundenInsights.on || !data.settings.length) return;
     var p = data.profil || (data.profil = {}), co = p.consent || {};
+    if (TESTPHASE && !p.mithelfenNein && co.praemien === undefined && (co.statistik || co.miaFragen)) { co.praemien = true; p.consent = co; save(); try { window.StundenInsights.push(true); } catch (e) { } }
     if (co.statistik || co.miaFragen || p.mithelfenNein || p.mithelfenStd) return;
-    p.consent = { statistik: true, miaFragen: true }; p.mithelfenStd = true; save();
+    p.consent = { statistik: true, miaFragen: true, praemien: true }; p.mithelfenStd = true; save();
     try { window.StundenInsights.push(true); } catch (e) { }
     toast('Anonym mithelfen ist eingeschaltet. Du kannst es jederzeit in den Einstellungen ausschalten.');
   }
