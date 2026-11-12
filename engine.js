@@ -1882,53 +1882,54 @@
       { id: 'LK4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2049.12] }
     ] };
   /* ---- Schnell erfassen: Text oder Sprache in einen Tageseintrag verwandeln (Deutsch und Englisch) ---- */
-  // Fremdsprachen: Schlüsselwörter werden vor dem Lesen in die englischen Wörter umgesetzt, die der Leser kennt
-  var FREMD = null;
-  function fremdBau() {
-    var U = 'ui', dig = '(\\d{1,2}(?:[:.]\\d{2})?)', H = '(?:godz(?:in\\p{L}*)?\\.?|óra|órá\\p{L}*|ora|saat|hodin\\p{L}*|hod\\.?|sati|sata|sat|ore|ceas|ceasuri|часов|часа|час|ч\\.?|годин\\p{L}*|год\\.?)';
-    function W(alts, rep) { return [new RegExp('(^|[^\\p{L}\\d])(?:' + alts + ')(?![\\p{L}\\d])', 'giu'), function (m, a) { return a + rep; }]; }
-    var L = [];
-    // Uhrzeitbereiche mit Zahlen zuerst
-    L.push([new RegExp(dig + '\\s*-?\\s*(?:' + H + ')?\\s*-?\\s*(?:órától|tól|től)\\s+' + dig + '\\s*-?\\s*(?:' + H + ')?\\s*-?\\s*(?:óráig|ig)(?![\\p{L}])', 'giu'), '$1 to $2']);
-    L.push([new RegExp(dig + "\\s*['’]?\\s*(?:dan|den|tan|ten)\\s+" + dig + "\\s*['’]?\\s*(?:e|a|ye|ya)\\s+kadar(?![\\p{L}])", 'giu'), '$1 to $2']);
-    L.push([new RegExp('(?:saat\\s+)?' + dig + '\\s+ile\\s+' + dig + '\\s+aras\\p{L}*', 'giu'), '$1 to $2']);
-    L.push([new RegExp('(?:între|intre)\\s+' + dig + '\\s+(?:și|si)\\s+' + dig, 'giu'), 'from $1 to $2']);
-    L.push([new RegExp('(?:^|[^\\p{L}])(?:de la|dalle(?: ore)?|da)\\s+(?=\\d)', 'giu'), ' from ']);
-    L.push([new RegExp('(?:^|[^\\p{L}])(?:od|с|з|від|от)\\s+(?=\\d)', 'giu'), ' from ']);
-    L.push([new RegExp('(\\d)\\s*(?:' + H + ')?\\s+(?:alle(?: ore)?|a|la|pană la|până la|do|až|az|až do|до|по)\\s+(?=\\d)', 'giu'), '$1 to ']);
-    // Pause
-    L.push(W('bez\\s+przerw\\p{L}*|nincs\\s+szünet|mola\\s+yok|bez\\s+pauz\\p{L}*|bez\\s+přestávk\\p{L}*|bez\\s+prestávk\\p{L}*|bez\\s+stanke|bez\\s+pauze|senza\\s+pausa|fără\\s+pauză|fara\\s+pauza|без\\s+перерыв\\p{L}*|без\\s+перерв\\p{L}*', 'no break'));
-    L.push(W('przerw\\p{L}*|szünet\\p{L}*|mola\\p{L}*|přestávk\\p{L}*|prestávk\\p{L}*|stank\\p{L}*|pauz\\p{L}*|pausa|pauză|pauza|перерыв\\p{L}*|перерв\\p{L}*|обед\\p{L}*|обід\\p{L}*', 'break'));
-    L.push([new RegExp('(\\d)\\s*(?:minut\\p{L}*|perc|dakika|dk\\.?|minuta|minuti|minute|минут\\p{L}*|мин\\.?|хвилин\\p{L}*|хв\\.?)(?![\\p{L}])', 'giu'), '$1 minutes']);
-    // Tage
-    L.push(W('przedwczoraj|tegnapelőtt|evvelsi\\s+gün|předevčírem|predvčerom|prekjučer|prekjuče|prekjuce|l.altro\\s+ieri|alaltăieri|позавчера|позавчора', 'day before yesterday'));
-    L.push(W('wczoraj|tegnap|dün|včera|jučer|juče|juce|jucer|ieri|вчера|вчора', 'yesterday'));
-    L.push(W('dziś|dzis|dzisiaj|ma|bugün|bugun|dnes|danas|oggi|azi|сегодня|сьогодні', ''));
-    var T = [['sunday', 'niedziela|vasárnap|pazar|neděle|nedeľa|nedjelja|nedelja|domenica|duminică|duminica|воскресенье|неділя'], ['monday', 'poniedziałek|hétfő|pazartesi|pondělí|pondelok|ponedjeljak|ponedeljak|lunedì|lunedi|luni|понедельник|понеділок'], ['tuesday', 'wtorek|kedd|salı|sali|úterý|utorok|utorak|martedì|martedi|marți|marti|вторник|вівторок'], ['wednesday', 'środa|szerda|çarşamba|carsamba|středa|streda|srijeda|sreda|mercoledì|mercoledi|miercuri|среда|середа'], ['thursday', 'czwartek|csütörtök|perşembe|persembe|čtvrtek|štvrtok|četvrtak|giovedì|giovedi|joi|четверг|четвер'], ['friday', 'piątek|péntek|cuma|pátek|piatok|petak|venerdì|venerdi|vineri|пятница|п.ятниця'], ['saturday', 'sobota|szombat|cumartesi|subota|sabato|sâmbătă|sambata|суббота|субота']];
-    T.forEach(function (t) { L.push(W(t[1], t[0])); });
-    // Art des Tages
-    L.push(W('urlop\\p{L}*|szabadság|izin|dovolená|dovolenka|godišnji(?:\\s+odmor)?|ferie|concediu(?!\\s+medical)|отпуск\\p{L}*|відпустк\\p{L}*', 'vacation'));
-    L.push(W('chorobow\\p{L}*|zwolnieni\\p{L}*\\s+lekarsk\\p{L}*|betegszabadság|beteg|hasta|rapor|nemocenská|nemoc|choroba|bolovanje|bolestan|malattia|malato|boală|concediu\\s+medical|bolnav|больничн\\p{L}*|лікарнян\\p{L}*|болею|хворію', 'sick'));
-    L.push(W('odbiór\\s+nadgodzin|szabadidő|zaman\\s+izni|náhradní\\s+volno|náhradné\\s+voľno|slobodni\\s+dani|riposo\\s+compensativo|timp\\s+liber|отгул\\p{L}*|відгул\\p{L}*', 'time off in lieu'));
-    L.push(W('szkoł\\p{L}*|iskola|okul|škola|škole|scuola|școală|scoala|школ\\p{L}*', 'school'));
-    // Kunde und Tätigkeit
-    L.push(W('klient\\p{L}*|u\\s+klienta|ügyfél\\p{L}*|müşteri\\p{L}*|musteri\\p{L}*|zákazník\\p{L}*|zakaznik\\p{L}*|zákazníka|klijent\\p{L}*|kupac|cliente|client|клиент\\p{L}*|заказчик\\p{L}*|клієнт\\p{L}*|замовник\\p{L}*', 'customer'));
-    L.push([new RegExp('(?:^|[^\\p{L}])(?:czynność|zadanie|tevékenység|feladat|faaliyet|činnost|aktivnost|attività|attivita|activitate|lucrare|деятельность|задача|діяльність)\\s*:', 'giu'), ' task:']);
+  // Fremdsprachen: Schlüsselwörter der gewählten App-Sprache werden vor dem Lesen in die englischen Wörter umgesetzt,
+  // die der Leser kennt. Nur die Regeln der einen Sprache laufen, damit deutsche Sätze und Kundennamen unberührt bleiben.
+  var FREMD_W = {
+    pl: { von: 'od', bis: 'do', std: 'godz(?:in\\p{L}*)?\\.?', min: 'minut\\p{L}*|min\\.?', ohne: 'bez\\s+przerw\\p{L}*', pause: 'przerw\\p{L}*', vg: 'przedwczoraj', g: 'wczoraj', h: 'dziś|dzis|dzisiaj', tage: 'niedziel\\p{L}*|poniedziałek|wtorek|środ\\p{L}*|czwartek|piątek|sobot\\p{L}*', urlaub: 'urlop\\p{L}*', krank: 'chorobow\\p{L}*|zwolnieni\\p{L}*\\s+lekarsk\\p{L}*|chor\\p{L}{1,2}', za: 'odbiór\\s+nadgodzin', schule: 'szkoł\\p{L}*', kunde: 'u\\s+klienta|klient\\p{L}*', task: 'czynność|zadanie|praca' },
+    hu: { std: 'órá?\\p{L}*', min: 'perc\\p{L}*', ohne: 'nincs\\s+szünet|szünet\\s+nélkül', pause: 'szünet\\p{L}*', vg: 'tegnapelőtt', g: 'tegnap', h: 'ma', tage: 'vasárnap|hétfő\\p{L}*|kedd\\p{L}*|szerd\\p{L}*|csütörtök\\p{L}*|péntek\\p{L}*|szombat\\p{L}*', urlaub: 'szabadság\\p{L}*', krank: 'betegszabadság\\p{L}*|beteg\\p{L}*|táppénz\\p{L}*', za: 'szabadidő', schule: 'iskol\\p{L}*', kunde: 'ügyfél\\p{L}*', task: 'tevékenység|feladat|munka' },
+    tr: { std: 'saat', min: 'dakika|dk\\.?', ohne: 'mola\\s+yok|molasız', pause: 'mola\\p{L}*', vg: 'evvelsi\\s+gün|önceki\\s+gün', g: 'dün', h: 'bugün|bugun', tage: 'pazar|pazartesi|salı/sali|çarşamba/carsamba|perşembe/persembe|cuma|cumartesi', urlaub: 'izin\\p{L}*|tatil', krank: 'hasta\\p{L}*|rapor\\p{L}*', za: 'zaman\\s+izni', schule: 'okul\\p{L}*', kunde: 'müşteri\\p{L}*|musteri\\p{L}*', task: 'faaliyet|görev|iş' },
+    cs: { von: 'od', bis: 'do|až|az|až\\s+do', std: 'hodin\\p{L}*|hod\\.?', min: 'minut\\p{L}*|min\\.?', ohne: 'bez\\s+přestávk\\p{L}*|bez\\s+pauz\\p{L}*', pause: 'přestávk\\p{L}*|pauz\\p{L}*', vg: 'předevčírem', g: 'včera', h: 'dnes', tage: 'neděl\\p{L}*|pondělí|úterý|střed\\p{L}*|čtvrtek|pátek|sobot\\p{L}*', urlaub: 'dovolen\\p{L}*', krank: 'nemocensk\\p{L}*|nemoc\\p{L}*', za: 'náhradní\\s+volno', schule: 'škol\\p{L}*', kunde: 'zákazník\\p{L}*', task: 'činnost|úkol|práce' },
+    sk: { von: 'od', bis: 'do|až|az|až\\s+do', std: 'hodin\\p{L}*|hod\\.?', min: 'minút\\p{L}*|minut\\p{L}*|min\\.?', ohne: 'bez\\s+prestávk\\p{L}*|bez\\s+pauz\\p{L}*', pause: 'prestávk\\p{L}*|pauz\\p{L}*', vg: 'predvčerom', g: 'včera', h: 'dnes', tage: 'nedeľ\\p{L}*|pondelok|utorok|stred\\p{L}*|štvrtok|piatok|sobot\\p{L}*', urlaub: 'dovolenk\\p{L}*', krank: 'péenk\\p{L}*|chor\\p{L}*', za: 'náhradné\\s+voľno', schule: 'škol\\p{L}*', kunde: 'zákazník\\p{L}*', task: 'činnosť|úloha|práca' },
+    hr: { von: 'od', bis: 'do', std: 'sati|sata|sat', min: 'minut\\p{L}*|min\\.?', ohne: 'bez\\s+stank\\p{L}*|bez\\s+pauz\\p{L}*', pause: 'stank\\p{L}*|pauz\\p{L}*', vg: 'prekjučer|prekjucer', g: 'jučer|jucer', h: 'danas', tage: 'nedjelj\\p{L}*|ponedjeljak|utorak|srijed\\p{L}*|četvrtak|petak|subot\\p{L}*', urlaub: 'godišnji(?:\\s+odmor)?', krank: 'bolovanj\\p{L}*|bolest\\p{L}*', za: 'slobodni\\s+dani?', schule: 'škol\\p{L}*', kunde: 'klijent\\p{L}*|kupac|kupca', task: 'aktivnost|zadatak|posao' },
+    sr: { von: 'od', bis: 'do', std: 'sati|sata|sat|časova|časa|čas', min: 'minut\\p{L}*|min\\.?', ohne: 'bez\\s+pauz\\p{L}*', pause: 'pauz\\p{L}*', vg: 'prekjuče|prekjuce', g: 'juče|juce', h: 'danas', tage: 'nedelj\\p{L}*|ponedeljak|utorak|sred\\p{L}*|četvrtak|petak|subot\\p{L}*', urlaub: 'godišnji(?:\\s+odmor)?|odmor', krank: 'bolovanj\\p{L}*|bolest\\p{L}*', za: 'slobodni\\s+dani?', schule: 'škol\\p{L}*', kunde: 'klijent\\p{L}*|kupac|kupca', task: 'aktivnost|zadatak|posao' },
+    it: { von: 'dalle(?:\\s+ore)?|da', bis: 'alle(?:\\s+ore)?|a', std: 'ore', min: 'minut[oi]|min\\.?', ohne: 'senza\\s+pausa', pause: 'pausa', vg: 'l.altro\\s+ieri|ieri\\s+l.altro', g: 'ieri', h: 'oggi', tage: 'domenica|lunedì/lunedi|martedì/martedi|mercoledì/mercoledi|giovedì/giovedi|venerdì/venerdi|sabato', urlaub: 'ferie|vacanz[ae]', krank: 'malattia|malat[oa]', za: 'riposo\\s+compensativo', schule: 'scuola', kunde: 'cliente', task: 'attività|attivita|lavoro|compito' },
+    ro: { von: 'de\\s+la', bis: 'la|până\\s+la|pana\\s+la', std: 'ore|ora|ceasuri|ceas', min: '(?:de\\s+)?minute|min\\.?', ohne: 'fără\\s+pauză|fara\\s+pauza', pause: 'pauză|pauza|pauze', vg: 'alaltăieri|alaltaieri', g: 'ieri', h: 'azi|astăzi|astazi', tage: 'duminică/duminica|luni|marți/marti|miercuri|joi|vineri|sâmbătă/sambata', urlaub: 'concediu(?!\\s+medical)', krank: 'concediu\\s+medical|boală|bolnav\\p{L}*', za: 'timp\\s+liber', schule: 'școală|scoala|școala', kunde: 'client\\p{L}*', task: 'activitate|lucrare|sarcină' },
+    ru: { von: 'с|от', bis: 'до|по', std: 'часов|часа|час|ч\\.?', min: 'минут\\p{L}*|мин\\.?', ohne: 'без\\s+перерыв\\p{L}*|без\\s+обед\\p{L}*', pause: 'перерыв\\p{L}*|обед\\p{L}*', vg: 'позавчера', g: 'вчера', h: 'сегодня', tage: 'воскресень\\p{L}*|понедельник\\p{L}*|вторник\\p{L}*|сред\\p{L}*|четверг\\p{L}*|пятниц\\p{L}*|суббот\\p{L}*', urlaub: 'отпуск\\p{L}*', krank: 'больничн\\p{L}*|боле\\p{L}*', za: 'отгул\\p{L}*', schule: 'школ\\p{L}*|учеб\\p{L}*', kunde: 'клиент\\p{L}*|заказчик\\p{L}*', task: 'деятельность|задача|работа' },
+    uk: { von: 'з|від', bis: 'до|по', std: 'годин\\p{L}*|год\\.?', min: 'хвилин\\p{L}*|хв\\.?', ohne: 'без\\s+перерв\\p{L}*|без\\s+обід\\p{L}*', pause: 'перерв\\p{L}*|обід\\p{L}*', vg: 'позавчора', g: 'вчора|учора', h: 'сьогодні', tage: 'неділ\\p{L}*|понеділ\\p{L}*|вівтор\\p{L}*|серед\\p{L}*|четвер\\p{L}*|п.ятниц\\p{L}*|субот\\p{L}*', urlaub: 'відпустк\\p{L}*', krank: 'лікарнян\\p{L}*|хворі\\p{L}*', za: 'відгул\\p{L}*', schule: 'школ\\p{L}*|навчанн\\p{L}*', kunde: 'клієнт\\p{L}*|замовник\\p{L}*', task: 'діяльність|завдання|робота' }
+  };
+  var FREMD_C = {};
+  function fremdBau(l) {
+    var w = FREMD_W[l], dig = '(\\d{1,2}(?:[:.]\\d{2})?)', NB = '(^|[^\\p{L}\\d])', NA = '(?![\\p{L}\\d])', L = [], EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    function W(alts, rep) { L.push([new RegExp(NB + '(?:' + alts + ')' + NA, 'giu'), function (m, a) { return a + rep; }]); }
+    var H = '(?:\\s*(?:' + w.std + '))?';
+    // Uhrzeitbereiche zuerst (Sonderformen je Sprache)
+    if (l === 'hu') L.push([new RegExp(dig + '\\s*-?\\s*(?:órá)?(?:tól|től)\\s+' + dig + '\\s*-?\\s*(?:órá)?ig' + NA, 'giu'), '$1 to $2']);
+    if (l === 'tr') { L.push([new RegExp(dig + "\\s*['’]?\\s*(?:dan|den|tan|ten)\\s+" + dig + "\\s*['’]?\\s*(?:e|a|ye|ya)(?:\\s+kadar)?" + NA, 'giu'), '$1 to $2']); L.push([new RegExp('(?:saat\\s+)?' + dig + '\\s+ile\\s+' + dig + '\\s+aras\\p{L}*', 'giu'), '$1 to $2']); }
+    if (l === 'ro') L.push([new RegExp('(?:între|intre)\\s+' + dig + '\\s+(?:și|si)\\s+' + dig, 'giu'), '$1 to $2']);
+    if (w.bis) L.push([new RegExp(dig + H + '\\s+(?:' + w.bis + ')\\s+' + dig + H + NA, 'giu'), '$1 to $2']);
+    if (w.von) L.push([new RegExp(NB + '(?:' + w.von + ')\\s+(?=\\d{1,2}(?:[:.]\\d{2})?\\s+to\\s)', 'giu'), function (m, a) { return a + 'from '; }]);
+    W(w.ohne, 'no break'); W(w.pause, 'break');
+    L.push([new RegExp('(\\d)\\s*(?:' + w.min + ')' + NA, 'giu'), '$1 minutes']);
+    W(w.vg, 'day before yesterday'); W(w.g, 'yesterday'); W(w.h, '');
+    // Wochentage: von lang nach kurz, damit z. B. „pazartesi“ vor „pazar“ greift
+    var TG = []; w.tage.split('|').forEach(function (t, i) { t.split('/').forEach(function (x) { TG.push([x, i]); }); }); TG.sort(function (a, b) { return b[0].length - a[0].length; }).forEach(function (t) { W(t[0], EN[t[1]]); });
+    W(w.krank, 'sick'); W(w.urlaub, 'vacation'); W(w.za, 'time off in lieu'); W(w.schule, 'school');
+    L.push([new RegExp(NB + '(?:' + w.task + ')\\s*:', 'giu'), function (m, a) { return a + 'task:'; }]);
+    W(w.kunde, 'customer');
     return L;
   }
-  function normFremd(s) {
-    if (!FREMD) FREMD = fremdBau();
-    var o = ' ' + s + ' ';
-    FREMD.forEach(function (p) { o = o.replace(p[0], p[1]); });
-    o = o.replace(/(\d)\s*(?:godz(?:in\p{L}*)?\.?|óra|ora|saat|hodin\p{L}*|hod\.?|sati|sata|sat|ceas|часов|часа|час|ч\.?|годин\p{L}*|год\.?)(?![\p{L}])(?=\s|,|\.|;|$)/giu, '$1');
+  function normFremd(s, lang) {
+    if (!lang || !FREMD_W[lang]) return s;
+    var L = FREMD_C[lang] || (FREMD_C[lang] = fremdBau(lang)), o = ' ' + s + ' ';
+    L.forEach(function (p) { o = o.replace(p[0], p[1]); });
     o = o.replace(/\s(?:di|de)\s+break(?![\p{L}])/giu, ' break');
     return o.replace(/\s+/g, ' ').trim();
   }
-  function parseSchnell(text, heute, bekannt) {
+  function parseSchnell(text, heute, bekannt, lang) {
     var res = { datum: heute, status: 'arbeit', von: '', bis: '', pause: null, pauseVon: '', pauseBis: '', kunden: [], gefunden: 0 };
     var s = String(text || '').replace(/\s+/g, ' ').trim();
     if (!s) return res;
-    s = normFremd(s);
+    s = normFremd(s, lang);
     var W = { null: 0, eins: 1, zwei: 2, drei: 3, vier: 4, fuenf: 5, 'fünf': 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, 'zwölf': 12, zwoelf: 12, dreizehn: 13, vierzehn: 14, fuenfzehn: 15, 'fünfzehn': 15, sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19, zwanzig: 20, einundzwanzig: 21, zweiundzwanzig: 22, dreiundzwanzig: 23, vierundzwanzig: 24, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
     // „halb sieben“ = 6:30
     s = s.replace(/\bhalb\s+(\d{1,2}|[a-zäöüß]+)\b(?!\s*(?:stunde|std))/gi, function (m, w) { var n = /^\d/.test(w) ? +w : W[w.toLowerCase()]; return n === undefined || n < 1 ? m : (n - 1) + ':30'; });
