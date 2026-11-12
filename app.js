@@ -4002,7 +4002,7 @@
   document.addEventListener('change', function (ev) {
     var t = ev.target; if (!t || !t.id) return;
     if (t.id === 'sq-text') sqAusFoto = false;
-    if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; save(); sqApply(); }
+    if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; if (t.checked) data.profil.sqIntro = true; save(); sqApply(); if (t.checked) toast('Fertig. Die Karte „Schnell erfassen“ findest du jetzt ganz oben beim Erfassen. Tippe darauf, dann klappt sie auf.'); }
     else if (t.id === 'sq-set-foto') { data.profil.sqFoto = !!t.checked; save(); sqApply(); }
     else if (t.id === 'sq-file' && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
   });
