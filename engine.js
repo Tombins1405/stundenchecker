@@ -2165,6 +2165,54 @@
       { id: 'STL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1520.00] },
       { id: 'STL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1870.00] }
     ] };
+  // Fable 12.11.2026: Kuranstalten/Reha und Agrarservice (wko.at)
+  PAKETE.kur_reha = {
+    name: 'Kuranstalten und Rehabilitationseinrichtungen',
+    hinweis: 'KV Kuranstalten und Rehabilitationseinrichtungen, 1.5.2026 bis 30.4.2027 (Quelle: wko.at): Mindestlöhne und Mindestgehälter nach Verwendungsgruppe und Dienstjahren. Zulage für Nachtdienst (20 bis 6 Uhr) sowie für Sonn- und Feiertagsdienst: 7,29 € je Stunde, bei mehr als 4 Stunden pauschal 48,56 €: bitte als Prämie eintragen. Ärztezulagen (590 € bzw. 655 € im Monat) sind nicht eingerechnet. Wochenstunden stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kur_reha = { stand: '1.5.2026 bis 30.4.2027', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–12', 'Dienstjahre 13–14', 'Dienstjahre 15–16', 'Dienstjahre 17–18', 'Dienstjahre 19–20', 'Dienstjahre 21–22', 'Dienstjahre 23–24', 'Dienstjahre 25–26', 'Dienstjahre 27–28', 'Dienstjahre 29–30', 'Dienstjahre 31–32', 'Dienstjahre 33–34', 'ab dem 35. Dienstjahr'], gruppen: [
+      { id: 'KRV1', m: true, name: 'Verwaltung VG 1: Sekretariat und Verwaltung', l: [2218.00, 2319.00, 2361.00, 2409.00, 2454.00, 2503.00, 2549.00, 2599.00, 2644.00, 2692.00, 2739.00, 2786.00, 2837.00, 2882.00, 2928.00, 2975.00, 3026.00, 3072.00] },
+      { id: 'KRV2', m: true, name: 'Verwaltung VG 2: Fachkraft mit Lehrabschluss', l: [2361.00, 2413.00, 2462.00, 2514.00, 2561.00, 2612.00, 2664.00, 2712.00, 2764.00, 2811.00, 2863.00, 2912.00, 2962.00, 3013.00, 3061.00, 3113.00, 3163.00, 3215.00] },
+      { id: 'KRV3', m: true, name: 'Verwaltung VG 3: Sachbearbeitung mit Spezialwissen (z. B. IT, Buchhaltung, Lohnverrechnung)', l: [2593.00, 2698.00, 2749.00, 2803.00, 2858.00, 2912.00, 2965.00, 3020.00, 3073.00, 3126.00, 3183.00, 3235.00, 3290.00, 3345.00, 3400.00, 3458.00, 3512.00, 3568.00] },
+      { id: 'KRV4', m: true, name: 'Verwaltung VG 4: Abteilungsleitung', l: [3005.00, 3136.00, 3205.00, 3277.00, 3343.00, 3411.00, 3479.00, 3550.00, 3616.00, 3685.00, 3751.00, 3823.00, 3893.00, 3964.00, 4034.00, 4104.00, 4173.00, 4243.00] },
+      { id: 'KRM1', m: true, name: 'Medizin VG 1: Masseur/in, Heilmasseur/in, Ordinationsassistenz', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–15', 'Dienstjahre 16–20', 'Dienstjahre 21–25', 'Dienstjahre 26–30', 'Dienstjahre 31–35', 'ab dem 36. Dienstjahr'], l: [2316.00, 2361.00, 2413.00, 2462.00, 2514.00, 2624.00, 2734.00, 2845.00, 2957.00, 3067.00, 3179.00] },
+      { id: 'KRM2', m: true, name: 'Medizin VG 2: Pflegeassistenz, Labor- und Röntgenassistenz', l: [2475.00, 2523.00, 2574.00, 2624.00, 2675.00, 2726.00, 2776.00, 2828.00, 2876.00, 2926.00, 2977.00, 3028.00, 3078.00, 3127.00, 3179.00, 3229.00, 3280.00, 3330.00] },
+      { id: 'KRM3', m: true, name: 'Medizin VG 3: Pflegefachassistenz, medizinische Fachassistenz', l: [2639.00, 2689.00, 2738.00, 2785.00, 2837.00, 2884.00, 2935.00, 2984.00, 3032.00, 3083.00, 3132.00, 3182.00, 3229.00, 3278.00, 3328.00, 3377.00, 3427.00, 3476.00] },
+      { id: 'KRM4', m: true, name: 'Medizin VG 4: Diplomierte Gesundheits- und Krankenpflege', stufen: ['Dienstjahre 1–3', 'Dienstjahre 4–5', 'Dienstjahre 6–7', 'Dienstjahre 8–9', 'Dienstjahre 10–11', 'Dienstjahre 12–13', 'Dienstjahre 14–15', 'Dienstjahre 16–17', 'Dienstjahre 18–19', 'Dienstjahre 20–21', 'Dienstjahre 22–23', 'Dienstjahre 24–25', 'Dienstjahre 26–27', 'Dienstjahre 28–29', 'Dienstjahre 30–31', 'Dienstjahre 32–33', 'Dienstjahre 34–35', 'ab dem 36. Dienstjahr'], l: [3095.00, 3157.00, 3221.00, 3284.00, 3347.00, 3409.00, 3473.00, 3537.00, 3599.00, 3661.00, 3724.00, 3787.00, 3849.00, 3914.00, 3977.00, 4042.00, 4105.00, 4170.00] },
+      { id: 'KRM5', m: true, name: 'Medizin VG 5: Therapie (MTD), Sportwissenschaft, Sozialarbeit', stufen: ['Dienstjahre 1–3', 'Dienstjahre 4–5', 'Dienstjahre 6–7', 'Dienstjahre 8–9', 'Dienstjahre 10–11', 'Dienstjahre 12–13', 'Dienstjahre 14–15', 'Dienstjahre 16–17', 'Dienstjahre 18–19', 'Dienstjahre 20–21', 'Dienstjahre 22–23', 'Dienstjahre 24–25', 'Dienstjahre 26–27', 'Dienstjahre 28–29', 'Dienstjahre 30–31', 'Dienstjahre 32–33', 'Dienstjahre 34–35', 'ab dem 36. Dienstjahr'], l: [3114.00, 3178.00, 3239.00, 3302.00, 3366.00, 3429.00, 3490.00, 3554.00, 3618.00, 3681.00, 3743.00, 3806.00, 3869.00, 3932.00, 3995.00, 4059.00, 4123.00, 4187.00] },
+      { id: 'KRM6', m: true, name: 'Medizin VG 6: Psychotherapie, klinische Psychologie', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–15', 'Dienstjahre 16–20', 'Dienstjahre 21–25', 'Dienstjahre 26–30', 'Dienstjahre 31–35', 'ab dem 36. Dienstjahr'], l: [3560.00, 3623.00, 3687.00, 3748.00, 3830.00, 3912.00, 3995.00, 4077.00, 4159.00, 4242.00, 4365.00] },
+      { id: 'KRM7', m: true, name: 'Medizin VG 7: Allgemeinmedizin', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–15', 'Dienstjahre 16–20', 'Dienstjahre 21–25', 'Dienstjahre 26–30', 'Dienstjahre 31–35', 'ab dem 36. Dienstjahr'], l: [4522.00, 4606.00, 4689.00, 4833.00, 4977.00, 5129.00, 5280.00, 5432.00, 5584.00, 5736.00, 5963.00] },
+      { id: 'KRM8', m: true, name: 'Medizin VG 8: Facharzt/Fachärztin', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–15', 'Dienstjahre 16–20', 'Dienstjahre 21–25', 'Dienstjahre 26–30', 'Dienstjahre 31–35', 'ab dem 36. Dienstjahr'], l: [6029.00, 6175.00, 6319.00, 6512.00, 6704.00, 6926.00, 7151.00, 7375.00, 7598.00, 7823.00, 8155.00] }
+    ] };
+  PAKETE.agrar = {
+    name: 'Agrarservice (Arbeiter)',
+    hinweis: 'KV Agrarservice (gewerbliche Agrarunternehmer), Arbeiter, 1.3.2026 bis 28.2.2027 (Quelle: wko.at): 38,5 Stunden/Woche, Stundenlohn = Monatslohn ÷ 167,4. Überstunden 50 %, an Sonn- und Feiertagen und in der Nacht 100 %, Sonntagsarbeit 100 %. Nachtzulage 3,13 € je Stunde (22 bis 5 Uhr), Taggeld 30 €, Nächtigungsgeld 17 €. Bei betrieblicher 40-Stunden-Woche gelten höhere Monatslöhne: bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'tag', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [{ ab: 1, satz: 30 }] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.agrar = { stand: '1.3.2026 bis 28.2.2027', stufen: null, teiler: 167.4, gruppen: [
+      { id: 'AG1', name: 'Lohngruppe 1: einfache Tätigkeiten (z. B. Pflanzarbeiten, händische Ernte)', l: [12.05] },
+      { id: 'AG2', name: 'Lohngruppe 2: angelernte Arbeiter/innen', l: [12.43] },
+      { id: 'AG3', name: 'Lohngruppe 3: Facharbeiter/in mit landwirtschaftlichem Lehrabschluss', l: [13.17] },
+      { id: 'AG4', name: 'Lohngruppe 4: Maschinenführer/in (Traktor, Arbeitsmaschinen)', l: [14.07] },
+      { id: 'AG5', name: 'Lohngruppe 5: Professionist/in im erlernten Beruf (z. B. Landmaschinentechnik)', l: [14.67] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2312,12 +2360,13 @@
         schueler: { name: 'Schülertransport / Krankenbeförderung', b: { fahrzeug: true, kunden: false, praemien: true } },
         werkstatt: { name: 'Werkstätte und Garage (Bus)', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
-    gaertner: { name: 'Gärtner und Forst', paket: 'gaertner', kvs: ['gaertner', 'forst', 'eigen'], einfach: true, diaeten: true, sw: true, b: { fahrzeug: true, kunden: true, praemien: true },
+    gaertner: { name: 'Gärtner und Forst', paket: 'gaertner', kvs: ['gaertner', 'forst', 'agrar', 'eigen'], einfach: true, diaeten: true, sw: true, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
         garten: { name: 'Garten- und Landschaftsbau', b: { fahrzeug: true, kunden: true, praemien: true } },
         gaertnerei: { name: 'Gärtnerei / Pflanzenproduktion', b: { fahrzeug: true, kunden: true, praemien: true } },
         greenkeeper: { name: 'Greenkeeper / Sportplatz', b: { fahrzeug: true, kunden: true, praemien: true } },
         forst: { name: 'Forstarbeit / Holzernte', b: { fahrzeug: true, kunden: true, praemien: true } },
+        agrar: { name: 'Agrarservice / landwirtschaftliches Lohnunternehmen', kv: 'agrar', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Gärtner / Forst)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
     industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'chemie', 'papier', 'textil', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
@@ -2399,7 +2448,7 @@
         salon: { name: 'Salonleitung / Meister', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Friseur)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    pflege: { name: 'Pflege / Betreuung / Soziales', paket: 'sozial', kvs: ['sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    pflege: { name: 'Pflege / Betreuung / Soziales', paket: 'sozial', kvs: ['sozial', 'kur_reha', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         pa: { name: 'Pflegeassistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
         pfa: { name: 'Pflegefachassistenz', b: { fahrzeug: false, kunden: false, praemien: true } },
