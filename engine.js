@@ -625,6 +625,7 @@
       { id: '3', name: 'Gruppe 3: Lkw über 3,5 t, mehr als 3 Achsen', l: [12.78, 13.07, 13.44, 13.79, 14.12] },
       { id: '4', name: 'Gruppe 4: Zug, Sattelzug, selbstfahrende Arbeitsmaschine, Partieführer', l: [12.92, 13.23, 13.63, 13.94, 14.27] },
       { id: '5a', name: 'Gruppe 5a: Gefahrgut-Einsatztage oder Kran ab 10 Metertonnen', l: [13.23, 13.63, 13.94, 14.27, 14.58] },
+      { id: '5b', name: 'Gruppe 5b: Professionisten mit Lehrabschluss (nur in ihrem Beruf, z. B. Mechaniker)', l: [13.23, 13.63, 13.94, 14.27, 14.58] },
       { id: '6.1', name: 'Gruppe 6.1: Berufskraftfahrer (Lehre), Lkw bis 3 Achsen', lehrling: true, nur: ['lkw', 'klein'], l: [12.92, 13.23, 13.63, 13.94, 14.27] },
       { id: '6.2', name: 'Gruppe 6.2: Berufskraftfahrer (Lehre), Lkw mehr als 3 Achsen', lehrling: true, nur: ['lkw', 'klein'], l: [13.29, 13.56, 13.94, 14.29, 14.58] },
       { id: '6.3', name: 'Gruppe 6.3: Berufskraftfahrer (Lehre), Zug und Sattelzug', lehrling: true, nur: ['lkw', 'klein'], l: [13.63, 13.94, 14.27, 14.59, 14.92] },

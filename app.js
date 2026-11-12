@@ -2199,10 +2199,12 @@
     if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
-    if (!ui.miaManuell) out = out.filter(function (x) { return !x.spaet; }).concat(out.filter(function (x) { return x.spaet; })); // „Später“: beim Start hinten, beim Antippen von Mia wieder vorne
+    // Beim Start zuerst das Wichtige (Job, Lohn, Fristen). Leises (Version, Neuigkeiten-Frage, Bundesland, Mithelfen) und „Später“ hinten: dafür springt Mia nicht von selbst an.
+    if (!ui.miaManuell) out = out.filter(function (x) { return !x.spaet && !miaLeise(x.k); }).concat(out.filter(function (x) { return !x.spaet && miaLeise(x.k); })).concat(out.filter(function (x) { return x.spaet; }));
     ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || s.k === 'update' || (c.skip[s.k] || 0) < 2; });
     return ui.miaListe[0] || null;
   }
+  function miaLeise(k) { return ['update', 'newsfrage', 'landfrage', 'praemhelfen', 'mithelfen'].indexOf(k) >= 0; }
   // Start-Karte: sind beim Start mindestens zwei Dinge offen, zeigt Mia alle auf einen Blick (statt nur eine Sprechblase)
   function miaKarte() {
     var L = (ui.miaListe || []).filter(function (o) { return o.k !== 'fberledigt' && o.k.indexOf('news_') !== 0 && o.k !== 'newsfrage'; }).slice(0, 4);
@@ -3183,7 +3185,10 @@
       else inp.value = (v === null || v === undefined) ? '' : v;
     });
     
-    $('#s-paket').innerHTML = Object.keys(E.PAKETE).map(function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; }).join('');
+    // Kollektivverträge: zuerst die zum Beruf passenden, dann alle anderen nach Namen sortiert
+    var pkB = ((E.BERUFE[en.beruf] || {}).kvs || []).filter(function (k) { return E.PAKETE[k]; }), pkR = Object.keys(E.PAKETE).filter(function (k) { return pkB.indexOf(k) < 0; }).sort(function (a, b) { return String(E.PAKETE[a].name).localeCompare(String(E.PAKETE[b].name), 'de'); });
+    var pkO = function (k) { return '<option value="' + k + '"' + (en.paket === k ? ' selected' : '') + '>' + esc(E.PAKETE[k].name) + '</option>'; };
+    $('#s-paket').innerHTML = pkB.map(pkO).join('') + (pkB.length && pkR.length ? '<option disabled value="">── Andere Kollektivverträge ──</option>' : '') + pkR.map(pkO).join('');
     paketInfo(en); zuHint(en); kvWarn(en);
     renderStufen(en);
     (function () { // Hinweis: Was fehlt für den Lohnzettel-Vergleich
@@ -4820,7 +4825,7 @@
     try {
       if (PROBE || ui.miaAuto || ui.wiz || TOUR || miaCfg().ruhig || !data.settings.length) return;
       var pf = data.profil || (data.profil = {}), nx0 = miaNext(); if (pf.miaStartTag === todayISO() && !(nx0 && nx0.k === 'schnellneu')) return;
-      if (!nx0 || nx0.spaet) return; pf.miaStartTag = todayISO(); save(); ui.miaAuto = true;
+      if (!nx0 || nx0.spaet || miaLeise(nx0.k)) return; pf.miaStartTag = todayISO(); save(); ui.miaAuto = true;
       if (!miaKarte()) miaOpen(true);
     } catch (e) { }
   }, 3200);
