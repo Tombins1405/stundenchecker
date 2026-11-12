@@ -2060,7 +2060,7 @@
   function miaPrevKey() { var y = now.getFullYear(), m = now.getMonth(); if (m === 0) { y--; m = 12; } return { y: y, m: m, key: y + '-' + (m < 10 ? '0' : '') + m }; }
   /* ---------------- Neuigkeiten (Mia) ---------------- */
   var NEWS = [
-    { id: 'n11', d: '2026-11-11', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst deine Arbeitszeit, oder du fotografierst den Tagesbericht (nur die Zeiten werden gelesen). Probiere es aus und sag mir danach, wie es bei dir klappt, mit „Rückmeldung an den Entwickler“ im Profil. Das hilft mir sehr.' },
+    { id: 'n11', d: '2026-11-11', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst deine Arbeitszeit, oder du fotografierst den Tagesbericht (nur die Zeiten werden gelesen). Einschalten kannst du es in den Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach, wie es bei dir klappt, mit „Rückmeldung an den Entwickler“ im Profil. Das hilft mir sehr.' },
     { id: 'n10', d: '2026-11-06', text: 'Neu: Kollektivverträge für Lkw-Fahrer in Deutschland: Nordrhein-Westfalen, Bayern, Sachsen und Berlin, dazu eine Auswahl für alle anderen Länder.' },
     { id: 'n9', d: '2026-11-05', text: 'Neu: Zeitausgleich-Konto und Resturlaub werden vom Lohnzettel gelesen und mit deiner Aufzeichnung verglichen.' },
     { id: 'n8', d: '2026-11-05', text: 'Neu: Brutto (geschätzt) für abgeschlossene Monate. Trage das Brutto vom Lohnzettel ein, dann siehst du, wie weit die Schätzung danebenliegt.' },
@@ -2099,7 +2099,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
-    if (!(data.profil && data.profil.sqIntro)) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich hinführen?' });
+    if (!(data.profil && data.profil.sqIntro)) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
@@ -2137,7 +2137,7 @@
     var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
     function zeichne() {
       ov.innerHTML = '<div class="mk-box" role="dialog" aria-modal="true"><div class="mk-kopf"><span class="mk-mia">' + miaSvg(c.figur, miaFor(), 'eyes') + '</span><div class="mk-titel"><b>Das wartet auf dich</b><span class="mk-zahl">' + L.length + '</span></div></div>' +
-        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">Zeig mir</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
+        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
         '<button type="button" class="btn mk-zu" data-mz="1">Schließen</button></div>';
       try { uiApply(ov); } catch (e) { }
     }
@@ -2193,7 +2193,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
-    if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqIntro = true; save(); show('erfassen'); setTimeout(function () { var d = $('#sq-det'); if (d) d.open = true; var el = $('#sq-card'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); else { show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); } }, 200); return; }
+    if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqIntro = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3000); } }, 250); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
     if (k.indexOf('unterkv_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#s-kvwarn'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); return; }
     if (k === 'zuart') {
@@ -2272,7 +2272,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -3986,7 +3986,7 @@
   });
 
   function sqApply() {
-    var p = data.profil || {}, t = p.sqText !== false, f = p.sqFoto !== false, c = $('#sq-card'); if (!c) return;
+    var p = data.profil || {}, t = p.sqText === true, f = p.sqFoto === true, c = $('#sq-card'); if (!c) return;
     c.hidden = !t; var fb = $('#sq-foto'), fp = $('#sq-fotop'); if (fb) fb.hidden = !f; if (fp) fp.hidden = !f;
     var a = $('#sq-set-text'), b = $('#sq-set-foto'); if (a) a.checked = t; if (b) { b.checked = f; b.disabled = !t; }
   }
