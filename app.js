@@ -2151,6 +2151,10 @@
     var nl = newsListe(), nli = function (x) { var neu = c.gelesen.indexOf(x.id) < 0; return '<div class="newsli' + (neu ? ' neu' : '') + '"><strong>' + esc(x.text) + '</strong>' + (neu ? '<span class="nbadge">Neu!</span>' : '') + '<small>' + fmtDate(x.d) + '</small></div>'; };
     $('#news-list').innerHTML = nl.slice(0, 3).map(nli).join('') + (nl.length > 3 ? '<details class="how"><summary>Ältere Neuigkeiten</summary>' + nl.slice(3).map(nli).join('') + '</details>' : '');
   }
+  // Lernen aus Eingaben: Namen selbst angelegter Prämien (ohne Beträge) anonym melden, nur mit Einwilligung
+  function praemNamen() { return praemienListe().filter(function (p) { return p && String(p.name || '').trim(); }).map(function (p) { return { n: String(p.name).trim().slice(0, 40), e: p.einheit || '' }; }).slice(0, 20); }
+  function praemMelden() { try { if (!PROBE && window.StundenInsights && window.StundenInsights.praemien) window.StundenInsights.praemien(praemNamen()); } catch (e) { } }
+  function praemFrageFaellig() { var co = (data.profil && data.profil.consent) || {}; return !!(window.StundenInsights && window.StundenInsights.on) && co.praemien === undefined && !(data.profil && data.profil.praemFrageNein) && praemNamen().length > 0; }
   function mitHelfenFaellig() {
     var co = (data.profil && data.profil.consent) || {};
     return !!(window.StundenInsights && window.StundenInsights.on) && !!data.settings.length && !co.statistik && !co.miaFragen && !(data.profil && data.profil.mithelfenNein);
@@ -2189,6 +2193,7 @@
     if (umfrageFaellig()) out.push({ k: 'umfrage', text: 'Du nutzt die App jetzt etwa einen Monat. Hilfst du mir mit drei kurzen Fragen, damit sie besser wird?' });
     fristenMia(out);
     festMia(out);
+    if (praemFrageFaellig()) out.push({ k: 'praemhelfen', text: 'Du hast eigene Prämien angelegt. Darf ich ihre Namen anonym melden, ohne Beträge? Dann kann die App sie anderen in deinem Beruf vorschlagen. Das ist optional und jederzeit unter Einstellungen, „Mithelfen (optional)“, ausschaltbar.' });
     if (mitHelfenFaellig()) out.unshift({ k: 'mithelfen', text: 'Du testest die App gratis. Hilfst du mit, sie besser zu machen? Ich melde nur anonym, in welchem Beruf du bist und wie stark Lohnzettel und Aufzeichnung abweichen, dazu Fragen, die ich nicht beantworten kann. Keine Namen, keine Beträge. Du kannst es jederzeit im Profil ausschalten.' });
     if (newsCfg().an === undefined && !mitHelfenFaellig() && (data.profil && data.profil.tourDone) && Object.keys(data.days).length >= 3) out.push({ k: 'newsfrage', text: 'Soll ich dir Neuigkeiten zur App sagen, zum Beispiel neue Funktionen oder was sich Tester gewünscht haben? Wie oft, kannst du jederzeit im Profil ändern.' });
     if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
@@ -2205,7 +2210,7 @@
     var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
     function zeichne() {
       ov.innerHTML = '<div class="mk-box" role="dialog" aria-modal="true"><div class="mk-kopf"><span class="mk-mia">' + miaSvg(c.figur, miaFor(), 'eyes') + '</span><div class="mk-titel"><b>Das wartet auf dich</b><span class="mk-zahl">' + L.length + '</span></div></div>' +
-        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' || o.k === 'landfrage' || o.k === 'kvland' || o.k === 'rettungkv' || o.k === 'taxikt' || o.k === 'update' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
+        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' || o.k === 'landfrage' || o.k === 'kvland' || o.k === 'rettungkv' || o.k === 'taxikt' || o.k === 'update' || o.k === 'praemhelfen' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
         '<button type="button" class="btn mk-zu" data-mz="1">Schließen</button></div>';
       try { uiApply(ov); } catch (e) { }
     }
@@ -2261,6 +2266,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
+    if (k === 'praemhelfen') { var pc = data.profil || (data.profil = {}); if (!pc.consent) pc.consent = {}; pc.consent.praemien = true; save(); praemMelden(); try { window.StundenInsights.push(true); } catch (e) { } renderFeedback(); toast('Danke! Die Namen deiner Prämien werden anonym gemeldet.'); return; }
     if (k === 'update') { try { if (isDirty()) { toast('Bitte zuerst den Tag speichern.'); return; } } catch (e) { } location.reload(); return; }
     if (k === 'rettungkv' || k === 'taxikt') { var pr = data.profil || (data.profil = {}); pr[k === 'rettungkv' ? 'rkKvHinweis' : 'taxiKtHinweis'] = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $(k === 'rettungkv' ? '#s-paket' : '#s-beruf'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3200); } }, 250); return; }
     if (k === 'landfrage' || k === 'kvland') { show('einstellungen'); setTimeout(function () { var e2 = k === 'kvland' ? $('#s-beruf') : $('#s-land'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); (k === 'kvland' ? e2 : e2.closest('.field')).classList.add('mia-treffer'); setTimeout(function () { (k === 'kvland' ? e2 : e2.closest('.field')).classList.remove('mia-treffer'); }, 3200); } }, 250); return; }
@@ -2343,7 +2349,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     ui.miaManuell = !auto; var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaManuell = false; ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland' || nx.k === 'rettungkv' || nx.k === 'taxikt' || nx.k === 'update') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland' || nx.k === 'rettungkv' || nx.k === 'taxikt' || nx.k === 'update' || nx.k === 'praemhelfen') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -3128,6 +3134,7 @@
     var co = (data.profil && data.profil.consent) || {};
     if ($('#c-stat')) $('#c-stat').checked = !!co.statistik;
     if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
+    if ($('#c-praem')) $('#c-praem').checked = !!co.praemien;
   }
   function renderSettings() {
     try { renderFest(); } catch (e) { }
@@ -3805,6 +3812,7 @@
     on2('#news-freq', 'click', function (ev) { var b = ev.target.closest('[data-nf]'); if (!b) return; newsSet('freq', b.dataset.nf); renderNews(); });
     on2('#c-stat', 'change', cons('statistik'));
     on2('#c-mia', 'change', cons('miaFragen'));
+    on2('#c-praem', 'change', function () { cons('praemien').call(this); praemMelden(); });
     try { renderFeedback(); } catch (e) { }
     window.addEventListener('load', function () { try { renderFeedback(); } catch (e) { } }); // insights.js wird erst nach app.js geladen: Feedback-Knopf danach zeigen
     if (document.readyState === 'complete') { try { renderFeedback(); } catch (e) { } }
@@ -4836,6 +4844,7 @@
     toast('Anonym mithelfen ist eingeschaltet. Du kannst es jederzeit in den Einstellungen ausschalten.');
   }
   setTimeout(function () { try { geburtstagPruefen(); } catch (e) { } }, 1800);
+  setTimeout(praemMelden, 5000);
   setTimeout(function () { try { standardMithelfen(); } catch (e) { } }, 3500);
   setTimeout(function () { try { fbErledigtPruefen(); } catch (e) { } }, 6000);
   window.__scBoot = true;

@@ -65,6 +65,16 @@
       if (!ON || !consent().miaFragen) return;
       try { db().collection('miaOffen').add({ text: String(text).slice(0, 300), lang: lang || null, t: stamp(), anon: anonId() }).catch(function () {}); } catch (e) {}
     },
+    // Namen selbst angelegter Prämien (ohne Beträge), nur mit Einwilligung; je Gerät ein Dokument, wird überschrieben
+    praemien: function (liste) {
+      if (!ON || !consent().praemien || !liste || !liste.length) return;
+      try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return; } catch (e) {}
+      try {
+        var info = (app().info && app().info()) || {}, sig = JSON.stringify(liste) + (info.beruf || ''), k = 'stundenchecker.praemsig';
+        if (rd(k) === sig) return; wr(k, sig);
+        db().collection('statistik').doc(anonId() + '_praemien').set({ monat: 'praemien', beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, praemien: liste, t: stamp() }).catch(function () {});
+      } catch (e) {}
+    },
     // Anonyme Abweichungs-Statistik, nur mit Einwilligung: Beruf, Zeilen, Status, Größe grob (0,5 h)
     statistik: function (monat, rows) {
       if (!ON || !consent().statistik || !rows || !rows.length) return;
