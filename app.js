@@ -2154,7 +2154,7 @@
   // Lernen aus Eingaben: Namen selbst angelegter Prämien (ohne Beträge) anonym melden, nur mit Einwilligung
   function praemNamen() { return praemienListe().filter(function (p) { return p && String(p.name || '').trim(); }).map(function (p) { return { n: String(p.name).trim().slice(0, 40), e: p.einheit || '' }; }).slice(0, 20); }
   function praemMelden() { try { if (!PROBE && window.StundenInsights && window.StundenInsights.praemien) window.StundenInsights.praemien(praemNamen()); } catch (e) { } }
-  function praemFrageFaellig() { var co = (data.profil && data.profil.consent) || {}; return !!(window.StundenInsights && window.StundenInsights.on) && co.praemien === undefined && !(data.profil && data.profil.praemFrageNein) && praemNamen().length > 0; }
+  function praemFrageFaellig() { var co = (data.profil && data.profil.consent) || {}; return !!(window.StundenInsights && window.StundenInsights.on) && co.praemien === undefined && !(data.profil && (data.profil.praemFrageNein || data.profil.mithelfenNein)) && praemNamen().length > 0; }
   function mitHelfenFaellig() {
     var co = (data.profil && data.profil.consent) || {};
     return !!(window.StundenInsights && window.StundenInsights.on) && !!data.settings.length && !co.statistik && !co.miaFragen && !(data.profil && data.profil.mithelfenNein);
