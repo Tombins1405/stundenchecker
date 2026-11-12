@@ -2040,6 +2040,131 @@
       { id: 'KFL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1200.00] },
       { id: 'KFL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1400.00] }
     ], folgt: [{ ab: '2026-09-01', stand: 'ab 1.9.2026', gruppen: { KFL1: [816.00], KFL2: [930.00], KFL3: [1240.00], KFL4: [1445.00] } }] };
+  // Fable 12.11.2026: Seilbahnen, Reisebüros, Immobilienverwalter, Steuerberatung, Information und Consulting
+  PAKETE.seilbahn = {
+    name: 'Seilbahnen (Arbeiter und Angestellte)',
+    hinweis: 'KV Seilbahnen, Arbeiter und Angestellte, ab 1.5.2026 (Quelle: wko.at): 40 Stunden/Woche im Durchschnitt (Durchrechnung 1.10. bis 30.9.), Stundenlohn = Monatslohn ÷ 173. Überstunden 50 %, zwischen 19 und 7 Uhr 100 %. Nachtarbeit in der Normalarbeitszeit (19 bis 7 Uhr) 10 % und der Sonntagszuschlag im Sommer (25 %, nur in bestimmten Betrieben) sind nicht eingerechnet: bitte selbst als Prämie eintragen. Stufe 0 beim Eintritt, Stufe 1 nach 12 Monaten, danach alle 6 Jahre eine Stufe; Fachkräfte beginnen in Stufe 2. Bitte vergleiche mit deinem Dienstzettel.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.seilbahn = { stand: 'ab 1.5.2026', stufen: ['Stufe 0 (im 1. Jahr)', 'Stufe 1 (nach 12 Monaten)', 'Stufe 2', 'Stufe 3', 'Stufe 4', 'Stufe 5', 'Stufe 13 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 14 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 15 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 16 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 17 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 18 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 19 (altes Schema, Eintritt vor 1.9.1998)', 'Stufe 20 (altes Schema, Eintritt vor 1.9.1998)'], teiler: 173, gruppen: [
+      { id: 'SBA', m: true, name: 'Gruppe A: ohne besondere Vorkenntnisse', stufen: ['Stufe 0 (im 1. Jahr)', 'Stufe 1 (nach 12 Monaten)'], l: [2218.00, 2366.00] },
+      { id: 'SBB', m: true, name: 'Gruppe B: mit fachspezifischen Vorkenntnissen (z. B. Stationsdienst, Kassa, Pistenrettung, Pistengerät im 1. und 2. Dienstjahr)', l: [2255.00, 2478.00, 2656.00, 2833.00, 2957.00, 3019.00, 3085.00, 3151.00, 3222.00, 3288.00, 3367.00, 3430.00, 3496.00, 3567.00] },
+      { id: 'SBC', m: true, name: 'Gruppe C: qualifizierte Tätigkeit (z. B. Maschinist mit Prüfung, Beschneier, Pistengerät ab dem 3. Dienstjahr, Fachkraft mit Lehrabschluss)', l: [2360.00, 2599.00, 2806.00, 3014.00, 3167.00, 3243.00, 3326.00, 3405.00, 3488.00, 3566.00, 3648.00, 3728.00, 3811.00, 3885.00] },
+      { id: 'SBD', m: true, name: 'Gruppe D: besonders qualifiziert mit großer Verantwortung (z. B. Obermaschinist, Vorarbeiter)', l: [2427.00, 2702.00, 2925.00, 3171.00, 3342.00, 3430.00, 3514.00, 3600.00, 3685.00, 3772.00, 3860.00, 3943.00, 4022.00, 4111.00] },
+      { id: 'SBE', m: true, name: 'Gruppe E: sehr große Verantwortung (z. B. Betriebsleitung)', l: [2511.00, 2795.00, 3028.00, 3282.00, 3459.00, 3550.00, 3637.00, 3726.00, 3815.00, 3902.00, 3994.00, 4080.00, 4163.00, 4255.00] },
+      { id: 'SBL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1331.00] },
+      { id: 'SBL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1553.00] },
+      { id: 'SBL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1774.00] },
+      { id: 'SBL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [2218.00] }
+    ] };
+  PAKETE.reisebuero_ang = {
+    name: 'Büro: Reisebüros (Angestellte)',
+    hinweis: 'KV Reisebüros, Angestellte, ab 1.1.2026 (Quelle: wko.at): Mindestgehälter nach Verwendungsgruppe und Gruppendienstjahren, Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.reisebuero_ang = { stand: 'ab 1.1.2026', stufen: ['Gruppendienstjahr 1 bis 3', 'Gruppendienstjahr 4 bis 7', 'Gruppendienstjahr 8 bis 11', 'Gruppendienstjahr 12 bis 15', 'Gruppendienstjahr 16 bis 19', 'ab Gruppendienstjahr 20'], gruppen: [
+      { id: 'RBA', m: true, name: 'Verwendungsgruppe A', l: [2018.00, 2070.00, 2120.00, 2206.00, 2307.00, 2424.00] },
+      { id: 'RBB', m: true, name: 'Verwendungsgruppe B', l: [2099.00, 2162.00, 2225.00, 2327.00, 2443.00, 2572.00] },
+      { id: 'RBC', m: true, name: 'Verwendungsgruppe C', l: [2225.00, 2314.00, 2417.00, 2546.00, 2700.00, 2907.00] },
+      { id: 'RBD', m: true, name: 'Verwendungsgruppe D', l: [2365.00, 2520.00, 2712.00, 2971.00, 3227.00, 3548.00] },
+      { id: 'RBE', m: true, name: 'Verwendungsgruppe E', l: [2623.00, 2880.00, 3177.00, 3509.00, 3883.00, 4334.00] },
+      { id: 'RBL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [900.00] },
+      { id: 'RBL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1050.00] },
+      { id: 'RBL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1400.00] },
+      { id: 'RBL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1700.00] }
+    ] };
+  PAKETE.immobilien_ang = {
+    name: 'Büro: Immobilienverwalter (Angestellte)',
+    hinweis: 'KV Immobilienverwalter, Angestellte, ab 1.4.2026 (Quelle: wko.at): Mindestgehälter nach Verwendungsgruppe und Verwendungsgruppenjahren, Lehrlingseinkommen mit und ohne Matura. Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.immobilien_ang = { stand: 'ab 1.4.2026', stufen: ['im 1. und 2. Verwendungsgruppenjahr', 'nach 2 Verwendungsgruppenjahren', 'nach 4 Verwendungsgruppenjahren', 'nach 6 Verwendungsgruppenjahren', 'nach 8 Verwendungsgruppenjahren', 'nach 10 Verwendungsgruppenjahren', 'nach 12 Verwendungsgruppenjahren'], gruppen: [
+      { id: 'IM2', m: true, name: 'Verwendungsgruppe II', l: [2005.00, 2071.00, 2137.00, 2206.00, 2272.00, 2418.00, 2518.00] },
+      { id: 'IM3', m: true, name: 'Verwendungsgruppe III', l: [2268.00, 2400.00, 2534.00, 2734.00, 2868.00, 2998.00, 3133.00] },
+      { id: 'IM4', m: true, name: 'Verwendungsgruppe IV', l: [2793.00, 2926.00, 3125.00, 3326.00, 3489.00, 3691.00, 3857.00] },
+      { id: 'IM5', m: true, name: 'Verwendungsgruppe V', l: [3401.00, 3634.00, 3872.00, 4106.00, 4339.00, 4574.00, 4777.00] },
+      { id: 'IML1', m: true, lehrling: true, name: 'Lehrling ohne Matura, 1. Lehrjahr', l: [871.00] },
+      { id: 'IML2', m: true, lehrling: true, name: 'Lehrling ohne Matura, 2. Lehrjahr', l: [1179.00] },
+      { id: 'IML3', m: true, lehrling: true, name: 'Lehrling ohne Matura, 3. Lehrjahr', l: [1435.00] },
+      { id: 'IMM1', m: true, lehrling: true, name: 'Lehrling mit Matura, 1. Lehrjahr', l: [1076.00] },
+      { id: 'IMM2', m: true, lehrling: true, name: 'Lehrling mit Matura, 2. Lehrjahr', l: [1435.00] },
+      { id: 'IMM3', m: true, lehrling: true, name: 'Lehrling mit Matura, 3. Lehrjahr', l: [1743.00] }
+    ] };
+  PAKETE.ic_ang = {
+    name: 'Büro: Information und Consulting (Angestellte)',
+    hinweis: 'KV Information und Consulting, Angestellte, ab 1.1.2026 (Quelle: wko.at): gilt für Entsorgungs- und Ressourcenmanagement, Finanzdienstleister, Ingenieurbüros, Buchhaltungsberufe und Unternehmensberatung (nicht für IT). Wochenstunden und Zuschläge stehen nicht in der Gehaltsordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.ic_ang = { stand: 'ab 1.1.2026', stufen: ['im 1. und 2. Verwendungsgruppenjahr', 'nach 2 Verwendungsgruppenjahren', 'nach 4 Verwendungsgruppenjahren', 'nach 6 Verwendungsgruppenjahren', 'nach 8 Verwendungsgruppenjahren', 'nach 10 Verwendungsgruppenjahren', 'nach 12 Verwendungsgruppenjahren', 'nach 15 Verwendungsgruppenjahren'], gruppen: [
+      { id: 'IC1', m: true, name: 'Verwendungsgruppe I', stufen: ['im 1. und 2. Verwendungsgruppenjahr', 'nach 2 Verwendungsgruppenjahren'], l: [2136.19, 2136.19] },
+      { id: 'IC2', m: true, name: 'Verwendungsgruppe II', l: [2173.58, 2303.13, 2446.61, 2596.81, 2747.07, 2897.29, 3026.08, 3262.11] },
+      { id: 'IC3', m: true, name: 'Verwendungsgruppe III', l: [2534.74, 2712.15, 2889.59, 3067.03, 3241.27, 3418.51, 3570.46, 3848.99] },
+      { id: 'IC4', m: true, name: 'Verwendungsgruppe IV', l: [3157.47, 3378.48, 3599.52, 3820.52, 4041.55, 4262.61, 4452.04, 4799.37] },
+      { id: 'IC5', m: true, name: 'Verwendungsgruppe V', l: [3933.50, 4208.81, 4484.17, 4759.51, 5034.87, 5310.23, 5546.19, 5978.89] },
+      { id: 'IC6', m: true, name: 'Verwendungsgruppe VI', stufen: ['im 1. und 2. Verwendungsgruppenjahr', 'nach 2 Verwendungsgruppenjahren', 'nach 5 Verwendungsgruppenjahren'], l: [5491.52, 6177.96, 6864.42] },
+      { id: 'ICL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1000.00] },
+      { id: 'ICL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1236.00] },
+      { id: 'ICL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1526.00] },
+      { id: 'ICL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1752.00] }
+    ] };
+  PAKETE.steuerberatung_ang = {
+    name: 'Büro: Steuerberatung und Wirtschaftsprüfung (Angestellte)',
+    hinweis: 'KV Steuerberatung und Wirtschaftsprüfung, Angestellte, ab 1.1.2026 (Quelle: gpa.at): Tabelle für Dienstverhältnisse ab 1.1.2015. 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 7 Uhr sowie an Sonn- und Feiertagen 100 %, Überstundenteiler 1/160. Wer vor 2015 eingetreten ist, hat eine eigene Tabelle: dann bitte „Eigene Werte“ verwenden. Bitte vergleiche mit deinem Dienstzettel.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 160 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.steuerberatung_ang = { stand: 'ab 1.1.2026', stufen: ['Berufsjahr 1', 'Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15'], gruppen: [
+      { id: 'STI', m: true, name: 'Gruppe I: Angestellte ohne die Voraussetzungen der Gruppen II bis IV (Einstieg)', l: [2110.00, 2140.00, 2170.00, 2220.00, 2270.00, 2310.00, 2360.00, 2400.00, 2440.00, 2480.00, 2510.00, 2540.00, 2570.00, 2600.00, 2620.00] },
+      { id: 'STIIa', m: true, name: 'Gruppe IIa: einfache Buchhaltung, Verwaltung, Assistenz', l: [2340.00, 2370.00, 2420.00, 2480.00, 2550.00, 2610.00, 2680.00, 2730.00, 2780.00, 2830.00, 2870.00, 2900.00, 2930.00, 2970.00, 3000.00] },
+      { id: 'STIIb', m: true, name: 'Gruppe IIb: einfache Buchhaltung, Verwaltung, Assistenz', l: [2370.00, 2420.00, 2480.00, 2540.00, 2600.00, 2670.00, 2730.00, 2790.00, 2840.00, 2890.00, 2930.00, 2960.00, 3000.00, 3030.00, 3060.00] },
+      { id: 'STIIIa', m: true, name: 'Gruppe IIIa: Buchhaltung, Lohnverrechnung, qualifizierte Assistenz', l: [2510.00, 2570.00, 2630.00, 2700.00, 2780.00, 2850.00, 2930.00, 2990.00, 3050.00, 3110.00, 3160.00, 3210.00, 3250.00, 3290.00, 3320.00] },
+      { id: 'STIIIb', m: true, name: 'Gruppe IIIb: Buchhaltung, Lohnverrechnung, qualifizierte Assistenz', l: [2560.00, 2620.00, 2680.00, 2760.00, 2840.00, 2920.00, 2990.00, 3060.00, 3130.00, 3190.00, 3240.00, 3290.00, 3340.00, 3380.00, 3410.00] },
+      { id: 'STIVa', m: true, name: 'Gruppe IVa: Bilanzbuchhaltung, Steuersachbearbeitung, prüfende Tätigkeit', stufen: ['Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15'], l: [3080.00, 3170.00, 3280.00, 3400.00, 3520.00, 3630.00, 3750.00, 3860.00, 3960.00, 4050.00, 4110.00, 4170.00, 4220.00, 4260.00] },
+      { id: 'STIVb', m: true, name: 'Gruppe IVb: Bilanzbuchhaltung, Steuersachbearbeitung, prüfende Tätigkeit', stufen: ['Berufsjahr 2', 'Berufsjahr 3', 'Berufsjahr 4', 'Berufsjahr 5', 'Berufsjahr 6', 'Berufsjahr 7', 'Berufsjahr 8', 'Berufsjahr 9', 'Berufsjahr 10', 'Berufsjahr 11', 'Berufsjahr 12', 'Berufsjahr 13', 'Berufsjahr 14', 'Berufsjahr 15'], l: [3150.00, 3250.00, 3360.00, 3480.00, 3610.00, 3730.00, 3840.00, 3960.00, 4060.00, 4150.00, 4220.00, 4270.00, 4320.00, 4370.00] },
+      { id: 'STL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1080.00] },
+      { id: 'STL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1290.00] },
+      { id: 'STL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1520.00] },
+      { id: 'STL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1870.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2083,7 +2208,7 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'ic_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
     lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel_arb', 'handel', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -2099,7 +2224,7 @@
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'ic_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
       arten: {
         buero: { name: 'Büro / Verwaltung / Disposition', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Bürokaufmann/-frau, Verwaltung)', b: { fahrzeug: false, kunden: false, praemien: false } }
@@ -2259,6 +2384,13 @@
         fusspflege: { name: 'Fußpfleger/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         massage: { name: 'Masseur/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Kosmetik, Fußpflege, Massage)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    seilbahn: { name: 'Seilbahn und Schilift', paket: 'seilbahn', kvs: ['seilbahn', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        betrieb: { name: 'Seilbahn- und Liftbetrieb', b: { fahrzeug: false, kunden: false, praemien: true } },
+        piste: { name: 'Pistendienst und Beschneiung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        kassa: { name: 'Kassa und Büro (Seilbahn)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Seilbahntechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
