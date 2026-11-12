@@ -2757,6 +2757,87 @@
       { id: 'RT5', m: true, name: 'VWG 5: Notfallsanitäter/in, Leitstelle (Rettungssanitäter/in)', l: [2743.24, 2798.18, 2879.60, 2975.11, 3043.99, 3097.76, 3152.30, 3208.13, 3264.22, 3320.18, 3372.52, 3426.67, 3482.76, 3537.30, 3591.33, 3647.16, 3703.38, 3757.01] },
       { id: 'RT6', m: true, name: 'VWG 6: Leitstelle (Notfallsanitäter/in), Wachführung', l: [2944.48, 3002.25, 3090.91, 3208.13, 3296.66, 3382.99, 3473.72, 3562.38, 3617.82, 3677.79, 3737.50, 3796.95, 3856.66, 3912.49, 3972.20, 4031.65, 4091.23, 4149.51] }
     ] };
+  // Rettungsdienst (ÖRK-KV 2026, Landesanhänge Kärnten, Wien, Oberösterreich, Vorarlberg; roteskreuz.at)
+  PAKETE.rettung_ktn = {
+    name: 'Rettungsdienst (Rotes Kreuz), Kärnten',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Kärnten (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.1.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_ktn = { stand: 'ab 1.1.2026, Kärnten', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)', 'Stufe 21 (Vorrückung alle 2 Jahre)', 'Stufe 22 (Vorrückung alle 2 Jahre)', 'Stufe 23 (Vorrückung alle 2 Jahre)', 'Stufe 24 (Vorrückung alle 2 Jahre)', 'Stufe 25 (Vorrückung alle 2 Jahre)', 'Stufe 26 (Vorrückung alle 2 Jahre)', 'Stufe 27 (Vorrückung alle 2 Jahre)', 'Stufe 28 (Vorrückung alle 2 Jahre)', 'Stufe 29 (Vorrückung alle 2 Jahre)', 'Stufe 30 (Vorrückung alle 2 Jahre)'], teiler: 173, gruppen: [
+      { id: 'RK1', m: true, name: 'A.1: Rettungssanitäter/in in Ausbildung', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)'], l: [2267.18] },
+      { id: 'RK2a', m: true, name: 'A.2a: Hilfskräfte, Callcenter', l: [2545.90, 2575.44, 2604.99, 2634.64, 2663.95, 2786.37, 2816.60, 2848.59, 2880.93, 2913.16, 2945.29, 2977.18, 3038.43, 3070.86, 3103.65, 3137.70, 3172.51, 3207.87, 3244.85, 3281.15, 3318.22, 3355.27, 3395.57, 3436.21, 3476.80, 3517.41, 3557.99, 3599.21, 3641.04, 3682.83] },
+      { id: 'RK2b', m: true, name: 'A.2b: Rettungssanitäter/in, Einsatzfahrer/in (KTW, BTW, BKTW, RTW)', l: [2545.90, 2575.44, 2604.99, 2634.64, 2663.95, 2816.01, 2886.61, 2928.05, 2969.38, 3011.30, 3055.43, 3100.44, 3146.96, 3194.02, 3241.32, 3290.61, 3343.16, 3395.72, 3505.94, 3559.23, 3614.34, 3669.39, 3724.47, 3779.54, 3834.59, 3889.72, 3944.80, 3999.87, 4054.96, 4110.01] },
+      { id: 'RK3a', m: true, name: 'A.3a: Notfallsanitäter/in, NEF', l: [2834.26, 2863.79, 2893.35, 2923.00, 2952.31, 3104.36, 3174.95, 3216.41, 3257.73, 3299.66, 3343.78, 3388.79, 3435.33, 3482.38, 3529.67, 3578.96, 3631.51, 3684.07, 3794.29, 3847.59, 3902.69, 3957.74, 4012.82, 4067.90, 4122.95, 4178.08, 4233.16, 4288.22, 4343.30, 4398.37] },
+      { id: 'RK3b', m: true, name: 'A.3b: Leitstelle (Calltaker, Disponent/in, Schichtleitung)', l: [3095.47, 3125.00, 3154.56, 3184.20, 3213.52, 3359.76, 3430.29, 3471.75, 3513.07, 3554.99, 3599.13, 3644.13, 3690.67, 3737.73, 3785.00, 3834.31, 3886.86, 3939.42, 4049.74, 4103.04, 4158.15, 4213.18, 4268.27, 4323.35, 4378.40, 4433.53, 4488.61, 4543.67, 4598.75, 4653.82] },
+      { id: 'RK4', m: true, name: 'A.4: Dienstführer/in', l: [3178.22, 3255.25, 3303.31, 3352.09, 3403.50, 3456.10, 3511.01, 3565.60, 3645.85, 3732.37, 3904.85, 4024.57, 4143.76, 4262.56, 4382.31, 4501.77, 4621.80, 4740.73, 4860.84, 4979.75, 5098.73, 5217.67, 5336.63, 5455.56, 5574.49, 5693.45, 5812.35, 5931.34, 6050.27, 6169.20] },
+      { id: 'RK5', m: true, name: 'A.5: Leitung Rettungsleitstelle', l: [3647.90, 3724.93, 3772.99, 3821.76, 3873.18, 3925.78, 3980.68, 4035.28, 4115.52, 4202.05, 4374.53, 4494.25, 4613.44, 4732.24, 4851.99, 4971.45, 5091.47, 5210.40, 5330.52, 5449.43, 5568.41, 5687.34, 5806.30, 5925.23, 6044.17, 6163.13, 6282.03, 6401.02, 6519.95, 6638.88] }
+    ] };
+  PAKETE.rettung_w = {
+    name: 'Rettungsdienst (Rotes Kreuz), Wien',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Wien (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.4.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_w = { stand: 'ab 1.4.2026, Wien', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)', 'Stufe 21 (Vorrückung alle 2 Jahre)'], teiler: 173, gruppen: [
+      { id: 'RWe', m: true, name: 'Schema e: Einstieg (bis Ende 2. Dienstjahr)', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)'], l: [2247.80] },
+      { id: 'RWc', m: true, name: 'Schema c: Rettungs- und Krankentransportdienst', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)', 'Stufe 21 (Vorrückung alle 2 Jahre)'], l: [2324.85, 2374.11, 2423.15, 2471.98, 2521.00, 2569.88, 2619.28, 2668.28, 2717.16, 2770.17, 2826.78, 2884.67, 2944.78, 3006.03, 3067.45, 3129.71, 3192.30, 3254.87, 3317.30, 3379.73, 3442.02] },
+      { id: 'RWb', m: true, name: 'Schema b: Planposten Notfallrettung', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)'], l: [2544.86, 2601.98, 2658.99, 2716.78, 2781.93, 2849.03, 2920.22, 2991.86, 3092.76, 3195.99, 3330.93, 3466.63, 3602.16, 3736.52, 3870.71, 4004.95, 4139.89, 4273.08, 4408.04, 4541.54] },
+      { id: 'RWa', m: true, name: 'Schema a: höhere Verwendung laut Stellenplan', stufen: ['Stufe 1 (Vorrückung alle 2 Jahre)', 'Stufe 2 (Vorrückung alle 2 Jahre)', 'Stufe 3 (Vorrückung alle 2 Jahre)', 'Stufe 4 (Vorrückung alle 2 Jahre)', 'Stufe 5 (Vorrückung alle 2 Jahre)', 'Stufe 6 (Vorrückung alle 2 Jahre)', 'Stufe 7 (Vorrückung alle 2 Jahre)', 'Stufe 8 (Vorrückung alle 2 Jahre)', 'Stufe 9 (Vorrückung alle 2 Jahre)', 'Stufe 10 (Vorrückung alle 2 Jahre)', 'Stufe 11 (Vorrückung alle 2 Jahre)', 'Stufe 12 (Vorrückung alle 2 Jahre)', 'Stufe 13 (Vorrückung alle 2 Jahre)', 'Stufe 14 (Vorrückung alle 2 Jahre)', 'Stufe 15 (Vorrückung alle 2 Jahre)', 'Stufe 16 (Vorrückung alle 2 Jahre)', 'Stufe 17 (Vorrückung alle 2 Jahre)', 'Stufe 18 (Vorrückung alle 2 Jahre)', 'Stufe 19 (Vorrückung alle 2 Jahre)', 'Stufe 20 (Vorrückung alle 2 Jahre)'], l: [3203.56, 3282.54, 3361.77, 3441.60, 3521.15, 3600.83, 3735.20, 3870.29, 4004.66, 4138.32, 4272.49, 4405.98, 4540.37, 4674.88, 4808.52, 4983.52, 5158.67, 5333.53, 5508.85, 5684.46] }
+    ] };
+  PAKETE.rettung_ooe = {
+    name: 'Rettungsdienst (Rotes Kreuz), Oberösterreich',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Oberösterreich (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.7.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_ooe = { stand: 'ab 1.7.2026, Oberösterreich', stufen: ['Dienstjahre 1–2', 'Dienstjahre 3–4', 'Dienstjahre 5–6', 'Dienstjahre 7–8', 'Dienstjahre 9–10', 'Dienstjahre 11–13', 'Dienstjahre 14–16', 'Dienstjahre 17–19', 'Dienstjahre 20–22', 'Dienstjahre 23–25', 'Dienstjahre 26–29', 'Dienstjahre 30–33', 'Dienstjahre 34–37', 'Dienstjahre 38–41', 'Dienstjahre 42+'], teiler: 173, gruppen: [
+      { id: 'RO1', m: true, name: 'A.1 (RK 25): in Ausbildung', l: [2390.20, 2424.90, 2460.20, 2498.10, 2537.30, 2576.30, 2616.00, 2655.10, 2694.80, 2734.10, 2773.70, 2813.90, 2853.90, 2894.20, 2934.30] },
+      { id: 'RO2', m: true, name: 'A.2 (RK 21): Rettungssanitäter/in, Einsatzfahrer/in', l: [2612.10, 2660.10, 2707.90, 2756.10, 2804.70, 2853.90, 2902.60, 2952.30, 3003.90, 3057.50, 3110.70, 3164.00, 3216.90, 3270.30, 3323.60] },
+      { id: 'RO3', m: true, name: 'A.3 (RK 20): Notfallsanitäter/in, Leitstellendisponent/in', l: [2693.50, 2744.10, 2795.90, 2847.80, 2900.00, 2952.00, 3007.00, 3063.90, 3120.50, 3176.60, 3233.10, 3289.40, 3345.60, 3402.10, 3459.00] },
+      { id: 'RO4', m: true, name: 'A.4 (RK 19): Dienstführer/in, Leitung Bereichsleitstelle', l: [2787.20, 2843.30, 2898.60, 2954.10, 3013.60, 3074.00, 3134.10, 3194.40, 3255.00, 3315.20, 3375.10, 3434.90, 3495.70, 3555.30, 3615.40] }
+    ] };
+  PAKETE.rettung_vbg = {
+    name: 'Rettungsdienst (Rotes Kreuz), Vorarlberg',
+    hinweis: 'KV Österreichisches Rotes Kreuz 2026, Rettungsdienst, Anhang Vorarlberg (Quelle: roteskreuz.at): Monatsgehälter nach Verwendungsgruppe und Stufe, gültig ab 1.7.2026. Die Löhne sind je Landesverband verschieden. Normalarbeitszeit 40 Stunden/Woche (Durchrechnung möglich), Überstundenteiler 1/173, Überstunden 50 %, in der Nacht und an Sonn- und Feiertagen 100 %. Zulagen des Landesverbands sind als Prämie vorgeschlagen. Bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rettung_vbg = { stand: 'ab 1.7.2026, Vorarlberg', stufen: ['Gehaltsstufe 1', 'Gehaltsstufe 2', 'Gehaltsstufe 3', 'Gehaltsstufe 4', 'Gehaltsstufe 5', 'Gehaltsstufe 6', 'Gehaltsstufe 7', 'Gehaltsstufe 8', 'Gehaltsstufe 9', 'Gehaltsstufe 10', 'Gehaltsstufe 11', 'Gehaltsstufe 12'], teiler: 173, gruppen: [
+      { id: 'RV4', m: true, name: 'Gehaltsklasse 4: Rettungssanitäter/in', l: [2614.74, 2809.93, 2924.11, 3005.12, 3068.42, 3121.57, 3121.57, 3121.57, 3121.57, 3121.57, 3121.57, 3121.57] },
+      { id: 'RV5', m: true, name: 'Gehaltsklasse 5: Rettungssanitäter/in mit Zusatzaufgaben, Notfallsanitäter/in', l: [2703.77, 2901.55, 3017.24, 3101.97, 3167.87, 3221.71, 3267.24, 3267.24, 3267.24, 3267.24, 3267.24, 3267.24] },
+      { id: 'RV7', m: true, name: 'Gehaltsklasse 7: Leitstelle (Calltaker/in, Disponent/in)', l: [2963.82, 3196.22, 3332.17, 3428.64, 3503.46, 3564.60, 3616.28, 3616.28, 3616.28, 3616.28, 3616.28, 3616.28] },
+      { id: 'RV8', m: true, name: 'Gehaltsklasse 8: Leitstelle mit Zusatzaufgaben', l: [3101.06, 3354.43, 3502.66, 3607.81, 3689.39, 3756.03, 3812.38, 3812.38, 3812.38, 3812.38, 3812.38, 3812.38] },
+      { id: 'RV9', m: true, name: 'Gehaltsklasse 9: Leitstelle mit Leitungsaufgaben', l: [3270.24, 3533.54, 3687.55, 3796.82, 3881.58, 3950.83, 4009.38, 4060.10, 4060.10, 4060.10, 4060.10, 4060.10] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2998,7 +3079,7 @@
         vorfuehrung: { name: 'Filmvorführung und Haustechnik', b: { fahrzeug: false, kunden: false, praemien: true } },
         kassa: { name: 'Kassa, Büffet, Einlass', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    rettung: { name: 'Rettungsdienst', paket: 'rettung_noe', kvs: ['rettung_noe', 'rettung_bgld', 'rettung_stmk', 'rettung_sbg', 'rettung_t', 'sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    rettung: { name: 'Rettungsdienst', paket: 'rettung_noe', kvs: ['rettung_w', 'rettung_noe', 'rettung_bgld', 'rettung_ooe', 'rettung_stmk', 'rettung_ktn', 'rettung_sbg', 'rettung_t', 'rettung_vbg', 'sozial', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         rs: { name: 'Rettungssanitäter/in, Einsatzfahrer/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         nfs: { name: 'Notfallsanitäter/in', b: { fahrzeug: false, kunden: false, praemien: true } },

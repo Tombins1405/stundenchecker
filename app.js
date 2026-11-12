@@ -1252,6 +1252,11 @@
   ['', '_w', '_st', '_ooe', '_sbg', '_k', '_v', '_b', '_t'].forEach(function (k) { PAKET_KURZ['fleischer' + k] = 'Fleischergewerbe'; });
   PR_VOR.bahn = [['Nachtarbeitszulage', 'stunde', 'Stunden zwischen 22 und 5 Uhr', 4.10], ['Sonn- und Feiertagszulage', 'stunde', 'Stunden an Sonn- und Feiertagen', 7], ['Leistungsprämie', 'monat', 'einmal pro Monat'], ['Zulage Schlafwagen 8C: grenzüberschreitender Einsatz', 'monat', 'einmal pro Monat', 62.71], ['Zulage Schlafwagen 8B: Verantwortung für mehrere Mitarbeiter', 'monat', 'einmal pro Monat', 125.41], ['Zulage Arbeitsunterbrechung (Bordgastronomie)', 'stueck', 'angefangene Viertelstunden über 180 Minuten Unterbrechung', 3.49]];
   PAKET_KURZ.bahn = 'Eisenbahn';
+  PR_VOR.rettung_ktn = [['Nachtarbeitszuschlag', 'stunde', 'Stunden zwischen 22 und 6 Uhr', 4.56], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen', 4.73], ['SEW/RTW-Zulage', 'monat', 'einmal pro Monat', 85.12]];
+  PR_VOR.rettung_w = [['Erschwerniszulage', 'monat', 'einmal pro Monat', 248.73], ['Gefahrenzulage je Dienst', 'stueck', 'Dienste in der Notfallrettung', 17.13], ['Nacht- und Sonntagszuschlag je Dienst', 'stueck', 'Nacht- oder Sonntagsdienste', 35.76]];
+  PR_VOR.rettung_ooe = [['Notfallsanitäter-Zulage', 'monat', 'einmal pro Monat (überwiegend im Rettungsdienst)', 51.65], ['Schmutz-, Erschwernis- und Gefahrenzulage', 'monat', 'einmal pro Monat', 244.28]];
+  PR_VOR.rettung_vbg = [['Nachtdienstzulage', 'stueck', 'Nachtdienste (22 bis 6 Uhr)', 89.82], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen', 7.05]];
+  ['ktn', 'w', 'ooe', 'vbg'].forEach(function (k) { PAKET_KURZ['rettung_' + k] = 'Rotes Kreuz ' + ({ ktn: 'Kärnten', w: 'Wien', ooe: 'Oberösterreich', vbg: 'Vorarlberg' })[k]; });
   PR_VOR.rettung_noe = [['Notfallsanitäter-Zulage', 'monat', 'einmal pro Monat (überwiegend im Rettungsdienst)', 106.92], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.rettung_bgld = [['Notfallsanitäter-Zulage je Dienst', 'stueck', 'Dienste auf NEF oder NAW', 11.36], ['Dienstführendenzulage', 'monat', 'einmal pro Monat', 202.39]];
   PR_VOR.rettung_stmk = [['Notfallsanitäter-Zulage je Dienst', 'stueck', 'Dienste auf NEF oder NAW', 11.00], ['Schmutz-, Erschwernis- und Gefahrenzulage', 'monat', 'einmal pro Monat', 175]];
