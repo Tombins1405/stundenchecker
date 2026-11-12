@@ -956,7 +956,7 @@
   var KV_LAND_FIX = { taxi_t: ['t'], taxi_vbg: ['vbg'], taxi_sbg: ['sbg'], taxi_stmk: ['stmk'], textil_t: ['t'], textil_vbg: ['vbg'], textil: ['w', 'noe', 'bgld', 'ooe', 'sbg', 'stmk', 'ktn'], konditor: ['noe'], fleischer: ['noe'], gastro: ['noe'], gastro_ang_c: ['bgld', 'ktn', 'noe', 'ooe', 'stmk'], gastro_ang_d: ['sbg', 't', 'vbg'], gastro_ang_w: ['w'], gastro_ang_wh: ['w'] };
   function kvLand(paket) {
     paket = String(paket || ''); if (KV_LAND_FIX[paket]) return KV_LAND_FIX[paket];
-    var m = /^(konditor|fleischer|ordination|rk|gastro)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
+    var m = /^(konditor|fleischer|ordination|rk|gastro|kino)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
   }
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
@@ -2431,6 +2431,238 @@
     var p = clone(PAKETE.textil); p.name = 'Textilindustrie (Arbeiter), ' + x[1]; PAKETE['textil_' + x[0]] = p;
     var l = clone(LOHNGRUPPEN.textil); l.stand = 'ab 1.4.2026, ' + x[1]; ['TA', 'TB', 'TC', 'TD', 'TE', 'TF'].forEach(function (id, i) { l.gruppen.filter(function (g) { return g.id === id; })[0].l = [x[2][i]]; }); LOHNGRUPPEN['textil_' + x[0]] = l;
   });
+  // Lebensmittelindustrie (Fable/Opus 12.11.2026): Obst/Gemüse/Tiefkühl, Getränke mit Kohlensäure, Fleischwarenindustrie
+  PAKETE.lm_obst = {
+    name: 'Lebensmittelindustrie: Obst, Gemüse, Tiefkühlwaren (Arbeiter)',
+    hinweis: 'KV Obst- und Gemüseverarbeitung, Tiefkühlwarenerzeugung, Arbeiter, ab 1.1.2026 (Quelle: wko.at), österreichweit: Stunden- und Monatslöhne (Stundenlohn = Monatslohn ÷ 173,2, also 40 Stunden/Woche), Lehrlingseinkommen. Überstunden 50 %. Dienstalterszulagen sind als Stufen eingerechnet. Schicht-, Nacht- und Kältezuschläge stehen nicht in der Lohnordnung (Rahmen-KV): bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.lm_obst = { stand: 'ab 1.1.2026', stufen: ['bis 3 Dienstjahre', 'nach dem 3. Dienstjahr', 'nach dem 5. Dienstjahr', 'nach dem 10. Dienstjahr', 'nach dem 15. Dienstjahr', 'nach dem 20. Dienstjahr', 'nach dem 25. Dienstjahr'], teiler: 173.2, gruppen: [
+      { id: 'LO1', m: true, name: 'Lohngruppe 1: Vorarbeiter/in mit eigenem Verantwortungsbereich', l: [2691.00, 2710.66, 2721.38, 2726.75, 2735.69, 2746.41, 2754.71] },
+      { id: 'LO2', m: true, name: 'Lohngruppe 2: Professionist/in, Kraftfahrer/in, Maschinenführer/in mit größerer Verantwortung', l: [2551.00, 2570.66, 2581.38, 2586.75, 2595.69, 2606.41, 2614.71] },
+      { id: 'LO3', m: true, name: 'Lohngruppe 3: qualifizierte Arbeit, Portier/in, Staplerfahrer/in, Maschinenführer/in', l: [2307.00, 2326.66, 2337.38, 2342.75, 2351.69, 2362.41, 2370.71] },
+      { id: 'LO3a', m: true, name: 'Lohngruppe 3a: Ladner/in', l: [2246.00, 2265.66, 2276.38, 2281.75, 2290.69, 2301.41, 2309.71] },
+      { id: 'LO4', m: true, name: 'Lohngruppe 4: sonstige Arbeitnehmer/innen ab dem 2. Beschäftigungsjahr', l: [2195.00, 2214.66, 2225.38, 2230.75, 2239.69, 2250.41, 2258.71] },
+      { id: 'LO5', m: true, name: 'Lohngruppe 5: Arbeitnehmer/innen im 1. Beschäftigungsjahr', stufen: ['bis 3 Dienstjahre'], l: [2078.00] },
+      { id: 'LOL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1000.90] },
+      { id: 'LOL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1293.00] },
+      { id: 'LOL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1585.00] }
+    ] };
+  PAKETE.lm_getraenke = {
+    name: 'Lebensmittelindustrie: Getränke mit Kohlensäure (Arbeiter)',
+    hinweis: 'KV kohlensäurehaltige Getränkeerzeugung, Arbeiter, ab 1.1.2026 (Quelle: wko.at): gilt in allen Bundesländern außer Salzburg. 38,5 Stunden/Woche, Stundenlohn = Monatslohn ÷ 167. Zehrgeld für Fahrpersonal 22,62 € ab 6 Stunden Abwesenheit (als Prämie vorgeschlagen). Dienstalterszulagen sind als Stufen eingerechnet. Schicht-, Nacht- und Kältezuschläge stehen nicht in der Lohnordnung (Rahmen-KV): bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.lm_getraenke = { stand: 'ab 1.1.2026', stufen: ['bis 3 Dienstjahre', 'nach dem 3. Dienstjahr', 'nach dem 5. Dienstjahr', 'nach dem 10. Dienstjahr', 'nach dem 15. Dienstjahr', 'nach dem 20. Dienstjahr', 'nach dem 25. Dienstjahr'], teiler: 167, gruppen: [
+      { id: 'LG1', m: true, name: 'Lohngruppe 1: Facharbeiter/in', l: [2892.00, 2934.26, 2939.54, 2948.00, 2954.86, 2960.67, 2965.43] },
+      { id: 'LG2', m: true, name: 'Lohngruppe 2: Kraftfahrer/in, Fahrverkäufer/in', l: [2458.00, 2500.26, 2505.54, 2514.00, 2520.86, 2526.67, 2531.43] },
+      { id: 'LG3', m: true, name: 'Lohngruppe 3: Füller/in, Siruper/in', l: [2403.00, 2445.26, 2450.54, 2459.00, 2465.86, 2471.67, 2476.43] },
+      { id: 'LG4', m: true, name: 'Lohngruppe 4: angelernte Arbeit (z. B. Staplerfahrer/in, Mitfahrer/in nach 1 Jahr)', l: [2373.00, 2415.26, 2420.54, 2429.00, 2435.86, 2441.67, 2446.43] },
+      { id: 'LG5', m: true, name: 'Lohngruppe 5: Arbeitnehmer/in', l: [2265.00, 2307.26, 2312.54, 2321.00, 2327.86, 2333.67, 2338.43] },
+      { id: 'LGL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [867.60] },
+      { id: 'LGL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1156.80] },
+      { id: 'LGL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1735.20] }
+    ] };
+  PAKETE.lm_fleisch = {
+    name: 'Lebensmittelindustrie: Fleischwaren (Arbeiter)',
+    hinweis: 'KV Fleischwarenindustrie, Arbeiter, ab 1.7.2026 (Quelle: dielebensmittel.at, Verband der Fleischwarenindustrie), österreichweit für Mitgliedsfirmen: 38,5 Stunden/Woche, Stundenlohn = Monatslohn ÷ 167. Zehrgeld bei betriebsbedingter Abwesenheit über 6 Stunden 13,38 €, über 9 Stunden 23,66 €; Staplerzulage 7,5 % (als Prämie vorgeschlagen). Für Fleischer im Gewerbe gilt der Beruf „Fleischer“. Dienstalterszulagen sind als Stufen eingerechnet. Schicht-, Nacht- und Kältezuschläge stehen nicht in der Lohnordnung (Rahmen-KV): bitte mit Dienstzettel und Lohnzettel vergleichen.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.lm_fleisch = { stand: 'ab 1.7.2026', stufen: ['bis 5 Dienstjahre', 'nach 5 Dienstjahren', 'nach 10 Dienstjahren', 'nach 15 Dienstjahren', 'nach 20 Dienstjahren', 'nach 25 Dienstjahren'], teiler: 167, gruppen: [
+      { id: 'LF1', m: true, name: 'Kategorie 1: Partieführer/in, Gehilf/in, selbständige Stockarbeit, Selcher/in, Ausschneider/in', l: [3373.73, 3403.88, 3412.57, 3431.32, 3451.87, 3475.36] },
+      { id: 'LF2', m: true, name: 'Kategorie 2: Facharbeiter/in, Mechaniker/in, Elektriker/in, Schlosser/in (nach 2 Jahren im Betrieb)', l: [3101.07, 3131.22, 3139.91, 3158.66, 3179.21, 3202.70] },
+      { id: 'LF3', m: true, name: 'Kategorie 3: Maschinist/in, geprüfte/r Heizer/in, Professionist/in, Kraftfahrer/in', l: [2911.92, 2942.07, 2950.76, 2969.51, 2990.06, 3013.55] },
+      { id: 'LF4', m: true, name: 'Kategorie 4: Facharbeiter/in im 1. Berufsjahr', l: [2824.59, 2854.74, 2863.43, 2882.18, 2902.73, 2926.22] },
+      { id: 'LF5', m: true, name: 'Kategorie 5: Angelernte/r, Staplerfahrer/in', l: [2385.56, 2415.71, 2424.40, 2443.15, 2463.70, 2487.19] },
+      { id: 'LF6', m: true, name: 'Kategorie 6: Arbeitnehmer/in', l: [2295.86, 2326.01, 2334.70, 2353.45, 2374.00, 2397.49] },
+      { id: 'LF7', m: true, name: 'Kategorie 7: Arbeitnehmer/in in den ersten 3 Monaten', stufen: ['bis 5 Dienstjahre'], l: [2094.52] },
+      { id: 'LF8', m: true, name: 'Kategorie 8: Ladner/in nach dem 1. Jahr', l: [2294.76, 2324.91, 2333.60, 2352.35, 2372.90, 2396.39] },
+      { id: 'LF9', m: true, name: 'Kategorie 9: Ladner/in im 1. Jahr', l: [2075.04, 2105.19, 2113.88, 2132.63, 2153.18, 2176.67] },
+      { id: 'LFL1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [998.69] },
+      { id: 'LFL2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1283.09] },
+      { id: 'LFL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1853.35] },
+      { id: 'LFL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1995.91] }
+    ] };
+  // Kinobetriebe: Lohnordnungen aller Bundesländer 1.4.2026 bis 31.3.2027 (wko.at), Stundenlöhne für Eintritte ab 1.4.2019
+  PAKETE.kino_w = {
+    name: 'Kinobetriebe (Arbeiter), Wien',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Wien vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_w = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II (Wien, Eintritt ab 1.4.2026)', l: [13.10] },
+      { id: 'KI3', name: 'Lohngruppe III (Wien, Eintritt ab 1.4.2026)', l: [16.24] },
+      { id: 'KI4', name: 'Lohngruppe II (Wien, Eintritt 1.4.2019 bis 31.3.2026)', l: [16.24] }
+    ] };
+  PAKETE.kino_noe = {
+    name: 'Kinobetriebe (Arbeiter), Niederösterreich',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Niederösterreich vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_noe = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
+    ] };
+  PAKETE.kino_bgld = {
+    name: 'Kinobetriebe (Arbeiter), Burgenland',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Burgenland vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_bgld = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
+    ] };
+  PAKETE.kino_ooe = {
+    name: 'Kinobetriebe (Arbeiter), Oberösterreich',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Oberösterreich vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_ooe = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
+    ] };
+  PAKETE.kino_stmk = {
+    name: 'Kinobetriebe (Arbeiter), Steiermark',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Steiermark vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_stmk = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
+    ] };
+  PAKETE.kino_ktn = {
+    name: 'Kinobetriebe (Arbeiter), Kärnten',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Kärnten vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_ktn = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.05] }
+    ] };
+  PAKETE.kino_sbg = {
+    name: 'Kinobetriebe (Arbeiter), Salzburg',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Salzburg vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_sbg = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.05] }
+    ] };
+  PAKETE.kino_t = {
+    name: 'Kinobetriebe (Arbeiter), Tirol',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Tirol vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_t = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.05] }
+    ] };
+  PAKETE.kino_vbg = {
+    name: 'Kinobetriebe (Arbeiter), Vorarlberg',
+    hinweis: 'KV Kinobetriebe, Arbeiter, Lohnordnung Vorarlberg vom 1.4.2026 bis 31.3.2027 (Quelle: wko.at): Bruttomindeststundenlöhne nach Lohngruppe für Eintritte ab 1.4.2019. Wer vorher eingetreten ist, hat teils höhere Sätze nach Tätigkeit (z. B. Filmvorführer nach Saalanzahl): dann bitte „Eigene Werte“ mit dem Stundenlohn laut Lohnzettel. Wochenstunden und Zuschläge stehen nicht in der Lohnordnung: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz). Lehrlinge sind nicht geregelt.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.kino_vbg = { stand: '1.4.2026 bis 31.3.2027', stufen: null, gruppen: [
+      { id: 'KI1', name: 'Lohngruppe I: einfache Tätigkeiten (Billeteur/in, Kassa, Büffet, Reinigung)', l: [10.05] },
+      { id: 'KI2', name: 'Lohngruppe II: Filmvorführung oder Haustechnik mit Berufsabschluss', l: [10.68] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2658,6 +2890,19 @@
         piste: { name: 'Pistendienst und Beschneiung', b: { fahrzeug: false, kunden: false, praemien: true } },
         kassa: { name: 'Kassa und Büro (Seilbahn)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Seilbahntechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    lmindustrie: { name: 'Lebensmittelindustrie', paket: 'lm_obst', kvs: ['lm_obst', 'lm_getraenke', 'lm_fleisch', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        produktion: { name: 'Produktion und Verpackung', b: { fahrzeug: false, kunden: false, praemien: true } },
+        fleisch: { name: 'Fleisch- und Wurstwaren', kv: 'lm_fleisch', b: { fahrzeug: false, kunden: false, praemien: true } },
+        getraenke: { name: 'Getränkeerzeugung', kv: 'lm_getraenke', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lager: { name: 'Lager, Stapler, Zustellung (Lebensmittel)', b: { fahrzeug: false, kunden: false, praemien: true } },
+        lehrling: { name: 'Lehrling (Lebensmitteltechnik)', b: { fahrzeug: false, kunden: false, praemien: true } }
+      } },
+    kino: { name: 'Kino', paket: 'kino_w', kvs: ['kino_w', 'kino_noe', 'kino_bgld', 'kino_ooe', 'kino_stmk', 'kino_ktn', 'kino_sbg', 'kino_t', 'kino_vbg', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+      arten: {
+        vorfuehrung: { name: 'Filmvorführung und Haustechnik', b: { fahrzeug: false, kunden: false, praemien: true } },
+        kassa: { name: 'Kassa, Büffet, Einlass', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
     friseur: { name: 'Friseur / Friseurin', paket: 'friseur', kvs: ['friseur', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
