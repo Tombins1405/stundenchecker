@@ -2099,7 +2099,7 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
-    if (!(data.profil && data.profil.sqHinweis)) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
+    if (!(data.profil && (data.profil.sqHinweis || data.profil.sqText === true))) out.push({ k: 'schnellneu', text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
@@ -2127,7 +2127,7 @@
     if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
     var vn = ((data.profil && data.profil.vorname) || '').trim();
     if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
-    ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || (c.skip[s.k] || 0) < 2; });
+    ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || (c.skip[s.k] || 0) < 2; });
     return ui.miaListe[0] || null;
   }
   // Start-Karte: sind beim Start mindestens zwei Dinge offen, zeigt Mia alle auf einen Blick (statt nur eine Sprechblase)
