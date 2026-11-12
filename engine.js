@@ -316,8 +316,8 @@
       }
     },
     gastro: {
-      name: 'Hotel- und Gastgewerbe',
-      hinweis: 'KV Hotel- und Gastgewerbe, Arbeiter (Quellen: wko.at, WKO Niederösterreich): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Die Löhne sind je Bundesland verschieden. Hinterlegt sind die Lohngruppen 1 bis 5 für Niederösterreich (Tabelle vom 1.5.2025 plus Erhöhung ab 1.10.2026 laut Abschluss, nach Dienstjahren) und die Lehrlingseinkommen ab 1.10.2026. In anderen Bundesländern trage deinen Lohn laut Lohnzettel ein. Ein Wert der Quelle (Lohngruppe 1, ab 11. Dienstjahr) war offensichtlich verrutscht und wurde nach dem Stufenabstand ergänzt: bitte laut Lohnzettel prüfen. Nachtarbeit (0 bis 6 Uhr) hat einen pauschalen Zuschlag, gestaffelt in Dritteln je begonnene 2 Stunden; die Höhe steht im Lohnabkommen, die App kennt sie nicht, trage sie als Prämie ein. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
+      name: 'Hotel- und Gastgewerbe, Niederösterreich',
+      hinweis: 'KV Hotel- und Gastgewerbe, Arbeiter, Lohnordnung des Bundeslandes ab 1.10.2026 (Quelle: wko.at): 40 Stunden/Woche, Überstunden 50 %, Normalstunde = 1/173 des Monatslohns. Die Löhne sind je Bundesland verschieden: wähle den Kollektivvertrag deines Bundeslandes. Nachtarbeitszuschlag 9,50 € je begonnenem Zeitfenster (0 bis 2, 2 bis 4 und 4 bis 6 Uhr), bei Arbeitsbeginn ab 5 Uhr 4,75 €, ab 5:30 Uhr keiner; Fremdsprachenzulage 40 € im Monat: bitte als Prämie eintragen. Für Beschäftigte mit mindestens 20 Dienstjahren am 30.4.2025 gibt es eine Übergangsregelung mit eigenen Stufen, die hier nicht hinterlegt ist. Sonn- und Feiertage hängen vom Betrieb ab, stelle sie bei Bedarf selbst ein.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -938,15 +938,15 @@
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling Pflege, 4. Lehrjahr', l: [1909.20] }
     ] },
     gastro: { stand: 'ab 1.10.2026, Niederösterreich', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr', 'ab dem 11. Dienstjahr', 'ab dem 16. Dienstjahr', 'ab dem 21. Dienstjahr'], teiler: 173, gruppen: [
-      { id: 'G1', m: true, name: 'Lohngruppe 1', l: [2724.00, 2790.30, 2856.60, 2922.90, 2989.20] },
-      { id: 'G2', m: true, name: 'Lohngruppe 2', l: [2500.00, 2560.90, 2621.80, 2682.60, 2743.50] },
-      { id: 'G3', m: true, name: 'Lohngruppe 3', l: [2304.00, 2359.90, 2415.90, 2471.80, 2527.70] },
-      { id: 'G4', m: true, name: 'Lohngruppe 4', l: [2153.00, 2205.20, 2257.40, 2309.60, 2361.80] },
-      { id: 'G5', m: true, name: 'Lohngruppe 5', l: [2096.50, 2147.20, 2147.20, 2147.20, 2147.20] },
+      { id: 'G1', m: true, name: 'Lohngruppe 1: Restaurant- oder Küchenchef/in, Abteilungsverantwortliche', l: [2724.00, 2792.10, 2860.20, 2928.30, 2996.40] },
+      { id: 'G2', m: true, name: 'Lohngruppe 2: Stellvertretung, Chef de rang, Chef de partie, Barchef/in', l: [2500.00, 2562.50, 2625.00, 2687.50, 2750.00] },
+      { id: 'G3', m: true, name: 'Lohngruppe 3: Facharbeiter/in (z. B. Koch/Köchin, Restaurantfachkraft)', l: [2304.00, 2361.60, 2419.20, 2476.80, 2534.40] },
+      { id: 'G4', m: true, name: 'Lohngruppe 4: ohne Lehrabschluss nach voller Lehrzeit oder Hilfskraft mit mindestens 10 Jahren Branchenerfahrung', l: [2153.00, 2206.80, 2260.70, 2314.50, 2368.30] },
+      { id: 'G5', m: true, name: 'Lohngruppe 5: Hilfskraft mit weniger als 10 Jahren Branchenerfahrung', stufen: ['bis 5 Dienstjahre', 'ab dem 6. Dienstjahr'], l: [2096.50, 2148.90] },
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1090] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1220] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445] },
-      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr (nur Doppellehre)', l: [1550] }
+      { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550] }
     ] }
   };
 
@@ -962,6 +962,24 @@
     d.l.forEach(function (v, i) { gr.push({ id: 'L' + (i + 1), m: true, lehrling: true, name: 'Lehrling, ' + (i + 1) + '. Lehrjahr', l: [v] }); });
     (d.lx || []).forEach(function (x) { gr.push({ id: x[0], m: true, lehrling: true, name: x[1], l: [x[2]] }); });
     LOHNGRUPPEN['konditor_' + k] = { stand: d.s, stufen: null, teiler: d.t, gruppen: gr };
+  });
+  // Hotel- und Gastgewerbe: Lohnordnungen der anderen Bundesländer ab 1.10.2026 (Quelle: wko.at). Lohngruppen 4 und 5 und die Lehrlinge sind überall gleich.
+  var GASTRO_BL = {
+    w: { n: 'Gastronomie, Wien (ohne Kaffeehäuser)', s: 'Wien, Gastronomie', g: [[2571.00, 2635.30, 2699.60, 2763.80, 2828.10], [2328.00, 2386.20, 2444.40, 2502.60, 2560.80], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] },
+    wh: { n: 'Hotellerie und Kaffeehäuser, Wien', s: 'Wien, Hotellerie und Kaffeehäuser', g: [[2771.00, 2840.30, 2909.60, 2978.80, 3048.10], [2557.00, 2620.90, 2684.90, 2748.80, 2812.70], [2330.00, 2388.30, 2446.50, 2504.80, 2563.00]] },
+    bgld: { n: 'Hotel- und Gastgewerbe, Burgenland', s: 'Burgenland', g: [[2724.00, 2792.10, 2860.20, 2928.30, 2996.40], [2500.00, 2562.50, 2625.00, 2687.50, 2750.00], [2282.00, 2339.10, 2396.10, 2453.20, 2510.20]] },
+    ooe: { n: 'Hotel- und Gastgewerbe, Oberösterreich', s: 'Oberösterreich', g: [[2760.00, 2829.00, 2898.00, 2967.00, 3036.00], [2542.00, 2605.60, 2669.10, 2732.70, 2796.20], [2304.00, 2361.60, 2419.20, 2476.80, 2534.40]] },
+    stmk: { n: 'Hotel- und Gastgewerbe, Steiermark', s: 'Steiermark', g: [[2571.00, 2635.30, 2699.60, 2763.80, 2828.10], [2328.00, 2386.20, 2444.40, 2502.60, 2560.80], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] },
+    ktn: { n: 'Hotel- und Gastgewerbe, Kärnten', s: 'Kärnten', g: [[2713.00, 2780.80, 2848.70, 2916.50, 2984.30], [2440.00, 2501.00, 2562.00, 2623.00, 2684.00], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] },
+    sbg: { n: 'Hotel- und Gastgewerbe, Salzburg', s: 'Salzburg', g: [[2713.00, 2780.80, 2848.70, 2916.50, 2984.30], [2440.00, 2501.00, 2562.00, 2623.00, 2684.00], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] },
+    t: { n: 'Hotel- und Gastgewerbe, Tirol', s: 'Tirol', g: [[2713.00, 2780.80, 2848.70, 2916.50, 2984.30], [2440.00, 2501.00, 2562.00, 2623.00, 2684.00], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] },
+    vbg: { n: 'Hotel- und Gastgewerbe, Vorarlberg', s: 'Vorarlberg', g: [[2713.00, 2780.80, 2848.70, 2916.50, 2984.30], [2440.00, 2501.00, 2562.00, 2623.00, 2684.00], [2232.00, 2287.80, 2343.60, 2399.40, 2455.20]] }
+  };
+  Object.keys(GASTRO_BL).forEach(function (k) {
+    var d = GASTRO_BL[k], p = clone(PAKETE.gastro), l = clone(LOHNGRUPPEN.gastro);
+    p.name = d.n; PAKETE['gastro_' + k] = p;
+    l.stand = 'ab 1.10.2026, ' + d.s; [0, 1, 2].forEach(function (i) { l.gruppen[i].l = d.g[i]; });
+    LOHNGRUPPEN['gastro_' + k] = l;
   });
   // Fleischer: Lohnordnungen aller Bundesländer ab 1.7.2026 (Quelle: wko.at, Arbeiter/innen), Zuschläge aus dem Rahmen-KV
   var FLEISCHER_BASIS = {
@@ -1897,10 +1915,46 @@
     ru: { von: 'с|от', bis: 'до|по', std: 'часов|часа|час|ч\\.?', min: 'минут\\p{L}*|мин\\.?', ohne: 'без\\s+перерыв\\p{L}*|без\\s+обед\\p{L}*', pause: 'перерыв\\p{L}*|обед\\p{L}*', vg: 'позавчера', g: 'вчера', h: 'сегодня', tage: 'воскресень\\p{L}*|понедельник\\p{L}*|вторник\\p{L}*|сред\\p{L}*|четверг\\p{L}*|пятниц\\p{L}*|суббот\\p{L}*', urlaub: 'отпуск\\p{L}*', krank: 'больничн\\p{L}*|боле\\p{L}*', za: 'отгул\\p{L}*', schule: 'школ\\p{L}*|учеб\\p{L}*', kunde: 'клиент\\p{L}*|заказчик\\p{L}*', task: 'деятельность|задача|работа' },
     uk: { von: 'з|від', bis: 'до|по', std: 'годин\\p{L}*|год\\.?', min: 'хвилин\\p{L}*|хв\\.?', ohne: 'без\\s+перерв\\p{L}*|без\\s+обід\\p{L}*', pause: 'перерв\\p{L}*|обід\\p{L}*', vg: 'позавчора', g: 'вчора|учора', h: 'сьогодні', tage: 'неділ\\p{L}*|понеділ\\p{L}*|вівтор\\p{L}*|серед\\p{L}*|четвер\\p{L}*|п.ятниц\\p{L}*|субот\\p{L}*', urlaub: 'відпустк\\p{L}*', krank: 'лікарнян\\p{L}*|хворі\\p{L}*', za: 'відгул\\p{L}*', schule: 'школ\\p{L}*|навчанн\\p{L}*', kunde: 'клієнт\\p{L}*|замовник\\p{L}*', task: 'діяльність|завдання|робота' }
   };
+  // Zahlwörter je Sprache (0 bis 20; 21 bis 24, 30 und 45 werden daraus gebildet bzw. stehen in x). c = Grundzahl, g = Form bei Uhrzeiten
+  // („od szóstej“, „с шести“). Die 1 fehlt dort, wo das Wort auch „ein/eine“ heißt (hu, tr, it, ro), sonst würde jeder Artikel zur Zahl.
+  var FREMD_Z = {
+    pl: { c: 'zero|jeden/jedna|dwa/dwie|trzy|cztery|pięć|sześć|siedem|osiem|dziewięć|dziesięć|jedenaście|dwanaście|trzynaście|czternaście|piętnaście|szesnaście|siedemnaście|osiemnaście|dziewiętnaście|dwadzieścia', g: '|pierwszej|drugiej|trzeciej|czwartej|piątej|szóstej|siódmej|ósmej|dziewiątej|dziesiątej|jedenastej|dwunastej|trzynastej|czternastej|piętnastej|szesnastej|siedemnastej|osiemnastej|dziewiętnastej|dwudziestej', x: { 'trzydzieści': 30, 'czterdzieści pięć': 45, 'dwudziestej pierwszej': 21, 'dwudziestej drugiej': 22, 'dwudziestej trzeciej': 23, 'dwudziestej czwartej': 24 } },
+    hu: { c: 'nulla||kettő/két|három|négy|öt|hat|hét|nyolc|kilenc|tíz|tizenegy|tizenkettő/tizenkét|tizenhárom|tizennégy|tizenöt|tizenhat|tizenhét|tizennyolc|tizenkilenc|húsz', x: { 'huszonegy': 21, 'huszonkettő': 22, 'huszonkét': 22, 'huszonhárom': 23, 'huszonnégy': 24, 'harminc': 30, 'negyvenöt': 45 }, suf: '(?:tól|től|ig|kor|ra|re)?' },
+    tr: { c: 'sıfır||iki|üç|dört|beş|altı|yedi|sekiz|dokuz|on|on bir|on iki|on üç|on dört|on beş|on altı|on yedi|on sekiz|on dokuz|yirmi', x: { 'otuz': 30, 'kırk beş': 45 }, suf: "(?:['’]?(?:dan|den|tan|ten|ye|ya|e|a|de|da))?" },
+    cs: { c: 'nula|jedna|dvě|tři|čtyři|pět|šest|sedm|osm|devět|deset|jedenáct|dvanáct|třináct|čtrnáct|patnáct|šestnáct|sedmnáct|osmnáct|devatenáct|dvacet', g: '|jedné|dvou|tří|čtyř|pěti|šesti|sedmi|osmi|devíti|deseti|jedenácti|dvanácti|třinácti|čtrnácti|patnácti|šestnácti|sedmnácti|osmnácti|devatenácti|dvaceti', x: { 'třicet': 30, 'čtyřicet pět': 45 } },
+    sk: { c: 'nula|jedna|dve|tri|štyri|päť|šesť|sedem|osem|deväť|desať|jedenásť|dvanásť|trinásť|štrnásť|pätnásť|šestnásť|sedemnásť|osemnásť|devätnásť|dvadsať', g: '|jednej|druhej|tretej|štvrtej|piatej|šiestej|siedmej|ôsmej|deviatej|desiatej|jedenástej|dvanástej|trinástej|štrnástej|pätnástej|šestnástej|sedemnástej|osemnástej|devätnástej|dvadsiatej', x: { 'tridsať': 30, 'štyridsaťpäť': 45 } },
+    hr: { c: 'nula|jedan|dva|tri|četiri|pet|šest|sedam|osam|devet|deset|jedanaest|dvanaest|trinaest|četrnaest|petnaest|šesnaest|sedamnaest|osamnaest|devetnaest|dvadeset', x: { 'trideset': 30, 'četrdeset pet': 45 } },
+    sr: { c: 'nula|jedan|dva|tri|četiri|pet|šest|sedam|osam|devet|deset|jedanaest|dvanaest|trinaest|četrnaest|petnaest|šesnaest|sedamnaest|osamnaest|devetnaest|dvadeset', x: { 'trideset': 30, 'četrdeset pet': 45 } },
+    it: { c: 'zero||due|tre|quattro|cinque|sei|sette|otto|nove|dieci|undici|dodici|tredici|quattordici|quindici|sedici|diciassette|diciotto|diciannove|venti', x: { 'ventuno': 21, 'ventidue': 22, 'ventitré': 23, 'ventitre': 23, 'ventiquattro': 24, 'trenta': 30, 'quarantacinque': 45 } },
+    ro: { c: 'zero||două/doi|trei|patru|cinci|șase/sase|șapte/sapte|opt|nouă|zece|unsprezece|doisprezece/douăsprezece|treisprezece|paisprezece|cincisprezece|șaisprezece/saisprezece|șaptesprezece|optsprezece|nouăsprezece|douăzeci', x: { 'douăzeci și unu': 21, 'douăzeci și două': 22, 'douăzeci și trei': 23, 'douăzeci și patru': 24, 'treizeci': 30, 'patruzeci și cinci': 45 } },
+    ru: { c: 'ноль|один/одна|два/две|три|четыре|пять|шесть|семь|восемь|девять|десять|одиннадцать|двенадцать|тринадцать|четырнадцать|пятнадцать|шестнадцать|семнадцать|восемнадцать|девятнадцать|двадцать', g: '|одного/часу|двух|трёх/трех|четырёх/четырех|пяти|шести|семи|восьми|девяти|десяти|одиннадцати|двенадцати|тринадцати|четырнадцати|пятнадцати|шестнадцати|семнадцати|восемнадцати|девятнадцати|двадцати', x: { 'тридцать': 30, 'сорок пять': 45, 'двадцати одного': 21, 'двадцати двух': 22, 'двадцати трёх': 23, 'двадцати трех': 23, 'двадцати четырёх': 24, 'двадцати четырех': 24 } },
+    uk: { c: "нуль|один/одна|два/дві|три|чотири|п'ять|шість|сім|вісім|дев'ять|десять|одинадцять|дванадцять|тринадцять|чотирнадцять|п'ятнадцять|шістнадцять|сімнадцять|вісімнадцять|дев'ятнадцять|двадцять", g: "|першої|другої|третьої|четвертої|п'ятої|шостої|сьомої|восьмої|дев'ятої|десятої|одинадцятої|дванадцятої|тринадцятої|чотирнадцятої|п'ятнадцятої|шістнадцятої|сімнадцятої|вісімнадцятої|дев'ятнадцятої|двадцятої", x: { 'тридцять': 30, "сорок п'ять": 45, 'двадцять першої': 21, 'двадцять другої': 22, 'двадцять третьої': 23, 'двадцять четвертої': 24 } }
+  };
+  function fremdZahlen(l) {
+    var z = FREMD_Z[l], P = [], M = {}; if (!z) return null;
+    function put(w, v) { if (w) { M[w.toLowerCase()] = v; P.push(w); } }
+    var c = z.c.split('|'); c.forEach(function (t, i) { t.split('/').forEach(function (w) { put(w, i); }); });
+    (z.g || '').split('|').forEach(function (t, i) { t.split('/').forEach(function (w) { put(w, i); }); });
+    // 21 bis 24 aus „zwanzig“ + Einer, wenn die Sprache sie getrennt schreibt
+    if (!z.x || !Object.keys(z.x).some(function (k) { return z.x[k] === 21 && k.indexOf(c[20].split('/')[0]) === 0; })) [1, 2, 3, 4].forEach(function (n) { (c[n] || '').split('/').forEach(function (w) { if (w) put(c[20].split('/')[0] + ' ' + w, 20 + n); }); });
+    Object.keys(z.x || {}).forEach(function (k) { put(k, z.x[k]); });
+    P.sort(function (a, b) { return b.length - a.length; });
+    var esc = function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+'); };
+    // Nur im Zusammenhang mit einer Uhrzeit oder Dauer umsetzen (davor „von/bis“, danach „bis“, Stunde, Minute, Pause oder eine Endung wie „-tól“),
+    // damit Zahlwörter in Kundennamen und Tätigkeiten stehen bleiben („casă nouă“, „Hat Kft“).
+    var w = FREMD_W[l], vb = [w.von, w.bis].filter(Boolean).join('|'), nach = [w.bis, w.std, w.min, w.pause].filter(Boolean).join('|');
+    var reVor = vb ? new RegExp('(?:^|[^\\p{L}])(?:' + vb + ')\\s*$', 'iu') : null, reNach = new RegExp('^(' + (z.suf || '') + ')\\s*(?:(?:' + nach + ')(?![\\p{L}])|[-–]\\s*\\d|\\d)', 'iu'), reSuf = z.suf ? new RegExp('^' + z.suf.replace(/\)\?$/, ')') + '(?![\\p{L}\\d])', 'iu') : null;
+    return [new RegExp('(^|[^\\p{L}\\d])(' + P.map(esc).join('|') + ')(?=' + (z.suf || '') + '(?![\\p{L}\\d]))', 'giu'), function (m, a, wd, off, str) {
+      var v = M[wd.toLowerCase().replace(/\s+/g, ' ')]; if (v == null) return m;
+      var davor = str.slice(0, off + a.length), danach = str.slice(off + m.length);
+      return (reVor && reVor.test(davor)) || reNach.test(danach) || (reSuf && reSuf.test(danach)) ? a + v : m;
+    }];
+  }
   var FREMD_C = {};
   function fremdBau(l) {
     var w = FREMD_W[l], dig = '(\\d{1,2}(?:[:.]\\d{2})?)', NB = '(^|[^\\p{L}\\d])', NA = '(?![\\p{L}\\d])', L = [], EN = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     function W(alts, rep) { L.push([new RegExp(NB + '(?:' + alts + ')' + NA, 'giu'), function (m, a) { return a + rep; }]); }
+    var zr = fremdZahlen(l); if (zr) L.push(zr);
     var H = '(?:\\s*(?:' + w.std + '))?';
     // Uhrzeitbereiche zuerst (Sonderformen je Sprache)
     if (l === 'hu') L.push([new RegExp(dig + '\\s*-?\\s*(?:órá)?(?:tól|től)\\s+' + dig + '\\s*-?\\s*(?:órá)?ig' + NA, 'giu'), '$1 to $2']);
@@ -1920,7 +1974,7 @@
   }
   function normFremd(s, lang) {
     if (!lang || !FREMD_W[lang]) return s;
-    var L = FREMD_C[lang] || (FREMD_C[lang] = fremdBau(lang)), o = ' ' + s + ' ';
+    var L = FREMD_C[lang] || (FREMD_C[lang] = fremdBau(lang)), o = ' ' + s.replace(/[’ʼ`´]/g, "'") + ' ';
     L.forEach(function (p) { o = o.replace(p[0], p[1]); });
     o = o.replace(/\s(?:di|de)\s+break(?![\p{L}])/giu, ' break');
     return o.replace(/\s+/g, ' ').trim();
@@ -2017,7 +2071,7 @@
     ] };
   PAKETE.kosmetik = {
     name: 'Fußpfleger-, Kosmetiker- und Masseurgewerbe (Arbeiter)',
-    hinweis: 'KV Fußpfleger, Kosmetiker und Masseure, Arbeiter, Löhne ab 1.7.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Gilt in allen Bundesländern außer Tirol, die Lehrlingssätze steigen am 1.9.2026. Für Tirol bitte Eigene Werte verwenden.',
+    hinweis: 'KV Fußpfleger, Kosmetiker und Masseure, Arbeiter, Löhne ab 1.7.2026 (Quelle: wko.at): Löhne und Lehrlingseinkommen. Wochenstunden und Zuschläge stehen nicht in der Quelle: die App rechnet mit 40 Stunden pro Woche und 50 % Überstundenzuschlag (Gesetz), bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Gilt in allen Bundesländern; Tirol hat eine eigene Lohnordnung mit denselben Löhnen. Die Lehrlingssätze steigen am 1.9.2026 (in Tirol bitte mit dem Lohnzettel vergleichen).',
     pruefen: true,
     werte: {
       diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -2213,6 +2267,49 @@
       { id: 'AG4', name: 'Lohngruppe 4: Maschinenführer/in (Traktor, Arbeitsmaschinen)', l: [14.07] },
       { id: 'AG5', name: 'Lohngruppe 5: Professionist/in im erlernten Beruf (z. B. Landmaschinentechnik)', l: [14.67] }
     ] };
+  // Rauchfangkehrer Tirol und Vorarlberg: letzte veröffentlichte Lohnordnung (1.1.2025), wko.at
+  PAKETE.rk_t = {
+    name: 'Rauchfangkehrer Tirol (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Tirol, Arbeiter, Löhne ab 1.1.2025 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Für 2026 ist noch keine neue Lohnordnung veröffentlicht: das sind die letzten bekannten Mindestlöhne.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_t = { stand: 'ab 1.1.2025', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'ab dem 5. Berufsjahr'], gruppen: [
+      { id: 'RT1', m: true, name: 'Geselle/Gesellin mit Meisterprüfung', l: [2671.05, 2671.05, 2671.05] },
+      { id: 'RT2', m: true, name: 'Geselle/Gesellin, darf Überprüfungs- und Wartungsarbeiten selbständig ausführen', l: [2671.05, 2671.05, 2671.05] },
+      { id: 'RT3', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2439.20, 2516.50, 2586.36] },
+      { id: 'RT4', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2251.38, 2251.38, 2439.20] },
+      { id: 'RLt1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [675.77] },
+      { id: 'RLt2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [943.72] },
+      { id: 'RLt3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1188.94] }
+    ] };
+  PAKETE.rk_vbg = {
+    name: 'Rauchfangkehrer Vorarlberg (Arbeiter)',
+    hinweis: 'KV Rauchfangkehrer Vorarlberg, Arbeiter, Löhne ab 1.1.2025 (Quelle: wko.at): Monatslöhne und Lehrlingseinkommen. Durchschnittlich 40 Stunden pro Woche (bis 48 möglich). Die Schmutzzulage und weitere Zulagen sind als Prämien vorgeschlagen, den Betrag nimmst du vom Lohnzettel. Nachtzuschlag und Stundenteiler stehen nicht überall in der Quelle: die App rechnet mit 50 % Überstundenzuschlag, bitte mit dem Dienstzettel und dem Lohnzettel vergleichen. Für 2026 ist noch keine neue Lohnordnung veröffentlicht: das sind die letzten bekannten Mindestlöhne.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 40, tagesGrenze: null, zuschlagPct: 50 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 0, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.rk_vbg = { stand: 'ab 1.1.2025', stufen: ['Berufsjahre 1–2', 'Berufsjahre 3–4', 'ab dem 5. Berufsjahr'], gruppen: [
+      { id: 'RV1', m: true, name: 'Geselle/Gesellin mit Lehrabschluss', l: [2000.00, 2100.00, 2100.00] },
+      { id: 'RV2', m: true, name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', l: [2000.00, 2100.00, 2100.00] },
+      { id: 'RLv1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1000.00] },
+      { id: 'RLv2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200.00] },
+      { id: 'RLv3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1400.00] }
+    ] };
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2285,7 +2382,7 @@
         lager: { name: 'Lager / Warenübernahme', kv: 'handel_arb', b: { fahrzeug: false, kunden: false, praemien: true } },
         leitung: { name: 'Filialleitung / Stellvertretung', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
+    gastro: { name: 'Gastronomie / Hotel', paket: 'gastro', kvs: ['gastro', 'gastro_w', 'gastro_wh', 'gastro_bgld', 'gastro_ooe', 'gastro_stmk', 'gastro_ktn', 'gastro_sbg', 'gastro_t', 'gastro_vbg', 'de_gastro', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         service: { name: 'Service (Kellner, Bar)', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Koch, Restaurantfachmann, Hotel)', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -2405,7 +2502,7 @@
         hilfskraft: { name: 'Hilfskraft / Ladner/in / Bügler/in', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Textilreinigung)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    rauchfangkehrer: { name: 'Rauchfangkehrer', paket: 'rk_noe', kvs: ['rk_noe', 'rk_w', 'rk_stmk', 'rk_ktn', 'rk_sbg', 'rk_bgld', 'rk_ooe', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    rauchfangkehrer: { name: 'Rauchfangkehrer', paket: 'rk_noe', kvs: ['rk_noe', 'rk_w', 'rk_stmk', 'rk_ktn', 'rk_sbg', 'rk_bgld', 'rk_ooe', 'rk_t', 'rk_vbg', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         geselle: { name: 'Geselle/Gesellin mit Lehrabschluss', b: { fahrzeug: false, kunden: false, praemien: true } },
         ohne: { name: 'Arbeitnehmer/in ohne Lehrabschluss (Rauchfangkehrer)', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -2521,7 +2618,7 @@
   function kvLohn(w, dateStr) { // Mindestlohn laut hinterlegter Lohngruppe: { std, mon } oder null
     var lg0 = w && LOHNGRUPPEN[w.paket]; if (!lg0 || !w.lg) return null;
     var lg = lgFuer(lg0, dateStr || w.gueltigAb || '0000-00-00'), g = null; lg.gruppen.forEach(function (x) { if (x.id === w.lg) g = x; }); if (!g) return null;
-    var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : +w.ls) : 0, v = i >= 0 ? g.l[i] : null; if (v == null) return null;
+    var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : Math.min(+w.ls, g.l.length - 1)) : 0, v = i >= 0 ? g.l[i] : null; if (v == null) return null; // Stufe über der letzten der Gruppe: höchste Stufe der Gruppe
     if (!g.m) return { std: v, mon: null };
     var tl = lg.teiler || Math.round((wochenStd(w.ueberstunden) > 0 ? wochenStd(w.ueberstunden) : 38.5) * 52 / 12 * 100) / 100, vz = +w.ueberstunden.vollzeitStd > wochenStd(w.ueberstunden) ? wochenStd(w.ueberstunden) / +w.ueberstunden.vollzeitStd : 1;
     return { std: Math.round(v / tl * 100) / 100, mon: Math.round(v * vz * 100) / 100 };

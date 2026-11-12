@@ -1222,7 +1222,7 @@
     klein: [['Nächtigungsgeld', 'tag', 'Nächte außer Haus'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     handel_arb: [['Nachtzulage', 'stunde', 'Stunden in der Nacht'], ['Kälte- oder Schmutzzulage', 'monat', 'einmal pro Monat'], ['Vorarbeiterzulage', 'monat', 'einmal pro Monat'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     handel: [['Provision / Umsatzprämie', 'monat', 'einmal pro Monat'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Nachtzuschlag', 'stunde', 'Stunden nach 20 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
-    gastro: [['Nachtzuschlag', 'stunde', 'Stunden in der Nacht'], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale / Umsatzbeteiligung', 'monat', 'einmal pro Monat'], ['Schmutzzulage', 'tag', 'Einsatztage']],
+    gastro: [['Nachtarbeitszuschlag (0 bis 6 Uhr)', 'stueck', 'begonnene Zeitfenster 0–2, 2–4 und 4–6 Uhr', 9.50], ['Fremdsprachenzulage', 'monat', 'einmal pro Monat', 40], ['Sonn- und Feiertagszuschlag', 'stunde', 'Stunden an Sonn- und Feiertagen'], ['Servicepauschale / Umsatzbeteiligung', 'monat', 'einmal pro Monat'], ['Schmutzzulage', 'tag', 'Einsatztage']],
     de_spedition: [['Übernachtung im Lkw (Pauschale)', 'tag', 'Nächte im Lkw', 9], ['Nachtzuschlag', 'stunde', 'Stunden zwischen 22 und 6 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     de_logistik_sn: [['Nachtzuschlag', 'stunde', 'Stunden zwischen 22 und 6 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
     de_spedition_sonst: [['Nachtzuschlag', 'stunde', 'Stunden zwischen 22 und 6 Uhr'], ['Leistungsprämie', 'monat', 'einmal pro Monat']],
@@ -1252,6 +1252,11 @@
   ['', '_w', '_st', '_ooe', '_sbg', '_k', '_v', '_b', '_t'].forEach(function (k) { PAKET_KURZ['fleischer' + k] = 'Fleischergewerbe'; });
   PR_VOR.bahn = [['Nachtarbeitszulage', 'stunde', 'Stunden zwischen 22 und 5 Uhr', 4.10], ['Sonn- und Feiertagszulage', 'stunde', 'Stunden an Sonn- und Feiertagen', 7], ['Leistungsprämie', 'monat', 'einmal pro Monat'], ['Zulage Schlafwagen 8C: grenzüberschreitender Einsatz', 'monat', 'einmal pro Monat', 62.71], ['Zulage Schlafwagen 8B: Verantwortung für mehrere Mitarbeiter', 'monat', 'einmal pro Monat', 125.41], ['Zulage Arbeitsunterbrechung (Bordgastronomie)', 'stueck', 'angefangene Viertelstunden über 180 Minuten Unterbrechung', 3.49]];
   PAKET_KURZ.bahn = 'Eisenbahn';
+  PR_VOR.rk_t = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Außerhauszulage', 'tag', 'Arbeitstage mit auswärtiger Mittagsverpflegung', 12.76], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PR_VOR.rk_vbg = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PAKET_KURZ.rk_t = 'Rauchfangkehrer Tirol'; PAKET_KURZ.rk_vbg = 'Rauchfangkehrer Vorarlberg';
+  ['w', 'wh', 'bgld', 'ooe', 'stmk', 'ktn', 'sbg', 't', 'vbg'].forEach(function (k) { PR_VOR['gastro_' + k] = PR_VOR.gastro; });
+  PAKET_KURZ.gastro = 'Gastgewerbe Niederösterreich';  PAKET_KURZ.gastro_bgld = 'Gastgewerbe Burgenland';  PAKET_KURZ.gastro_ooe = 'Gastgewerbe Oberösterreich';  PAKET_KURZ.gastro_stmk = 'Gastgewerbe Steiermark';  PAKET_KURZ.gastro_ktn = 'Gastgewerbe Kärnten';  PAKET_KURZ.gastro_sbg = 'Gastgewerbe Salzburg';  PAKET_KURZ.gastro_t = 'Gastgewerbe Tirol';  PAKET_KURZ.gastro_vbg = 'Gastgewerbe Vorarlberg';  PAKET_KURZ.gastro_w = 'Gastronomie Wien'; PAKET_KURZ.gastro_wh = 'Hotellerie und Kaffeehäuser Wien';
   PR_VOR.kur_reha = [['Nachtdienstzulage', 'tag', 'Nachtdienste mit mehr als 4 Stunden (20 bis 6 Uhr)', 48.56], ['Sonn- und Feiertagszulage', 'tag', 'Sonn- und Feiertagsdienste mit mehr als 4 Stunden', 48.56]];
   PR_VOR.agrar = [['Nachtzulage', 'stunde', 'Stunden von 22 bis 5 Uhr', 3.13], ['Nächtigungsgeld', 'tag', 'Tage mit Nächtigung', 17], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PAKET_KURZ.kur_reha = 'Kur und Reha'; PAKET_KURZ.agrar = 'Agrarservice';
