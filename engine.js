@@ -950,6 +950,14 @@
     ] }
   };
 
+  // Österreichische Bundesländer und welcher Kollektivvertrag (Paket) zu welchem Bundesland gehört
+  var LAENDER_AT = { w: 'Wien', noe: 'Niederösterreich', bgld: 'Burgenland', ooe: 'Oberösterreich', stmk: 'Steiermark', ktn: 'Kärnten', sbg: 'Salzburg', t: 'Tirol', vbg: 'Vorarlberg' };
+  var KV_LAND_SUF = { w: 'w', wh: 'w', noe: 'noe', st: 'stmk', stmk: 'stmk', ooe: 'ooe', sbg: 'sbg', k: 'ktn', ktn: 'ktn', v: 'vbg', vbg: 'vbg', b: 'bgld', bgld: 'bgld', t: 't' };
+  var KV_LAND_FIX = { taxi_t: ['t'], taxi_vbg: ['vbg'], taxi_sbg: ['sbg'], taxi_stmk: ['stmk'], textil_t: ['t'], textil_vbg: ['vbg'], textil: ['w', 'noe', 'bgld', 'ooe', 'sbg', 'stmk', 'ktn'], konditor: ['noe'], fleischer: ['noe'], gastro: ['noe'], gastro_ang_c: ['bgld', 'ktn', 'noe', 'ooe', 'stmk'], gastro_ang_d: ['sbg', 't', 'vbg'], gastro_ang_w: ['w'], gastro_ang_wh: ['w'] };
+  function kvLand(paket) {
+    paket = String(paket || ''); if (KV_LAND_FIX[paket]) return KV_LAND_FIX[paket];
+    var m = /^(konditor|fleischer|ordination|rk|gastro)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
+  }
   /* ---------------------------------------------------------------- Berufe und Bausteine */
   // b = Voreinstellung, welche Bausteine der Beruf braucht (fahrzeug, kunden, praemien), diaeten = ob Diäten üblich sind.
   // Konditoren: Lohnordnungen der anderen Bundesländer (Quelle: wko.at, Arbeiter/innen), Zuschläge und Arbeitszeit wie in Niederösterreich
@@ -2411,6 +2419,18 @@
       { id: 'AL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1445.00] },
       { id: 'AL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr oder Doppellehre', l: [1550.00] }
     ] };
+  // Taxi: Landes-KVs mit Tagesgeld (Tirol 2023, Vorarlberg 2025, Salzburg 2023, Steiermark 2015; unbefristet)
+  var TAXI_BL = { t: [12, 'Tirol'], vbg: [30, 'Vorarlberg'], sbg: [18, 'Salzburg'], stmk: [16.80, 'Steiermark'] }, TAXI_H = { t: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). Landes-KV Tirol: Tagesgeld 12,00 € je Kalendertag bei mehr als 3 Stunden Fahrt oder Abwesenheit, für jede angefangene Stunde 1/12 (höchstens ein Tagessatz am Tag), sofern keine Betriebsvereinbarung etwas anderes regelt. Lehrlinge sind nicht geregelt.', vbg: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). Landes-KV Vorarlberg: Tagesgeld 30,00 € je Kalendertag bei mehr als 3 Stunden Fahrt oder Abwesenheit, für jede angefangene Stunde 1/12 (höchstens ein Tagessatz am Tag), sofern keine Betriebsvereinbarung etwas anderes regelt. Lehrlinge sind nicht geregelt.', sbg: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). Landes-KV Salzburg: Tagesgeld 18,00 € je Kalendertag bei mehr als 3 Stunden Fahrt oder Abwesenheit, für jede angefangene Stunde 1/12 (höchstens ein Tagessatz am Tag), sofern keine Betriebsvereinbarung etwas anderes regelt. Lehrlinge sind nicht geregelt.', stmk: 'KV Personenbeförderungsgewerbe mit Pkw (Taxi), Arbeiter, ab 1.1.2026 (Quelle: wko.at): bundesweiter Mindestlohn 2.060,00 € brutto im Monat, bei kürzerer Arbeitszeit anteilig. Lohngruppen gibt es nicht. Normalarbeitszeit im Taxi bis 55 Stunden/Woche (Grundstundenlohn 1/238 des Monatslohns), bei Schülertransport, Krankenbeförderung und ähnlichen Fahrten 45 Stunden (1/173). Überstunden 50 %. Für Nacht, Sonntag und Feiertag nennt der KV keine eigenen Zuschläge, es gilt das Gesetz. Urlaubs- und Weihnachtsgeld je ein Mindestmonatslohn (fällig 1. Juni und 1. Dezember). Landes-KV Steiermark: Tagesgeld 16,80 € je Kalendertag bei mehr als 3 Stunden Fahrt oder Abwesenheit, für jede angefangene Stunde 1/12 (höchstens ein Tagessatz am Tag), sofern keine Betriebsvereinbarung etwas anderes regelt. Lehrlinge sind nicht geregelt.' };
+  Object.keys(TAXI_BL).forEach(function (k) {
+    var p = clone(PAKETE.taxi); p.name = 'Taxi und Mietwagen (Arbeiter), ' + TAXI_BL[k][1]; p.hinweis = TAXI_H[k];
+    p.werte.diaeten = { modell: 'stunde', satz: Math.round(TAXI_BL[k][0] / 12 * 100) / 100, maxStd: 12, minStd: 3, vorschlag: 'anwesenheit', stufen: [] };
+    PAKETE['taxi_' + k] = p; LOHNGRUPPEN['taxi_' + k] = clone(LOHNGRUPPEN.taxi);
+  });
+  // Textilindustrie: eigene Lohnordnungen für Tirol und Vorarlberg ab 1.4.2026 (wko.at), Arbeitszeit und Zuschläge wie im Rahmen-KV
+  [['t', 'Tirol', [2058, 2104, 2152, 2295, 2498, 2926]], ['vbg', 'Vorarlberg', [2058, 2138, 2233, 2351, 2539, 2940]]].forEach(function (x) {
+    var p = clone(PAKETE.textil); p.name = 'Textilindustrie (Arbeiter), ' + x[1]; PAKETE['textil_' + x[0]] = p;
+    var l = clone(LOHNGRUPPEN.textil); l.stand = 'ab 1.4.2026, ' + x[1]; ['TA', 'TB', 'TC', 'TD', 'TE', 'TF'].forEach(function (id, i) { l.gruppen.filter(function (g) { return g.id === id; })[0].l = [x[2][i]]; }); LOHNGRUPPEN['textil_' + x[0]] = l;
+  });
   var BERUFE = {
     lkw: { name: 'Lkw-Fahrer', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true },
       arten: {
@@ -2550,7 +2570,7 @@
         bordgastro: { name: 'Bordgastronomie und Schlafwagen', b: { fahrzeug: false, kunden: false, praemien: true } },
         lehrling: { name: 'Lehrling (Bahn)', b: { fahrzeug: false, kunden: false, praemien: true } }
       } },
-    bus: { name: 'Bus und Taxi', paket: 'autobus', kvs: ['autobus', 'autobus_g', 'taxi', 'taxi_b', 'eigen'], einfach: true, diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: true },
+    bus: { name: 'Bus und Taxi', paket: 'autobus', kvs: ['autobus', 'autobus_g', 'taxi', 'taxi_t', 'taxi_vbg', 'taxi_sbg', 'taxi_stmk', 'taxi_b', 'eigen'], einfach: true, diaeten: true, sw: false, b: { fahrzeug: true, kunden: false, praemien: true },
       arten: {
         linie: { name: 'Linienbus', b: { fahrzeug: true, kunden: false, praemien: true } },
         reise: { name: 'Reisebus / Gelegenheitsverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
@@ -2567,7 +2587,7 @@
         agrar: { name: 'Agrarservice / landwirtschaftliches Lohnunternehmen', kv: 'agrar', b: { fahrzeug: true, kunden: true, praemien: true } },
         lehrling: { name: 'Lehrling (Gärtner / Forst)', b: { fahrzeug: true, kunden: true, praemien: true } }
       } },
-    industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'chemie', 'papier', 'textil', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
+    industrie: { name: 'Industrie und Produktion (Arbeiter)', paket: 'metall_ind', kvs: ['metall_ind', 'chemie', 'papier', 'textil', 'textil_t', 'textil_vbg', 'metall', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
       arten: {
         produktion: { name: 'Produktion / Maschinenbedienung', b: { fahrzeug: false, kunden: false, praemien: true } },
         schicht: { name: 'Schichtarbeit', b: { fahrzeug: false, kunden: false, praemien: true } },
@@ -3383,7 +3403,7 @@
   return {
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
-    rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
+    LAENDER_AT: LAENDER_AT, kvLand: kvLand, rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     parseSchnell: parseSchnell, wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };

@@ -1252,6 +1252,8 @@
   ['', '_w', '_st', '_ooe', '_sbg', '_k', '_v', '_b', '_t'].forEach(function (k) { PAKET_KURZ['fleischer' + k] = 'Fleischergewerbe'; });
   PR_VOR.bahn = [['Nachtarbeitszulage', 'stunde', 'Stunden zwischen 22 und 5 Uhr', 4.10], ['Sonn- und Feiertagszulage', 'stunde', 'Stunden an Sonn- und Feiertagen', 7], ['Leistungsprämie', 'monat', 'einmal pro Monat'], ['Zulage Schlafwagen 8C: grenzüberschreitender Einsatz', 'monat', 'einmal pro Monat', 62.71], ['Zulage Schlafwagen 8B: Verantwortung für mehrere Mitarbeiter', 'monat', 'einmal pro Monat', 125.41], ['Zulage Arbeitsunterbrechung (Bordgastronomie)', 'stueck', 'angefangene Viertelstunden über 180 Minuten Unterbrechung', 3.49]];
   PAKET_KURZ.bahn = 'Eisenbahn';
+  PAKET_KURZ.taxi_t = 'Taxi Tirol'; PAKET_KURZ.taxi_vbg = 'Taxi Vorarlberg'; PAKET_KURZ.taxi_sbg = 'Taxi Salzburg'; PAKET_KURZ.taxi_stmk = 'Taxi Steiermark'; PAKET_KURZ.textil_t = 'Textilindustrie Tirol'; PAKET_KURZ.textil_vbg = 'Textilindustrie Vorarlberg';
+  ['t', 'vbg', 'sbg', 'stmk'].forEach(function (k) { if (PR_VOR.taxi) PR_VOR['taxi_' + k] = PR_VOR.taxi; }); ['t', 'vbg'].forEach(function (k) { if (PR_VOR.textil) PR_VOR['textil_' + k] = PR_VOR.textil; });
   ['wh', 'w', 'c', 'd'].forEach(function (k) { PR_VOR['gastro_ang_' + k] = [['Fremdsprachenzulage', 'monat', 'einmal pro Monat', 40], ['Leistungsprämie', 'monat', 'einmal pro Monat']]; PAKET_KURZ['gastro_ang_' + k] = 'Gastgewerbe (Angestellte)'; });
   PR_VOR.rk_t = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Außerhauszulage', 'tag', 'Arbeitstage mit auswärtiger Mittagsverpflegung', 12.76], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.rk_vbg = [['Schmutzzulage', 'stunde', 'Stunden mit Schmutzarbeit, Prozentsatz des Lohns, Betrag laut Lohnzettel'], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
@@ -1339,10 +1341,36 @@
   PR_VOR.fliesenleger = [['Helferzulage bei Akkord-Fliesenleger', 'stunde', 'Stunden als Helfer beim Akkord-Fliesenleger'], ['Taggeld mit Übernachtung', 'tag', 'Arbeitstage mit notwendiger Übernachtung', 30], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 12], ['Lenkzeitvergütung Mannschaftstransporter', 'stunde', 'Stunden am Steuer des Mannschaftstransporters', 15.31], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.maler = [['Schmutz- und Erschwerniszulage (10 % oder 20 %)', 'stunde', 'Stunden mit Erschwernis, zum Beispiel ab 4 m Standhöhe, Betrag laut Lohnzettel'], ['Aufsichtszulage', 'stunde', 'Stunden mit Aufsicht über mehrere Mitarbeiter'], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 10], ['Lenkzeitvergütung Mannschaftstransporter', 'stunde', 'Stunden am Steuer des Mannschaftstransporters', 15.42], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.metall = [['Montagezulage', 'stunde', 'Stunden auf Montage (mindestens 1,155 € laut KV, nicht für Lehrlinge)', 1.155], ['Nachtarbeitszulage', 'stunde', 'Normalstunden von 22 bis 6 Uhr, nicht für Überstunden', 3.348], ['Schichtzulage 2. Schicht', 'stunde', 'Stunden in der 2. Schicht', 1.065], ['Schichtzulage 3. Schicht', 'stunde', 'Stunden in der 3. Schicht', 3.348], ['Schmutz-, Erschwernis- oder Gefahrenzulage', 'stunde', 'Stunden mit erschwerten Bedingungen', 0.746], ['Entfernungszulage über 6 Stunden', 'tag', 'Einsatztage mit mehr als 6 Stunden Abwesenheit', 11.94], ['Entfernungszulage über 11 Stunden', 'tag', 'Einsatztage mit mehr als 11 Stunden Abwesenheit', 30], ['Entfernungszulage mit Nächtigung', 'tag', 'Einsatztage mit auswärtiger Nächtigung', 62.04], ['Nächtigungsgeld', 'tag', 'Nächte außer Haus', 22.05], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  /* ---- Bundesland (Arbeitsort): richtiger Kollektivvertrag und Zulagen des Bundeslandes ---- */
+  function landAT() { return (data.profil && data.profil.land) || ''; }
+  function landOpts(sel) { return '<option value="">Bitte wählen</option>' + Object.keys(E.LAENDER_AT).map(function (k) { return '<option value="' + k + '"' + (sel === k ? ' selected' : '') + '>' + E.LAENDER_AT[k] + '</option>'; }).join(''); }
+  function berufHatLand(beruf) { var b = E.BERUFE[beruf]; return !!(b && (b.kvs || []).some(function (k) { return E.kvLand(k); })); }
+  function kvPasstLand(paket, l) { var x = E.kvLand(paket); return !x || !l || x.indexOf(l) >= 0; }
+  function landSetzen(l) { if (!data.profil) data.profil = {}; if (l) data.profil.land = l; else delete data.profil.land; save(); }
+  // Zulagen, die je Bundesland verschieden sind (Quelle: wko.at, Lohnordnungen 2026). p = Prozent des Stundenlohns.
+  var GL_DACH = function (b, h) { return ['Dachzulage (Glaser)', 'stunde', h, b]; }, GL_BLEI = function (b) { return ['Bleiglas- und Klebezulage (Glaser)', 'stunde', 'Stunden mit Bleiverglasung oder Klebearbeiten in geschlossenen Räumen', b]; }, GL_MARMOR = ['Marmorglaszulage (Glaser)', 'stunde', 'Stunden mit Marmorglasverlegung', 1.15], LP = ['Leistungsprämie', 'monat', 'einmal pro Monat'];
+  var DD_ALLG = [['Trennungsgeld', 'tag', 'Kalendertage ohne tägliche Heimkehr', 30], ['Lenkzeitvergütung Mannschaftstransporter', 'stunde', 'Stunden am Steuer des Mannschaftstransporters', 15.42], LP];
+  var FL_AKK = function (p) { return [['Zuschlag für Helfer beim Akkord-Fliesenleger', 'stunde', 'Stunden als Helfer eines Fliesenlegers im Akkord', null, p]].concat(PR_VOR.fliesenleger || [LP]); };
+  var PR_VOR_LAND = {
+    fliesenleger: { ooe: FL_AKK(18), w: FL_AKK(18), stmk: FL_AKK(13) },
+    glaser: { bgld: [GL_DACH(0.61, 'Stunden auf Glasdächern, Gerüsten oder in Gondeln'), LP], ooe: [GL_DACH(0.88, 'Stunden auf Dächern, Gerüsten oder in Gondeln'), GL_BLEI(0.88), LP], sbg: [GL_DACH(0.93, 'Stunden auf Leitergerüsten, Dächern oder in Gondeln'), LP], stmk: [GL_DACH(1.05, 'Stunden mit Dacharbeiten (Glasergeselle)'), GL_MARMOR, LP], t: [GL_DACH(1.05, 'Stunden ab 4 m Höhe'), GL_BLEI(1.05), GL_MARMOR, LP], w: [GL_DACH(1.05, 'Stunden ab 4 m Höhe'), GL_BLEI(1.05), GL_MARMOR, LP], ktn: [LP], noe: [LP], vbg: [LP] },
+    dachdecker: {
+      ktn: [['Gefahrenzulage Turm- und Fahrstuhlarbeiten', 'stunde', 'Stunden an Türmen oder am Fahrstuhl', null, 40], ['Gefahrenzulage Schneearbeiten', 'stunde', 'Stunden mit Schneearbeiten (Rinnen auseisen, Lawinen abschaufeln)', null, 15], ['Schmutzzulage Schwarzarbeiten', 'stunde', 'Stunden mit Teer, Bitumen oder Dachpappe (10 % des Facharbeiterlohns)', null, 10]].concat(DD_ALLG),
+      ooe: [['Erschwerniszulage Turm- und Fahrstuhlarbeiten', 'stunde', 'Stunden an Türmen ohne festes Gerüst oder am Fahrstuhl', null, 40], ['Erschwerniszulage Schneearbeiten', 'stunde', 'Stunden mit Schneearbeiten', null, 15], ['Vorarbeiterzulage', 'stunde', 'Stunden als Vorarbeiter', null, 10], ['Schmutzzulage Schwarzarbeiten', 'stunde', 'Stunden mit Teer, Bitumen oder Dachpappe', null, 10], ['Werkzeugzulage', 'stunde', 'Stunden mit eigenem Ziegel- und Schieferdeckerwerkzeug', null, 2.5]].concat(DD_ALLG),
+      t: [['Turm- und Fahrstuhlzulage', 'stunde', 'Stunden an Türmen ohne festes Gerüst oder am Fahrstuhl', null, 30], ['Schmutzzulage Teerarbeiten', 'stunde', 'Stunden mit Teerarbeiten', null, 5], ['Schmutzzulage Umdeckarbeiten', 'stunde', 'Stunden mit Abtragen und Wiedereindecken alter Dächer', null, 10]].concat(DD_ALLG),
+      w: [['Schmutz-, Erschwernis- oder Gefahrenzulage', 'stunde', 'Stunden mit starker Verschmutzung, Erschwernis oder Gefahr (nur eine Zulage)', 1.60], ['Partieführerzulage', 'stunde', 'Stunden als Partieführer (mehr als 3 Arbeitnehmer)', null, 5], ['Werkzeugzulage', 'stunde', 'Stunden mit eigenem Ziegel- und Schieferwerkzeug', null, 2.5]].concat(DD_ALLG),
+      bgld: DD_ALLG, noe: DD_ALLG, sbg: DD_ALLG, stmk: DD_ALLG, vbg: DD_ALLG
+    }
+  };
+  function prVorListe(paket) {
+    var l = landAT(), x = PR_VOR_LAND[paket] && l ? PR_VOR_LAND[paket][l] : null; if (!x) return PR_VOR[paket] || null;
+    var w = wAt(todayISO()), sl = w && (+w.stundenlohn > 0 ? +w.stundenlohn : (+w.monatslohn > 0 ? +w.monatslohn / ((w.ueberstunden && +w.ueberstunden.wochenStd || 40) * 4.33) : 0));
+    return x.map(function (y) { if (y[4] == null) return y; return [y[0], y[1], y[2] + ' (' + String(y[4]).replace('.', ',') + ' % des Stundenlohns)', sl > 0 ? Math.round(sl * y[4]) / 100 : null]; });
+  }
   function renderPrVor() {
-    var w = wAt(todayISO()), k = w && PR_VOR[w.paket] ? w.paket : null, box = $('#pr-vor'), h = $('#pr-vorh');
+    var w = wAt(todayISO()), k = w && prVorListe(w.paket) ? w.paket : null, box = $('#pr-vor'), h = $('#pr-vorh');
     if (!box) return;
-    var have = praemienListe().map(function (p) { return p.name; }), list = k ? PR_VOR[k].filter(function (x) { return have.indexOf(x[0]) < 0; }) : [];
+    var have = praemienListe().map(function (p) { return p.name; }), list = k ? prVorListe(k).filter(function (x) { return have.indexOf(x[0]) < 0; }) : [];
     h.hidden = !list.length;
     box.innerHTML = list.map(function (x, i) { return '<button type="button" class="chip" data-prvor="' + i + '">' + esc(x[0]) + '</button>'; }).join('');
     box._list = list;
@@ -2111,6 +2139,10 @@
     if (!data.settings.length) return null;
     var w = wAt(todayISO()), bs = E.bausteine(w), c = miaCfg(), out = [], pk = miaPrevKey();
     if (ui.fbNeu && ui.fbNeu.length) out.push({ k: 'fberledigt', text: 'Gute Nachricht: Deine Meldung an den Entwickler ist erledigt. Danke fürs Melden!' });
+    var wL = wAt(todayISO()), lL = landAT();
+    if (wL && wL.paket && lL && !kvPasstLand(wL.paket, lL)) out.push({ k: 'kvland', text: abw1('Dein Kollektivvertrag ({0}) gilt für ein anderes Bundesland als dein Arbeitsort ({1}). Die Löhne sind je Bundesland verschieden. Soll ich dir zeigen, wo du ihn änderst?', [PAKET_KURZ[wL.paket] || (E.PAKETE[wL.paket] && E.PAKETE[wL.paket].name) || '', E.LAENDER_AT[lL]]) });
+    else if (wL && wL.paket && lL && !E.kvLand(wL.paket)) { var eig = ((E.BERUFE[wL.beruf] || {}).kvs || []).filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(lL) >= 0 && k.indexOf(wL.paket + '_') === 0; })[0]; if (eig) out.push({ k: 'kvland', text: abw1('Für dein Bundesland ({1}) gibt es einen eigenen Kollektivvertrag ({0}). Soll ich dir zeigen, wo du ihn änderst?', [PAKET_KURZ[eig] || E.PAKETE[eig].name, E.LAENDER_AT[lL]]) }); }
+    else if (wL && !lL && (berufHatLand(wL.beruf) || PR_VOR_LAND[wL.paket])) out.push({ k: 'landfrage', text: 'In welchem Bundesland arbeitest du? Dann schlage ich dir den passenden Kollektivvertrag und die Zulagen deines Bundeslandes vor. Das ist optional. Soll ich dich hinführen?' });
     if (!(data.profil && (data.profil.sqHinweis || data.profil.sqText === true))) out.push({ k: 'schnellneu', spaet: !!(data.profil && data.profil.mia && data.profil.mia.spaetTag === todayISO() && !((data.days[todayISO()] && data.days[todayISO()].bis) || new Date().getHours() >= 15)), text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
@@ -2150,7 +2182,7 @@
     var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
     function zeichne() {
       ov.innerHTML = '<div class="mk-box" role="dialog" aria-modal="true"><div class="mk-kopf"><span class="mk-mia">' + miaSvg(c.figur, miaFor(), 'eyes') + '</span><div class="mk-titel"><b>Das wartet auf dich</b><span class="mk-zahl">' + L.length + '</span></div></div>' +
-        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
+        L.map(function (o, i) { return '<div class="mk-zeile"><p' + (o.k.indexOf('unterkv_') === 0 ? ' class="mk-rot"' : '') + '>' + esc(o.text) + '</p><div class="mk-btns"><button type="button" class="btn primary" data-mg="' + i + '">' + (o.k === 'schnellneu' || o.k === 'landfrage' || o.k === 'kvland' ? 'Ja, bitte' : 'Zeig mir') + '</button><button type="button" class="btn" data-ms="' + i + '">Später</button></div></div>'; }).join('') +
         '<button type="button" class="btn mk-zu" data-mz="1">Schließen</button></div>';
       try { uiApply(ov); } catch (e) { }
     }
@@ -2206,6 +2238,7 @@
   }
   function miaGo(k) {
     if (k === 'umfrage') { umOpen(); return; }
+    if (k === 'landfrage' || k === 'kvland') { show('einstellungen'); setTimeout(function () { var e2 = k === 'kvland' ? $('#s-beruf') : $('#s-land'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); (k === 'kvland' ? e2 : e2.closest('.field')).classList.add('mia-treffer'); setTimeout(function () { (k === 'kvland' ? e2 : e2.closest('.field')).classList.remove('mia-treffer'); }, 3200); } }, 250); return; }
     if (k === 'schnellneu') { var ps = data.profil || (data.profil = {}); ps.sqHinweis = true; save(); show('einstellungen'); setTimeout(function () { var e2 = $('#s-eingabe'); if (e2) { e2.scrollIntoView({ behavior: 'smooth', block: 'center' }); e2.classList.add('mia-treffer'); setTimeout(function () { e2.classList.remove('mia-treffer'); }, 3000); } }, 250); return; }
     if (k.indexOf('kvneu_') === 0) { kvUebernehmen(k.slice(6)); return; }
     if (k.indexOf('unterkv_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#s-kvwarn'); if (el && !el.hidden) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200); return; }
@@ -2285,7 +2318,7 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     ui.miaManuell = !auto; var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaManuell = false; ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
     else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
     bb.hidden = false;
@@ -2493,9 +2526,11 @@
     { id: 'urlaub', k: ['urlaub eintragen', 'krankenstand eintragen', 'art des tages', 'zeitausgleich eintragen', 'urlaub', 'krankenstand'], sel: '#e-status', pfad: ['Erfassen', 'Art des Tages'] },
     { id: 'fristen', k: ['fristen', 'code 95', 'code95', 'ausweise', 'fahrerkarte', 'staplerschein', 'ablaufdatum', 'ausbildungen'], sel: '#fr-card', pfad: ['Profil', 'Ausbildungen, Ausweise und Fristen'] },
     { id: 'news', k: ['neuigkeiten', 'news'], sel: '#news-card', pfad: ['Profil', 'Neuigkeiten'] },
+    { id: 'bundesland', k: ['bundesland', 'arbeitsort', 'federal state', 'welches land'], sel: '#s-land', pfad: ['Einstellungen', 'Meine Daten', 'Bundesland'], unter: 'Meine Daten' },
     { id: 'sicherung', k: ['sicherung', 'backup', 'daten sichern', 'wiederherstellen'], sel: '#b-card', open: true, pfad: ['Einstellungen', 'Sicherung'], unter: true }
   ];
   var MIA_WO_X = {
+    bundesland: 'kraj związkowy|województwo|tartomány|eyalet|spolková země|spolková krajina|savezna zemlja|savezna država|regione|land federal|федеральная земля|федеральна земля',
     lohn: 'godzinowa|stawka za godzine|oraria|hodinova mzda|hodinova sadzba|satnica|paga oraria|salariu pe ora|tarif orar|zarplata v chas|pochasova|pochasova stavka|ставка в час|почасова|оплата за час|saatlik ucret|saat basi',
     monatslohn: 'pensja miesieczna|stala pensja|havi fizetes|havi ber|aylik maas|sabit maas|mesicni plat|mesacny plat|mjesecna placa|mesecna plata|stipendio mensile|salariu lunar|месячная зарплата|оклад|місячна зарплата|oklad',
     diaeten: 'dieta dzienna|dieta krajowa|napi dij|kiküldetési|kikuldetesi|harcirak|gundelik|yevmiye|dnevnice|dnevnica|indennita di trasferta|diurna|суточные|командировочные|добові|відрядні|gunluk harcirah',
@@ -2984,12 +3019,14 @@
     } else if (w.step === 'kv') {
       var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen']).slice(), ak = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten && w.art && E.BERUFE[w.beruf].arten[w.art] && E.BERUFE[w.beruf].arten[w.art].kv;
       if (ak && kvs.indexOf(ak) > 0) { kvs.splice(kvs.indexOf(ak), 1); kvs.unshift(ak); }
+      var mitLand = berufHatLand(w.beruf), wl = landAT(), kvL = mitLand && wl ? kvs.filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(wl) >= 0; }) : [];
+      if (kvL.length) { kvs = kvL.concat(kvs.filter(function (k) { return kvL.indexOf(k) < 0; })); }
       if (w.scan && !w.scanDone) { w.scanDone = true; lzAnwenden(w, w.scan.k, w.scan.tr); }
       if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
       var cp = E.PAKETE[w.paket];
-      var kvAt = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; }), auto = (ak && String(ak).indexOf('de_') !== 0) ? ak : (kvAt.length === 1 ? kvAt[0] : null);
+      var kvAt = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; }), auto = (ak && String(ak).indexOf('de_') !== 0) ? ak : (kvL.length === 1 ? kvL[0] : (kvAt.length === 1 ? kvAt[0] : null));
       var kvListe = '<div class="wzlist">' + kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>';
-      html += (auto ? '<h3>Dein Kollektivvertrag</h3><p class="hint">Ich habe ihn anhand deines Berufs ausgewählt. Passt er, tippe auf Weiter. Steht auf deinem Lohnzettel etwas anderes, wähle unten einen anderen.</p>' : '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p>') + '<div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div>' +
+      html += (auto ? '<h3>Dein Kollektivvertrag</h3><p class="hint">Ich habe ihn anhand deines Berufs ausgewählt. Passt er, tippe auf Weiter. Steht auf deinem Lohnzettel etwas anderes, wähle unten einen anderen.</p>' : '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p>') + (mitLand ? '<div class="field"><label for="wz-land">In welchem Bundesland arbeitest du? (optional, hilft bei der Auswahl)</label><select id="wz-land">' + landOpts(wl) + '</select></div>' : '') + '<div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div>' +
         (auto ? '<div class="wzlist"><button type="button" class="btn wzopt on" data-wk="' + w.paket + '">' + (w.paket === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[w.paket].name)) + '</button></div><details class="wzfehlt"><summary>Anderen Kollektivvertrag wählen</summary>' + kvListe + '</details>' : kvListe) +
         '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Auf deinem Lohnzettel oder im Dienstvertrag, meist oben unter „Kollektivvertrag“ oder „KV“. Sonst frag im Büro. Weißt du es nicht, nimm „Weiß ich nicht“. Du kannst es später ändern, nichts geht verloren.</p></details>' +
         '<details class="wzfehlt"><summary>Mein Kollektivvertrag ist nicht dabei</summary><div class="field"><label for="wz-kvf">Ich brauche bitte den Kollektivvertrag für …</label><input type="text" id="wz-kvf" maxlength="120" autocomplete="off"></div><button type="button" class="btn" data-wkf="1">An den Entwickler schicken</button></details>' +
@@ -3037,14 +3074,14 @@
       if (t.dataset.wa) { wzSetArt(t.dataset.wa); wzNext(); return; }
       if (t.dataset.ws) { var sp = t.dataset.ws.split(':'); wzSetBeruf(sp[0]); wzNext(); if (sp[1]) { wzSetArt(sp[1]); wzNext(); } return; }
       if (t.dataset.wm) { w.mia = t.dataset.wm; wzRender(); return; }
-      if (t.dataset.wk) { w.paket = t.dataset.wk; w.kvGewaehlt = true; var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
+      if (t.dataset.wk) { w.paket = t.dataset.wk; w.kvGewaehlt = true; var kl0 = E.kvLand(w.paket); if (kl0 && kl0.length === 1 && !landAT()) landSetzen(kl0[0]); var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : ''; wzRender(); return; }
       if (t.id === 'wz-scan') { lzUi.modus = 'einr'; lzOpen(); return; }
       if (t.id === 'wz-next') { wzNext(); return; }
       if (t.id === 'wz-back') { wzBack(); return; }
     });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
     ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-such') { wzSuche(t.value); return; } if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
-    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
+    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-land') { landSetzen(t.value); ui.wiz.kvGewaehlt = false; wzRender(); return; } if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
     $('#kv-send').addEventListener('click', function () {
       var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
       if (!f.name && !f.gruppe) { toast('Bitte trage mindestens den Kollektivvertrag oder die Einstufung ein.'); return; }
@@ -3065,6 +3102,7 @@
     $('#s-luecke').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.lueckenFrage = this.checked; save(); });
     $('#s-tagf').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.tagesfuehrung = this.checked; save(); });
     $('#s-firma').addEventListener('change', function () { if (!data.profil) data.profil = {}; data.profil.firma = this.value.trim(); save(); });
+    $('#s-land').addEventListener('change', function () { landSetzen(this.value); renderSettings(); });
     $('#s-beruf-go').addEventListener('click', function () { var d = $('#s-beruf-ab').value; if (!validISO(d)) { toast('Bitte ein Datum wählen.'); return; } wzOpen('change', d); });
   })();
 
@@ -3112,6 +3150,7 @@
     $('#s-ansichtsel').value = (data.profil && data.profil.monatAnsicht) || 'liste';
     fotoZeigen(); $('#s-luecke').checked = !(data.profil && data.profil.lueckenFrage === false); $('#s-tagf').checked = !!(data.profil && data.profil.tagesfuehrung === true);
     if (document.activeElement !== $('#s-firma')) $('#s-firma').value = (data.profil && data.profil.firma) || '';
+    var sl0 = $('#s-land'); if (sl0) { if (!sl0.options.length) { sl0.innerHTML = landOpts(''); try { uiApply(sl0); } catch (e) { } } sl0.value = landAT(); }
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);

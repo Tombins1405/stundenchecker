@@ -39,8 +39,46 @@
     return null;
   }
   // lines: Textzeilen. gelernt: { normierteBezeichnung: key|'-' } aus früheren bestätigten Lohnzetteln.
+  // Bau-Lohnzettel mit Lohnart-Nummer vor der Bezeichnung und Zahlen ohne Komma („1000REGIELOHN 1735 1930“):
+  // Einheit mit einer, Satz mit zwei Nachkommastellen (173,5 Stunden zu 19,30 €). Der Betrag ist oft abgedeckt, deshalb gilt die Zeile
+  // als unsicher und der Nutzer bestätigt sie. Lesefehler der Texterkennung in der Lohnart-Nummer und in Bezeichnungen werden toleriert.
+  var BAU = [
+    [/R[EF]G[I1l]E?L[O0]HN|AKK[O0]RDL[O0]HN|LE[I1]STUNGSL[O0]HN/, 'Regielohn', 'lohn', 1],
+    [/F[EF]?R?[I1]?ERT\.?\s?-?ENTG|FE[I1]ERTAGSENTG/, 'Feiertagsentgelt', 'feiertag', 1],
+    [/EFZG-?\s?GRUNDL[O0]HN|KRANKENENTG/, 'Entgeltfortzahlung Krankheit (EFZG)', 'krank', 1],
+    [/PFLEGEFRE[I1]ST/, 'Pflegefreistellung', 'pflege', 1],
+    [/[UVW]ESTD\.?\s?-?ZUSCH|[ÜU]BERSTD\.?\s?-?ZUSCH/, 'Überstunden (Zuschlag 50 %)', 'ueber', 1],
+    [/E[I1]NARBT/, 'Einarbeiten für Zeitausgleich', 'zaKonto', 1],
+    [/K[O0]NSUM\s?ZA/, 'Zeitausgleich verbraucht', 'zaKonto', -1],
+    [/AUSZAHLUNG\s?ZA/, 'Zeitausgleich ausbezahlt', 'zaKonto', -1],
+    [/SCHLECHTWETTER/, 'Schlechtwetter', null, 1],
+    [/PR[ÄA]M[I1]ENSTUND/, 'Prämienstunden', null, 1],
+    [/[TM]AGGELD\s?KV|[TM]AGGELD\s?AUFZ/, 'Taggeld (Tage)', null, 1],
+    [/FAHRGELD/, 'Fahrgeld (Tage)', null, 1]
+  ];
+  function bauZeilen(lines) {
+    var out = [], treffer = 0;
+    lines.forEach(function (ln) {
+      var t = String(ln).toUpperCase(), hit = null;
+      if (/,\d\d/.test(t)) { out.push(ln); return; } // Zeilen mit Komma liest der normale Leser
+      for (var i = 0; i < BAU.length; i++) { var mm = BAU[i][0].exec(t); if (mm) { hit = [BAU[i], mm]; break; } }
+      if (!hit) { out.push(ln); return; }
+      var rest = t.slice(hit[1].index + hit[1][0].length).replace(/\d+\s?%/g, ' ').replace(/R\.?\s?50/g, ' ').replace(/DV|KV\+?\d*|PF\/FR|\bDS\b/g, ' ');
+      var nums = rest.match(/\d+\s?-?/g); if (!nums) return;
+      var ein = nums[0].trim(), neg = /-$/.test(ein), m = parseInt(ein, 10) / 10, satz = nums[1] ? parseInt(nums[1], 10) / 100 : null;
+      if (!(m > 0) || m > 400) return;
+      treffer++;
+      if (neg && hit[0][2] !== 'zaKonto') m = -m;
+      var v = hit[0][3] * m, menge = Math.abs(v).toFixed(2).replace('.', ',');
+      out.push({ bau: true, label: hit[0][1], key: hit[0][2], text: hit[0][1] + (v < 0 ? ' - ' : ' ') + menge + (hit[0][2] ? ' h' : '') + (satz ? ' ' + satz.toFixed(2).replace('.', ',') : '') });
+    });
+    if (treffer < 2) return null; // nur bei einem echten Bau-Lohnzettel umstellen
+    var r = out.map(function (x) { return typeof x === 'string' ? x : x.text; });
+    r.foto = lines.foto; r.bau = out.filter(function (x) { return x && x.bau; }); return r;
+  }
   function parse(lines, gelernt) {
     gelernt = gelernt || {};
+    var bz = bauZeilen(lines), bauArt = {}; if (bz) { bz.bau.forEach(function (x) { bauArt[norm(x.label)] = x.key; }); lines = bz; }
     var zeilen = [], seen = {};
     lines.forEach(function (ln) {
       var m = /^(.*?)\s+(\d{1,3}(?:\.\d{3})*,\d{1,2}|\d+,\d{1,2})\s*(?:h|Std\.?)(?:\s|$)/i.exec(ln.trim());
@@ -49,12 +87,15 @@
       if (n.length < 3 || /^(bem|sv|lst|bv)/.test(n)) return;
       var key = null;
       if (gelernt[n] !== undefined) key = gelernt[n] === '-' ? null : gelernt[n];
+      else if (bauArt[n] !== undefined) key = bauArt[n];
       else for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { key = REGELN[i][1]; break; }
       if (key === null && gelernt[n] === undefined && /^(anfangs|endsaldo|urlaubsanspruch|urlaubsverbrauch|urlaubssaldo|resturlaub)/.test(n)) return; // Kontostände zeigt die App nicht als Zeile
       var menge = zahl(m[2]); if (isNaN(menge)) return;
       if (key === 'zaKonto' && /[-−–]\s*$/.test(m[1])) menge = -menge; // „monatl. Veränderung -5,00 h“ ist ein Abzug vom Konto
+      if (key === 'zaKonto' || bauArt[n] !== undefined) { label = label.replace(/\s*[-−–]\s*$/, ''); n = norm(label); }
       var dup = n + '|' + menge; if (seen[dup]) return; seen[dup] = 1;
-      var zl = { label: label, norm: n, menge: menge, key: key };
+      if (bauArt[n] !== undefined && key && zeilen.some(function (q) { return q.key === key; })) key = null; // dieselbe Art nur einmal
+      var zl = { label: label, norm: n, menge: menge, key: key }; if (bauArt[n] !== undefined) { zl.unsicher = true; zl.nums = [String(menge).replace('.', ',')]; zl.pos = 0; }
       if (lines.foto) { var pr = rechenprobe(menge, ln.trim().slice(m[0].length)); if (pr) { zl.pruef = pr.ok; if (!pr.ok && pr.soll != null) zl.pruefSoll = pr.soll; } }
       zeilen.push(zl);
     });
@@ -82,11 +123,12 @@
       var n = norm(label); if (n.length < 3 || schon[n] || /^(bem|sv|lst|bv)/.test(n)) return;
       var key = null, pos = 0, rk = null;
       if (gelernt[n] !== undefined) { if (gelernt[n] === '-') return; key = gelernt[n]; pos = gelernt['#' + n] | 0; if (pos >= nums.length || (gelernt['@' + n] !== undefined && gelernt['@' + n] !== nums.length)) pos = 0; }
+      else if (bauArt[n] !== undefined) { key = bauArt[n]; rk = [null, key]; }
       else { for (var i = 0; i < REGELN.length; i++) if (REGELN[i][0].test(n)) { rk = REGELN[i]; break; } if (rk && rk[1] === null) return; }
       if (lines.foto && !rk && gelernt[n] === undefined) return; // Foto: nur Zeilen mit bekannter Bezeichnung, sonst entstehen Zeilen aus Lesefehlern
       var euroZ = rk && rk[1] === 'dStd' && /verpfleg|ubernacht|spesen|auslos/.test(n); if (euroZ && key === null && nums.length > 1) pos = nums.length - 1; // „12 Tage × 28,00 = 336,00“: der Betrag steht hinten
       var menge = zahl(nums[pos]); if (isNaN(menge)) return;
-      if (key === null && rk) { if (rk[1] === 'dStd' && (nums.length === 1 || euroZ)) { key = 'dEuro'; } else if (menge <= 400) key = rk[1]; }
+      if (key === null && rk && bauArt[n] === undefined) { if (rk[1] === 'dStd' && (nums.length === 1 || euroZ)) { key = 'dEuro'; } else if (menge <= 400) key = rk[1]; }
       if (key && !(gelernt[n] !== undefined) && used[key]) key = null; // dieselbe Art nie zweimal vorbelegen
       if (key === null && gelernt[n] === undefined && (menge > 400 || /^summe/.test(n))) return; // Beträge und Summen sind nie Stunden
       if (key) used[key] = 1;
@@ -352,6 +394,6 @@
       });
     });
   }
-  var api = { fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  var api = { bauZeilen: bauZeilen, fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
