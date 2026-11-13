@@ -1,0 +1,6 @@
+/* Schriften Barlow und Barlow Condensed (SIL Open Font License, siehe Barlow-OFL.txt), liegen bei der App: es wird nichts von Google geladen */
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 400; font-display: swap; src: url(Barlow-Regular.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(Barlow-Medium.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 600; font-display: swap; src: url(Barlow-SemiBold.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url(BarlowCondensed-SemiBold.woff2) format('woff2'); }
+@font-face { font-family: 'Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url(BarlowCondensed-Bold.woff2) format('woff2'); }
