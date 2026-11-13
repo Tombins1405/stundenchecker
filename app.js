@@ -4061,12 +4061,12 @@
   function uebersetzt(t) { var d = uiDict(uiLang()); return (d && d[t]) || t; }
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest && ev.target.closest('button'); if (!b) return;
-    if (b.id === 'sq-go') sqVerstehen(); else if (b.id === 'sq-foto') { $('#sq-file').click(); } else if (b.id === 'sq-ja') sqUebernehmen(); else if (b.id === 'sq-nein') { $('#sq-res').hidden = true; $('#sq-text').focus(); } else if (b.id === 'sq-mic') sqSprechen();
+    if (b.id === 'sq-go') sqVerstehen(); else if (b.id === 'sq-foto') { $('#sq-file').click(); } else if (b.id === 'sq-gal') { $('#sq-gfile').click(); } else if (b.id === 'sq-ja') sqUebernehmen(); else if (b.id === 'sq-nein') { $('#sq-res').hidden = true; $('#sq-text').focus(); } else if (b.id === 'sq-mic') sqSprechen();
   });
 
   function sqApply() {
     var p = data.profil || {}, t = p.sqText === true, f = p.sqFoto === true, c = $('#sq-card'); if (!c) return;
-    c.hidden = !t; var fb = $('#sq-foto'), fp = $('#sq-fotop'); if (fb) fb.hidden = !f; if (fp) fp.hidden = !f;
+    c.hidden = !t; var fb = $('#sq-foto'), fg = $('#sq-gal'), fp = $('#sq-fotop'); if (fb) fb.hidden = !f; if (fg) fg.hidden = !f; if (fp) fp.hidden = !f;
     var a = $('#sq-set-text'), b = $('#sq-set-foto'); if (a) a.checked = t; if (b) { b.checked = f; b.disabled = !t; }
   }
   function sqFoto(file) {
@@ -4083,7 +4083,7 @@
     if (t.id === 'sq-text') sqAusFoto = false;
     if (t.id === 'sq-set-text') { data.profil.sqText = !!t.checked; if (t.checked) data.profil.sqHinweis = true; save(); sqApply(); if (t.checked) toast('Fertig. Die Karte „Schnell erfassen“ findest du jetzt ganz oben beim Erfassen. Tippe darauf, dann klappt sie auf.'); }
     else if (t.id === 'sq-set-foto') { data.profil.sqFoto = !!t.checked; save(); sqApply(); }
-    else if (t.id === 'sq-file' && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
+    else if ((t.id === 'sq-file' || t.id === 'sq-gfile') && t.files && t.files[0]) { var f = t.files[0]; t.value = ''; sqFoto(f); }
   });
   sqInit(); sqApply();
   function uiLang() {
@@ -4564,9 +4564,9 @@
       bt.innerHTML = lzBtn('Weiter', 'lz-weiter', 'primary') + lzBtn('Nein danke', 'lz-nein'); $('#lz-weiter').disabled = true;
     } else if (s === 'datei') {
       h.textContent = 'Zeig mir deinen Lohnzettel';
-      b.innerHTML = svg + '<p>Am besten nimmst du die PDF-Datei, die du von deiner Firma bekommen hast. Die lese ich am genauesten.</p><p>Hast du den Lohnzettel nur auf Papier? Dann mach ein Foto davon. Bei mehreren Blättern wählst du alle Fotos auf einmal aus.</p><p class="hint">So wird das Foto gut: gerade von oben, helles Licht ohne Schatten, das ganze Blatt im Bild, scharf.</p><p class="hint">Das Foto bleibt auf deinem Handy und wird nirgends hochgeladen. Wenn die PDF-Datei ein Kennwort hat, frage ich dich danach.</p>' +
-        '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden><input type="file" id="lz-foto" accept="image/*" multiple hidden>';
-      bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Foto auswählen oder aufnehmen', 'lz-pickf', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
+      b.innerHTML = svg + '<p>Am besten nimmst du die PDF-Datei, die du von deiner Firma bekommen hast. Die lese ich am genauesten.</p><p>Hast du den Lohnzettel nur auf Papier? Dann tippe auf „Foto aufnehmen“. Bei mehreren Blättern fotografierst du zuerst alle und wählst sie dann bei „Aus Galerie wählen“ auf einmal aus.</p><p class="hint">So wird das Foto gut: gerade von oben, helles Licht ohne Schatten, das ganze Blatt im Bild, scharf.</p><p class="hint">Das Foto bleibt auf deinem Handy und wird nirgends hochgeladen. Wenn die PDF-Datei ein Kennwort hat, frage ich dich danach.</p>' +
+        '<input type="file" id="lz-file" accept="application/pdf,.pdf" multiple hidden><input type="file" id="lz-foto" accept="image/*" multiple hidden><input type="file" id="lz-kam" accept="image/*" capture="environment" hidden>';
+      bt.innerHTML = lzBtn('PDF auswählen', 'lz-pick', 'primary') + lzBtn('Foto aufnehmen', 'lz-pickk', 'primary') + lzBtn('Aus Galerie wählen', 'lz-pickf', 'primary') + lzBtn('Abbrechen', 'lz-cancel');
     } else if (s === 'warten') {
       h.textContent = 'Ich lese …'; b.innerHTML = svg + (lzUi.fotoLauf ? '<p>Ich lese das Bild. Das kann bis zu einer Minute dauern. Bitte lass die App so lange offen.</p>' : '<p>Einen Moment bitte.</p>'); bt.innerHTML = '';
     } else if (s === 'kennwort') {
@@ -4778,7 +4778,7 @@
       if (t.id === 'lz-ok') { $('#lz-weiter').disabled = !t.checked; return; }
       if (t.id === 'lz-stimmt') { $('#lz-apply').disabled = !t.checked; return; }
       if (t.id === 'lz-file' && t.files && t.files[0]) { var fl = Array.prototype.slice.call(t.files); t.value = ''; lzLese(fl); }
-      if (t.id === 'lz-foto' && t.files && t.files[0]) { var ff = Array.prototype.slice.call(t.files, 0, 6); t.value = ''; lzFotos(ff); }
+      if ((t.id === 'lz-foto' || t.id === 'lz-kam') && t.files && t.files[0]) { var ff = Array.prototype.slice.call(t.files, 0, 6); t.value = ''; lzFotos(ff); }
     });
     dlg.addEventListener('click', function (ev) {
       var t = ev.target.closest('button'); if (!t) return;
@@ -4804,6 +4804,7 @@
       else if (t.id === 'lz-pick2') { lzUi.step = 'datei'; lzRender(); }
       else if (t.id === 'lz-pick') { lzUi.step = 'datei'; lzRender(); var fi = $('#lz-file'); if (fi) fi.click(); }
       else if (t.id === 'lz-pickf') { var ff2 = $('#lz-foto'); if (ff2) ff2.click(); }
+      else if (t.id === 'lz-pickk') { var fk = $('#lz-kam'); if (fk) fk.click(); }
       else if (t.id === 'lz-pwok') { var pw = $('#lz-pw').value; if (!pw) return; lzUi.pwMem = pw; var ok = lzUi.pwOk; lzUi.pwOk = null; lzUi.step = 'warten'; lzRender(); if (ok) ok(pw); }
       else if (t.id === 'lz-apply') {
         var r = lzUi.res, mo = { y: +$('#lz-jr').value, m: +$('#lz-mo').value }; if (!mo.m) { toast('Bitte wähl zuerst den Monat.'); return; } var items = $$('#lz-body [data-lzz]').map(function (sl) {
