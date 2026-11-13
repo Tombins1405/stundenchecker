@@ -51,9 +51,30 @@
 
   /* ------------------------------------------------------------ Speicher */
   var speicherOk = true;
+  var lastRaw = null; // zuletzt geladener oder geschriebener Speicherstand dieses Fensters
+  function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
+  // Drei-Wege-Abgleich: Hat ein anderes Fenster (zum Beispiel die installierte App und ein offener Browser-Tab) zwischendurch etwas gespeichert,
+  // gehen dessen Änderungen nicht verloren. Was ich nicht angefasst habe, kommt vom anderen Fenster; was beide geändert haben, gilt meine Fassung.
+  function m3(b, a, t) {
+    var sa = JSON.stringify(a), sb = JSON.stringify(b), st = JSON.stringify(t);
+    if (sa === sb) return t;
+    if (st === sb || sa === st) return a;
+    if (isObj(a) && isObj(t) && (b === undefined || isObj(b))) {
+      var r = {}, ks = {}; [a, t, b || {}].forEach(function (o) { Object.keys(o).forEach(function (k) { ks[k] = 1; }); });
+      Object.keys(ks).forEach(function (k) { var v = m3((b || {})[k], a[k], t[k]); if (v !== undefined) r[k] = v; });
+      return r;
+    }
+    return a;
+  }
+  function fremdeAenderung() {
+    var cur = null; try { cur = localStorage.getItem(KEY); } catch (e) { return false; }
+    if (!cur || lastRaw === null || cur === lastRaw) return false;
+    try { var t = JSON.parse(cur), b = JSON.parse(lastRaw); if (t && typeof t.days === 'object') { data = m3(b, data, t); lastRaw = cur; return true; } } catch (e) { }
+    return false;
+  }
   function load() {
     try {
-      var raw = localStorage.getItem(KEY);
+      var raw = localStorage.getItem(KEY); lastRaw = raw;
       if (raw) { var d = JSON.parse(raw); if (d && typeof d.days === 'object' && Array.isArray(d.settings)) return d; }
     } catch (e) { speicherOk = false; }
     return { version: 1, settings: [], days: {}, abgleich: {}, profil: {} };
@@ -63,11 +84,17 @@
     E.setRegion(pk && pk.land === 'DE' ? 'DE' : 'AT', p.bl || '');
   }
   function save() {
+    fremdeAenderung();
     applyRegion();
-    try { localStorage.setItem(KEY, JSON.stringify(data)); speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
+    try { var wr0 = JSON.stringify(data); localStorage.setItem(KEY, wr0); lastRaw = wr0; speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
   }
   var data = load();
+  window.addEventListener('storage', function (ev) { if (ev.key === KEY && ev.newValue !== lastRaw) fremdeAenderung(); });
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    if (fremdeAenderung()) { save(); var ae = document.activeElement; if (!(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) { try { show(ui.view || 'erfassen', true); } catch (e) { } } }
+  });
   function probeUmschalten(an) {
     try {
       if (an) { localStorage.removeItem('stundenchecker.probe.v1'); localStorage.setItem('stundenchecker.probe.active', '1'); }
@@ -2777,6 +2804,7 @@
       { v: E1, sel: '#s-ansichtsel', up: f, t: 'Wie möchtest du den Monat sehen? Als Liste, als Raster wie ein Kalender oder beides.' },
       { v: E1, sel: '#rb-rhythmus', up: f, t: 'Wann verlangt deine Firma einen Bericht? Wähle es aus. Dann frage ich dich zur richtigen Zeit, ob du ihn gleich senden willst.' },
       { v: E1, sel: '#rb-mail', up: f, t: 'Die E-Mail-Adresse deiner Firma für die Berichte. Das ist optional.' },
+      { v: E1, sel: '#rb-ohnestd', up: k, t: 'Schalte ein, wenn dein Halbmonatsbericht nur die Zeiten zeigen soll, ohne Stunden- und Summenspalten. Das passt, wenn deine Firma die Stunden selbst einträgt.' },
       { v: E1, sel: '#rb-sigon', up: k, t: 'Schalte ein, wenn deine Unterschrift auf den Berichten stehen soll. Danach unterschreibst du mit dem Finger.' },
       { v: E1, sel: '#fest-add', up: k, t: 'Hast du jede Woche am gleichen Tag frei oder Berufsschule? Dann lege hier einen festen Tag an. Ich trage ihn dir dann ein.' },
       { v: E1, sel: '#s-tagf', up: k, t: 'Möchtest du, dass ich dich jeden Tag Schritt für Schritt durch das Eintragen führe? Dann schalte es ein.' },
@@ -4342,7 +4370,7 @@
   (function () {
     var card = $('#rb-card'); if (!card) return;
     function hh(min) { return fh(min / 60) + ' h'; }
-    function bName() { var p = data.profil || {}; return ($('#rb-name').value || '').trim() || ((p.titelVor ? p.titelVor + ' ' : '') + (p.vorname || '') + ' ' + (p.nachname || '') + (p.titelNach ? ', ' + p.titelNach : '')).trim() || p.berichtName || ''; }
+    function bName() { var p = data.profil || {}; return ((p.vorname || p.nachname) ? ((p.titelVor ? p.titelVor + ' ' : '') + (p.vorname || '') + ' ' + (p.nachname || '') + (p.titelNach ? ', ' + p.titelNach : '')).replace(/\s+/g, ' ').trim() : '') || ($('#rb-name').value || '').trim() || p.berichtName || ''; }
     function addDays(s, n) { var p = E.parseISO(s), d = new Date(p.y, p.m - 1, p.d + n); return E.iso(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
     function tageVon(von, bis) {
       var res = [], cache = {};
@@ -4356,7 +4384,7 @@
     function art(r) { var d = data.days[r.datum] || {}; return r.leer ? (r.typ !== 'werktag' ? (r.feiertag || (r.typ === 'sonntag' ? 'Sonntag' : r.typ === 'samstag' ? 'Samstag' : 'frei')) : '') : (r.status === 'arbeit' ? (r.swMin ? (E.istBau(wAt(r.datum)) ? 'Schlechtwetter' : 'Ausfall') : 'Arbeit') : E.STATUS[r.status].name) + (r.feiertag ? ' (' + r.feiertag + ')' : ''); }
     function kopf(titel, zeitraum) {
       var nm = bName(), pr = data.profil || {};
-      return [{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || '____________________']].concat(pr.firma ? [['Firma', pr.firma]] : [], [[titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]]) }];
+      return (pr.firma ? [{ t: 'p', text: pr.firma, size: 16, bold: true }] : []).concat([{ t: 'h1', text: titel }, { t: 'kv', rows: [['Name', nm || '____________________'], [titel === 'Tagesbericht' ? 'Datum' : 'Zeitraum', zeitraum], ['Erstellt am', fmtDate(todayISO())]] }]);
     }
     function tabelleTage(tage) {
       var sum = 0, rows = tage.map(function (r) {
@@ -4382,14 +4410,17 @@
         var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; }); if (!fz.length) fz = [{}];
         fz.forEach(function (f, i) {
           var first = i === 0, wk = WD[E.weekday(r.datum)];
-          rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? art(r) : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '']);
+          rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? String(art(r)).replace(/\s*\(.*\)\s*$/, '') : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '']);
         });
       });
-      var fi = (data.profil && data.profil.firma) || '', kopfz = [{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }].concat(fi ? [{ t: 'p', text: fi, size: 13, bold: true }] : [], [{ t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }]);
-      rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD)], bold: true });
-      rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
-      rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
-      kopfz.push({ t: 'table', fs: 8, cols: [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }, { w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }], head: ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', 'Tour', 'Ruhepause', 'Normal Std.', 'Über-Std.', 'Tagesgeld Std.'], rows: rows });
+      var fi = (data.profil && data.profil.firma) || '', kopfz = (fi ? [{ t: 'p', text: fi, size: 16, bold: true }] : []).concat([{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }], [{ t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }]);
+      var ohneStd = !!(data.profil && data.profil.berichtOhneStd); // Firma trägt die Stunden selbst ein: nur Zeiten, keine Stunden- und Summenspalten
+      if (!ohneStd) {
+        rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD)], bold: true });
+        rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
+        rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
+      } else rows = rows.map(function (r) { return r.slice(0, 10); });
+      kopfz.push({ t: 'table', fs: 8, cols: [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }].concat(ohneStd ? [] : [{ w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }]), head: ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', 'Tour', 'Ruhepause'].concat(ohneStd ? [] : ['Normal Std.', 'Über-Std.', 'Tagesgeld Std.']), rows: rows });
       kopfz.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: ' ', img: sigImg() });
       return kopfz;
     }
@@ -4419,7 +4450,7 @@
         var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; }), nm = bName(), fi = (data.profil && data.profil.firma) || '';
         function zs(f, k) { return fz.map(function (x) { return x[k] == null || x[k] === '' ? '' : (fz.length > 1 ? x.kfz + ': ' : '') + x[k]; }).filter(Boolean).join(', '); }
         var kmA = zs(fz, 'kmVon'), kmE = zs(fz, 'kmBis');
-        b = [{ t: 'h1', text: 'Tagesbericht' }].concat(fi ? [{ t: 'p', text: fi, size: 12, bold: true }] : []);
+        b = (fi ? [{ t: 'p', text: fi, size: 16, bold: true }] : []).concat([{ t: 'h1', text: 'Tagesbericht' }]);
         b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 3 }, { w: 2 }, { w: 1.4 }, { w: 1.4 }], head: ['Name', 'KFZ-Kennzeichen', 'Type', 'Datum'], rows: [[nm, fz.map(function (f) { return f.kfz; }).join(', '), '', fmtDate(ds)]] });
         b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 1.4 }, { w: 1.4 }, { w: 1 }, { w: 1 }, { w: 1 }], head: ['Anfangs-km-Stand', 'End-km-Stand', 'Diesel l', 'AdBlue l', 'Motoröl l'], rows: [[kmA, kmE, zs(fz, 'diesel'), zs(fz, 'adblue'), zs(fz, 'oel')]] });
         var zl = E.tagesZeilen(d);
@@ -4443,15 +4474,18 @@
       }
       return { bytes: window.StundenPdf.build(b), name: name + '.pdf', typ: typ };
     }
-    function speichern(erg) {
+    function speichern(erg, teilFehler) {
       var bl = new Blob([erg.bytes], { type: 'application/pdf' }), ur = URL.createObjectURL(bl), an = document.createElement('a');
       an.href = ur; an.download = erg.name; document.body.appendChild(an); an.click(); document.body.removeChild(an); setTimeout(function () { URL.revokeObjectURL(ur); }, 4000);
-      toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
+      if (teilFehler) toast(abw1('Teilen geht auf diesem Handy gerade nicht. Der Bericht liegt jetzt im Ordner „Downloads“. Öffne ihn dort und teile ihn von dort. (Hinweis: {0})', [teilFehler]), 12000);
+      else toast('Gespeichert: ' + erg.name + ' (Ordner „Downloads“).');
     }
     function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
-    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
+    function fuellen() { var pr = data.profil || {}, hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (hat) $('#rb-name').value = ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); else if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
     fuellen();
     var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || (ui.edDate && /^\d{4}-\d{2}-\d{2}$/.test(ui.edDate) ? ui.edDate : todayISO()); vorgabe = null; });
+    $('#rb-ohnestd').checked = !!(data.profil && data.profil.berichtOhneStd);
+    $('#rb-ohnestd').addEventListener('change', function () { (data.profil || (data.profil = {})).berichtOhneStd = this.checked; save(); });
     $('#rb-sigon').addEventListener('change', function () { $('#rb-sigwrap').hidden = !this.checked; (data.profil || (data.profil = {})).sigAn = this.checked; merken(); });
     $('#rb-name').addEventListener('change', merken); $('#rb-mail').addEventListener('change', merken);
     $('#rb-rhythmus').addEventListener('change', function () { merken(); var v = this.value; if (v !== 'nie') $('#rb-art').value = v; });
@@ -4537,8 +4571,15 @@
       $('#rb-dx').onclick = zu;
       $('#rb-send').onclick = function () {
         if (kannTeilen) {
-          var p; try { p = navigator.share({ files: [flx], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { p = null; }
-          if (p && p.then) { p.then(function () { zu(); }, function (er) { if (er && er.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg); }); return; }
+          var sh1; try { sh1 = navigator.share({ files: [flx] }); } catch (e) { sh1 = null; } // zuerst nur die Datei: manche Handy-Browser lehnen Datei plus Text ab
+          if (sh1 && sh1.then) {
+            sh1.then(function () { zu(); }, function (er) {
+              if (er && er.name === 'AbortError') return;
+              var sh2; try { sh2 = navigator.share({ files: [flx], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { sh2 = null; }
+              if (sh2 && sh2.then) sh2.then(function () { zu(); }, function (er2) { if (er2 && er2.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg, (er2 && er2.name) || (er && er.name) || 'unbekannt'); });
+              else { ins('bericht_share_fehler'); speichern(erg, (er && er.name) || 'unbekannt'); }
+            }); return;
+          }
         }
         ins('bericht_share_fehlt'); speichern(erg);
       };

@@ -687,6 +687,7 @@
       <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
+      <label class="check"><input type="checkbox" id="rb-ohnestd"> Im Halbmonatsbericht keine Stunden- und Summenspalten drucken</label>
       <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
       <div class="field" id="rb-sigwrap" hidden><label for="rb-sig">Unterschreibe hier mit dem Finger oder der Maus</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><label class="btn" for="rb-sigfile" style="align-self:flex-start">Bild deiner Unterschrift wählen</label><input type="file" id="rb-sigfile" accept="image/*" hidden><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
     </div>
@@ -765,7 +766,7 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261113071919";</script>
+<script>window.APP_VERSION="20261113182828";</script>
 <script src="engine.js?v=20261113071919"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
