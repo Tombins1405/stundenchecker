@@ -954,7 +954,7 @@
   // Österreichische Bundesländer und welcher Kollektivvertrag (Paket) zu welchem Bundesland gehört
   var LAENDER_AT = { w: 'Wien', noe: 'Niederösterreich', bgld: 'Burgenland', ooe: 'Oberösterreich', stmk: 'Steiermark', ktn: 'Kärnten', sbg: 'Salzburg', t: 'Tirol', vbg: 'Vorarlberg' };
   var KV_LAND_SUF = { w: 'w', wh: 'w', noe: 'noe', st: 'stmk', stmk: 'stmk', ooe: 'ooe', sbg: 'sbg', k: 'ktn', ktn: 'ktn', v: 'vbg', vbg: 'vbg', b: 'bgld', bgld: 'bgld', t: 't' };
-  var KV_LAND_FIX = { taxi_t: ['t'], taxi_vbg: ['vbg'], taxi_sbg: ['sbg'], taxi_stmk: ['stmk'], textil_t: ['t'], textil_vbg: ['vbg'], textil: ['w', 'noe', 'bgld', 'ooe', 'sbg', 'stmk', 'ktn'], konditor: ['noe'], fleischer: ['noe'], gastro: ['noe'], gastro_ang_c: ['bgld', 'ktn', 'noe', 'ooe', 'stmk'], gastro_ang_d: ['sbg', 't', 'vbg'], gastro_ang_w: ['w'], gastro_ang_wh: ['w'] };
+  var KV_LAND_FIX = { werbung_ang: ['w'], taxi_t: ['t'], taxi_vbg: ['vbg'], taxi_sbg: ['sbg'], taxi_stmk: ['stmk'], textil_t: ['t'], textil_vbg: ['vbg'], textil: ['w', 'noe', 'bgld', 'ooe', 'sbg', 'stmk', 'ktn'], konditor: ['noe'], fleischer: ['noe'], gastro: ['noe'], gastro_ang_c: ['bgld', 'ktn', 'noe', 'ooe', 'stmk'], gastro_ang_d: ['sbg', 't', 'vbg'], gastro_ang_w: ['w'], gastro_ang_wh: ['w'] };
   function kvLand(paket) {
     paket = String(paket || ''); if (KV_LAND_FIX[paket]) return KV_LAND_FIX[paket];
     var m = /^(konditor|fleischer|ordination|rk|gastro|kino|rettung|asb)_([a-z]+)$/.exec(paket); return m && KV_LAND_SUF[m[2]] ? [KV_LAND_SUF[m[2]]] : null;
@@ -2202,6 +2202,31 @@
       { id: 'ICL3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1526.00] },
       { id: 'ICL4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1752.00] }
     ] };
+  PAKETE.werbung_ang = {
+    name: 'Büro: Werbung und Marktkommunikation, Wien (Angestellte)',
+    hinweis: 'KV Werbung und Marktkommunikation Wien, Angestellte (Quelle: wko.at), gilt für Werbeagenturen und Marketing-Betriebe in Wien. Mindestgehälter ab 1.1.2025, neue Gehälter ab 1.5.2026. 38,5 Stunden pro Woche. Überstunden: Grundlage 1/143 des Monatsgehalts, Zuschlag 50 %, von 20 bis 6 Uhr und am Sonntag 100 %. Samstag nach 13 Uhr 50 %, nach 20 Uhr, Sonntag und Feiertag 100 %: die App rechnet Sonntag und Feiertag mit 100 %, den Samstag stellst du bei Bedarf selbst ein. Nachtarbeit (22 bis 6 Uhr) mindestens 2,80 € pro Stunde. Statt Bezahlung kann Zeitausgleich 1:1,5 vereinbart werden. Außerhalb von Wien gilt dieser KV nicht, dort gilt meist der KV für Angestellte im Gewerbe, Handwerk und Dienstleistung. Bitte vergleiche mit deinem Dienstzettel.',
+    pruefen: true,
+    werte: {
+      diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
+      ueberstunden: { modell: 'monat', wochenStd: 38.5, tagesGrenze: null, zuschlagPct: 50, ueberTeiler: 143 },
+      stundenlohn: null,
+      betriebFrei: 'urlaub',
+      zuschlag: { art: 'kv', sa: 0, so: 100, ft: 100 },
+      schlechtwetter: false
+    }
+  };
+  LOHNGRUPPEN.werbung_ang = { stand: 'ab 1.1.2025', stufen: ['im 1. und 2. Verwendungsgruppenjahr', 'nach 2 Verwendungsgruppenjahren', 'nach 4 Verwendungsgruppenjahren', 'nach 6 Verwendungsgruppenjahren', 'nach 8 Verwendungsgruppenjahren', 'nach 10 Verwendungsgruppenjahren', 'nach 12 Verwendungsgruppenjahren', 'nach 14 Verwendungsgruppenjahren', 'nach 16 Verwendungsgruppenjahren', 'nach 18 Verwendungsgruppenjahren'], gruppen: [
+      { id: 'WM1', m: true, name: 'Verwendungsgruppe I', l: [1994.50, 2016.90, 2036.00, 2163.20, 2304.30, 2428.20, 2583.10, 2744.80, 2927.50, 3120.20] },
+      { id: 'WM2', m: true, name: 'Verwendungsgruppe II', l: [1994.50, 2114.70, 2260.00, 2402.20, 2558.00, 2698.10, 2871.80, 3051.30, 3254.50, 3471.40] },
+      { id: 'WM3', m: true, name: 'Verwendungsgruppe III', l: [2321.20, 2474.10, 2641.30, 2802.50, 2984.90, 3154.80, 3359.70, 3567.30, 3810.40, 4061.70] },
+      { id: 'WM4', m: true, name: 'Verwendungsgruppe IV', l: [2766.70, 2943.90, 3141.30, 3330.20, 3550.50, 3763.60, 4011.20, 4261.40, 4549.80, 4857.90] },
+      { id: 'WM5', m: true, name: 'Verwendungsgruppe V', l: [3440.90, 3669.20, 3920.40, 4166.30, 4447.00, 4748.30, 5060.10, 5380.80, 5746.10, 6137.30] },
+      { id: 'WM6', m: true, name: 'Verwendungsgruppe VI', stufen: ['im 1. bis 5. Verwendungsgruppenjahr', 'nach 5 Verwendungsgruppenjahren', 'nach 10 Verwendungsgruppenjahren'], l: [5026.60, 6213.00, 7531.30] },
+      { id: 'WML1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [836.49] },
+      { id: 'WML2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1124.93] },
+      { id: 'WML3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1401.12] },
+      { id: 'WML4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1649.17] }
+    ], folgt: [{ ab: '2026-05-01', stand: 'ab 1.5.2026', gruppen: { WM1: [2050.40, 2073.40, 2093.10, 2223.80, 2368.90, 2496.20, 2655.50, 2821.70, 3009.50, 3207.60], WM2: [2050.40, 2174.00, 2323.30, 2469.50, 2629.70, 2773.70, 2952.30, 3136.80, 3345.70, 3568.60], WM3: [2386.20, 2543.40, 2715.30, 2881.00, 3068.50, 3243.20, 3453.80, 3667.20, 3917.10, 4175.50], WM4: [2844.20, 3026.40, 3229.30, 3423.50, 3650.00, 3869.00, 4123.60, 4380.80, 4677.20, 4994.00], WM5: [3521.80, 3755.50, 4012.60, 4264.30, 4551.60, 4859.90, 5179.10, 5507.30, 5881.20, 6281.60], WM6: [5026.60, 6213.00, 7531.30], WML1: [859.91], WML2: [1156.43], WML3: [1440.35], WML4: [1695.35] } }] };
   PAKETE.steuerberatung_ang = {
     name: 'Büro: Steuerberatung und Wirtschaftsprüfung (Angestellte)',
     hinweis: 'KV Steuerberatung und Wirtschaftsprüfung, Angestellte, ab 1.1.2026 (Quelle: gpa.at): Tabelle für Dienstverhältnisse ab 1.1.2015. 40 Stunden/Woche, Überstunden 50 %, zwischen 20 und 7 Uhr sowie an Sonn- und Feiertagen 100 %, Überstundenteiler 1/160. Wer vor 2015 eingetreten ist, hat eine eigene Tabelle: dann bitte „Eigene Werte“ verwenden. Bitte vergleiche mit deinem Dienstzettel.',
@@ -2896,7 +2921,7 @@
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
         fern: { name: 'Express / Kurier (Strecke)', b: { fahrzeug: true, kunden: false, praemien: false } }
       } },
-    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'ic_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
+    aussendienst: { name: 'Außendienst / Vertrieb', paket: 'buero', kvs: ['buero', 'gleit_buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'ic_ang', 'werbung_ang', 'it_ang', 'gueter_ang', 'bau_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'de_buero', 'de_handel', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: true } },
     lager: { name: 'Lager / Stapler / Hilfsarbeiter', paket: 'gueter', kvs: ['gueter', 'klein', 'handel_arb', 'handel', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false },
       arten: {
         lager: { name: 'Lager / Stapler / Hilfsarbeiter', b: { fahrzeug: false, kunden: false, praemien: false } },
@@ -2912,7 +2937,7 @@
         lehrling: { name: 'Lehrling', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
-    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['gueter_ang', 'gleit_buero', 'buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'bau_ang', 'it_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'ic_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
+    buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'gleit_buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'ic_ang', 'werbung_ang', 'it_ang', 'gueter_ang', 'bau_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
       arten: {
         buero: { name: 'Büro / Verwaltung / Disposition', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Bürokaufmann/-frau, Verwaltung)', b: { fahrzeug: false, kunden: false, praemien: false } }

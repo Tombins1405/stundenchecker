@@ -1329,8 +1329,8 @@
   PR_VOR.agrar = [['Nachtzulage', 'stunde', 'Stunden von 22 bis 5 Uhr', 3.13], ['Nächtigungsgeld', 'tag', 'Tage mit Nächtigung', 17], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PAKET_KURZ.kur_reha = 'Kur und Reha'; PAKET_KURZ.agrar = 'Agrarservice';
   PR_VOR.seilbahn = [['Nächtigungsgebühr', 'tag', 'Nächte im Bergstationsbereich', 41.72], ['Leistungsprämie', 'monat', 'einmal pro Monat']];
-  PR_VOR.reisebuero_ang = PR_VOR.immobilien_ang = PR_VOR.ic_ang = PR_VOR.steuerberatung_ang = [['Leistungsprämie', 'monat', 'einmal pro Monat']];
-  PAKET_KURZ.seilbahn = 'Seilbahnen'; PAKET_KURZ.reisebuero_ang = 'Reisebüros'; PAKET_KURZ.immobilien_ang = 'Immobilienverwalter'; PAKET_KURZ.ic_ang = 'Information und Consulting'; PAKET_KURZ.steuerberatung_ang = 'Steuerberatung';
+  PR_VOR.reisebuero_ang = PR_VOR.immobilien_ang = PR_VOR.ic_ang = PR_VOR.werbung_ang = PR_VOR.steuerberatung_ang = [['Leistungsprämie', 'monat', 'einmal pro Monat']];
+  PAKET_KURZ.seilbahn = 'Seilbahnen'; PAKET_KURZ.reisebuero_ang = 'Reisebüros'; PAKET_KURZ.immobilien_ang = 'Immobilienverwalter'; PAKET_KURZ.ic_ang = 'Information und Consulting'; PAKET_KURZ.werbung_ang = 'Werbung und Marktkommunikation'; PAKET_KURZ.steuerberatung_ang = 'Steuerberatung';
   PR_VOR.garage = [['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PR_VOR.kosmetik = [['Leistungsprämie', 'monat', 'einmal pro Monat']];
   PAKET_KURZ.garage = 'Garage/Tankstelle'; PAKET_KURZ.kosmetik = 'Kosmetik/Fußpflege/Massage';
@@ -1622,7 +1622,10 @@
   }
   function bsRender(en) {
     var bs = E.bausteine(en || wAt(todayISO()));
-    $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; });
+    // Was der Beruf gar nicht braucht (z. B. Fahrzeug und Baustellen im Büro), wird nicht angeboten, solange es aus ist
+    var wb = en || wAt(todayISO()), bb = wb && E.BERUFE[wb.beruf], ab = bb && bb.arten && wb.art && bb.arten[wb.art], vb = {};
+    [bb && bb.b, ab && ab.b].forEach(function (o) { if (o) Object.keys(o).forEach(function (k) { vb[k] = o[k]; }); });
+    $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; var k = x.dataset.bsx, row = x.closest('label'); if (row) row.hidden = (k === 'fahrzeug' || k === 'kunden') && vb[k] === false && !x.checked; });
     var kl = $('#s-bs-kl'); if (kl) kl.textContent = abwLab(E.istTour(en || wAt(todayISO())) ? 'Touren mit Tätigkeiten' : 'Kunden / Baustellen mit Tätigkeiten');
   }
   function renderPausen() {
@@ -3112,8 +3115,8 @@
   function miaFelder(w) {
     return '<div class="miachoose">' +
         ['w', 'm'].map(function (f) { return '<button type="button" class="miaopt' + (w.mia === f ? ' on' : '') + '" data-wm="' + f + '">' + miaSvg(f) + '<span>' + (f === 'w' ? 'Weiblich' : 'Männlich') + '</span></button>'; }).join('') + '</div>' +
-        '<div class="field"><label for="wz-vn">Dein Vorname</label><input type="text" id="wz-vn" maxlength="40" autocomplete="given-name" data-wf="vorname" value="' + esc(w.vorname || '') + '"></div><div class="field"><label for="wz-nn">Dein Nachname (kommt auf deine Berichte)</label><input type="text" id="wz-nn" maxlength="60" autocomplete="family-name" data-wf="nachname" value="' + esc(w.nachname || '') + '"></div>' +
-        '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>';
+        '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>' +
+        '<div class="field"><label for="wz-vn">Dein Vorname</label><input type="text" id="wz-vn" maxlength="40" autocomplete="given-name" data-wf="vorname" value="' + esc(w.vorname || '') + '"></div><div class="field"><label for="wz-nn">Dein Nachname (kommt auf deine Berichte)</label><input type="text" id="wz-nn" maxlength="60" autocomplete="family-name" data-wf="nachname" value="' + esc(w.nachname || '') + '"></div>';
   }
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
@@ -3210,7 +3213,7 @@
     $('#kv-send').addEventListener('click', function () {
       var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
       if (!f.name && !f.gruppe) { toast('Bitte trage mindestens den Kollektivvertrag oder die Einstufung ein.'); return; }
-      if (!data.profil) data.profil = {}; data.profil.kv = f; save();
+      if (!data.profil) data.profil = {}; var kc = curEntry() || wAt(todayISO()); if (kc && kc.paket) f.paket = kc.paket; data.profil.kv = f; save();
       var tx = 'Kollektivvertrag: ' + (f.name || '-') + ' | Einstufung: ' + (f.gruppe || '-') + ' | Branche: ' + (f.branche || '-') + ' | Wochenstunden: ' + (f.wst || '-');
       try { window.StundenInsights.feedback('wunsch', '[Mein Kollektivvertrag] ' + tx, null).then(function () { toast('Danke! Wir prüfen deinen Kollektivvertrag und melden uns.'); ins('kv_gemeldet'); }, function () { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }); } catch (e) { toast('Gespeichert. Das Senden hat nicht geklappt, bitte später noch einmal probieren.'); }
     });
@@ -3240,7 +3243,7 @@
     var c = $('#fb-card'); if (!c) return;
     c.hidden = !(window.StundenInsights && window.StundenInsights.on);
     var sh = $('#s-help'); if (sh) sh.hidden = c.hidden;
-    var ff = $('#fb-float'); if (ff) ff.hidden = c.hidden;
+    var ff = $('#fb-float'); if (ff) ff.hidden = c.hidden; document.body.classList.toggle('hasfb', !c.hidden);
     var co = (data.profil && data.profil.consent) || {};
     if ($('#c-stat')) $('#c-stat').checked = !!co.statistik;
     if ($('#c-mia')) $('#c-mia').checked = !!co.miaFragen;
@@ -3260,16 +3263,17 @@
     var cwb = cur ? E.berufName(cur) : null;
     $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
-    var kvp = (data.profil && data.profil.kv) || {}, kvv = {};
+    var kvp = (data.profil && data.profil.kv) || {}, kvv = {}, kvAllg = cur && /^(buero|gleit_buero|eigen|de_buero)$/.test(cur.paket);
+    if (cur && kvp.paket !== cur.paket) kvp = {}; // alte Meldung zu einem anderen Kollektivvertrag nicht mehr vorbelegen
     if (cur) { // schon gewählte Angaben gleich anzeigen
       var lgx = E.lgFuer(E.LOHNGRUPPEN[cur.paket], cur.gueltigAb), gx = lgx && lgx.gruppen.filter(function (x) { return x.id === cur.lg; })[0];
-      kvv.name = (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || '';
+      kvv.name = kvAllg ? '' : ((E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || ''); // beim allgemeinen Vorschlag nichts vorgeben: der echte KV steht auf dem Lohnzettel
       kvv.gruppe = cur.einstufung || (gx ? gx.name + (lgx.stufen && cur.ls != null && cur.ls !== '' ? ', ' + (lgSt(lgx, gx)[+cur.ls] || '') : '') : '');
-      kvv.branche = cwb || PAKET_KURZ[cur.paket] || '';
+      kvv.branche = kvAllg ? '' : (PAKET_KURZ[cur.paket] || ''); // Branche der Firma (z. B. Transport, Handel), nicht der eigene Beruf
       kvv.wst = String(E.wochenStd(cur.ueberstunden) || '');
     }
     [['name', '#kv-name'], ['gruppe', '#kv-gruppe'], ['branche', '#kv-branche'], ['wst', '#kv-wst']].forEach(function (q) { if (document.activeElement !== $(q[1])) $(q[1]).value = kvp[q[0]] || kvv[q[0]] || ''; });
-    var kvc = $('#s-kv-cur'); if (kvc) kvc.textContent = kvv.name ? ': ' + (PAKET_KURZ[cur.paket] || kvv.name) : '';
+    var kvc = $('#s-kv-cur'); if (kvc) kvc.textContent = (cur && E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || '';
     $('#lz-chk').checked = !!(data.profil && data.profil.lzLesen === true);
     [['s-titelvor', 'titelVor'], ['s-vorname', 'vorname'], ['s-nachname', 'nachname'], ['s-titelnach', 'titelNach']].forEach(function (q) { if (document.activeElement !== $('#' + q[0])) $('#' + q[0]).value = (data.profil && data.profil[q[1]]) || ''; });
     if (document.activeElement !== $('#s-geb')) $('#s-geb').value = (data.profil && data.profil.geb) || '';
@@ -3893,7 +3897,7 @@
         '<div class="btns"><button type="button" class="btn" id="fs-x">Verwerfen</button><button type="button" class="btn" id="fs-weg">Kurz weglegen</button><button type="button" class="btn primary" id="fs-send">Senden</button></div></div>';
       document.body.appendChild(sheet);
       function m(t, bad) { var e = $('#fs-msg'); e.textContent = t; e.hidden = !t; e.style.color = bad ? 'var(--bad, #b3261e)' : ''; }
-      var ffl = function (weg) { var f = $('#fb-float'); if (f && f.lastChild) f.lastChild.textContent = weg ? 'Meldung fortsetzen' : 'Problem melden'; };
+      var ffl = function (weg) { var f = $('#fb-float'); if (f && f.lastChild) { f.lastChild.textContent = weg ? 'Meldung fortsetzen' : 'Problem melden'; f.classList.toggle('weg', !!weg); } };
       $('#fs-x').addEventListener('click', function () { sheet.hidden = true; sheet.dataset.weg = ''; $('#fs-text').value = ''; ffl(false); });
       $('#fs-weg').addEventListener('click', function () { sheet.hidden = true; sheet.dataset.weg = '1'; ffl(true); });
       $('#fs-send').addEventListener('click', function () {
@@ -3921,7 +3925,7 @@
     on2('#fb-float', 'click', function () {
       if (!window.StundenInsights || !window.StundenInsights.on) return;
       if (!sheet) sheetBauen();
-      if (sheet.dataset.weg === '1') { sheet.dataset.weg = ''; sheet.hidden = false; var f0 = $('#fb-float'); if (f0 && f0.lastChild) f0.lastChild.textContent = 'Problem melden'; return; }
+      if (sheet.dataset.weg === '1') { sheet.dataset.weg = ''; sheet.hidden = false; var f0 = $('#fb-float'); if (f0 && f0.lastChild) { f0.lastChild.textContent = 'Problem melden'; f0.classList.remove('weg'); } return; }
       var ff = $('#fb-float'); ff.hidden = true;
       sheetSeite = '';
       try {
