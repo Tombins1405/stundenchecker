@@ -1563,6 +1563,7 @@
   }
 
   function renderEditor() {
+    try { stzDom(); } catch (e) { }
     if (!ui.edDate) { ui.edDate = todayISO(); ui.edDraft = data.days[ui.edDate] ? E.clone(data.days[ui.edDate]) : blankDay(); normKunden(ui.edDraft); if (!data.days[ui.edDate]) prefillFahrzeuge(ui.edDraft, ui.edDate); ui.edBase = JSON.stringify(ui.edDraft); }
     var d = ui.edDraft, w = wAt(ui.edDate);
     $('#e-title').textContent = fmtLong(ui.edDate);
@@ -2221,8 +2222,15 @@
     { id: 'n2', d: '2026-11-02', text: 'Ein Tester hat sich gewünscht, bei „Zeit pro Kunde“ den Kunden antippen zu können. Das geht jetzt.' },
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
-  var NEWS_B = { n11: null, n10: ['lkw', 'klein', 'lager'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
-  function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }); }
+  var NEWS_B = { n11: null, n10: ['lkw', 'klein'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
+  function zettelTB() { var w = wAt(todayISO()) || {}, b = E.bausteine(w); return !!(b.fahrzeug || b.kunden); } // Tagesbericht gibt es bei Bau und Transport, sonst heißt es Stundenzettel
+  var STZ = [['Foto vom Tagesbericht einlesen erlauben', 'Foto vom Stundenzettel einlesen erlauben'], ['Foto vom Tagesbericht', 'Foto vom Stundenzettel'],
+    ['Oder fotografiere den Tagesbericht deiner Firma: Ich übernehme nur die Zeiten (Datum, Beginn, Ende, Pause). Die Schrift lese ich direkt auf deinem Handy, das Foto wird nirgendwohin geschickt. Prüfe das Ergebnis, bei Handschrift kann es Fehler geben.', 'Oder fotografiere deinen Stundenzettel: Ich übernehme nur die Zeiten (Datum, Beginn, Ende, Pause). Die Schrift lese ich direkt auf deinem Handy, das Foto wird nirgendwohin geschickt. Prüfe das Ergebnis, bei Handschrift kann es Fehler geben.'],
+    ['oder du fotografierst den Tagesbericht (nur die Zeiten werden gelesen)', 'oder du fotografierst deinen Stundenzettel (nur die Zeiten werden gelesen)'],
+    ['oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten)', 'oder du fotografierst deinen Stundenzettel (ich lese nur die Zeiten)']];
+  function stz(t) { if (zettelTB()) return t; STZ.forEach(function (p) { t = t.split(p[0]).join(p[1]); }); return t; }
+  function stzDom() { var tb = zettelTB(); [['#sq-set-foto', 0], ['#sq-foto', 1], ['#sq-fotop', 2]].forEach(function (x) { var el = $(x[0]); if (!el) return; if (x[0] === '#sq-set-foto') el = el.parentElement.querySelector('span'); if (!el) return; el.textContent = tb ? STZ[x[1]][0] : STZ[x[1]][1]; }); }
+  function newsListe() { var c = newsCfg(), b = (wAt(todayISO()) || {}).beruf; return NEWS.filter(function (x) { var f = NEWS_B[x.id]; return c.alle === true || !f || !b || f.indexOf(b) >= 0; }).map(function (x) { return { id: x.id, d: x.d, text: stz(x.text) }; }); }
   function newsCfg() { var p = data.profil || {}; var n = p.news || {}; return { an: n.an, alle: n.alle, freq: n.freq || 'woche', gesehen: n.gesehen || '', gelesen: n.gelesen || [] }; }
   function newsSet(k, v) { if (!data.profil) data.profil = {}; if (!data.profil.news) data.profil.news = {}; data.profil.news[k] = v; save(); }
   function newsUnseen() { var g = newsCfg().gelesen; return newsListe().filter(function (x) { return g.indexOf(x.id) < 0; }); }
@@ -2259,7 +2267,7 @@
     else if (wL && !lL && (berufHatLand(wL.beruf) || PR_VOR_LAND[wL.paket])) out.push({ k: 'landfrage', text: 'In welchem Bundesland arbeitest du? Dann schlage ich dir den passenden Kollektivvertrag und die Zulagen deines Bundeslandes vor. Das ist optional. Soll ich dich hinführen?' });
     if (wL && wL.beruf === 'rettung' && !(data.profil && data.profil.rkKvHinweis)) out.push({ k: 'rettungkv', text: 'Für den Rettungsdienst gibt es mehrere Kollektivverträge: Beim Roten Kreuz gilt der Rotkreuz-KV, beim Samariterbund der Samariterbund-KV (BARS). Für private Rettungs- und Krankentransportfirmen ohne eigenen KV (zum Beispiel Grünes Kreuz) gilt ebenfalls der Rotkreuz-KV. Laut Oberstem Gerichtshof darf ein Krankentransport nicht nach dem Taxi-KV bezahlt werden. Soll ich dir zeigen, wo du deinen KV auswählst?' });
     if (wL && wL.beruf === 'bus' && /^taxi/.test(wL.paket || '') && !(data.profil && data.profil.taxiKtHinweis)) out.push({ k: 'taxikt', text: 'Fährst du Kranken- oder Rettungstransporte? Dann gilt laut Oberstem Gerichtshof meistens nicht der Taxi-KV, sondern der Rotkreuz-KV. In der App findest du ihn beim Beruf „Rettungsdienst“. Soll ich dir zeigen, wo du den Beruf änderst?' });
-    if (!(data.profil && (data.profil.sqHinweis || data.profil.sqText === true))) out.push({ k: 'schnellneu', spaet: !!(data.profil && data.profil.mia && data.profil.mia.spaetTag === todayISO() && !((data.days[todayISO()] && data.days[todayISO()].bis) || new Date().getHours() >= 15)), text: 'Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?' });
+    if (!(data.profil && (data.profil.sqHinweis || data.profil.sqText === true))) out.push({ k: 'schnellneu', spaet: !!(data.profil && data.profil.mia && data.profil.mia.spaetTag === todayISO() && !((data.days[todayISO()] && data.days[todayISO()].bis) || new Date().getHours() >= 15)), text: stz('Neu: „Schnell erfassen“. Du schreibst oder sprichst einfach, zum Beispiel „heute 6 bis 15 Uhr, 30 Minuten Pause“, oder du fotografierst deinen Tagesbericht (ich lese nur die Zeiten). Ich zeige dir, was ich verstanden habe, du prüfst es und speicherst. Du findest es beim Erfassen ganz oben. Es ist noch ausgeschaltet. Ein- und ausschalten kannst du es unter Einstellungen bei „Eingabehilfen“. Probiere es aus und sag mir danach über „Rückmeldung an den Entwickler“ im Profil, wie es bei dir klappt. Soll ich dich zu den Einstellungen bringen, damit du es dort einschalten kannst?') });
     if (!(data.profil && data.profil.assistDone)) out.push({ k: 'assist', text: 'Sollen wir kurz das Wichtigste deiner Einstellungen durchgehen? Das dauert etwa eine Minute, du trägst gleich mit ein.' });
     if (data.profil && data.profil.assistKurz && !data.profil.assistLang && !data.profil.assistMehrNein && Object.keys(data.days).length >= 5) out.push({ k: 'assistmehr', text: 'Magst du jetzt die genaueren Einstellungen mit mir durchgehen (Zuschläge, Pausen, Diäten)? Dann wird der Vergleich mit deinem Lohnzettel genauer.' });
     if (data.profil && data.profil.tagesfuehrung === true && data.profil.tagGefuehrt !== todayISO() && !(data.days[todayISO()] && data.days[todayISO()].von)) out.push({ k: 'tagfuehren', text: 'Sollen wir deinen heutigen Tag gemeinsam eintragen? Ich sage dir bei jedem Feld, was du tust.' });
@@ -2731,7 +2739,17 @@
     function paintAsk() {
       var L = miaLang(), u = MIA_UI[L] || MIA_UI.de, chips = $('#mia-chips');
       var gl = false, le = false, hw = false; try { var ww = wAt(todayISO()); gl = !!(ww && ww.ueberstunden && ww.ueberstunden.modell === 'gleit'); le = !!(ww && ww.art === 'lehrling'); hw = !!(ww && (['bau', 'holzbau', 'dachdecker', 'pflasterer', 'fliesenleger', 'glaser', 'tapezierer', 'steinmetz', 'bodenleger', 'bauhilfsgewerbe', 'maler', 'tischler', 'metall', 'de_bau', 'de_metall'].indexOf(ww.paket) >= 0 || ww.beruf === 'handwerk')); } catch (e) { }
-      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return ((e.t === 'Gleitzeit' && !gl) || (e.t === 'Ich bin Lehrling' && !le) || (e.t === 'Zulagen am Bau und im Handwerk' && !hw) || (e.t === 'Rettungsdienst und Krankentransport' && !(ww && (ww.beruf === 'rettung' || ww.beruf === 'bus')))) ? '' : '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
+      var bsC = ww ? E.bausteine(ww) : {}, diC = !!(ww && ww.diaeten && ww.diaeten.modell !== 'aus'), bfC = ww && ww.beruf;
+      var themaPasst = function (t) { // nur Themen, die es im eigenen Beruf gibt; die Antworten findet Mia trotzdem, wenn man danach fragt
+        if (t === 'Gleitzeit') return gl; if (t === 'Ich bin Lehrling') return le; if (t === 'Zulagen am Bau und im Handwerk') return hw;
+        if (t === 'Rettungsdienst und Krankentransport') return bfC === 'rettung' || bfC === 'bus';
+        if (t === 'Reinigung, Security und Pflege') return ['reinigung', 'security', 'pflege'].indexOf(bfC) >= 0;
+        if (t === 'Lkw in Deutschland: Tarif, Spesen und Nacht') return (bfC === 'lkw' || bfC === 'klein') && String(ww.paket || '').indexOf('de_') === 0;
+        if (t === 'Diäten / Taggeld') return diC;
+        if (t === 'Kunden, Baustellen, Fahrzeug und Kilometer') return !!(bsC.kunden || bsC.fahrzeug);
+        return true;
+      };
+      if (chips) chips.innerHTML = MIA_FAQ.map(function (e, i) { return !themaPasst(e.t) ? '' : '<button type="button" class="chip" data-faq="' + i + '">' + esc(miaFaqText(i, 't')) + '</button>'; }).join('');
       $('#mia-q').placeholder = u.q; $('#mia-send').textContent = u.go; $('#mia-read').textContent = u.read; $('#mia-askbtn').textContent = u.ask;
       var sel = $('#mia-lang'); if (sel) sel.value = L;
     }
@@ -3264,6 +3282,8 @@
     if ($('#c-praem')) $('#c-praem').checked = !!co.praemien;
   }
   function renderSettings() {
+    stzDom();
+    var ah = $('#s-all-hint'), wn = wAt(todayISO()); if (ah) ah.textContent = wn && wn.diaeten && wn.diaeten.modell === 'aus' ? 'Deine Werte gelten immer ab einem Datum. Einen neuen Stundenlohn legst du bequemer direkt bei „Stundenlohn“ unten an.' : 'Deine Werte gelten immer ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.';
     try { renderFest(); } catch (e) { }
     renderFeedback();
     var list = sortedSettings(), cur = list.length ? E.wertAt(list, todayISO()) : null;
