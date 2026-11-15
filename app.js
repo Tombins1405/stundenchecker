@@ -2294,7 +2294,7 @@
       var lo = out.filter(function (x) { return x.k === 'lohn'; })[0]; if (lo) { out.splice(out.indexOf(lo), 1); out.unshift(lo); } // Lohn ist das Wichtigste für den Vergleich
     }
     var vn = ((data.profil && data.profil.vorname) || '').trim();
-    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) var tx = abwLab(o.text); o.text = vn + ', ' + tx.charAt(0).toLowerCase() + tx.slice(1); }); // erst übersetzen, dann den Namen davor
+    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0 && o.text) { var tx = abwLab(o.text); o.text = vn + ', ' + tx.charAt(0).toLowerCase() + tx.slice(1); } }); // erst übersetzen, dann den Namen davor
     // Beim Start zuerst das Wichtige (Job, Lohn, Fristen). Leises (Version, Neuigkeiten-Frage, Bundesland, Mithelfen) und „Später“ hinten: dafür springt Mia nicht von selbst an.
     if (!ui.miaManuell) out = out.filter(function (x) { return !x.spaet && !miaLeise(x.k); }).concat(out.filter(function (x) { return !x.spaet && miaLeise(x.k); })).concat(out.filter(function (x) { return x.spaet; }));
     ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || s.k === 'update' || (c.skip[s.k] || 0) < 2; });

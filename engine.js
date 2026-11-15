@@ -3221,9 +3221,11 @@
   function unterKv(w, dateStr) { // { lohn: {ist, kv}, diaet: {ist, kv} } oder null
     if (!w) return null; var out = {}, kl = kvLohn(w, dateStr), p = PAKETE[w.paket];
     if (kl) { if (+w.monatslohn > 0 && kl.mon && +w.monatslohn < kl.mon - 0.005) out.lohn = { ist: +w.monatslohn, kv: kl.mon, monat: true }; else if (!(+w.monatslohn > 0) && +w.stundenlohn > 0 && +w.stundenlohn < kl.std - 0.005) out.lohn = { ist: +w.stundenlohn, kv: kl.std }; }
-    if (p && w.paket !== 'eigen' && p.werte.diaeten && w.diaeten && p.werte.diaeten.modell === 'stunde' && +p.werte.diaeten.satz > 0 && (w.diaeten.modell === 'aus' || (w.diaeten.modell === 'stunde' && +w.diaeten.satz < +p.werte.diaeten.satz - 0.005))) out.diaet = { ist: w.diaeten.modell === 'aus' ? 0 : +w.diaeten.satz, kv: +p.werte.diaeten.satz };
+    if (p && w.paket !== 'eigen' && p.werte.diaeten && w.diaeten && !diaetFremd(w) && p.werte.diaeten.modell === 'stunde' && +p.werte.diaeten.satz > 0 && (w.diaeten.modell === 'aus' || (w.diaeten.modell === 'stunde' && +w.diaeten.satz < +p.werte.diaeten.satz - 0.005))) out.diaet = { ist: w.diaeten.modell === 'aus' ? 0 : +w.diaeten.satz, kv: +p.werte.diaeten.satz };
     return out.lohn || out.diaet ? out : null;
   }
+  // Gibt es in diesem Beruf keine Diäten (Büro, Werk, Verkauf …) und hat man sie ausgeschaltet, rechnet auch der Kollektivvertrags-Vergleich keine dazu
+  function diaetFremd(w) { return !!(w && w.diaeten && w.diaeten.modell === 'aus' && BERUFE[w.beruf] && BERUFE[w.beruf].diaeten === false); }
   function wRef(w, opts, dateStr) {
     if (!opts || !opts.kvRef || !w) return w;
     var keys = opts.kvRef === true ? KV_REGELN : opts.kvRef, c = null;
@@ -3234,7 +3236,7 @@
     if (hat('betrieb') && w.betriebFrei === 'ueberstunden') kopie().betriebFrei = 'urlaub';
     if (hat('frei')) kopie().kvFrei = true;
     if (hat('rund') && w.runAn) kopie().runAn = false;
-    if (hat('diaet') && p && w.paket !== 'eigen' && p.werte && p.werte.diaeten && w.diaeten) {
+    if (hat('diaet') && p && w.paket !== 'eigen' && p.werte && p.werte.diaeten && w.diaeten && !diaetFremd(w)) {
       // Zählregeln des Kollektivvertrags, aber eigene Sätze bleiben, wenn sie gleich hoch oder höher sind (Bezahlung über dem Kollektivvertrag ist kein Unterschied).
       var kd = clone(p.werte.diaeten), ud = w.diaeten, maxS = function (d) { var x = 0; (d.stufen || []).forEach(function (q) { if (+q.satz > x) x = +q.satz; }); return x; };
       if (kd.modell === ud.modell) { if (kd.modell === 'stunde' && +ud.satz >= +kd.satz) kd.satz = +ud.satz; if (kd.modell === 'tag' && maxS(ud) >= maxS(kd) && (ud.stufen || []).length) kd.stufen = clone(ud.stufen); }
