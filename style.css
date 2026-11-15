@@ -924,3 +924,54 @@ h3[data-ico="plan"]::before { background: #12b886; }
 h3[data-ico="mic"] { --ico: url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22black%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Crect%20x=%229%22%20y=%223%22%20width=%226%22%20height=%2312%22%20rx=%223%22/%3E%3Cpath%20d=%22M5%2011a7%207%200%200014%200M12%2018v3%22/%3E%3C/svg%3E"); }
 h3[data-ico="mic"]::before { background: #afb42b; }
 #sq-fotop { margin: 6px 0; }
+
+/* ===== Optik 11/2026: mehr Farbe, Tiefe, klar erkennbare Knöpfe und Aufklapp-Bereiche ===== */
+:root { --shadow-card: 0 1px 2px rgba(15, 23, 42, .06), 0 6px 18px rgba(15, 23, 42, .07); --btn-top: #ffffff; --btn-bot: #eef2f7; --btn-edge: #c3cddb; --sum-bg: #e8f1fd; --sum-ink: #0d4f9c; --sum-edge: #b7d1f3; }
+:root[data-theme="dark"] { --shadow-card: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35); --btn-top: #2a3850; --btn-bot: #1f2a3d; --btn-edge: #0e1522; --sum-bg: #18314f; --sum-ink: #9fd0ff; --sum-edge: #27476e; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --shadow-card: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px rgba(0, 0, 0, .35); --btn-top: #2a3850; --btn-bot: #1f2a3d; --btn-edge: #0e1522; --sum-bg: #18314f; --sum-ink: #9fd0ff; --sum-edge: #27476e; } }
+body { background: radial-gradient(1200px 600px at 50% -200px, var(--accent-soft), transparent 70%), var(--bg); background-attachment: fixed; }
+.card { border-color: transparent; box-shadow: var(--shadow-card); border-radius: 16px; }
+.card > h3 { color: var(--accent); }
+
+/* Knöpfe mit Tiefe: man sieht sofort, dass man draufdrücken kann */
+.btn { background: linear-gradient(180deg, var(--btn-top), var(--btn-bot)); border: 1.5px solid var(--btn-edge); box-shadow: 0 3px 0 var(--btn-edge), 0 5px 10px rgba(15, 23, 42, .08); transition: transform .06s, box-shadow .06s; }
+.btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--btn-edge), 0 2px 4px rgba(15, 23, 42, .08); }
+.btn.primary { background: linear-gradient(180deg, #2f86e6, #1565c0); border-color: #0d4f9c; color: #fff; box-shadow: 0 3px 0 #0b3f7c, 0 6px 14px rgba(21, 101, 192, .30); text-shadow: 0 1px 0 rgba(0, 0, 0, .15); }
+.btn.primary:active:not(:disabled) { box-shadow: 0 1px 0 #0b3f7c, 0 2px 6px rgba(21, 101, 192, .3); }
+.btn.danger { background: linear-gradient(180deg, #fff, #fdeeee); border-color: #e3a5a1; box-shadow: 0 3px 0 #e3a5a1; }
+.btn.armed { background: linear-gradient(180deg, #d9453b, #b3261e); box-shadow: 0 3px 0 #7d1a14; }
+.btn:disabled { opacity: .55; box-shadow: none; transform: none; }
+.wzopt.on, .btn.on { background: linear-gradient(180deg, #e3f0ff, #cfe3fb); border-color: var(--accent); color: var(--accent); box-shadow: 0 3px 0 var(--accent); }
+.linkbtn { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Reiter unten/oben: jedes Symbol hat seine Farbe, der aktive Reiter ist kräftig gefüllt */
+.tab { box-shadow: 0 2px 0 var(--btn-edge); background: linear-gradient(180deg, var(--btn-top), var(--btn-bot)); }
+.tab[data-view="erfassen"] svg { stroke: #1565c0; } .tab[data-view="monat"] svg { stroke: #2e7d32; } .tab[data-view="lohn"] svg { stroke: #e65100; }
+.tab[data-view="konten"] svg { stroke: #7b1fa2; } .tab[data-view="einstellungen"] svg { stroke: #00838f; }
+.tab[aria-current="page"] { background: linear-gradient(180deg, #2f86e6, #1565c0); color: #fff; border-color: #0d4f9c; box-shadow: 0 2px 0 #0b3f7c, 0 4px 10px rgba(21, 101, 192, .3); }
+.tab[aria-current="page"] svg { stroke: #fff; }
+
+/* Aufklapp-Bereiche: als farbige Leiste mit Pfeil, damit man sieht, dass da etwas drin ist */
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: ''; width: 9px; height: 9px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg); margin-left: auto; flex: none; transition: transform .15s; position: relative; top: -2px; }
+details[open] > summary::after { transform: rotate(-135deg); top: 2px; }
+details.how > summary, details.wzfehlt > summary, details#e-an-box > summary, details#e-extra-box > summary, details#s-adv > summary, details#s-all > summary, details.mehrbox > summary, .rbcard > summary, .fzblock .fzmore > summary {
+  display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 10px 14px; border-radius: 12px;
+  background: var(--sum-bg); color: var(--sum-ink); border: 1.5px solid var(--sum-edge); font-weight: 600; font-size: 1rem; cursor: pointer;
+  box-shadow: 0 2px 0 var(--sum-edge);
+}
+details.how[open] > summary, details.wzfehlt[open] > summary, details#e-an-box[open] > summary, details#e-extra-box[open] > summary, details#s-adv[open] > summary, details#s-all[open] > summary, details.mehrbox[open] > summary, .rbcard[open] > summary, .fzblock .fzmore[open] > summary { margin-bottom: 10px; }
+details.mehrbox > summary { flex-wrap: wrap; row-gap: 2px; }
+details.mehrbox > summary > span { font-size: 1.05rem; }
+details.mehrbox > summary > small { flex-basis: 100%; order: 3; font-weight: 400; font-size: .85rem; opacity: .85; }
+details.mehrbox > summary::after { order: 2; }
+details.mehrbox .mehrin { display: flex; flex-direction: column; gap: 14px; }
+#e-kz-box > summary::after, details.kd > summary::after, .kzd > summary::after { margin-left: 8px; }
+.wzhelp { margin-top: 6px; font-size: .95rem; color: var(--ink-2); }
+
+.warum { margin-top: 10px; }
+.warum .wrow { display: flex; justify-content: space-between; gap: 12px; padding: 7px 2px; border-bottom: 1px dashed var(--line); color: var(--ink); font-size: .98rem; }
+.warum .wrow b { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.warum .wrow.sum { font-weight: 700; border-bottom: 2px solid var(--line); }
+.warum .hint { margin-top: 8px; }

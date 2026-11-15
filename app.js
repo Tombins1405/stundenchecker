@@ -90,6 +90,7 @@
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
   }
   var data = load();
+  (function () { var p = data.profil || (data.profil = {}); if (p.erfMehrMig === undefined) { p.erfMehrMig = true; if (Object.keys(data.days || {}).length) p.erfMehrAlt = true; } })(); // Wer schon Tage hat, sieht „Mehr zum Tag“ weiter offen
   window.addEventListener('storage', function (ev) { if (ev.key === KEY && ev.newValue !== lastRaw) fremdeAenderung(); });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
@@ -306,6 +307,23 @@
       (function () { var kg = kvVergleich(ui.y, ui.m, s, w); return kg ? '<p class="sub kvz">' + esc(abw1('Nach Kollektivvertrag und Gesetz gerechnet: etwa {0}. Einzelheiten stehen unter „Jahr und Konten“ bei den Abweichungen.', [eur.format(kg.kv)])) + '</p>' : ''; })() +
       '<div class="nbrow"><a class="btn" id="nb-link" href="https://www.bmf.gv.at/services/berechnungsprogramme.html" target="_blank" rel="noopener noreferrer">'+ esc('Netto im BMF-Rechner prüfen') +'</a> <button type="button" class="info" id="nb-info" aria-label="Info"></button></div></div>';
   }
+  // „Warum diese Werte?“: die Rechnung Schritt für Schritt, damit man jede Zahl nachvollziehen kann (nach deinen Einstellungen, unter Vorbehalt)
+  var UMODELL = { 'tag-saldo': 'Pro Tag: alles über dem Tagessoll', bau: 'Pro Woche: ab Tagesgrenze und über den Wochenstunden', monat: 'Pro Monat: alle Stunden des Monats minus Sollstunden', gleit: 'Gleitzeit: Plus- und Minusstunden auf einem Konto' };
+  function warumBox(s, w, laufend) {
+    if (!(s.lohnStd > 0) || s.gleit) return '';
+    var z = function (l, v, b) { return '<div class="wrow' + (b ? ' sum' : '') + '"><span>' + esc(abwLab(l)) + '</span><b>' + v + '</b></div>'; }, h = '';
+    h += z('Alle bezahlten Stunden (mit Urlaub, Krankenstand, Feiertagen)', fh(Math.round((s.lohnStd + (s.ftArbeitStd || 0)) * 100) / 100) + ' h');
+    if (s.urlaubStd > 0) h += z('davon Urlaub', fh(s.urlaubStd) + ' h'); if (s.krankStd > 0) h += z('davon Krankenstand', fh(s.krankStd) + ' h'); if (s.feiertagStd > 0) h += z('davon Feiertage', fh(s.feiertagStd) + ' h');
+    if (!laufend) {
+      if (s.sollStd > 0) h += z('Sollstunden des Monats', fh(s.sollStd) + ' h');
+      if (s.ueberStd >= 0) h += z('Überstunden', fh(s.ueberStd) + ' h', true);
+      else h += z('Fehlende Stunden zum Soll', fh(-s.ueberStd) + ' h', true) + '<p class="hint">' + esc(abwLab('Fehlen Tage in deiner Aufzeichnung? Dann trage sie nach.')) + '</p>';
+      h += '<p class="hint">' + esc(abw1('So zählt die App deine Überstunden: „{0}“. Das stellst du unter Einstellungen, „Stunden“, ein.', [abwLab(UMODELL[w.ueberstunden.modell] || w.ueberstunden.modell)])) + '</p>';
+    } else h += '<p class="hint">' + esc(abwLab('Überstunden rechnet die App erst, wenn der Monat vorbei ist.')) + '</p>';
+    if (w.diaeten.modell === 'stunde' && s.diaetenStd > 0) h += z('Diäten', abw1('{0} h × {1} = {2}', [fh(s.diaetenStd), eur.format(+w.diaeten.satz || 0), eur.format(s.diaetenBetrag)]), true);
+    h += '<p class="hint">' + esc(abwLab('Gerechnet nach deinen Einstellungen, ohne Gewähr. Ob es mit deinem Lohnzettel zusammenpasst, siehst du beim Lohnzettel-Vergleich.')) + '</p>';
+    return '<details class="how warum nott"><summary>' + esc(abwLab('Warum diese Werte?')) + '</summary>' + h + '</details>';
+  }
   function renderMonat() {
     $('#storage-warn').hidden = speicherOk;
     $('#onboard').hidden = !(data.settings.length === 0 && Object.keys(data.days).length === 0);
@@ -337,7 +355,7 @@
     }
     var jetzt2 = new Date();
     if (ui.y === jetzt2.getFullYear() && ui.m === jetzt2.getMonth() + 1) html += weekBox();
-    html += '</div>';
+    html += '</div>' + warumBox(s, w, laufend);
     $('#m-summary').innerHTML = html;
     var bri = $('#br-info'); if (bri) { var brs = document.createElement('small'); brs.hidden = true; brs.textContent = BRUTTO_INFO; bri._sm = brs; }
     var nbi = $('#nb-info'); if (nbi) { var nbs = document.createElement('small'); nbs.hidden = true; nbs.textContent = NETTO_INFO; nbi._sm = nbs; }
@@ -1576,6 +1594,9 @@
     var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
     var tr1 = E.istTour(w); $('#e-klbl').textContent = tr1 ? 'Touren mit Tätigkeiten (optional)' : 'Kunden / Baustellen mit Tätigkeiten (optional)'; $('#e-addkunde').textContent = tr1 ? '+ Tour hinzufügen' : '+ Kunde / Baustelle hinzufügen';
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
+    mehrBox(d, w);
+    var hatTage = Object.keys(data.days).some(function (k) { return k !== ui.edDate; });
+    $('#e-mehr').hidden = !hatTage; $('#e-copy').hidden = !Object.keys(data.days).some(function (k) { return k < ui.edDate && data.days[k].von; });
     $('#e-work').hidden = !mitArbeit(d.status);
     $('#e-delete').hidden = !data.days[ui.edDate];
     disarm($('#e-delete'));
@@ -1584,6 +1605,21 @@
     updatePreview();
   }
 
+  // „Mehr zum Tag“: Fahrzeug, Kunden, Prämien, Schlechtwetter, Diäten. Für Neue zugeklappt, damit am Anfang nur Beginn, Ende und Pause da sind.
+  // Offen, wenn man es einmal aufgemacht hat (merkt sich die App), wenn an diesem Tag schon etwas drin steht oder bei allen, die schon Tage eingetragen hatten.
+  function mehrBox(d, w) {
+    var box = $('#e-mehrbox'); if (!box) return;
+    var bs = E.bausteine(w), teile = [];
+    if (bs.fahrzeug) teile.push(abwLab('Fahrzeug'));
+    if (bs.kunden) teile.push(abwLab(E.istTour(w) ? 'Touren' : 'Kunden'));
+    if (!$('#e-praemiengroup').hidden) teile.push(abwLab('Prämien'));
+    if (w.schlechtwetter) teile.push(abwLab(E.istBau(w) ? 'Schlechtwetter' : 'Ausfallstunden'));
+    if (w.diaeten.modell !== 'aus') teile.push(abwLab('Diäten'));
+    $('#e-mehrsum').textContent = teile.join(' · ');
+    var p = data.profil || {}, voll = function (o) { return !!o && Object.keys(o).some(function (k) { var v = o[k]; return (typeof v === 'string' && v.trim()) || typeof v === 'number' || (Array.isArray(v) && v.some(function (x) { return typeof x === 'object' ? voll(x) : !!x; })); }); }, drin = fahrzeugeVon(d).some(voll) || (d.kunden || []).some(voll) || !!(d.praemien && Object.keys(d.praemien).length) || !!d.swOn || (d.diaeten != null && d.diaeten !== '');
+    var offen = p.erfMehr !== undefined ? p.erfMehr === true : (p.erfMehrAlt === true);
+    box.open = offen || drin;
+  }
   function renderPausen() {
     $('#e-pausen').innerHTML = ui.edDraft.pausen.map(function (p, i) {
       return '<div class="pause">' +
@@ -1921,11 +1957,13 @@
     if (!out.spaeter) delete out.spaeter;
     delete out.test;
     ins('tag_gespeichert'); if (out.an) ins('notiz');
+    var ersterTag = !Object.keys(data.days).length; if (ersterTag) ins('erster_tag');
     data.days[ui.edDate] = out;
     ui.edBase = JSON.stringify(ui.edDraft);
     save();
     var saved = ui.edDate;
-    setTimeout(function () { try { if (lueckenFrage(saved)) return; if (window.berichtFrage) window.berichtFrage(saved); } catch (e) { } }, 400);
+    if (ersterTag) setTimeout(function () { try { if (!miaCfg().ruhig) miaOpen(true); } catch (e) { } }, 900); // Mia freut sich mit und fragt nach dem Lohn
+    else setTimeout(function () { try { if (lueckenFrage(saved)) return; if (window.berichtFrage) window.berichtFrage(saved); } catch (e) { } }, 400);
     toast(out.von && !out.bis ? 'Gespeichert. Das Ende trägst du später nach.' : 'Gespeichert: ' + fmtShort(saved));
     if (ui.edFrom === 'monat') { var p = E.parseISO(saved); ui.y = p.y; ui.m = p.m; show('monat'); }
     else openEditor(out.von && !out.bis ? saved : E.addDays(saved, 1), 'erfassen'); // nach dem Speichern zum nächsten Tag, außer der Dienst läuft noch (Ende fehlt)
@@ -1983,6 +2021,7 @@
     var rep = function (arr, to) { arr.forEach(function (b) { frag = frag.split(b).join(to); }); };
     rep(haupt, c); rep(dunkel || [], miaMix(c, 0, 0.4)); rep(hell || [], miaMix(c, 255, 0.45)); return frag;
   }
+  var MIA_UID = 0;
   function miaSvg(f, outfit, pose) {
     outfit = outfit || []; var w = f !== 'm', has = function (x) { return outfit.indexOf(x) >= 0; };
     var sh0 = w ? '#f58aa5' : '#4fc0cf', sh1 = w ? '#c4476a' : '#237a89';
@@ -2088,7 +2127,8 @@
     s += armG;
     s += '<g class="hand h-eyes"><circle cx="46" cy="52" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/>' + (item ? '' : '<circle cx="74" cy="52" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/>') + '</g>' +
       '<g class="hand h-ears"><circle cx="20" cy="52" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/>' + (item ? '' : '<circle cx="100" cy="52" r="11" fill="url(#mgFur)" stroke="#5e3a20" stroke-width="2"/>') + '</g>';
-    return s + '</g></g></svg>';
+    s += '</g></g></svg>'; var uid = 'u' + (++MIA_UID); // eigene Kennungen je Bild: sonst fehlen Fell und Farben, wenn ein anderes Mia-Bild versteckt ist
+    return s.replace(/id="(mg\w+)"/g, 'id="$1' + uid + '"').replace(/url\(#(mg\w+)\)/g, 'url(#$1' + uid + ')');
   }
   function miaInner(f, outfit) { return miaSvg(f, outfit, '').replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, ''); }
   /* Szene: Mia sitzt im Fahrzeug ihres Berufs (eigene Zeichnung, neutral, ohne Marke und Firmenlogo) */
@@ -2211,7 +2251,8 @@
     var kvn = E.lgAnstehend(data.settings, todayISO(), 45);
     if (kvn) out.push({ k: 'kvneu_' + kvn.ab, text: abw1(kvn.auto ? 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe von {1} auf {2}. Soll ich die neuen Werte ab diesem Tag anlegen? Frühere Monate bleiben unverändert.' : 'Dein Kollektivvertrag steigt ab {0}: In deiner Lohngruppe laut Tabelle von {1} auf {2}. Dein Lohn im Programm folgt der Tabelle nicht von selbst. Soll ich neue Werte ab diesem Tag anlegen? Dann trägst du den Lohn laut Lohnzettel ein.', [fmtDate(kvn.ab), kvn.alt == null ? '–' : eur.format(kvn.alt), eur.format(kvn.val)]) });
     if (!(data.profil && data.profil.tourDone)) out.push({ k: 'rundgang', text: 'Soll ich dir in einer Minute zeigen, wie du Tage einträgst und wo du alles findest?' });
-    if (w.stundenlohn == null) out.push({ k: 'lohn', pose: 'eyes', text: 'Mir fehlt noch dein Stundenlohn. Dann sage ich dir, was ein Unterschied in Euro wert ist.' });
+    if (w.stundenlohn == null) out.push({ k: 'lohn', text: 'Super, dein erster Tag ist drin! Damit ich später deinen Lohnzettel prüfen kann, brauche ich noch deinen Lohn. Am einfachsten zeigst du mir deinen Lohnzettel als Foto oder PDF. Ich lese ihn nur hier auf deinem Handy und stelle alles für dich ein, du bestätigst jede Änderung.' });
+    if (data.profil && data.profil.kvAuto && !data.profil.kvAutoOk && w.paket === data.profil.kvAuto && Object.keys(data.days).length >= 3) out.push({ k: 'kvauto', text: abw1('Ich habe für dich den Kollektivvertrag „{0}“ gewählt. Steht auf deinem Lohnzettel ein anderer? Dann zeige ich dir, wo du ihn änderst.', [PAKET_KURZ[w.paket] || (E.PAKETE[w.paket] && E.PAKETE[w.paket].name) || w.paket]) });
     if (!Object.keys(data.days).length) out.push({ k: 'tag', text: 'Trag jetzt deinen ersten Tag ein. Beginn und Ende reichen.' });
     if (bs.praemien && !praemienListe().length) out.push({ k: 'praemien', text: 'Steht auf deinem Lohnzettel eine Prämie oder Zulage? Lege sie an, dann prüfe ich sie auch.' });
     if (data.profil && data.profil.lzLesen === undefined && Object.keys(data.days).length >= 3) out.push({ k: 'lzlesen', text: 'Darf ich dir künftig das Abtippen vom Lohnzettel abnehmen? Du zeigst mir die PDF-Datei oder ein Foto, ich lese es nur hier auf deinem Handy, und du musst fast nichts mehr eintippen. Du entscheidest und kannst es jederzeit ausschalten.' });
@@ -2227,8 +2268,14 @@
     if (mitHelfenFaellig()) out.unshift({ k: 'mithelfen', text: 'Du testest die App gratis. Hilfst du mit, sie besser zu machen? Ich melde nur anonym, in welchem Beruf du bist und wie stark Lohnzettel und Aufzeichnung abweichen, dazu Fragen, die ich nicht beantworten kann. Keine Namen, kein Lohn, nur die gerundete Größe des Unterschieds. Du kannst es jederzeit unter Einstellungen, „Mithelfen (optional)“, ausschalten.' });
     if (newsCfg().an === undefined && !mitHelfenFaellig() && (data.profil && data.profil.tourDone) && Object.keys(data.days).length >= 3) out.push({ k: 'newsfrage', text: 'Soll ich dir Neuigkeiten zur App sagen, zum Beispiel neue Funktionen oder was sich Tester gewünscht haben? Wie oft, kannst du jederzeit im Profil ändern.' });
     if (newsDue()) out.push({ k: 'news_' + newsUnseen()[0].id, text: newsUnseen()[0].text });
+    var nTage = Object.keys(data.days).length;
+    if (!nTage) out = out.filter(function (x) { return ['fberledigt', 'update', 'tag'].indexOf(x.k) >= 0; }); // Erst der erste Tag, alles andere danach
+    else {
+      out = out.filter(function (x) { return !((x.k === 'schnellneu' && nTage < 3) || (x.k === 'assist' && nTage < 2) || (x.k === 'lzeinst' && nTage < 2)); });
+      var lo = out.filter(function (x) { return x.k === 'lohn'; })[0]; if (lo) { out.splice(out.indexOf(lo), 1); out.unshift(lo); } // Lohn ist das Wichtigste für den Vergleich
+    }
     var vn = ((data.profil && data.profil.vorname) || '').trim();
-    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) o.text = vn + ', ' + o.text.charAt(0).toLowerCase() + o.text.slice(1); });
+    if (vn) out.forEach(function (o) { if (['assist', 'rundgang', 'lzlesen', 'tag', 'praemien', 'tagfuehren'].indexOf(o.k) >= 0) var tx = abwLab(o.text); o.text = vn + ', ' + tx.charAt(0).toLowerCase() + tx.slice(1); }); // erst übersetzen, dann den Namen davor
     // Beim Start zuerst das Wichtige (Job, Lohn, Fristen). Leises (Version, Neuigkeiten-Frage, Bundesland, Mithelfen) und „Später“ hinten: dafür springt Mia nicht von selbst an.
     if (!ui.miaManuell) out = out.filter(function (x) { return !x.spaet && !miaLeise(x.k); }).concat(out.filter(function (x) { return !x.spaet && miaLeise(x.k); })).concat(out.filter(function (x) { return x.spaet; }));
     ui.miaListe = out.filter(function (s) { return s.k.indexOf('frist_') === 0 || s.k.indexOf('news_') === 0 || s.k === 'schnellneu' || s.k === 'update' || (c.skip[s.k] || 0) < 2; });
@@ -2237,7 +2284,7 @@
   function miaLeise(k) { return ['update', 'newsfrage', 'landfrage', 'praemhelfen', 'mithelfen'].indexOf(k) >= 0; }
   // Start-Karte: sind beim Start mindestens zwei Dinge offen, zeigt Mia alle auf einen Blick (statt nur eine Sprechblase)
   function miaKarte() {
-    var L = (ui.miaListe || []).filter(function (o) { return o.k !== 'fberledigt' && o.k.indexOf('news_') !== 0 && o.k !== 'newsfrage'; }).slice(0, 4);
+    var L = (ui.miaListe || []).filter(function (o) { return o.k !== 'fberledigt' && o.k.indexOf('news_') !== 0 && o.k !== 'newsfrage'; }).slice(0, 2); // höchstens zwei Dinge auf einmal, der Rest kommt danach
     if (L.length < 2 || $('#mia-karte')) return false;
     var c = miaCfg(), ov = document.createElement('div'); ov.id = 'mia-karte'; ov.className = 'miakarte';
     function zeichne() {
@@ -2320,7 +2367,8 @@
     else if (k === 'tagfuehren') { show('erfassen'); tourStart('tag'); }
     else if (k === 'assist') { tourStart(true, 'kurz'); }
     else if (k === 'assistmehr') { tourStart(true); }
-    else if (k === 'lohn') { show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 120); }
+    else if (k === 'lohn') { lzUi.modus = 'pruef'; lzOpen(); }
+    else if (k === 'kvauto') { var pk2 = data.profil || (data.profil = {}); pk2.kvAutoOk = true; save(); show('einstellungen'); setTimeout(function () { var el = $('#s-paket') || $('#s-beruf'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); var f = el.closest('.field') || el; f.classList.add('mia-treffer'); setTimeout(function () { f.classList.remove('mia-treffer'); }, 4000); } }, 150); }
     else if (k === 'abweichung') { show('einstellungen'); setTimeout(function () { var el = $('#s-umodell'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
     else if (k === 'tag') { show('erfassen'); }
     else if (k.indexOf('fest_') === 0) { show('einstellungen'); setTimeout(function () { var el = $('#fest-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); }
@@ -2381,9 +2429,10 @@
   }
   function miaOpen(auto) { if (!$('#mia-go')) return;
     ui.miaManuell = !auto; var c = miaCfg(), nx = miaNext(), bb = $('#mia-bubble'); ui.miaManuell = false; ui.miaPose = null;
-    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland' || nx.k === 'rettungkv' || nx.k === 'taxikt' || nx.k === 'update' || nx.k === 'praemhelfen') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : 'Zeig mir'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
-    else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; miaPose(''); ui.miaStep = null; }
+    if (nx) { $('#mia-text').textContent = nx.text; $('#mia-go').hidden = false; $('#mia-later').hidden = false; $('#mia-go').dataset.k = nx.k; $('#mia-go').textContent = (nx.k === 'mithelfen' || nx.k === 'newsfrage' || nx.k === 'schnellneu' || nx.k === 'landfrage' || nx.k === 'kvland' || nx.k === 'rettungkv' || nx.k === 'taxikt' || nx.k === 'update' || nx.k === 'praemhelfen') ? 'Ja, bitte' : nx.k.indexOf('kvneu_') === 0 ? 'Anlegen' : nx.k === 'zuart' ? 'Umstellen' : nx.k.indexOf('news_') === 0 ? 'Mehr dazu' : nx.k === 'lohn' ? 'Lohnzettel zeigen' : nx.k === 'tag' ? 'Los geht\'s' : 'Zeig mir'; $('#mia-alt').hidden = nx.k !== 'lohn'; if (nx.k.indexOf('news_') === 0) newsSet('gesehen', todayISO()); miaPose(nx.pose || ''); ui.miaStep = nx.k; }
+    else { $('#mia-text').textContent = 'Im Moment gibt es nichts zu tun. Trag einfach deine Tage ein, ich rechne mit.'; $('#mia-go').hidden = true; $('#mia-later').hidden = true; $('#mia-alt').hidden = true; miaPose(''); ui.miaStep = null; }
     $('#mia-quiet').textContent = c.ruhig ? 'Mia wieder aktiv stellen' : 'Mia ruhig stellen';
+    var erst = !Object.keys(data.days).length || (auto && nx); ['#mia-assist', '#mia-tour', '#mia-askbtn', '#mia-quiet'].forEach(function (id) { var x = $(id); if (x) x.hidden = !!erst; }); // von selbst geöffnet: nur die eine Sache; die anderen Knöpfe, wenn man Mia antippt
     bb.hidden = false;
     miaSag($('#mia-text').textContent);
   }
@@ -2408,6 +2457,8 @@
     on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose(''); miaGo(k); });
     on('#mia-assist', 'click', function () { miaClose(''); tourStart(true); });
     on('#mia-tour', 'click', function () { miaClose(''); tourStart(); });
+    on('#e-mehrbox > summary', 'click', function () { var bx = $('#e-mehrbox'); setTimeout(function () { var p = data.profil || (data.profil = {}); p.erfMehr = !!bx.open; save(); }, 0); });
+    on('#mia-alt', 'click', function () { miaClose(''); show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 150); });
     on('#mia-later', 'click', function () { if (ui.miaStep && ui.miaStep.indexOf('frist_') === 0) fristSpaet(ui.miaStep.slice(6)); else if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
     on('#mia-quiet', 'click', function () { var r = !miaCfg().ruhig; miaSet('ruhig', r); if (r) { ui.miaAuto = true; miaClose('ears'); } else miaOpen(false); });
     on('#mia-choose', 'click', function (ev) { var b = ev.target.closest('[data-mia]'); if (b) miaSet('figur', b.dataset.mia); });
@@ -2709,9 +2760,19 @@
     var w = ui.wiz, i = WZ_ORDER.indexOf(w.step); w.hist.push(w.step);
     var n = WZ_ORDER[i + 1];
     if (n === 'art' && !(E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten)) n = 'bausteine';
-    if (n === 'bausteine' && w.mode === 'start') n = 'kv';
+    if (n === 'bausteine' && w.mode === 'start') { wzAutoKv(w); wzFinish(); return; } // Start: nur der Beruf, den Rest fragt Mia später
     if (!n) { wzFinish(); return; }
     w.step = n; wzRender();
+  }
+  // Kollektivvertrag ohne Frage wählen: zuerst der zur Tätigkeit, dann der zum Bundesland, sonst der erste des Berufs (Mia fragt später nach, ob er passt)
+  function wzAutoKv(w) {
+    var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter']).slice(), ar = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten, ak = ar && w.art && ar[w.art] && ar[w.art].kv, wl = landAT();
+    var kvL = berufHatLand(w.beruf) && wl ? kvs.filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(wl) >= 0; }) : [];
+    var at = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; });
+    var wahl = ak && E.PAKETE[ak] ? ak : (kvL[0] || at[0] || kvs[0] || 'gueter');
+    if (!E.PAKETE[wahl]) wahl = 'gueter';
+    w.paket = wahl; var pv = E.PAKETE[wahl].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null;
+    if (!data.profil) data.profil = {}; data.profil.kvAuto = wahl; // Mia fragt nach dem ersten Lohnzettel, ob er stimmt
   }
   function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
   function wzClose(dismiss) { $('#wiz').hidden = true; if (dismiss && ui.wiz && ui.wiz.mode === 'start') ui.wizDismissed = true; ui.wiz = null; }
@@ -2818,7 +2879,8 @@
   }
   function tourEl(st) {
     if (!st.sel) return null;
-    var el = document.querySelector(st.sel); if (!el || el.offsetParent === null) return null;
+    var el = document.querySelector(st.sel); if (el) { var dz = el.closest('details'); while (dz) { dz.open = true; dz = dz.parentElement && dz.parentElement.closest('details'); } } // zugeklappte Bereiche öffnen
+    if (!el || el.offsetParent === null) return null;
     if (st.up) { var u = el.closest(st.up); if (u && u.offsetParent !== null) el = u; }
     return el;
   }
@@ -2943,7 +3005,7 @@
     save(); ui.setKey = ab; var start = w.mode === 'start';
     if (start && data.profil && data.profil.consent) { try { window.StundenInsights.push(true); } catch (e) {} }
     wzClose(false); ui.miaAuto = false; renderMia(); miaAuto();
-    if (start) { show('einstellungen', true); setTimeout(function () { tourStart(true, true); }, 500); }
+    if (start) { show('erfassen', true); }
     else {
       var spaet = data.settings.filter(function (e) { return e.gueltigAb > ab && (e.beruf !== set.beruf || (e.art || null) !== (set.art || null)); }).sort(function (x, y) { return x.gueltigAb < y.gueltigAb ? -1 : 1; })[0];
       if (spaet) toast('Gespeichert: ab ' + fmtDate(ab) + ' gilt ' + (E.berufName(set) || 'der neue Beruf') + '. Aber ab ' + fmtDate(spaet.gueltigAb) + ' gilt noch ' + (E.berufName(spaet) || 'ein anderer Beruf') + ', darum ändert sich heute nichts. Wähle dafür das spätere Datum.', 8000);
@@ -3046,8 +3108,8 @@
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
     var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
     var off = w.mode === 'start' ? 1 : 0, num = w.step === 'mia' ? 1 : (w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4) + off;
-    if (w.mode === 'start') { nSteps = 3; num = (w.step === 'beruf' || w.step === 'art') ? 1 : w.step === 'kv' ? 2 : 3; }
-    var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
+    if (w.mode === 'start') { nSteps = !w.beruf || (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten) ? 2 : 1; num = w.step === 'art' ? 2 : 1; }
+    var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: w.mode === 'start' ? 'Hallo! Nur eine Frage, dann kannst du loslegen: Was machst du?' : 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
     var sc = ''; // keine Fahrzeug-Szene mehr: nur Mia
     if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
@@ -3055,6 +3117,7 @@
     html += '<p class="wzstep"><span>Schritt ' + num + ' von ' + nSteps + '</span>' + (w.mode === 'change' ? '<span> · gilt ab ' + esc(fmtDate(w.ab)) + '</span>' : '') + (w.step === 'mia' || w.step === 'bausteine' ? '<span class="need opt">Optional</span>' : '<span class="need must">Unbedingt nötig</span>') + '</p>';
     if (w.step === 'beruf') {
       html += '<h3>Was machst du beruflich?</h3><div class="field"><label for="wz-such">Beruf suchen (optional)</label><input type="search" id="wz-such" maxlength="40" autocomplete="off" placeholder="zum Beispiel Spengler, Koch, Lkw"><div id="wz-sres" class="wzlist"></div></div><div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div><div class="wzlist">' + berufeSortiert().filter(function (k) { return !E.BERUFE[k].verborgen || w.beruf === k; }).map(function (k) { return '<button type="button" class="btn wzopt' + (w.beruf === k ? ' on' : '') + '" data-wb="' + k + '">' + esc(E.BERUFE[k].name) + '</button>'; }).join('') + '</div>' +
+        (w.mode === 'start' ? '<label class="check wzhelp"><input type="checkbox" data-wfc="beide"' + (w.cStat ? ' checked' : '') + '><span>Anonym mithelfen, die App besser zu machen (optional). Keine Namen, kein Lohn.</span></label>' : '') +
         '<details class="wzfehlt"><summary>Mein Beruf ist nicht dabei</summary><div class="field"><label for="wz-bf">Welcher Beruf fehlt, und was brauchst du dafür?</label><textarea id="wz-bf" rows="3" maxlength="600"></textarea></div><button type="button" class="btn" data-wbf="1">Senden</button><p class="hint">Bis dahin passt „Etwas anderes“. Mia schlägt dir später etwas Passendes vor.</p></details>';
     } else if (w.step === 'art') {
       var ar = E.BERUFE[w.beruf].arten;
@@ -3131,7 +3194,7 @@
     });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
     ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-such') { wzSuche(t.value); return; } if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
-    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-land') { landSetzen(t.value); ui.wiz.kvGewaehlt = false; wzRender(); return; } if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
+    ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-land') { landSetzen(t.value); ui.wiz.kvGewaehlt = false; wzRender(); return; } if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'beide') { ui.wiz.cStat = t.checked; ui.wiz.cMia = t.checked; } else if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
     $('#kv-send').addEventListener('click', function () {
       var f = { name: $('#kv-name').value.trim(), gruppe: $('#kv-gruppe').value.trim(), branche: $('#kv-branche').value.trim(), wst: $('#kv-wst').value.trim() };
       if (!f.name && !f.gruppe) { toast('Bitte trage mindestens den Kollektivvertrag oder die Einstufung ein.'); return; }
