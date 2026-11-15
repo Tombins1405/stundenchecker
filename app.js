@@ -1464,7 +1464,7 @@
   }
   function renderDiensteTag() {
     var list = diensteListe().filter(function (p) { return p.name; }), d = ui.edDraft, dm = d.dienste || {};
-    $('#e-dienstgroup').hidden = !list.length;
+    $('#e-dienstgroup').hidden = !list.length || !E.bausteine(wAt(ui.edDate)).dienste;
     $('#e-dienste').innerHTML = list.map(function (p) {
       var v = dm[p.id];
       if (p.einheit === 'tag') return '<label class="check"><input type="checkbox" data-dd="' + esc(p.id) + '"' + (v > 0 ? ' checked' : '') + '> ' + esc(p.name) + '</label>';
@@ -1619,6 +1619,11 @@
     var p = data.profil || {}, voll = function (o) { return !!o && Object.keys(o).some(function (k) { var v = o[k]; return (typeof v === 'string' && v.trim()) || typeof v === 'number' || (Array.isArray(v) && v.some(function (x) { return typeof x === 'object' ? voll(x) : !!x; })); }); }, drin = fahrzeugeVon(d).some(voll) || (d.kunden || []).some(voll) || !!(d.praemien && Object.keys(d.praemien).length) || !!d.swOn || (d.diaeten != null && d.diaeten !== '');
     var offen = p.erfMehr !== undefined ? p.erfMehr === true : (p.erfMehrAlt === true);
     box.open = offen || drin;
+  }
+  function bsRender(en) {
+    var bs = E.bausteine(en || wAt(todayISO()));
+    $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; });
+    var kl = $('#s-bs-kl'); if (kl) kl.textContent = abwLab(E.istTour(en || wAt(todayISO())) ? 'Touren mit Tätigkeiten' : 'Kunden / Baustellen mit Tätigkeiten');
   }
   function renderPausen() {
     $('#e-pausen').innerHTML = ui.edDraft.pausen.map(function (p, i) {
@@ -2457,6 +2462,13 @@
     on('#mia-go', 'click', function () { var k = this.dataset.k; miaClose(''); miaGo(k); });
     on('#mia-assist', 'click', function () { miaClose(''); tourStart(true); });
     on('#mia-tour', 'click', function () { miaClose(''); tourStart(); });
+    on('#s-bs', 'change', function (ev) {
+      var k = ev.target && ev.target.dataset && ev.target.dataset.bsx; if (!k) return;
+      data.settings.forEach(function (st) { var b = E.bausteine(st); b[k] = ev.target.checked; st.bausteine = b; });
+      save(); ins('baustein_' + k + (ev.target.checked ? '_an' : '_aus'));
+      $('#s-praemien').hidden = !E.bausteine(wAt(todayISO())).praemien; $('#s-dienste').hidden = !E.bausteine(wAt(todayISO())).dienste;
+      toast(ev.target.checked ? 'Eingeschaltet. Du findest es jetzt beim Erfassen.' : 'Ausgeschaltet. Beim Erfassen ist es jetzt ausgeblendet, deine Einträge bleiben erhalten.');
+    });
     on('#e-mehrbox > summary', 'click', function () { var bx = $('#e-mehrbox'); setTimeout(function () { var p = data.profil || (data.profil = {}); p.erfMehr = !!bx.open; save(); }, 0); });
     on('#mia-alt', 'click', function () { miaClose(''); show('einstellungen'); setTimeout(function () { var el = $('#s-lohn'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); } }, 150); });
     on('#mia-later', 'click', function () { if (ui.miaStep && ui.miaStep.indexOf('frist_') === 0) fristSpaet(ui.miaStep.slice(6)); else if (ui.miaStep) miaSkipInc(ui.miaStep); ui.miaAuto = true; miaClose('ears'); });
@@ -2744,7 +2756,7 @@
   function wzOpen(mode, ab) {
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
-      w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien };
+      w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien, dienste: bb.dienste };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.kvGewaehlt = !!cur.paket; w.bl = (data.profil && data.profil.bl) || '';
       w.einst = cur.einstufung || ''; w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
     }
@@ -2982,7 +2994,7 @@
     ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
     var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.zaUmr = old.zaUmr; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
-    set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien };
+    set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien, dienste: w.b.dienste != null ? !!w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0 };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
     else if (set.diaeten.modell === 'aus') { set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell; if (set.diaeten.modell === 'aus') { set.diaeten.modell = 'stunde'; set.diaeten.maxStd = 12; } }
@@ -3268,6 +3280,8 @@
     var en = curEntry();
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
+    $('#s-dienste').hidden = !!(en && en.bausteine && en.bausteine.dienste === false);
+    bsRender(en);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en || !!(en.diaeten && en.diaeten.modell === 'aus' && E.BERUFE[en.beruf] && E.BERUFE[en.beruf].diaeten === false);
     if (!en) return;
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
@@ -3891,6 +3905,19 @@
         }, function () { m('Das Senden hat nicht geklappt. Bitte später noch einmal probieren.', true); b.disabled = false; });
       });
     }
+    // Nur den Text, der gerade wirklich am Bildschirm zu sehen ist (wie auf dem Bild), nicht die ganze Seite
+    function sichtText(root) {
+      var vh = window.innerHeight || 800, out = [], last = null, tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
+      while ((n = tw.nextNode())) {
+        var t = n.nodeValue.replace(/\s+/g, ' ').trim(), el = n.parentElement; if (!t || !el) continue;
+        if (el.closest('#fb-sheet, #fb-float, script, style, option')) continue;
+        var r = el.getBoundingClientRect(); if (!r.width || !r.height || r.bottom < 0 || r.top > vh) continue;
+        var blk = el.closest('label, button, summary, h1, h2, h3, h4, p, li, td, th, small, .field, div') || el;
+        if (blk !== last && out.length) out.push('\n'); else if (out.length) out.push(' ');
+        out.push(t); last = blk;
+      }
+      return out.join('').replace(/ *\n */g, '\n').replace(/\n{2,}/g, '\n').trim().slice(0, 1800);
+    }
     on2('#fb-float', 'click', function () {
       if (!window.StundenInsights || !window.StundenInsights.on) return;
       if (!sheet) sheetBauen();
@@ -3899,8 +3926,8 @@
       sheetSeite = '';
       try {
         var tops = Array.prototype.slice.call(document.querySelectorAll('#lz-dlg, #wiz, .cropov, .lzov, [role=dialog]')).filter(function (e) { return e.offsetParent !== null || (e.getClientRects && e.getClientRects().length); });
-        var qel = tops.filter(function (e) { return !e.hidden && !e.closest('#fb-sheet') && e.id !== 'fb-sheet'; }).pop() || document.querySelector('.view:not([hidden])');
-        if (qel) sheetSeite = String(qel.innerText || '').replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim().slice(0, 1800);
+        var qel = tops.filter(function (e) { return !e.hidden && !e.closest('#fb-sheet') && e.id !== 'fb-sheet'; }).pop() || $('#v-' + ui.view);
+        if (qel) sheetSeite = sichtText(qel);
       } catch (e) { }
       shotSeite().then(function (d) {
         ff.hidden = false; sheetImg = d;

@@ -975,3 +975,5 @@ details.mehrbox .mehrin { display: flex; flex-direction: column; gap: 14px; }
 .warum .wrow b { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .warum .wrow.sum { font-weight: 700; border-bottom: 2px solid var(--line); }
 .warum .hint { margin-top: 8px; }
+h3[data-ico="toggle"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%221%22 y=%225%22 width=%2222%22 height=%2214%22 rx=%227%22/%3E%3Ccircle cx=%2216%22 cy=%2212%22 r=%223%22/%3E%3C/svg%3E"); }
+#s-bs .check { margin-top: 4px; }
