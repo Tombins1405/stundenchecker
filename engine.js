@@ -3152,6 +3152,12 @@
   }
   // Ist die Arbeitsart eine Tour? Dann heißen "Kunde / Baustelle" in der Erfassung "Tour".
   function istBau(w) { return !!w && (w.paket === 'bau' || w.paket === 'de_bau' || w.paket === 'holzbau' || w.paket === 'dachdecker' || w.paket === 'pflasterer'); }
+  // Wie heißen die Einsatzorte in diesem Beruf? Bestimmt alle Beschriftungen beim Erfassen (Kunden, Baustellen, Touren, Objekte, Klienten, Einsätze).
+  var ORT_TYP = { lkw: { tour: 'tour', fern: 'kunde', muell: 'tour', _: 'kb' }, klein: { tour: 'tour', fern: 'kunde', _: 'kb' }, handwerk: { _: 'kb' }, bagger: { _: 'baustelle' },
+    aussendienst: { _: 'kunde' }, reinigung: { _: 'objekt' }, security: { _: 'objekt' }, lebensmittel: { _: 'tour' }, konditor: { _: 'tour' }, fleischer: { _: 'tour' },
+    gaertner: { forst: 'einsatz', agrar: 'einsatz', _: 'kunde' }, post: { _: 'tour' }, pflege: { _: 'klient' }, rettung: { _: 'einsatz' }, mechaniker: { _: 'kunde' },
+    bus: { _: 'tour' }, schaedling: { _: 'kunde' }, rauchfangkehrer: { _: 'kunde' }, garage: { _: 'kunde' } };
+  function ortTyp(w) { var t = w && ORT_TYP[w.beruf]; if (!t) return 'kunde'; return (w.art && t[w.art]) || t._; }
   function istTour(w) { var b = w && BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && a.tour); }
   // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
   function bausteine(w) {
@@ -3872,7 +3878,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     LAENDER_AT: LAENDER_AT, kvLand: kvLand, rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, ortTyp: ortTyp, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     parseSchnell: parseSchnell, wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });

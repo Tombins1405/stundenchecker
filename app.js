@@ -1507,17 +1507,28 @@
     for (i = 0; i < tage.length; i++) { dd = E.clone(data.days[tage[i]]); normKunden(dd); if (kundenNamen(dd).length) return dd.kunden; }
     return null;
   }
-  function kSumme(k, i, tour) {
+  // Beschriftungen je Beruf: Kunden / Baustellen, Baustellen, Touren, Kunden, Objekte, Klienten, Einsätze
+  var ORTW = {
+    kb: { lbl: 'Kunden / Baustellen mit Tätigkeiten (optional)', bs: 'Kunden / Baustellen mit Tätigkeiten', add: '+ Kunde / Baustelle hinzufügen', one: 'Kunde / Baustelle', ohne: 'Ohne Kunde', zeit: 'Zeit pro Kunde', kurz: 'Kunden', copy: 'Kunden und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    baustelle: { lbl: 'Baustellen mit Tätigkeiten (optional)', bs: 'Baustellen mit Tätigkeiten', add: '+ Baustelle hinzufügen', one: 'Baustelle', ohne: 'Ohne Baustelle', zeit: 'Zeit pro Baustelle', kurz: 'Baustellen', copy: 'Baustellen und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    tour: { lbl: 'Touren mit Tätigkeiten (optional)', bs: 'Touren mit Tätigkeiten', add: '+ Tour hinzufügen', one: 'Tour', ohne: 'Ohne Tour', zeit: 'Zeit pro Tour', kurz: 'Touren', copy: 'Touren und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    kunde: { lbl: 'Kunden mit Tätigkeiten (optional)', bs: 'Kunden mit Tätigkeiten', add: '+ Kunde hinzufügen', one: 'Kunde', ohne: 'Ohne Kunde', zeit: 'Zeit pro Kunde', kurz: 'Kunden', copy: 'Kunden und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    objekt: { lbl: 'Objekte mit Tätigkeiten (optional)', bs: 'Objekte mit Tätigkeiten', add: '+ Objekt hinzufügen', one: 'Objekt', ohne: 'Ohne Objekt', zeit: 'Zeit pro Objekt', kurz: 'Objekte', copy: 'Objekte und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    klient: { lbl: 'Klienten mit Tätigkeiten (optional)', bs: 'Klienten mit Tätigkeiten', add: '+ Klient/in hinzufügen', one: 'Klient/in', ohne: 'Ohne Klient/in', zeit: 'Zeit pro Klient/in', kurz: 'Klienten', copy: 'Klienten und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    einsatz: { lbl: 'Einsätze mit Tätigkeiten (optional)', bs: 'Einsätze mit Tätigkeiten', add: '+ Einsatz hinzufügen', one: 'Einsatz', ohne: 'Ohne Einsatz', zeit: 'Zeit pro Einsatz', kurz: 'Einsätze', copy: 'Einsätze und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' }
+  };
+  function ortW(w) { return ORTW[E.ortTyp(w || wAt(ui.edDate || todayISO()))] || ORTW.kunde; }
+  function kSumme(k, i, ow) {
     var tm = (k.taet || []).filter(function (t) { return t.von || t.bis; }), zeit = tm.length ? (tm[0].von || '?') + '–' + (tm[tm.length - 1].bis || '?') : '';
-    return '<span class="ksn">' + esc((k.name || '').trim() || ((tour ? 'Tour ' : 'Kunde / Baustelle ') + (i + 1))) + '</span><span class="ksz">' + esc(zeit) + '</span>';
+    return '<span class="ksn">' + esc((k.name || '').trim() || (abwLab(ow.one) + ' ' + (i + 1))) + '</span><span class="ksz">' + esc(zeit) + '</span>';
   }
   function kSummeFrisch() {
-    var tour = E.istTour(wAt(ui.edDate || todayISO()));
+    var tour = ortW();
     Array.prototype.forEach.call(document.querySelectorAll('#e-kunden details.kd'), function (dt) { var k = ui.edDraft.kunden[+dt.dataset.kd], sm = dt.firstElementChild; if (k && sm) sm.innerHTML = kSumme(k, +dt.dataset.kd, tour); });
   }
   document.addEventListener('toggle', function (ev) { var d0 = ev.target; if (d0 && d0.classList && d0.classList.contains('kd')) { (ui.kOpen = ui.kOpen || {})[+d0.dataset.kd] = d0.open; } }, true);
   function renderKunden() {
-    var tour = E.istTour(wAt(ui.edDate || todayISO()));
+    var tour = ortW();
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
       var rows = (k.taet || []).map(function (t, j) {
         var sfx = i + '-' + j;
@@ -1530,8 +1541,8 @@
       var leerK = !(k.name || '').trim() && !(k.taet || []).some(function (t) { return (t.tat || '').trim() || t.von || t.bis; });
       var offenK = ui.kOpen && ui.kOpen[i] !== undefined ? ui.kOpen[i] : leerK;
       return '<details class="kunde2 kd" data-kd="' + i + '"' + (offenK ? ' open' : '') + '><summary>' + kSumme(k, i, tour) + '</summary>' +
-        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + (tour ? 'Tour' : 'Kunde / Baustelle') + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"><div class="chips kchips">' + (k.name ? '' : letzteKundenNamen(ui.edDraft).map(function (n) { return '<button type="button" class="chip" data-kchip="' + esc(n) + '" data-kci="' + i + '">' + esc(n) + '</button>'; }).join('')) + '</div></div>' +
-        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="' + (tour ? 'Tour' : 'Kunde') + ' ' + (i + 1) + ' entfernen">×</button></div>' +
+        '<div class="khead"><div class="field kn"><label for="k-n' + i + '">' + esc(abwLab(tour.one)) + ' ' + (i + 1) + '</label><input type="text" id="k-n' + i + '" data-k="' + i + '" data-f="name" maxlength="120" list="e-notiz-list" autocomplete="off" value="' + esc(k.name || '') + '"><div class="chips kchips">' + (k.name ? '' : letzteKundenNamen(ui.edDraft).map(function (n) { return '<button type="button" class="chip" data-kchip="' + esc(n) + '" data-kci="' + i + '">' + esc(n) + '</button>'; }).join('')) + '</div></div>' +
+        '<button type="button" class="rm" data-rmk="' + i + '" aria-label="' + esc(abwLab(tour.one)) + ' ' + (i + 1) + ' ✕">×</button></div>' +
         rows + '<button type="button" class="linkbtn" data-addt="' + i + '">+ Tätigkeit zu diesem Kunden</button></details>';
     }).join('');
     copyKundeBtn();
@@ -1592,7 +1603,7 @@
     $('#e-swgroup').hidden = !w.schlechtwetter;
     var bau = E.istBau(w); $('#e-swlbl').textContent = bau ? 'Schlechtwetterstunden' : 'Ausfallstunden'; $('#e-swonl').textContent = bau ? 'Schlechtwetter an diesem Tag' : 'Ich wurde früher heimgeschickt';
     var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
-    var tr1 = E.istTour(w); $('#e-klbl').textContent = tr1 ? 'Touren mit Tätigkeiten (optional)' : 'Kunden / Baustellen mit Tätigkeiten (optional)'; $('#e-addkunde').textContent = tr1 ? '+ Tour hinzufügen' : '+ Kunde / Baustelle hinzufügen';
+    var ow1 = ortW(w); $('#e-klbl').textContent = ow1.lbl; $('#e-addkunde').textContent = ow1.add; $('#e-copykunde').textContent = ow1.copy;
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
     mehrBox(d, w);
     var hatTage = Object.keys(data.days).some(function (k) { return k !== ui.edDate; });
@@ -1611,7 +1622,7 @@
     var box = $('#e-mehrbox'); if (!box) return;
     var bs = E.bausteine(w), teile = [];
     if (bs.fahrzeug) teile.push(abwLab('Fahrzeug'));
-    if (bs.kunden) teile.push(abwLab(E.istTour(w) ? 'Touren' : 'Kunden'));
+    if (bs.kunden) teile.push(abwLab(ortW(w).kurz));
     if (!$('#e-praemiengroup').hidden) teile.push(abwLab('Prämien'));
     if (w.schlechtwetter) teile.push(abwLab(E.istBau(w) ? 'Schlechtwetter' : 'Ausfallstunden'));
     if (w.diaeten.modell !== 'aus') teile.push(abwLab('Diäten'));
@@ -1626,7 +1637,7 @@
     var wb = en || wAt(todayISO()), bb = wb && E.BERUFE[wb.beruf], ab = bb && bb.arten && wb.art && bb.arten[wb.art], vb = {};
     [bb && bb.b, ab && ab.b].forEach(function (o) { if (o) Object.keys(o).forEach(function (k) { vb[k] = o[k]; }); });
     $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; var k = x.dataset.bsx, row = x.closest('label'); if (row) row.hidden = (k === 'fahrzeug' || k === 'kunden') && vb[k] === false && !x.checked; });
-    var kl = $('#s-bs-kl'); if (kl) kl.textContent = abwLab(E.istTour(en || wAt(todayISO())) ? 'Touren mit Tätigkeiten' : 'Kunden / Baustellen mit Tätigkeiten');
+    var kl = $('#s-bs-kl'); if (kl) kl.textContent = abwLab(ortW(en || wAt(todayISO())).bs);
   }
   function renderPausen() {
     $('#e-pausen').innerHTML = ui.edDraft.pausen.map(function (p, i) {
@@ -1648,12 +1659,12 @@
     kSummeFrisch();
     $('#e-diaeten').placeholder = 'Vorschlag';
     (function () {
-      var kh = '', kz = E.kundenZeiten(d, w, ui.edDate), tourK = E.istTour(w);
+      var kh = '', kz = E.kundenZeiten(d, w, ui.edDate), tourK = ortW(w);
       var box = $('#e-kz-box'), offen = {}; if (box) Array.prototype.forEach.call(box.querySelectorAll('details[data-ki]'), function (x) { if (x.open) offen[x.dataset.ki] = 1; });
       if (kz.rows.some(function (x) { return x.min !== null; })) {
         kz.rows.forEach(function (x) {
           var tm = x.taet.filter(function (y) { return y.von || y.bis; }), zeit = tm.length ? (tm[0].von || '?') + '–' + (tm[tm.length - 1].bis || '?') : '';
-          kh += '<details class="kzd" data-ki="' + x.ki + '"' + (offen[x.ki] ? ' open' : '') + '><summary><strong>' + esc(x.name || (tourK ? 'Ohne Tour' : 'Ohne Kunde')) + '</strong><span>' + (x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h') + '</span></summary>';
+          kh += '<details class="kzd" data-ki="' + x.ki + '"' + (offen[x.ki] ? ' open' : '') + '><summary><strong>' + esc(x.name || abwLab(tourK.ohne)) + '</strong><span>' + (x.min === null ? 'Zeit fehlt' : hm(x.min) + ' h') + '</span></summary>';
           if (zeit) kh += '<div class="hint kz-zeit">' + esc(zeit) + '</div>';
           x.taet.forEach(function (y) {
             if (!(y.tat || y.von || y.bis)) return;
@@ -1665,7 +1676,7 @@
         if (kz.rows.length > 1) kh += line('Zusammen', hm(kz.totalMin) + ' h', true);
       }
       var kzs = $('#e-kz-sum'); if (kzs) kzs.textContent = d.status === 'arbeit' && kh ? hm(kz.totalMin) + ' h' : '';
-      if (box) { box.hidden = !(d.status === 'arbeit' && kh); var kt = $('#e-kz-title'); if (kt) kt.textContent = tourK ? 'Zeit pro Tour' : 'Zeit pro Kunde'; }
+      if (box) { box.hidden = !(d.status === 'arbeit' && kh); var kt = $('#e-kz-title'); if (kt) kt.textContent = tourK.zeit; }
       $('#e-kz').innerHTML = d.status === 'arbeit' ? kh : '';
     })();
     var sg = $('#e-bis-sugg'), te = (d.status === 'arbeit' && d.von && !d.bis) ? typischesEnde(ui.edDate) : null;
@@ -2558,7 +2569,7 @@
     {"t": "Lkw in Deutschland: Tarif, Spesen und Nacht", "k": ["deutschland", "deutsch", "spedition", "fernfahrer", "fernverkehr", "spesen", "tarif", "nrw", "berlin", "übernachtung", "nacht"], "a": "In Deutschland gibt es keinen einheitlichen Tarif: Er gilt je Bundesland und nur, wenn dein Betrieb tarifgebunden ist. Hinterlegt sind Spedition und Logistik für Nordrhein-Westfalen, Bayern, Sachsen und Berlin. Wählst du beim Einrichten Deutschland, trägst du dein Bundesland für die Feiertage ein. Ist dein Betrieb nicht tarifgebunden, nimm Lohn und Zuschläge aus deinem Arbeitsvertrag und wähle „Eigene Werte“. Für Fahrer im Güterfernverkehr gibt es oft eigene Verträge. Verpflegung ist steuerfrei bis 14 € (mehr als 8 Stunden) und 28 € (24 Stunden), dazu 9 € je Nacht im Lkw: Die Übernachtung legst du als Prämie an. Nachtzuschläge ebenfalls. Vergleiche alles mit deiner Abrechnung."},
     {"t": "Wörter auf dem Lohnzettel", "k": ["entgeltfortzahlung", "aufrollung", "rückverrechnung", "vorschuss", "pfändung", "sachbezug", "vorsorgekasse", "abfertigung", "tarifgruppe", "beschäftigt als", "lohnzettel wort", "bedeutet"], "a": "Entgeltfortzahlung: Die Firma zahlt dir den Lohn weiter, meist im Krankenstand. Aufrollung: Der Lohnverrechner rechnet frühere Monate neu, zum Beispiel nach einer Lohnerhöhung, und zahlt die Differenz nach oder verrechnet sie. Rückverrechnung: Etwas, das schon abgerechnet war, wird wieder zurückgerechnet. Vorschuss: Eine Vorauszahlung, die bei der Abrechnung abgezogen wird. Pfändung: Auf Anordnung des Gerichts hält die Firma einen Betrag ein und überweist ihn weiter. Sachbezug: Ein Vorteil von der Firma, zum Beispiel ein Firmenauto für private Fahrten. Er wird als Wert zum Lohn gerechnet, aber nicht ausgezahlt. MA-Vorsorgekasse: Die Firma zahlt für deine Abfertigung ein. Du musst nur darauf achten, dass die Zeile da ist. Den Kollektivvertrag nennt der Lohnzettel oft gar nicht. Schau bei „Tarifgruppe“ und „Beschäftigt als“ nach, das ist deine Einstufung."},
     {"t": "Netto prüfen mit dem BMF-Rechner", "k": ["netto", "bmf", "rechner", "finanzministerium", "auszahlung", "nachrechnen", "pruefen"], "a": "Das Netto rechnet die App nicht selbst. Der Knopf öffnet den Brutto-Netto-Rechner des Finanzministeriums (BMF) in einem neuen Fenster. Das ist eine unverbindliche Modellrechnung. Gib dort das Brutto von oben ein und stelle ein: Zeitraum Monatlich, Beitragsgruppe wie auf deinem Lohnzettel (Arbeiter oder Angestellter), Jahr, Bundesland deines Arbeitsplatzes, Pendlerpauschale und Kinder wie bei dir. Vergleiche das Netto mit der Zeile Auszahlung auf deinem Lohnzettel. Kleine Unterschiede sind normal, zum Beispiel durch Diäten, Gewerkschaftsbeitrag oder Vorschüsse."},
-    {"t": "Schnell erfassen (Text, Sprache, Foto)", "k": ["schnell erfassen", "sprachnachricht", "diktieren", "einsprechen", "tagesbericht", "foto vom tagesbericht", "schreiben statt", "whatsapp", "textnachricht"], "a": "Mit „Schnell erfassen“ schreibst oder sprichst du einfach, was du gearbeitet hast, zum Beispiel „gestern 6 bis 15 Uhr, 30 Minuten Pause, Kunde Müller Aushub“. Ich mache daraus die Einträge, du prüfst sie und speicherst. Du kannst auch ein Foto von deinem Tagesbericht machen, dann übernehme ich die Zeiten daraus. Die Funktion ist zuerst ausgeschaltet: Schalte sie unter Einstellungen, „Eingabehilfen“, ein. Danach ist die Karte ganz oben bei Erfassen. Das Mikrofon braucht Internet und deine Erlaubnis."},
+    {"t": "Schnell erfassen (Text, Sprache, Foto)", "k": ["schnell erfassen", "sprachnachricht", "diktieren", "einsprechen", "tagesbericht", "foto vom tagesbericht", "schreiben statt", "whatsapp", "textnachricht"], "a": "Mit „Schnell erfassen“ schreibst oder sprichst du einfach, was du gearbeitet hast, zum Beispiel „gestern 7 bis 16 Uhr, 30 Minuten Pause“. Ich mache daraus die Einträge, du prüfst sie und speicherst. Du kannst auch ein Foto von deinem Tagesbericht machen, dann übernehme ich die Zeiten daraus. Die Funktion ist zuerst ausgeschaltet: Schalte sie unter Einstellungen, „Eingabehilfen“, ein. Danach ist die Karte ganz oben bei Erfassen. Das Mikrofon braucht Internet und deine Erlaubnis."},
     {"t": "Lohnzettel per Foto oder PDF einlesen", "k": ["foto", "fotografieren", "pdf", "scannen", "einlesen", "lohnzettel lesen", "automatisch lesen"], "a": "Im Reiter Lohnzettel erlaubst du bei „Lohnzettel automatisch lesen“ einmal, dass die App deinen Lohnzettel liest. Dann tippst du auf „Lohnzettel lesen“ und wählst ein Foto oder die PDF-Datei. Ich lese ihn nur hier auf deinem Handy, nichts wird hochgeladen. Du bestätigst jede Zeile, dann steht alles im Vergleich „Stimmt mein Lohnzettel?“. Kenne ich eine Zeile nicht, ordnest du sie einmal zu, und ich merke sie mir für die nächsten Monate. Unter Einstellungen, „Einstellungen mit dem Lohnzettel“, prüfe ich damit auch deine Einstellungen."},
     {"t": "Zwei Rechnungen: Kollektivvertrag und Firma", "k": ["abweichung", "unterschied", "firma handhabt", "gesetz", "zwei rechnungen", "festgehalten", "arbeiterkammer", "ak ", "recht", "zu wenig"], "a": "Ich rechne immer zweimal: einmal so, wie es laut Kollektivvertrag und Gesetz sein müsste, und einmal so, wie deine Firma es handhabt, also nach deinen Einstellungen. Gesetz und Kollektivvertrag haben Vorrang. Einen Unterschied siehst du in der Übersicht und im Lohnzettel-Vergleich. Unter Übersicht, „Jahr und Konten“, bleibt in „Festgehaltene Abweichungen“ jede Abweichung stehen, auch wenn die Firma es immer so macht. Die Liste kannst du kopieren und zum Beispiel der Arbeiterkammer zeigen. Alles gilt unter Vorbehalt: Ein Unterschied kann auch durch einen Eingabefehler entstehen."},
     {"t": "Kollektivvertrag und Bundesland", "k": ["bundesland", "kollektivvertrag", "welcher kv", "kv", "vertrag", "tarif", "wien", "tirol", "steiermark", "kaernten", "salzburg", "vorarlberg", "burgenland", "niederoesterreich", "oberoesterreich"], "a": "Unter Einstellungen, „Mein Beruf“, wählst du deinen Beruf und bei „Mein Kollektivvertrag“ den passenden Vertrag. Viele Kollektivverträge sind je Bundesland verschieden. Trag unter Einstellungen, „Meine Daten“, dein Bundesland ein, dann schlage ich dir den richtigen Vertrag und die Zulagen deines Bundeslandes vor und sage dir, wenn etwas nicht zusammenpasst. Findest du deinen Vertrag nicht, nimm „Eigene Werte“ und trag Lohn und Zuschläge aus deinem Dienstvertrag ein."},
@@ -2613,7 +2624,7 @@
     { id: 'freietage', k: ["brueckentag", "brueckentage", "fenstertag", "freie tage planen", "bridge days"], sel: '#pl-det', pfad: ["Übersicht", "Jahr und Konten", "Freie Tage planen"], seg: 'konten' },
     { id: 'berichte', k: ["bericht an die firma", "berichte an die firma", "stundenbericht", "unterschrift", "monatsbericht", "wochenbericht", "report to the company"], sel: '#s-berichte', pfad: ["Einstellungen", "Berichte an die Firma"], unter: "Ansicht" },
     { id: 'probe', k: ["ausprobier", "ausprobieren", "anderen beruf testen", "trial mode"], sel: '#s-probe-go', pfad: ["Einstellungen", "Ausprobier-Modus"] },
-    { id: 'aufzeichnen', k: ["kunden aufzeichnen", "baustellen", "fahrzeug und kilometer", "kilometerstand", "km-stand", "kennzeichen", "what i record"], sel: '#s-bfz', pfad: ["Einstellungen", "Was ich aufzeichne"] },
+    { id: 'aufzeichnen', k: ["kunden aufzeichnen", "baustellen", "fahrzeug und kilometer", "kilometerstand", "km-stand", "kennzeichen", "what i record"], sel: '#s-bs', pfad: ["Einstellungen", "Was ich in der App brauche"] },
     { id: 'betrieb', k: ["betriebsurlaub", "betrieb geschlossen", "company closed"], sel: '#s-bf', pfad: ["Einstellungen", "Betrieb geschlossen"], unter: "Was ich aufzeichne" },
     { id: 'feste', k: ["feste freie tage", "jede woche frei", "berufsschultag", "fixed days off"], sel: '#fest-card', pfad: ["Einstellungen", "Feste freie Tage"] },
     { id: 'konto', k: ["abmelden", "konto", "anmelden", "passwort", "log out", "account"], sel: '#a-sync', pfad: ["Einstellungen", "Konto"] },
@@ -2800,8 +2811,10 @@
       { v: 'erfassen', sel: '#e-status', t: 'Hier wählst du die Art des Tages: Arbeit, Urlaub, Krankenstand oder Zeitausgleich. Bei Urlaub und Krankenstand brauchst du keine Uhrzeiten.' },
       { v: 'erfassen', sel: '#e-von', t: 'Trage Beginn und Ende ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit. Das Ende kannst du später nachtragen.' },
       { v: 'erfassen', sel: '#e-addpause', t: 'Pausen trägst du hier ein. Die App zieht sie von deiner Arbeitszeit ab.' }];
-    if (b === 'lkw' || b === 'klein') s.push({ v: 'erfassen', sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Kunden oder Baustellen mit dem, was du dort gemacht hast. Das braucht die App für Prämien und Zulagen.' });
-    if (b === 'bagger' || (b === 'handwerk' && w.schlechtwetter)) s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' }, { v: 'erfassen', sel: '#e-kgroup', t: 'Baustellen mit deiner Tätigkeit. Das braucht die App für Prämien und Zulagen.' });
+    var bsR = E.bausteine(w); // nur zeigen, was in diesem Beruf eingeschaltet ist
+    if (bsR.fahrzeug) s.push({ v: 'erfassen', sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
+    if (bsR.kunden) s.push({ v: 'erfassen', sel: '#e-kgroup', t: 'Hier trägst du ein, wo oder für wen du gearbeitet hast und was du dort gemacht hast. Das braucht die App für Prämien und Zulagen.' });
+    if (w.schlechtwetter && E.istBau(w)) s.push({ v: 'erfassen', sel: '#e-swgroup', t: 'Schlechtwetter: Trage ausgefallene Stunden hier in halben Stunden ein.' });
     s.push({ v: 'erfassen', sel: '#e-an-box', t: 'Mit einer Notiz hältst du fest, wie es zu einem Tag kam. Die App merkt sich, wann du sie geschrieben hast.' });
     s.push({ v: 'monat', sel: '#m-summary', t: gl ? 'Hier siehst du deinen Gleitzeitsaldo: Plus oder Minus im Monat und im Quartal.' : 'Hier siehst du deine Stunden des Monats auf einen Blick.' });
     s.push({ v: 'lohn', sel: '#m-abgleich', t: 'Stimmt mein Lohnzettel? Tippe die Zeilen deines Lohnzettels ab, die App zeigt dir, wo etwas abweicht.' });
@@ -2816,8 +2829,9 @@
       { v: V, sel: '#e-von', t: 'Trage deinen Beginn ein. Mit „Jetzt“ nimmt die App die aktuelle Uhrzeit.' },
       { v: V, sel: '#e-bis', t: 'Das Ende trägst du ein, wenn du fertig bist. Noch nicht so weit? Dann lass es leer und trage es später nach.' },
       { v: V, sel: '#e-addpause', t: 'Hattest du eine Pause? Tippe auf „+ Pause hinzufügen“ und trage sie ein. Sonst tippe auf Weiter.' }];
-    if (b === 'lkw' || b === 'klein') s.push({ v: V, sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
-    if (b === 'lkw' || b === 'klein' || b === 'bagger' || b === 'handwerk') s.push({ v: V, sel: '#e-kgroup', t: 'Für wen hast du gearbeitet und was hast du gemacht? Trage Kunden oder Baustellen ein. Das ist optional.' });
+    var bsA = E.bausteine(wAt(todayISO()));
+    if (bsA.fahrzeug) s.push({ v: V, sel: '#e-fzgroup', t: 'Dein Fahrzeug und die Kilometer. Den Kilometerstand vom letzten Mal setzt die App schon ein.' });
+    if (bsA.kunden) s.push({ v: V, sel: '#e-kgroup', t: 'Wo oder für wen hast du gearbeitet und was hast du gemacht? Das ist optional.' });
     s.push({ v: V, sel: '#e-save', t: 'Tippe jetzt auf „Speichern“. Danach bist du für heute fertig.' });
     return s;
   }
@@ -2870,13 +2884,13 @@
       { v: E1, sel: '#s-pauseauto', up: f, t: 'Zieht deine Firma jeden Tag automatisch eine Pause ab? Dann trage die Minuten ein, zum Beispiel 60. Sonst lass es leer.' },
       { v: E1, sel: '#s-runan', up: k, t: 'Rundet deine Firma Beginn und Ende, zum Beispiel auf 15 Minuten? Dann schalte es ein und wähle die Minuten. Sonst lass es aus.' },
       { v: E1, sel: '#s-zsa', to: '#s-zft', up: '.grid3', t: 'Zuschläge für Samstag, Sonntag und Feiertag in Prozent. Bei 100 % zählt eine Stunde doppelt. Weißt du es nicht, lass 0 stehen.' },
-      { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Mulde, pro Tour oder pro Stunde. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
+      { v: E1, sel: '#s-praemien', t: 'Hier legst du Prämien und Zulagen an, zum Beispiel pro Stunde, pro Tag oder pro Stück. Schau auf deinen Lohnzettel, dort stehen sie meistens. Tippe auf „+ Prämie hinzufügen“.' },
       { v: E1, sel: '#s-dmodell', up: f, t: 'Wie werden bei dir Diäten gezahlt? Pro Stunde, pro Tag nach Stufen oder gar nicht. Wähle es aus.' },
       { v: E1, sel: '#s-d-stunde', t: 'Der Diätensatz je Stunde steht auf dem Lohnzettel. Dazu die Höchststunden pro Tag, falls es eine Grenze gibt.' },
       { v: E1, sel: '#s-d-tag', t: 'Die Stufen für das Taggeld: Ab wie vielen Stunden gibt es welchen Betrag?' },
       { v: E1, sel: '#s-d-vorschlag', t: 'Womit soll die App die Diätenstunden vorschlagen? Sie schlägt es dir bei jedem Tag vor, du kannst es jederzeit ändern.' },
       { v: E1, sel: '#s-folge', up: k, t: 'Schalte ein, wenn deine Firma Diäten und Überstunden erst im Folgemonat abrechnet.' },
-      { v: E1, sel: '#s-bfz', to: '#s-bpr', up: k, t: 'Was möchtest du aufzeichnen? Fahrzeug und Kilometer, Kunden oder Baustellen, Prämien. Schalte nur ein, was du brauchst.' },
+      { v: E1, sel: '#s-bs', up: k, t: 'Was brauchst du in der App? Schalte nur ein, was du wirklich brauchst. Alles andere bleibt beim Erfassen ausgeblendet und du kannst es jederzeit wieder einschalten.' },
       { v: E1, sel: '#s-fv', up: f, t: 'Wie verrechnet deine Firma Tage, an denen sie dich wegen fehlender Arbeit freistellt? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-bf', up: f, t: 'Wie bezahlt deine Firma Tage, an denen der Betrieb geschlossen ist? Schau auf deinen Lohnzettel, wenn du unsicher bist.' },
       { v: E1, sel: '#s-sw', up: k, t: 'Schalte ein, wenn die Schlechtwetterregelung oder Ausfallstunden für dich gelten.' },
@@ -3140,7 +3154,7 @@
     } else if (w.step === 'bausteine') {
       html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
         (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + (E.istTour({ beruf: w.beruf, art: w.art }) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten') + '</span></label>') +
+        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW({ beruf: w.beruf, art: w.art }).bs)) + '</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
         ('<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>' + (E.istBau({ paket: w.paket }) ? 'Schlechtwetter (Bau)' : 'Ausfallstunden (Firma schickt mich heim)') + '</span></label>');
@@ -3290,7 +3304,6 @@
     if (!en) return;
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
-    $('#s-bku-t').textContent = E.istTour(en) ? 'Touren und Tätigkeiten' : 'Kunden, Baustellen und Tätigkeiten';
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
@@ -4492,9 +4505,10 @@
       var mitK = rows.some(function (c) { return c[5]; });
       rows.push({ cells: ['Summe', '', '', '', hh(sum), ''], bold: true });
       if (!mitK) rows = rows.map(function (r) { var c = (r.cells || r).slice(0, 5); return r.cells ? { cells: c, bold: r.bold } : c; });
-      return { t: 'table', cols: mitK ? [{ w: 70 }, { w: 85 }, { w: 75 }, { w: 45 }, { w: 55, al: 'r' }, { w: 120 }] : [{ w: 90 }, { w: 130 }, { w: 100 }, { w: 60 }, { w: 70, al: 'r' }], head: mitK ? ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden', 'Kunden'] : ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden'], rows: rows };
+      return { t: 'table', cols: mitK ? [{ w: 70 }, { w: 85 }, { w: 75 }, { w: 45 }, { w: 55, al: 'r' }, { w: 120 }] : [{ w: 90 }, { w: 130 }, { w: 100 }, { w: 60 }, { w: 70, al: 'r' }], head: mitK ? ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden', ortW(wAt(tage[0] ? tage[0].datum : todayISO())).kurz] : ['Tag', 'Art', 'Zeit', 'Pause', 'Stunden'], rows: rows };
     }
     function kw(s) { var p = E.parseISO(s), d = new Date(Date.UTC(p.y, p.m - 1, p.d)), n = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - n); var y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil(((d - y0) / 86400000 + 1) / 7); }
+    function sigLabel(dt) { return E.bausteine(wAt(dt || todayISO())).fahrzeug ? 'Unterschrift Fahrer/in' : 'Unterschrift Arbeitnehmer/in'; }
     function zeitblatt(von, bis) {
       var nm = bName(), rows = [], sN = 0, sU = 0, sU50 = 0, sU100 = 0, sD = 0;
       tageVon(von, bis).forEach(function (r) {
@@ -4510,15 +4524,20 @@
           rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? String(art(r)).replace(/\s*\(.*\)\s*$/, '') : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '']);
         });
       });
-      var fi = (data.profil && data.profil.firma) || '', kopfz = (fi ? [{ t: 'p', text: fi, size: 16, bold: true }] : []).concat([{ t: 'h1', text: 'Zeitaufzeichnung Fahrer/in' }], [{ t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }]);
+      var bsZ = E.bausteine(wAt(von)), owZ = ortW(wAt(von)); // Fahrzeug- und Kundenspalten nur, wenn man sie in diesem Beruf aufzeichnet
+      var fi = (data.profil && data.profil.firma) || '', kopfz = (fi ? [{ t: 'p', text: fi, size: 16, bold: true }] : []).concat([{ t: 'h1', text: bsZ.fahrzeug ? 'Zeitaufzeichnung Fahrer/in' : 'Zeitaufzeichnung' }], [{ t: 'kv', rows: [['Name', nm || ' '], ['Zeitraum', fmtDate(von) + ' bis ' + fmtDate(bis)]] }]);
       var ohneStd = !!(data.profil && data.profil.berichtOhneStd); // Firma trägt die Stunden selbst ein: nur Zeiten, keine Stunden- und Summenspalten
       if (!ohneStd) {
         rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD)], bold: true });
         rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '']);
         rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '']);
       } else rows = rows.map(function (r) { return r.slice(0, 10); });
-      kopfz.push({ t: 'table', fs: 8, cols: [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }].concat(ohneStd ? [] : [{ w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }]), head: ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', 'Tour', 'Ruhepause'].concat(ohneStd ? [] : ['Normal Std.', 'Über-Std.', 'Tagesgeld Std.']), rows: rows });
-      kopfz.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: ' ', img: sigImg() });
+      var tCols = [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }].concat(ohneStd ? [] : [{ w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }]);
+      var tHead = ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', owZ.one, 'Ruhepause'].concat(ohneStd ? [] : ['Normal Std.', 'Über-Std.', 'Tagesgeld Std.']);
+      var weg = (bsZ.fahrzeug ? [] : [5, 6, 7]).concat(bsZ.kunden ? [] : [8]), nimm = function (a) { return a.filter(function (x, k) { return weg.indexOf(k) < 0; }); };
+      if (weg.length) { tCols = nimm(tCols); tHead = nimm(tHead); rows = rows.map(function (r) { return Array.isArray(r) ? nimm(r) : { cells: nimm(r.cells), bold: r.bold }; }); var plus = weg.length * 50 / tCols.length; tCols.forEach(function (c) { c.w += plus; }); }
+      kopfz.push({ t: 'table', fs: 8, cols: tCols, head: tHead, rows: rows });
+      kopfz.push({ t: 'sig', l: sigLabel(von), r: ' ', img: sigImg() });
       return kopfz;
     }
 
@@ -4548,17 +4567,20 @@
         function zs(f, k) { return fz.map(function (x) { return x[k] == null || x[k] === '' ? '' : (fz.length > 1 ? x.kfz + ': ' : '') + x[k]; }).filter(Boolean).join(', '); }
         var kmA = zs(fz, 'kmVon'), kmE = zs(fz, 'kmBis');
         b = (fi ? [{ t: 'p', text: fi, size: 16, bold: true }] : []).concat([{ t: 'h1', text: 'Tagesbericht' }]);
-        b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 3 }, { w: 2 }, { w: 1.4 }, { w: 1.4 }], head: ['Name', 'KFZ-Kennzeichen', 'Type', 'Datum'], rows: [[nm, fz.map(function (f) { return f.kfz; }).join(', '), '', fmtDate(ds)]] });
-        b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 1.4 }, { w: 1.4 }, { w: 1 }, { w: 1 }, { w: 1 }], head: ['Anfangs-km-Stand', 'End-km-Stand', 'Diesel l', 'AdBlue l', 'Motoröl l'], rows: [[kmA, kmE, zs(fz, 'diesel'), zs(fz, 'adblue'), zs(fz, 'oel')]] });
+        var bsT = E.bausteine(wAt(ds)), owT = ortW(wAt(ds)); // Fahrzeugteil nur, wenn man ein Fahrzeug aufzeichnet
+        if (bsT.fahrzeug) {
+          b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 3 }, { w: 2 }, { w: 1.4 }, { w: 1.4 }], head: ['Name', 'KFZ-Kennzeichen', 'Type', 'Datum'], rows: [[nm, fz.map(function (f) { return f.kfz; }).join(', '), '', fmtDate(ds)]] });
+          b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 1.4 }, { w: 1.4 }, { w: 1 }, { w: 1 }, { w: 1 }], head: ['Anfangs-km-Stand', 'End-km-Stand', 'Diesel l', 'AdBlue l', 'Motoröl l'], rows: [[kmA, kmE, zs(fz, 'diesel'), zs(fz, 'adblue'), zs(fz, 'oel')]] });
+        } else b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 3 }, { w: 1.4 }], head: ['Name', 'Datum'], rows: [[nm, fmtDate(ds)]] });
         var zl = E.tagesZeilen(d);
         var tr = zl.map(function (z) { return [z.von, z.bis, z.k, z.t]; }); while (tr.length < 8) tr.push(['', '', '', '']);
-        b.push({ t: 'table', fs: 12, minRow: 26, fill: true, reserve: 112, cols: [{ w: 1 }, { w: 1 }, { w: 4 }, { w: 4 }], head: ['Uhrzeit von', 'Uhrzeit bis', 'Kunde, Baustelle', 'Tätigkeit'], rows: tr });
-        b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 2 }, { w: 4 }, { w: 4 }], head: ['Gesamtstd.', 'Unterschrift Fahrer', 'Unterschrift Büro'], rows: [{ cells: [r.nettoMin ? fh(r.nettoMin / 60) : '', ' ', ' '], minH: 64, img: sigImg(), col: 1 }] });
+        b.push({ t: 'table', fs: 12, minRow: 26, fill: true, reserve: 112, cols: [{ w: 1 }, { w: 1 }, { w: 4 }, { w: 4 }], head: ['Uhrzeit von', 'Uhrzeit bis', owT.one.replace(' / ', ', '), 'Tätigkeit'], rows: tr });
+        b.push({ t: 'table', fs: 12, minRow: 26, cols: [{ w: 2 }, { w: 4 }, { w: 4 }], head: ['Gesamtstd.', bsT.fahrzeug ? 'Unterschrift Fahrer' : 'Unterschrift Arbeitnehmer/in', 'Unterschrift Büro'], rows: [{ cells: [r.nettoMin ? fh(r.nettoMin / 60) : '', ' ', ' '], minH: 64, img: sigImg(), col: 1 }] });
         return { bytes: window.StundenPdf.build(b, { landscape: true }), name: name + '.pdf', typ: typ };
       } else if (typ === 'woche') {
         var wd = E.weekday(ds), mo = addDays(ds, -((wd + 6) % 7)), so = addDays(mo, 6); name = 'Wochenbericht-' + mo;
         b = kopf('Wochenbericht', fmtDate(mo) + ' bis ' + fmtDate(so)); b.push(tabelleTage(tageVon(mo, so)));
-        b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma', img: sigImg() });
+        b.push({ t: 'sig', l: sigLabel(mo), r: 'Unterschrift Firma', img: sigImg() });
       } else if (typ === 'halb') {
         var h1 = p.d <= 15, v2 = E.iso(p.y, p.m, h1 ? 1 : 16), b2 = E.iso(p.y, p.m, h1 ? 15 : new Date(p.y, p.m, 0).getDate()); name = 'Halbmonatsbericht-' + v2;
         return { bytes: window.StundenPdf.build(zeitblatt(v2, b2), { landscape: true }), name: name + '.pdf', typ: typ };
@@ -4567,7 +4589,7 @@
         b = kopf('Monatsbericht', MON[p.m - 1] + ' ' + p.y);
         var kv = [['Gearbeitet', fh(s.istStd) + ' h']]; if (s.lohnStd !== s.istStd) kv.push(['Lohnstunden', fh(s.lohnStd) + ' h']);
         if (s.arbeitstage) kv.push(['Arbeitstage', '' + s.arbeitstage]); if (s.urlaub) kv.push(['Urlaubstage', '' + s.urlaub]); if (s.krank) kv.push(['Krankenstand', s.krank + ' Tage']);
-        b.push({ t: 'kv', rows: kv }); b.push(tabelleTage(cm.tage)); b.push({ t: 'sig', l: 'Unterschrift Fahrer/in', r: 'Unterschrift Firma', img: sigImg() });
+        b.push({ t: 'kv', rows: kv }); b.push(tabelleTage(cm.tage)); b.push({ t: 'sig', l: sigLabel(von), r: 'Unterschrift Firma', img: sigImg() });
       }
       return { bytes: window.StundenPdf.build(b), name: name + '.pdf', typ: typ };
     }
