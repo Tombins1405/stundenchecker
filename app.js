@@ -2225,7 +2225,7 @@
     { id: 'n1', d: '2026-11-02', text: 'Ein Tester hat sich „Sonntag“ bei den festen freien Tagen gewünscht. Ist da.' }
   ];
   var NEWS_B = { n11: null, n10: ['lkw', 'klein'], n9: null, n8: null, n7: null, n5: null, n4: null, n3: ['buero', 'aussendienst', 'bund'], n6: ['buero', 'aussendienst', 'bund'], n2: ['lkw', 'bagger', 'handwerk', 'klein', 'aussendienst'], n1: null }; // null = für alle Berufe
-  function zettelTB() { var w = wAt(todayISO()) || {}, b = E.bausteine(w); return !!(b.fahrzeug || b.kunden); } // Tagesbericht gibt es bei Bau und Transport, sonst heißt es Stundenzettel
+  function zettelTB() { var w = wAt(todayISO()) || {}, b = E.bausteine(w), o = E.ortTyp(w); return !!(b.fahrzeug || (b.kunden && (o === 'baustelle' || o === 'tour' || o === 'kb'))); } // Tagesbericht gibt es bei Bau und Transport, sonst heißt es Stundenzettel
   var STZ = [['Foto vom Tagesbericht einlesen erlauben', 'Foto vom Stundenzettel einlesen erlauben'], ['Foto vom Tagesbericht', 'Foto vom Stundenzettel'],
     ['Oder fotografiere den Tagesbericht deiner Firma: Ich übernehme nur die Zeiten (Datum, Beginn, Ende, Pause). Die Schrift lese ich direkt auf deinem Handy, das Foto wird nirgendwohin geschickt. Prüfe das Ergebnis, bei Handschrift kann es Fehler geben.', 'Oder fotografiere deinen Stundenzettel: Ich übernehme nur die Zeiten (Datum, Beginn, Ende, Pause). Die Schrift lese ich direkt auf deinem Handy, das Foto wird nirgendwohin geschickt. Prüfe das Ergebnis, bei Handschrift kann es Fehler geben.'],
     ['oder du fotografierst den Tagesbericht (nur die Zeiten werden gelesen)', 'oder du fotografierst deinen Stundenzettel (nur die Zeiten werden gelesen)'],
@@ -2879,7 +2879,7 @@
         { v: 'konten', sel: '#mia-eigen', up: k, t: 'Schalte ein, wenn du mein Aussehen selbst zusammenstellen willst: Kopf, Oberteil, Unterteil und Zubehör.' },
         { v: 'konten', sel: '#mia-spricht', up: k, t: 'Soll ich auch sprechen? Wenn du es einschaltest, kannst du danach meine Stimme einstellen.' },
         { v: 'konten', sel: '#mia-vwrap', t: 'Hier wählst du meine Stimme und den Klang. Mit den Reglern mache ich höher oder tiefer, schneller oder langsamer. Tippe unten auf „Probe hören“.' },
-        { v: 'konten', sel: '#fr-add', t: 'Hier legst du Ausweise, Kurse und Prüfungen mit Ablaufdatum an, zum Beispiel Code 95 oder Staplerschein. Ich erinnere dich rechtzeitig.' }], [last]);
+        { v: 'konten', sel: '#fr-add', t: 'Hier legst du Ausweise, Kurse und Prüfungen mit Ablaufdatum an, zum Beispiel Führerschein oder Erste-Hilfe-Kurs. Ich erinnere dich rechtzeitig.' }], [last]);
   }
   function assistBase() {
     var E1 = 'einstellungen', f = '.field', k = 'label.check';
@@ -3176,7 +3176,8 @@
         (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW({ beruf: w.beruf, art: w.art }).bs)) + '</span></label>') +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>' +
+        '<label class="check"><input type="checkbox" data-wc="dienste"' + ((w.b.dienste != null ? w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0) ? ' checked' : '') + '><span>Bereitschaft und Notdienst</span></label>' +
+        (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].diaeten === false ? '' : '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>') +
         ('<label class="check"><input type="checkbox" data-wc="sw"' + (w.sw ? ' checked' : '') + '><span>' + (E.istBau({ paket: w.paket }) ? 'Schlechtwetter (Bau)' : 'Ausfallstunden (Firma schickt mich heim)') + '</span></label>');
     } else if (w.step === 'kv') {
       var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || ['gueter', 'bau', 'eigen']).slice(), ak = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten && w.art && E.BERUFE[w.beruf].arten[w.art] && E.BERUFE[w.beruf].arten[w.art].kv;
@@ -4364,6 +4365,17 @@
     ['Lager und Handel', [['Prüfung des Staplers (jährlich)', 1]]],
     ['Büro', [['Datenschutz-Schulung', 0], ['Brandschutzwart-Ausbildung', 0]]]
   ];
+  // Welche Vorschlag-Gruppen zu welchem Beruf passen (unbekannt/anderes: alle)
+  var FR_GRP = { 'Bau und Maschinen': ['handwerk', 'bagger', 'industrie', 'lager', 'seilbahn', 'gaertner', 'bahn', 'garage', 'kunststoff'],
+    'Werkstatt und Metall': ['mechaniker', 'industrie', 'handwerk', 'kunststoff', 'garage', 'bahn'],
+    'Küche und Gastro': ['gastro', 'lebensmittel', 'konditor', 'fleischer', 'lmindustrie', 'handel', 'pflege'],
+    'Lager und Handel': ['lager', 'handel', 'post', 'industrie', 'lkw', 'klein', 'lmindustrie'],
+    'Büro': ['buero', 'aussendienst', 'ordination', 'bund', 'handel', 'kino', 'zahntechnik'] };
+  function frVorBeruf(w) {
+    var b = w && w.beruf; if (!b || b === 'anderes' || !E.BERUFE[b]) return FR_VOR;
+    var fz = E.bausteine(w).fahrzeug;
+    return FR_VOR.filter(function (g) { if (g[0] === 'Für alle') return true; if (g[0] === 'Fahrer') return fz; return (FR_GRP[g[0]] || []).indexOf(b) >= 0; });
+  }
   // Ausbildungen und Abschlüsse: Laufzeit -1 = läuft nicht ab (nur "erreicht am"), 0 = Ablaufdatum selbst eintragen, sonst Jahre
   var AUSB_ALLG = ['Abschlüsse und Ausbildungen (laufen nicht ab)', [['Lehrabschlussprüfung', -1], ['Meisterprüfung', -1], ['Befähigungsprüfung', -1], ['Matura / Berufsreifeprüfung', -1], ['Studienabschluss', -1], ['Ausbilderprüfung', -1]]];
   var AUSB_BERUF = {
@@ -4453,7 +4465,7 @@
         '<div class="btns"><button type="button" class="btn" data-act="ics"' + (f.ablauf ? '' : ' disabled') + '>Kalenderdatei laden</button><button type="button" class="btn primary" data-act="neu">Erneuert / bestanden</button></div>' : '') + '</div>';
     }).join('');
     var vo = $('#fr-vorl'); if (vo) {
-      var bw = wAt(todayISO()) || {}, bl = AUSB_BERUF[bw.beruf] || [], gr = (bl.length ? [[abw1('Für deinen Beruf: {0}', [abwLab(E.BERUFE[bw.beruf] ? E.BERUFE[bw.beruf].name : '')]), bl]] : []).concat([AUSB_ALLG], FR_VOR), sig = (bw.beruf || '') + '|' + uiLang();
+      var bw = wAt(todayISO()) || {}, bl = AUSB_BERUF[bw.beruf] || [], gr = (bl.length ? [[abw1('Für deinen Beruf: {0}', [abwLab(E.BERUFE[bw.beruf] ? E.BERUFE[bw.beruf].name : '')]), bl]] : []).concat([AUSB_ALLG], frVorBeruf(bw)), sig = (bw.beruf || '') + '|' + uiLang();
       if (vo.dataset.f !== sig) { vo.dataset.f = sig; vo.innerHTML = gr.map(function (g) { return '<p class="frgrp">' + esc(g[0]) + '</p><div class="frchips">' + g[1].map(function (x) { return '<button type="button" class="btn" data-n="' + esc(x[0]) + '" data-y="' + x[1] + '">' + esc(x[0]) + '</button>'; }).join('') + '</div>'; }).join(''); }
     }
   }
