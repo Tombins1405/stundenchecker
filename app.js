@@ -1242,7 +1242,9 @@
   }
 
   /* ---- Prämien ---- */
-  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['taet', 'je Stunde einer Tätigkeit (z. B. Kran)'], ['tag', 'je Tag (Ein/Aus)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
+  var PR_EINHEIT = [['stunde', 'je Stunde (automatisch)'], ['taet', 'je Stunde einer bestimmten Tätigkeit'], ['tag', 'je Tag (Ein/Aus)'], ['stueck', 'je Stück (Anzahl)'], ['tour', 'je Tour (Anzahl)'], ['monat', 'einmal pro Monat']];
+  // „je Stunde einer Tätigkeit“ braucht die Tätigkeiten beim Erfassen, „je Tour“ gibt es nur bei Touren und Fahrten
+  function prEinheitPasst(k) { var w = wAt(todayISO()) || {}, bs = E.bausteine(w); if (k === 'taet') return !!bs.kunden; if (k === 'tour') return E.ortTyp(w) === 'tour' || !!bs.fahrzeug; return true; }
   function praemienListe() { if (!data.profil) data.profil = {}; if (!data.profil.praemien) data.profil.praemien = []; return data.profil.praemien; }
   function renderPraemienSettings() {
     var list = praemienListe();
@@ -1253,7 +1255,7 @@
         '<div class="field"><label for="pr-b' + i + '">' + (p.teile && p.teile.length ? 'Summe der Teile (€)' : 'Betrag (€)') + '</label><input type="number" id="pr-b' + i + '" data-pr="' + i + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0"' + (p.teile && p.teile.length ? ' readonly' : '') + ' value="' + esc(p.betrag == null ? '' : p.betrag) + '"></div>' +
         (p.teile && p.teile.length ? p.teile.map(function (tl, j) { return '<div class="field pn"><label for="pr-tn' + i + '-' + j + '">Name des Teils</label><input type="text" id="pr-tn' + i + '-' + j + '" data-pr="' + i + '" data-pj="' + j + '" data-pf="name" maxlength="60" autocomplete="off" value="' + esc(tl.name || '') + '"></div><div class="field"><label for="pr-tb' + i + '-' + j + '">Betrag des Teils (€)</label><input type="number" id="pr-tb' + i + '-' + j + '" data-pr="' + i + '" data-pj="' + j + '" data-pf="betrag" inputmode="decimal" step="0.01" min="0" value="' + (+tl.betrag > 0 ? esc(tl.betrag) : '') + '"></div><button type="button" class="btn" data-rmtl="' + i + '.' + j + '">Teil entfernen</button>'; }).join('') : '') +
         (p.einheit === 'monat' ? '<button type="button" class="btn" data-addtl="' + i + '">' + (p.teile && p.teile.length ? '+ Teil hinzufügen' : 'Aus mehreren Teilen zusammensetzen') + '</button>' : '') +
-        '<div class="field"><label for="pr-e' + i + '">Wofür</label><select id="pr-e' + i + '" data-pr="' + i + '" data-pf="einheit">' + PR_EINHEIT.map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="pr-e' + i + '">Wofür</label><select id="pr-e' + i + '" data-pr="' + i + '" data-pf="einheit">' + PR_EINHEIT.filter(function (e) { return prEinheitPasst(e[0]) || p.einheit === e[0]; }).map(function (e) { return '<option value="' + e[0] + '"' + (p.einheit === e[0] ? ' selected' : '') + '>' + e[1] + '</option>'; }).join('') + '</select></div>' +
         (p.einheit === 'taet' ? '<div class="field pn"><label for="pr-t' + i + '">Name der Tätigkeit (so wie du sie beim Kunden einträgst)</label><input type="text" id="pr-t' + i + '" data-pr="' + i + '" data-pf="taet" maxlength="40" autocomplete="off" value="' + esc(p.taet || '') + '"><small>Diese Tätigkeit trägst du beim Kunden ein. Beim Eintragen erscheint sie als Button zum Antippen, so passiert kein Tippfehler.</small></div>' : '') +
         '<div class="field pn"><label for="pr-r' + i + '">Wann zählt sie? (nur für dich zur Erinnerung)</label><input type="text" id="pr-r' + i + '" data-pr="' + i + '" data-pf="regel" maxlength="160" autocomplete="off" value="' + esc(p.regel || '') + '"></div>' +
         '</div>';
