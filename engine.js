@@ -2939,7 +2939,13 @@
     bund: { name: 'Bundesdienst / Ministerium', verborgen: true, paket: 'bund', kvs: ['bund', 'gleit_buero', 'buero', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } },
     buero: { name: 'Büro (Angestellte)', paket: 'buero', kvs: ['buero', 'gleit_buero', 'handel', 'gewerbe_ang', 'industrie_ang', 'ic_ang', 'werbung_ang', 'it_ang', 'gueter_ang', 'bau_ang', 'banken_ang', 'versicherung_ang', 'steuerberatung_ang', 'immobilien_ang', 'reisebuero_ang', 'de_buero', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: false } ,
       arten: {
-        buero: { name: 'Büro / Verwaltung / Disposition', b: { fahrzeug: false, kunden: false, praemien: false } },
+        buero: { name: 'Verwaltung / Sachbearbeitung', b: { fahrzeug: false, kunden: false, praemien: false } },
+        buchhaltung: { name: 'Buchhaltung / Lohnverrechnung', b: { fahrzeug: false, kunden: false, praemien: false } },
+        assistenz: { name: 'Sekretariat / Empfang / Assistenz', b: { fahrzeug: false, kunden: false, praemien: false } },
+        verkauf: { name: 'Verkauf / Einkauf im Innendienst', b: { fahrzeug: false, kunden: false, praemien: false } },
+        dispo: { name: 'Disposition / Spedition / Logistik', kv: 'gueter_ang', b: { fahrzeug: false, kunden: false, praemien: false } },
+        it: { name: 'IT / EDV', kv: 'it_ang', b: { fahrzeug: false, kunden: false, praemien: false } },
+        leitung: { name: 'Büroleitung / Abteilungsleitung', b: { fahrzeug: false, kunden: false, praemien: false } },
         lehrling: { name: 'Lehrling (Bürokaufmann/-frau, Verwaltung)', b: { fahrzeug: false, kunden: false, praemien: false } }
       } },
     handel: { name: 'Handel / Verkauf', paket: 'handel', kvs: ['handel', 'handel_arb', 'de_handel', 'eigen'], einfach: true, diaeten: false, sw: false, b: { fahrzeug: false, kunden: false, praemien: true },
@@ -3156,13 +3162,13 @@
   var ORT_TYP = { lkw: { tour: 'tour', fern: 'kunde', muell: 'tour', _: 'kb' }, klein: { tour: 'tour', fern: 'kunde', _: 'kb' }, handwerk: { _: 'kb' }, bagger: { _: 'baustelle' },
     aussendienst: { _: 'kunde' }, reinigung: { _: 'objekt' }, security: { _: 'objekt' }, lebensmittel: { _: 'tour' }, konditor: { _: 'tour' }, fleischer: { _: 'tour' },
     gaertner: { forst: 'einsatz', agrar: 'einsatz', _: 'kunde' }, post: { _: 'tour' }, pflege: { _: 'klient' }, rettung: { _: 'einsatz' }, mechaniker: { _: 'kunde' },
-    bus: { _: 'tour' }, schaedling: { _: 'kunde' }, rauchfangkehrer: { _: 'kunde' }, garage: { _: 'kunde' } };
+    bus: { _: 'tour' }, schaedling: { _: 'kunde' }, rauchfangkehrer: { _: 'kunde' }, garage: { _: 'kunde' }, buero: { _: 'projekt' }, bund: { _: 'projekt' } };
   function ortTyp(w) { var t = w && ORT_TYP[w.beruf]; if (!t) return 'kunde'; return (w.art && t[w.art]) || t._; }
   function istTour(w) { var b = w && BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && a.tour); }
   // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
   function bausteine(w) {
     var s = (w && w.bausteine) || {};
-    return { fahrzeug: s.fahrzeug !== false, kunden: s.kunden !== false, praemien: s.praemien !== false, dienste: s.dienste !== false };
+    return { fahrzeug: s.fahrzeug !== false, kunden: s.kunden !== false, praemien: s.praemien !== false, dienste: s.dienste !== false, bericht: s.bericht !== false, homeoffice: s.homeoffice === true };
   }
 
   /* ---------------------------------------------------------------- Werte "Gültig ab" */

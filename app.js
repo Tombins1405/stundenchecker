@@ -344,6 +344,7 @@
       (w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
       '<div><dt>Diäten</dt><dd>' + esc(diaetenBetrag) + '</dd></div>') +
       (s.praemien && s.praemien.length ? '<div><dt>Prämien</dt><dd>' + eur.format(s.praemienEuro) + '</dd></div>' : '') +
+      (E.bausteine(w).homeoffice ? '<div><dt>Homeoffice</dt><dd>' + hoTage(ui.y + '-' + pad(ui.m)) + '<small> Tage</small></dd></div><div><dt>Homeoffice im Jahr</dt><dd>' + hoTage(String(ui.y)) + '<small> Tage</small></dd></div>' : '') +
       (s.dienste || []).map(function (x) { return '<div><dt>' + esc(x.name) + '</dt><dd>' + String(x.menge).replace('.', ',') + '<small> ' + (DS_KURZ[x.einheit] || '') + '</small></dd></div>'; }).join('') +
       '</dl>' + bruttoBlock(s, w, laufend);
     if (w.schlechtwetter || s.swStd > 0) {
@@ -628,11 +629,21 @@
       (b.length ? '<p class="abwh">' + esc(abwLab(ABW_B)) + '</p><ul class="kvl" style="margin:0;padding-left:20px">' + b.map(li).join('') + '</ul>' : '');
   }
   /* ============================================================ LOHNZETTEL (eigener Reiter) */
+  function hoTage(pre) { return Object.keys(data.days || {}).filter(function (k) { return k.indexOf(pre) === 0 && data.days[k] && data.days[k].ho && (data.days[k].status || 'arbeit') === 'arbeit'; }).length; }
   function renderLohn() {
     $('#lm-title').textContent = MON[ui.m - 1] + ' ' + ui.y;
     var cm = E.calcMonth(data, ui.y, ui.m, todayISO()), s = cm.summe;
     renderAbgleich(cm.spaeter.length ? E.calcMonth(data, ui.y, ui.m, todayISO(), { ohneSpaeter: true }).summe : s, cm.spaeter);
-    renderKonten();
+    renderKonten(); lzKnoepfe();
+  }
+  // Lösch-Knöpfe und die Frage nach den Lohnzettel-Zeilen nur zeigen, wenn es dazu schon etwas gibt (sonst verwirrt es Neue)
+  function abVoll(o) { return !!o && Object.keys(o).some(function (k) { var v = o[k]; return v !== null && v !== '' && v !== undefined && !(typeof v === 'object' && !Object.keys(v).length); }); }
+  function lzKnoepfe() {
+    var ab = data.abgleich || {}, key = ui.y + '-' + pad(ui.m), alle = Object.keys(ab).some(function (k) { return abVoll(ab[k]); }), map = (data.profil || {}).lzMap || {};
+    var w = $('#lz-wipe'); if (w) w.hidden = !alle;
+    var f = $('#lz-forget'); if (f) f.hidden = !Object.keys(map).length;
+    var c = $('#ab-clear'); if (c) c.hidden = !abVoll(ab[key]);
+    var aa = $('#ab-art'); if (aa) { var pre = key + '-', frei = Object.keys(data.days || {}).some(function (d) { var st = data.days[d] && data.days[d].status; return d.indexOf(pre) === 0 && ['urlaub', 'krank', 'sonderurlaub', 'pflege'].indexOf(st) >= 0; }); aa.hidden = !(alle || frei || (data.profil && data.profil.lzAlles !== undefined)); }
   }
   function neuZeichnen() { if (ui.view === 'lohn') renderLohn(); else renderMonat(); }
   function setSeg(seg) {
@@ -1126,7 +1137,7 @@
     try { renderStdKartei(); } catch (e) { }
     // Urlaubskartei
     var uk = E.urlaubKartei(data, p, ly, lm);
-    if (!uk.length) $('#k-urlaub').innerHTML = '<p class="hint">Trage oben dein Eintrittsdatum ein, dann erscheint die Kartei.</p>';
+    if (!uk.length) $('#k-urlaub').innerHTML = '<p class="hint">Trage in den Einstellungen bei „Eintritt in die Firma“ dein Eintrittsdatum ein, dann erscheint die Kartei.</p>';
     else $('#k-urlaub').innerHTML = '<table class="cmp"><thead><tr><th>Monat</th><th>Anspruch</th><th>Genommen</th><th>Resturlaub</th><th>Laut Lohnzettel</th></tr></thead><tbody>' +
       uk.map(function (r) {
         var key = r.jahr + '-' + (r.monat < 10 ? '0' : '') + r.monat, z = (data.abgleich[key] || {}).urlaubSaldo, chk = '';
@@ -1517,6 +1528,7 @@
     kunde: { lbl: 'Kunden mit Tätigkeiten (optional)', bs: 'Kunden mit Tätigkeiten', add: '+ Kunde hinzufügen', one: 'Kunde', ohne: 'Ohne Kunde', zeit: 'Zeit pro Kunde', kurz: 'Kunden', copy: 'Kunden und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
     objekt: { lbl: 'Objekte mit Tätigkeiten (optional)', bs: 'Objekte mit Tätigkeiten', add: '+ Objekt hinzufügen', one: 'Objekt', ohne: 'Ohne Objekt', zeit: 'Zeit pro Objekt', kurz: 'Objekte', copy: 'Objekte und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
     klient: { lbl: 'Klienten mit Tätigkeiten (optional)', bs: 'Klienten mit Tätigkeiten', add: '+ Klient/in hinzufügen', one: 'Klient/in', ohne: 'Ohne Klient/in', zeit: 'Zeit pro Klient/in', kurz: 'Klienten', copy: 'Klienten und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
+    projekt: { lbl: 'Projekte mit Tätigkeiten (optional)', bs: 'Projekte mit Tätigkeiten (Zeit je Projekt oder Kunde)', add: '+ Projekt hinzufügen', one: 'Projekt', ohne: 'Ohne Projekt', zeit: 'Zeit pro Projekt', kurz: 'Projekte', copy: 'Projekte und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' },
     einsatz: { lbl: 'Einsätze mit Tätigkeiten (optional)', bs: 'Einsätze mit Tätigkeiten', add: '+ Einsatz hinzufügen', one: 'Einsatz', ohne: 'Ohne Einsatz', zeit: 'Zeit pro Einsatz', kurz: 'Einsätze', copy: 'Einsätze und Tätigkeiten vom letzten Tag übernehmen (ohne Zeiten)' }
   };
   function ortW(w) { return ORTW[E.ortTyp(w || wAt(ui.edDate || todayISO()))] || ORTW.kunde; }
@@ -1605,7 +1617,8 @@
     if ($('#e-spaeter')) $('#e-spaeter').checked = !!d.spaeter;
     $('#e-swgroup').hidden = !w.schlechtwetter;
     var bau = E.istBau(w); $('#e-swlbl').textContent = bau ? 'Schlechtwetterstunden' : 'Ausfallstunden'; $('#e-swonl').textContent = bau ? 'Schlechtwetter an diesem Tag' : 'Ich wurde früher heimgeschickt';
-    var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden;
+    var bsx = E.bausteine(w); $('#e-fzgroup').hidden = !bsx.fahrzeug; $('#e-kgroup').hidden = !bsx.kunden; $('#e-hogroup').hidden = !bsx.homeoffice; $('#e-ho').checked = !!d.ho;
+    var rbc = $('#rb-card'); if (rbc) rbc.hidden = !bsx.bericht || !Object.keys(data.days).length; // Bericht an die Firma erst, wenn es etwas zu berichten gibt
     var ow1 = ortW(w); $('#e-klbl').textContent = ow1.lbl; $('#e-addkunde').textContent = ow1.add; $('#e-copykunde').textContent = ow1.copy;
     $('#e-diaeten').closest('.field').hidden = w.diaeten.modell === 'aus';
     mehrBox(d, w);
@@ -1629,17 +1642,22 @@
     if (!$('#e-praemiengroup').hidden) teile.push(abwLab('Prämien'));
     if (w.schlechtwetter) teile.push(abwLab(E.istBau(w) ? 'Schlechtwetter' : 'Ausfallstunden'));
     if (w.diaeten.modell !== 'aus') teile.push(abwLab('Diäten'));
+    if (bs.homeoffice) teile.unshift(abwLab('Homeoffice'));
     $('#e-mehrsum').textContent = teile.join(' · ');
-    var p = data.profil || {}, voll = function (o) { return !!o && Object.keys(o).some(function (k) { var v = o[k]; return (typeof v === 'string' && v.trim()) || typeof v === 'number' || (Array.isArray(v) && v.some(function (x) { return typeof x === 'object' ? voll(x) : !!x; })); }); }, drin = fahrzeugeVon(d).some(voll) || (d.kunden || []).some(voll) || !!(d.praemien && Object.keys(d.praemien).length) || !!d.swOn || (d.diaeten != null && d.diaeten !== '');
+    box.hidden = !teile.length; // nichts eingeschaltet: kein leerer Bereich
+    var p = data.profil || {}, voll = function (o) { return !!o && Object.keys(o).some(function (k) { var v = o[k]; return (typeof v === 'string' && v.trim()) || typeof v === 'number' || (Array.isArray(v) && v.some(function (x) { return typeof x === 'object' ? voll(x) : !!x; })); }); }, drin = fahrzeugeVon(d).some(voll) || (d.kunden || []).some(voll) || !!(d.praemien && Object.keys(d.praemien).length) || !!d.swOn || (d.diaeten != null && d.diaeten !== '') || !!d.ho;
     var offen = p.erfMehr !== undefined ? p.erfMehr === true : (p.erfMehrAlt === true);
     box.open = offen || drin;
   }
+  // Homeoffice gibt es vor allem im Büro (auch Büro-Arten in anderen Berufen)
+  function hoPasst(w) { if (!w) return false; if (['buero', 'aussendienst', 'bund'].indexOf(w.beruf) >= 0) return true; var b = E.BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && /Büro|Verwaltung/.test(a.name)); }
   function bsRender(en) {
     var bs = E.bausteine(en || wAt(todayISO()));
     // Was der Beruf gar nicht braucht (z. B. Fahrzeug und Baustellen im Büro), wird nicht angeboten, solange es aus ist
     var wb = en || wAt(todayISO()), bb = wb && E.BERUFE[wb.beruf], ab = bb && bb.arten && wb.art && bb.arten[wb.art], vb = {};
     [bb && bb.b, ab && ab.b].forEach(function (o) { if (o) Object.keys(o).forEach(function (k) { vb[k] = o[k]; }); });
-    $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; var k = x.dataset.bsx, row = x.closest('label'); if (row) row.hidden = (k === 'fahrzeug' || k === 'kunden') && vb[k] === false && !x.checked; });
+    var proj = E.ortTyp(wb) === 'projekt', ho = hoPasst(wb);
+    $$('#s-bs [data-bsx]').forEach(function (x) { x.checked = !!bs[x.dataset.bsx]; var k = x.dataset.bsx, row = x.closest('label'); if (row) row.hidden = !x.checked && ((k === 'fahrzeug' && vb[k] === false) || (k === 'kunden' && vb[k] === false && !proj) || (k === 'homeoffice' && !ho)); });
     var kl = $('#s-bs-kl'); if (kl) kl.textContent = abwLab(ortW(en || wAt(todayISO())).bs);
   }
   function renderPausen() {
@@ -2634,6 +2652,7 @@
     { id: 'freietage', k: ["brueckentag", "brueckentage", "fenstertag", "freie tage planen", "bridge days"], sel: '#pl-det', pfad: ["Übersicht", "Jahr und Konten", "Freie Tage planen"], seg: 'konten' },
     { id: 'berichte', k: ["bericht an die firma", "berichte an die firma", "stundenbericht", "unterschrift", "monatsbericht", "wochenbericht", "report to the company"], sel: '#s-berichte', pfad: ["Einstellungen", "Berichte an die Firma"], unter: "Ansicht" },
     { id: 'probe', k: ["ausprobier", "ausprobieren", "anderen beruf testen", "trial mode"], sel: '#s-probe-go', pfad: ["Einstellungen", "Ausprobier-Modus"] },
+    { id: 'homeoffice', k: ["homeoffice", "home office", "heimarbeit", "telearbeit", "homeoffice tage", "bericht an die firma", "bericht ausschalten", "projekte"], sel: '#s-bs', pfad: ["Einstellungen", "Was ich in der App brauche"] },
     { id: 'aufzeichnen', k: ["kunden aufzeichnen", "baustellen", "fahrzeug und kilometer", "kilometerstand", "km-stand", "kennzeichen", "what i record"], sel: '#s-bs', pfad: ["Einstellungen", "Was ich in der App brauche"] },
     { id: 'betrieb', k: ["betriebsurlaub", "betrieb geschlossen", "company closed"], sel: '#s-bf', pfad: ["Einstellungen", "Betrieb geschlossen"], unter: "Was ich aufzeichne" },
     { id: 'feste', k: ["feste freie tage", "jede woche frei", "berufsschultag", "fixed days off"], sel: '#fest-card', pfad: ["Einstellungen", "Feste freie Tage"] },
@@ -2790,7 +2809,7 @@
   function wzOpen(mode, ab) {
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
     if (cur) {
-      w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien, dienste: bb.dienste };
+      w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien, dienste: bb.dienste, bericht: bb.bericht, homeoffice: bb.homeoffice };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.kvGewaehlt = !!cur.paket; w.bl = (data.profil && data.profil.bl) || '';
       w.einst = cur.einstufung || ''; w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
     }
@@ -3031,7 +3050,7 @@
     ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
     var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.zaUmr = old.zaUmr; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
-    set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien, dienste: w.b.dienste != null ? !!w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0 };
+    set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien, dienste: w.b.dienste != null ? !!w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0, bericht: w.b.bericht != null ? !!w.b.bericht : !!(w.b.fahrzeug || w.b.kunden), homeoffice: !!w.b.homeoffice };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';
     else if (set.diaeten.modell === 'aus') { set.diaeten.modell = E.PAKETE[w.paket].werte.diaeten.modell; if (set.diaeten.modell === 'aus') { set.diaeten.modell = 'stunde'; set.diaeten.maxStd = 12; } }
@@ -3172,9 +3191,13 @@
       var ar = E.BERUFE[w.beruf].arten;
       html += '<h3>Was beschreibt deine Arbeit am besten?</h3><div class="wzlist">' + Object.keys(ar).map(function (k) { return '<button type="button" class="btn wzopt' + (w.art === k ? ' on' : '') + '" data-wa="' + k + '">' + esc(ar[k].name) + '</button>'; }).join('') + '</div>';
     } else if (w.step === 'bausteine') {
+      var wbw = { beruf: w.beruf, art: w.art }, proj = E.ortTyp(wbw) === 'projekt', wbr = w.b.bericht != null ? w.b.bericht : !!(w.b.fahrzeug || w.b.kunden);
       html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
-        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>' +
-        '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW({ beruf: w.beruf, art: w.art }).bs)) + '</span></label>') +
+        '<label class="check"><input type="checkbox" checked disabled><span>Arbeitszeit, Pausen, Urlaub und Krankenstand (immer dabei)</span></label>' +
+        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>') +
+        (einf && !proj ? '' : '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW(wbw).bs)) + '</span></label>') +
+        (hoPasst(wbw) ? '<label class="check"><input type="checkbox" data-wc="homeoffice"' + (w.b.homeoffice ? ' checked' : '') + '><span>Homeoffice-Tage</span></label>' : '') +
+        '<label class="check"><input type="checkbox" data-wc="bericht"' + (wbr ? ' checked' : '') + '><span>Bericht an die Firma (PDF)</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="dienste"' + ((w.b.dienste != null ? w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0) ? ' checked' : '') + '><span>Bereitschaft und Notdienst</span></label>' +
         (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].diaeten === false ? '' : '<label class="check"><input type="checkbox" data-wc="diaeten"' + (w.diaeten ? ' checked' : '') + '><span>Diäten</span></label>') +
@@ -3189,7 +3212,7 @@
       var cp = E.PAKETE[w.paket];
       var kvAt = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; }), auto = (ak && String(ak).indexOf('de_') !== 0) ? ak : (kvL.length === 1 ? kvL[0] : (kvAt.length === 1 ? kvAt[0] : null));
       var kvListe = '<div class="wzlist">' + kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>';
-      html += (auto ? '<h3>Dein Kollektivvertrag</h3><p class="hint">Ich habe ihn anhand deines Berufs ausgewählt. Passt er, tippe auf Weiter. Steht auf deinem Lohnzettel etwas anderes, wähle unten einen anderen.</p>' : '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p>') + (mitLand ? '<div class="field"><label for="wz-land">In welchem Bundesland arbeitest du? (optional, hilft bei der Auswahl)</label><select id="wz-land">' + landOpts(wl) + '</select></div>' : '') + '<div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div>' +
+      html += (auto ? '<h3>Dein Kollektivvertrag</h3><p class="hint">Ich habe ihn anhand deines Berufs ausgewählt. Passt er, tippe auf Weiter. Steht auf deinem Lohnzettel etwas anderes, wähle unten einen anderen.</p>' : '<h3>Welcher Kollektivvertrag gilt für dich?</h3><p class="hint">Steht auf deinem Lohnzettel. Weißt du es nicht, nimm „Weiß ich nicht“ und stelle alles selbst ein.</p>') + (w.beruf === 'buero' ? '<p class="hint">Im Büro hängt der Kollektivvertrag von der Branche deiner Firma ab, nicht von deiner Tätigkeit. Arbeitest du zum Beispiel im Büro einer Transportfirma, gilt meist der KV Güterbeförderung (Angestellte).</p>' : '') + (mitLand ? '<div class="field"><label for="wz-land">In welchem Bundesland arbeitest du? (optional, hilft bei der Auswahl)</label><select id="wz-land">' + landOpts(wl) + '</select></div>' : '') + '<div class="btns"><button type="button" class="btn" id="wz-scan">Mit Lohnzettel einrichten (optional)</button></div>' +
         (auto ? '<div class="wzlist"><button type="button" class="btn wzopt on" data-wk="' + w.paket + '">' + (w.paket === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[w.paket].name)) + '</button></div><details class="wzfehlt"><summary>Anderen Kollektivvertrag wählen</summary>' + kvListe + '</details>' : kvListe) +
         '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Auf deinem Lohnzettel oder im Dienstvertrag, meist oben unter „Kollektivvertrag“ oder „KV“. Sonst frag im Büro. Weißt du es nicht, nimm „Weiß ich nicht“. Du kannst es später ändern, nichts geht verloren.</p></details>' +
         '<details class="wzfehlt"><summary>Mein Kollektivvertrag ist nicht dabei</summary><div class="field"><label for="wz-kvf">Ich brauche bitte den Kollektivvertrag für …</label><input type="text" id="wz-kvf" maxlength="120" autocomplete="off"></div><button type="button" class="btn" data-wkf="1">An den Entwickler schicken</button></details>' +
@@ -3298,7 +3321,9 @@
     $('#s-new').textContent = list.length ? 'Neue Werte ab diesem Datum anlegen' : 'Erste Werte anlegen';
 
     var cwb = cur ? E.berufName(cur) : null;
-    $('#s-beruf-now').textContent = cur ? 'Aktuell: ' + (cwb || PAKET_KURZ[cur.paket] || (E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte') + ' (gilt seit ' + fmtDate(cur.gueltigAb) + ').' : 'Noch nicht eingerichtet.';
+    var cbb = cur && E.BERUFE[cur.beruf], cba = cbb && cbb.arten && cur.art && cbb.arten[cur.art], cwn = cbb ? abwLab(cbb.name) + (cba ? ' · ' + abwLab(cba.name) : '') : abwLab(PAKET_KURZ[cur && cur.paket] || (cur && E.PAKETE[cur.paket] && E.PAKETE[cur.paket].name) || 'Eigene Werte');
+    // Nur ein Eintrag: so wie bei der Anmeldung gewählt, ohne verwirrendes "gilt seit"
+    $('#s-beruf-now').textContent = !cur ? abwLab('Noch nicht eingerichtet.') : list.length > 1 ? abw1('Dein Beruf: {0} (seit {1})', [cwn, fmtDate(cur.gueltigAb)]) : abw1('Dein Beruf: {0} (so wie bei der Anmeldung gewählt)', [cwn]);
     if (document.activeElement !== $('#s-beruf-ab')) $('#s-beruf-ab').value = todayISO();
     var kvp = (data.profil && data.profil.kv) || {}, kvv = {}, kvAllg = cur && /^(buero|gleit_buero|eigen|de_buero)$/.test(cur.paket);
     if (cur && kvp.paket !== cur.paket) kvp = {}; // alte Meldung zu einem anderen Kollektivvertrag nicht mehr vorbelegen
@@ -3791,6 +3816,7 @@
       case 'e-erx': { var ev2 = parseFloat(String(t.value).replace(',', '.')); if (ev2 > 0) ui.edDraft.extra = ev2; else delete ui.edDraft.extra; updatePreview(); return; }
       case 'e-extra': { var xv = parseFloat(String(t.value).replace(',', '.')); if (xv > 0) ui.edDraft.extra = xv; else delete ui.edDraft.extra; updatePreview(); return; }
       case 'e-sw': ui.edDraft.sw = parseFloat(String(t.value).replace(',', '.')) || 0; ui.edDraft.swAuto = false; anChips(); updatePreview(); return;
+      case 'e-ho': if (t.checked) ui.edDraft.ho = true; else delete ui.edDraft.ho; return;
       case 'e-swon': ui.edDraft.swOn = t.checked; if (t.checked) ui.edDraft.swAuto = true; else { ui.edDraft.sw = 0; $('#e-sw').value = ''; } $('#e-swbox').hidden = !t.checked; anChips(); updatePreview(); return;
       case 'e-swgrund': ui.edDraft.swGrund = t.value; return;
       case 'e-an': anSet('t', t.value); return;
@@ -4357,7 +4383,7 @@
 
   /* ---- Fristen und Ausweise (Code 95, Fahrerkarte, Staplerschein ...) ---- */
   var FR_VOR = [
-    ['Für alle', [['Führerschein', 0], ['Erste-Hilfe-Auffrischung', 4], ['Brandschutz-Unterweisung', 0], ['Sicherheitsunterweisung', 0], ['Arbeitsmedizinische Untersuchung', 0]]],
+    ['Für alle', [['Führerschein', 0], ['Erste-Hilfe-Auffrischung', 4], ['Brandschutz-Unterweisung', 0], ['Sicherheitsunterweisung', 0], ['Arbeitsmedizinische Untersuchung', 0], ['Atemschutz-Tauglichkeit', 0], ['Gefahrgut-Unterweisung (Lager, Verladung)', 0], ['Strahlenschutz-Unterweisung', 0], ['Rezertifizierung Sanitäter/in', 2], ['Fortbildungspflicht Pflege (GuKG)', 5], ['Reisepass', 0]]],
     ['Fahrer', [['Code 95 (Weiterbildung für Berufskraftfahrer)', 5], ['Fahrerkarte (Tachograph)', 5], ['Fahrerqualifizierungsnachweis (FQN)', 5], ['ADR-Bescheinigung (Gefahrgut)', 5], ['Ladekran-Berechtigung', 0], ['Ladungssicherung-Schulung', 0]]],
     ['Bau und Maschinen', [['Baggerschein / Maschinenführer', 0], ['Kranschein', 0], ['Staplerschein', 0], ['Hebebühnen-Berechtigung', 0], ['Absturzsicherung-Schulung', 0]]],
     ['Werkstatt und Metall', [['Pickerl-Ermächtigung (§ 57a)', 0], ['Schweißerprüfung', 0], ['Hochvolt-Schulung', 0], ['Kältemittel-Sachkunde', 0]]],
@@ -4365,16 +4391,13 @@
     ['Lager und Handel', [['Prüfung des Staplers (jährlich)', 1]]],
     ['Büro', [['Datenschutz-Schulung', 0], ['Brandschutzwart-Ausbildung', 0]]]
   ];
-  // Welche Vorschlag-Gruppen zu welchem Beruf passen (unbekannt/anderes: alle)
-  var FR_GRP = { 'Bau und Maschinen': ['handwerk', 'bagger', 'industrie', 'lager', 'seilbahn', 'gaertner', 'bahn', 'garage', 'kunststoff'],
-    'Werkstatt und Metall': ['mechaniker', 'industrie', 'handwerk', 'kunststoff', 'garage', 'bahn'],
-    'Küche und Gastro': ['gastro', 'lebensmittel', 'konditor', 'fleischer', 'lmindustrie', 'handel', 'pflege'],
-    'Lager und Handel': ['lager', 'handel', 'post', 'industrie', 'lkw', 'klein', 'lmindustrie'],
-    'Büro': ['buero', 'aussendienst', 'ordination', 'bund', 'handel', 'kino', 'zahntechnik'] };
-  function frVorBeruf(w) {
-    var b = w && w.beruf; if (!b || b === 'anderes' || !E.BERUFE[b]) return FR_VOR;
-    var fz = E.bausteine(w).fahrzeug;
-    return FR_VOR.filter(function (g) { if (g[0] === 'Für alle') return true; if (g[0] === 'Fahrer') return fz; return (FR_GRP[g[0]] || []).indexOf(b) >= 0; });
+  // Alle Vorschläge in zwei Listen, alphabetisch (viele gelten in mehreren Berufen): mit Ablaufdatum und Abschlüsse
+  function frVorAlle() {
+    var m = {};
+    function add(x) { var a = m[x[0]]; if (!a || (a[1] < 0 && x[1] >= 0) || (x[1] > a[1] && a[1] >= 0)) m[x[0]] = x; }
+    FR_VOR.forEach(function (g) { g[1].forEach(add); }); AUSB_ALLG[1].forEach(add); Object.keys(AUSB_BERUF).forEach(function (k) { AUSB_BERUF[k].forEach(add); });
+    var l = uiLang(), so = function (a, b) { return abwLab(a[0]).localeCompare(abwLab(b[0]), l); }, all = Object.keys(m).map(function (k) { return m[k]; });
+    return [['Ausweise, Kurse und Prüfungen mit Ablaufdatum', all.filter(function (x) { return x[1] >= 0; }).sort(so)], [AUSB_ALLG[0], all.filter(function (x) { return x[1] < 0; }).sort(so)]];
   }
   // Ausbildungen und Abschlüsse: Laufzeit -1 = läuft nicht ab (nur "erreicht am"), 0 = Ablaufdatum selbst eintragen, sonst Jahre
   var AUSB_ALLG = ['Abschlüsse und Ausbildungen (laufen nicht ab)', [['Lehrabschlussprüfung', -1], ['Meisterprüfung', -1], ['Befähigungsprüfung', -1], ['Matura / Berufsreifeprüfung', -1], ['Studienabschluss', -1], ['Ausbilderprüfung', -1]]];
@@ -4465,7 +4488,7 @@
         '<div class="btns"><button type="button" class="btn" data-act="ics"' + (f.ablauf ? '' : ' disabled') + '>Kalenderdatei laden</button><button type="button" class="btn primary" data-act="neu">Erneuert / bestanden</button></div>' : '') + '</div>';
     }).join('');
     var vo = $('#fr-vorl'); if (vo) {
-      var bw = wAt(todayISO()) || {}, bl = AUSB_BERUF[bw.beruf] || [], gr = (bl.length ? [[abw1('Für deinen Beruf: {0}', [abwLab(E.BERUFE[bw.beruf] ? E.BERUFE[bw.beruf].name : '')]), bl]] : []).concat([AUSB_ALLG], frVorBeruf(bw)), sig = (bw.beruf || '') + '|' + uiLang();
+      var gr = frVorAlle(), sig = 'alle|' + uiLang();
       if (vo.dataset.f !== sig) { vo.dataset.f = sig; vo.innerHTML = gr.map(function (g) { return '<p class="frgrp">' + esc(g[0]) + '</p><div class="frchips">' + g[1].map(function (x) { return '<button type="button" class="btn" data-n="' + esc(x[0]) + '" data-y="' + x[1] + '">' + esc(x[0]) + '</button>'; }).join('') + '</div>'; }).join(''); }
     }
   }
@@ -5013,8 +5036,8 @@
     $('#lz-start').addEventListener('click', function () { lzUi.modus = ''; lzOpen(); });
     var bE = $('#lz-einst'); if (bE) bE.addEventListener('click', function () { lzUi.modus = 'pruef'; lzOpen(); });
     $('#lz-chk').addEventListener('change', function () { lzProfil().lzLesen = this.checked; save(); if (this.checked) lzOpen('erlaubnis'); });
-    $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); }); });
-    $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); });
+    $('#lz-wipe').addEventListener('click', function (e) { arm(e.currentTarget, 'Wirklich alle löschen?', function () { data.abgleich = {}; save(); toast('Alle Lohnzettel-Eingaben sind gelöscht.'); neuZeichnen(); }); });
+    $('#lz-forget').addEventListener('click', function () { lzProfil().lzMap = {}; save(); toast('Gemerkte Bezeichnungen gelöscht.'); lzKnoepfe(); });
   })();
   /* Hinweis, wenn eine Rückmeldung erledigt ist: beim ersten Mal werden schon erledigte still als gesehen gemerkt */
   // Beim Start (höchstens einmal pro Tag): Mia sagt, was offen ist. Mehrere Dinge als Karte, eines als Sprechblase.

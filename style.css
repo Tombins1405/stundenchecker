@@ -982,7 +982,7 @@ details#an-card > summary > span, details#fb-det > summary > span, details.auf >
 /* Problem melden: kleiner runder Knopf, deckt keinen Text mehr zu; die Seite bekommt unten Platz dafür */
 .fbfloat { left: 8px; bottom: 8px; width: 48px; height: 48px; min-height: 48px; padding: 0; justify-content: center; gap: 0; font-size: 0; border-radius: 50%; }
 .fbfloat svg { width: 22px; height: 22px; }
-.fbfloat .fbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.fbfloat .fbl { white-space: nowrap; }
 .fbfloat.weg { width: auto; padding: 0 14px; border-radius: 999px; font-size: .85rem; gap: 6px; }
 .fbfloat.weg .fbl { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
 body.hasfb main.wrap { padding-bottom: 130px; }
@@ -991,3 +991,8 @@ details#s-kv > summary::after { order: 2; }
 #s-kv-cur { flex-basis: 100%; order: 3; font-weight: 400; font-size: .88rem; opacity: .9; }
 #s-kv-cur:empty { display: none; }
 .check[hidden] { display: none; }
+
+/* 16.11.: (i) neben Schaltern nicht schrumpfen lassen, "Freie Tage planen" mit Pfeil rechts */
+label.check button.info, .check button.info { flex: none; width: 32px; height: 32px; }
+details#pl-det > summary { display: flex; align-items: center; gap: 10px; min-height: 40px; cursor: pointer; }
+details#pl-det > summary > h3 { margin: 0; }

@@ -59,7 +59,15 @@
     }, function () { status('Noch nicht im Konto gespeichert. Es fehlt die Verbindung. Deine Daten sind auf diesem Gerät sicher.', 'bad'); return false; });
   }
 
+  // Profilbild, Unterschrift und App-Symbol bleiben nur auf dem Gerät. Meldet sich hier ein anderes Konto an, gehören sie nicht zu ihm.
+  function geraetFremd() {
+    var GU = 'stundenchecker.geraetUid', gu = rd(GU), weg = false;
+    if (gu !== uid && (gu || empty(localData()))) ['stundenchecker.foto', 'stundenchecker.sig', 'stundenchecker.iconimg'].forEach(function (k) { if (rd(k)) { del(k); weg = true; } }); if (weg && rd('stundenchecker.icon') === 'foto') del('stundenchecker.icon');
+    if (gu !== uid) wr(GU, uid);
+    return weg;
+  }
   function start() {
+    if (geraetFremd()) reload();
     status('Daten werden geladen …');
     db.collection('users').doc(uid).get().then(function (snap) {
       var m = meta(), loc = localData(), locEmpty = empty(loc), mine = m.uid === uid;
