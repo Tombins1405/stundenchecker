@@ -3219,7 +3219,7 @@
   function kvLohn(w, dateStr) { // Mindestlohn laut hinterlegter Lohngruppe: { std, mon } oder null
     var lg0 = w && LOHNGRUPPEN[w.paket]; if (!lg0 || !w.lg) return null;
     var lg = lgFuer(lg0, dateStr || w.gueltigAb || '0000-00-00'), g = null; lg.gruppen.forEach(function (x) { if (x.id === w.lg) g = x; }); if (!g) return null;
-    var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : Math.min(+w.ls, g.l.length - 1)) : 0, v = i >= 0 ? g.l[i] : null; if (v == null) return null; // Stufe über der letzten der Gruppe: höchste Stufe der Gruppe
+    var i = lg.stufen && g.l.length > 1 ? (w.ls == null || w.ls === '' ? -1 : Math.min(+w.ls, g.l.length - 1)) : 0, v = i >= 0 ? g.l[i] : null; while (v == null && i > 0) { i--; v = g.l[i]; } if (v == null) return null; // Gruppe ohne höhere Stufe (z. B. Handel A/B): höchste vorhandene Stufe // Stufe über der letzten der Gruppe: höchste Stufe der Gruppe
     if (!g.m) return { std: v, mon: null };
     var tl = lg.teiler || Math.round((wochenStd(w.ueberstunden) > 0 ? wochenStd(w.ueberstunden) : 38.5) * 52 / 12 * 100) / 100, vz = +w.ueberstunden.vollzeitStd > wochenStd(w.ueberstunden) ? wochenStd(w.ueberstunden) / +w.ueberstunden.vollzeitStd : 1;
     return { std: Math.round(v / tl * 100) / 100, mon: Math.round(v * vz * 100) / 100 };
@@ -3326,7 +3326,9 @@
     }
     var status = STATUS[day.status] ? day.status : 'arbeit';
     res.status = status;
-    var sollMin = Math.round(sollFuer(w.ueberstunden, wd) * 60);
+    // Urlaub, Krankenstand usw. zählen nur an Tagen, an denen man laut Arbeitszeit gearbeitet hätte (Samstag/Sonntag bei 5-Tage-Woche: 0 Stunden)
+    var uz = w.ueberstunden || {}, istSoll = istSollTag(uz, wd) || !!(uz.sollProTag && +uz.sollProTag[wd] > 0);
+    var sollMin = istSoll ? Math.round(sollFuer(uz, wd) * 60) : 0;
     res.swMin = w.schlechtwetter ? Math.round((+day.sw || 0) * 60) : 0;
     if (status === 'betriebsurlaub' && w.betriebFrei === 'ueberstunden') res.betriebAbzugMin = sollMin;
 
@@ -3481,7 +3483,8 @@
         var ds = iso(y, m, d), day = days[ds];
         if (!day) continue;
         if (day.status === 'karenz') kTage++; // § 15f MSchG: Karenz kürzt den Urlaub anteilig (Mutterschutz-Schutzfrist nicht)
-        if (day.status === 'urlaub' || (day.status === 'betriebsurlaub' && wertAt(settings, ds).betriebFrei !== 'ueberstunden')) genommen++;
+        var wu = wertAt(settings, ds) || {}, uu = wu.ueberstunden || {}, wdU = weekday(ds), sollU = istSollTag(uu, wdU) || !!(uu.sollProTag && +uu.sollProTag[wdU] > 0);
+        if (sollU && dayTyp(ds) !== 'feiertag' && (day.status === 'urlaub' || (day.status === 'betriebsurlaub' && wu.betriebFrei !== 'ueberstunden'))) genommen++; // Urlaub am freien Tag oder Feiertag verbraucht keinen Urlaubstag
       }
       if (kTage) anspruch = r2(anspruch * (1 - Math.min(kTage, daysInMonth(y, m)) / daysInMonth(y, m)));
       saldo = r2(saldo + anspruch - genommen);
