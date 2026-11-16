@@ -216,19 +216,37 @@
   }
 
   /* Diese Woche (Montag bis Sonntag): Stunden gegen die Wochenstunden. Eine einfache Orientierung, kein Lohnzettel-Wert. */
+  // Wochen-Auswertung im schwarzen Feld: mit Pfeilen oder Wischen durch die Wochen blättern (nicht in die Zukunft)
+  function wkMontag(ds) { return E.addDays(ds, -((E.weekday(ds) + 6) % 7)); }
+  function wkNr(ds) { var p = E.parseISO(ds), d = new Date(Date.UTC(p.y, p.m - 1, p.d)), t = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - t); var j = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); return Math.ceil(((d - j) / 86400000 + 1) / 7); }
+  function wkStart() {
+    var heute = todayISO(), k = ui.y + '-' + pad(ui.m);
+    if (ui.wkFuer !== k || !ui.wkMo) { ui.wkFuer = k; var ende = E.addDays(E.iso(ui.m === 12 ? ui.y + 1 : ui.y, ui.m === 12 ? 1 : ui.m + 1, 1), -1); ui.wkMo = wkMontag(ende < heute ? ende : heute); }
+    return ui.wkMo;
+  }
   function weekBox() {
-    var heute = todayISO(), wd = E.weekday(heute), mo = E.addDays(heute, -((wd + 6) % 7)), sum = 0, any = false;
+    var heute = todayISO(), mo = wkStart(), so = E.addDays(mo, 6), jetzt = wkMontag(heute), sum = 0, any = false, dStd = 0, ho = 0, w0 = wAt(mo) || wAt(heute);
     for (var i = 0; i < 7; i++) {
       var ds = E.addDays(mo, i), r = E.calcDay(data.days[ds], ds, wAt(ds));
       if (r.leer) continue;
-      any = true; sum += (r.wertMin + r.creditMin) / 60;
+      any = true; sum += (r.wertMin + r.creditMin) / 60; dStd += r.diaetenStd || 0; if (data.days[ds] && data.days[ds].ho) ho++;
     }
-    if (!any) return '';
-    var wo = E.wochenStd(wAt(heute).ueberstunden), pct = Math.min(100, wo > 0 ? sum / wo * 100 : 100);
-    var text = sum >= wo ? 'Wochenstunden erreicht, ' + fh(sum - wo) + ' h darüber' : 'Noch ' + fh(wo - sum) + ' h bis ' + fh(wo) + ' h';
-    return '<div class="sw"><div class="row"><span>Diese Woche</span><strong class="num">' + fh(sum) + ' von ' + fh(wo) + ' h</strong></div>' +
-      '<div class="bar" aria-hidden="true"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
-      '<div class="row"><span>' + esc(text) + '</span></div></div>';
+    var fmt = function (x) { var p = E.parseISO(x); return p.d + '.' + p.m + '.'; };
+    var titel = mo === jetzt ? abwLab('Diese Woche') : abw1('KW {0}: {1} bis {2}', [wkNr(mo), fmt(mo), fmt(so)]);
+    var h = '<div class="sw wkbox" id="wkbox"><div class="row wknav"><button type="button" class="wkb" data-wk="-1" aria-label="' + esc(abwLab('Vorige Woche')) + '">‹</button><span>' + esc(titel) + '</span>' +
+      '<button type="button" class="wkb" data-wk="1" aria-label="' + esc(abwLab('Nächste Woche')) + '"' + (mo >= jetzt ? ' disabled' : '') + '>›</button></div>';
+    if (!any) return h + '<div class="row"><span>' + esc(abwLab('Keine Einträge in dieser Woche.')) + '</span></div></div>';
+    var wo = E.wochenStd((w0 || {}).ueberstunden), pct = Math.min(100, wo > 0 ? sum / wo * 100 : 100);
+    var text = sum >= wo ? abw1('Wochenstunden erreicht, {0} h darüber', [fh(sum - wo)]) : (mo === jetzt ? abw1('Noch {0} h bis {1} h', [fh(wo - sum), fh(wo)]) : abw1('{0} h unter den Wochenstunden', [fh(wo - sum)]));
+    h += '<div class="row"><span>' + esc(abwLab('Stunden')) + '</span><strong class="num">' + abw1('{0} von {1} h', [fh(sum), fh(wo)]) + '</strong></div>' +
+      '<div class="bar" aria-hidden="true"><i style="width:' + pct.toFixed(1) + '%"></i></div><div class="row"><span>' + esc(text) + '</span></div>';
+    if (w0 && w0.diaeten && w0.diaeten.modell !== 'aus' && dStd > 0) h += '<div class="row"><span>' + esc(abwLab('Diätenstunden')) + '</span><strong class="num">' + fh(dStd) + ' h</strong></div>';
+    if (w0 && E.bausteine(w0).homeoffice) h += '<div class="row"><span>' + esc(abwLab('Homeoffice')) + '</span><strong class="num">' + ho + ' ' + esc(abwLab('Tage')) + '</strong></div>';
+    return h + '</div>';
+  }
+  function wkBlaettern(n) {
+    var mo = E.addDays(wkStart(), 7 * n); if (mo > wkMontag(todayISO())) return;
+    ui.wkMo = mo; var el = $('#wkbox'); if (el) el.outerHTML = weekBox();
   }
 
   /* ============================================================ MONAT */
@@ -338,7 +356,7 @@
     var jetzt = new Date(), laufend = ui.y > jetzt.getFullYear() || (ui.y === jetzt.getFullYear() && ui.m >= jetzt.getMonth() + 1); // Überstunden gibt es erst, wenn der Monat vorbei ist
     var diaetenBetrag = w.diaeten.modell === 'aus' ? '–' : eur.format(s.diaetenBetrag);
     var html = '<div class="panel">' +
-      '<div><p class="eyebrow">Lohnstunden</p><p class="big">' + fh(Math.round((s.lohnStd + (s.ftArbeitStd || 0)) * 100) / 100) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
+      '<div><p class="eyebrow">' + (gehaltKv(w.paket) ? 'Arbeitsstunden' : 'Lohnstunden') + '</p><p class="big">' + fh(Math.round((s.lohnStd + (s.ftArbeitStd || 0)) * 100) / 100) + '<small>h</small></p><p class="sub">' + esc(sub) + '</p></div>' +
       '<dl class="figs">' +
       (s.gleit ? '<div><dt>Gleitzeitsaldo</dt><dd class="hl">' + (s.ueberStd > 0 ? '+' : '') + fh(s.ueberStd) + '<small>h</small></dd></div>' + (s.gleitQuartalStd != null ? '<div><dt>Im Quartal</dt><dd>' + (s.gleitQuartalStd > 0 ? '+' : '') + fh(s.gleitQuartalStd) + '<small>h</small></dd></div>' : '') + (s.gleitKontoStd != null ? '<div><dt>Gleitzeitkonto</dt><dd class="hl">' + (s.gleitKontoStd > 0 ? '+' : '') + fh(s.gleitKontoStd) + '<small>h</small></dd></div>' : '') + (s.gleitVerfallStd > 0 ? '<div><dt>Über der Grenze</dt><dd>' + fh(s.gleitVerfallStd) + '<small>h</small></dd></div>' : '') : '<div><dt>Überstunden</dt>' + (laufend ? '<dd class="hl">–<small class="later">am Monatsende</small></dd>' : '<dd class="hl">' + fh(s.ueberStd - (s.mehrStd || 0)) + '<small>h</small></dd>') + '</div>' + (!laufend && s.mehrStd > 0 ? '<div><dt>Mehrarbeit</dt><dd class="hl">' + fh(s.mehrStd) + '<small>h</small></dd></div>' : '') + (!laufend && s.mehrFreiStd > 0 ? '<div><dt>Mehrarbeit ohne Zuschlag</dt><dd class="hl">' + fh(s.mehrFreiStd) + '<small>h</small></dd></div>' : '')) +
       (w.diaeten.modell === 'aus' ? '' : '<div><dt>Diätenstd.</dt><dd>' + fh(s.diaetenStd) + '<small>h</small></dd></div>' +
@@ -355,7 +373,7 @@
         '<div class="row"><span>Zeitraum ' + fmtDate(sw.von) + ' bis ' + fmtDate(sw.bis) + '</span><span class="num">' + fh(sw.verbrauchtStd) + ' von ' + sw.kontingentStd + ' h</span></div></div>';
     }
     var jetzt2 = new Date();
-    if (ui.y === jetzt2.getFullYear() && ui.m === jetzt2.getMonth() + 1) html += weekBox();
+    if (E.iso(ui.y, ui.m, 1) <= todayISO()) html += weekBox(); // auch frühere Monate: Wochen durchblättern
     html += '</div>' + warumBox(s, w, laufend);
     $('#m-summary').innerHTML = html;
     var bri = $('#br-info'); if (bri) { var brs = document.createElement('small'); brs.hidden = true; brs.textContent = BRUTTO_INFO; bri._sm = brs; }
@@ -469,7 +487,9 @@
       el.innerHTML = '<div class="chips"><button type="button" class="chip pick" id="ab-art-a" aria-pressed="' + (!pr.lzAlles) + '">Krankenstand, Urlaub, Feiertag in eigenen Zeilen</button><button type="button" class="chip pick" id="ab-art-b" aria-pressed="' + (!!pr.lzAlles) + '">Alles steckt in der Zeile „Lohn“</button></div>';
     }
   }
-  function fixLohn() { var w = wAt(monthKey() + '-01'); return !!(w && +w.monatslohn > 0); }
+  // Angestellte, Bundesdienst usw. bekommen ein Monatsgehalt: dann fragt die App nach dem Gehalt statt nach dem Stundenlohn
+  function gehaltKv(p) { var P = E.PAKETE[p]; if (!P) return false; if (/Angestellte|Bundesdienst|Vertragsbedienstete/.test(P.name)) return true; var lg = E.lgFuer(E.LOHNGRUPPEN[p], todayISO()); return !!(lg && lg.gruppen && lg.gruppen.length && lg.gruppen.every(function (g) { return g.m; })); }
+  function fixLohn() { var w = wAt(monthKey() + '-01'); return !!(w && (+w.monatslohn > 0 || gehaltKv(w.paket))); }
   function monthKey() { return ui.y + '-' + pad(ui.m); }
   var AB_HINT = {
     gleit: 'Dein Gleitzeitsaldo für diesen Monat, so wie ihn deine Zeiterfassung oder dein Zeitnachweis zeigt (Plus oder Minus in Stunden).',
@@ -643,8 +663,14 @@
     var w = $('#lz-wipe'); if (w) w.hidden = !alle;
     var f = $('#lz-forget'); if (f) f.hidden = !Object.keys(map).length;
     var c = $('#ab-clear'); if (c) c.hidden = !abVoll(ab[key]);
-    var aa = $('#ab-art'); if (aa) { var pre = key + '-', frei = Object.keys(data.days || {}).some(function (d) { var st = data.days[d] && data.days[d].status; return d.indexOf(pre) === 0 && ['urlaub', 'krank', 'sonderurlaub', 'pflege'].indexOf(st) >= 0; }); aa.hidden = !(alle || frei || (data.profil && data.profil.lzAlles !== undefined)); }
+    var aa = $('#ab-art'); if (aa) { var pre = key + '-', frei = Object.keys(data.days || {}).some(function (d) { var st = data.days[d] && data.days[d].status; return d.indexOf(pre) === 0 && ['urlaub', 'krank', 'sonderurlaub', 'pflege'].indexOf(st) >= 0; }); aa.hidden = fixLohn() || !(alle || frei || (data.profil && data.profil.lzAlles !== undefined)); }
   }
+  (function () { // Wochen blättern: Pfeile und Wischen im schwarzen Feld
+    var ms = document.getElementById('m-summary'); if (!ms) return; var x0 = null, y0 = 0;
+    ms.addEventListener('click', function (ev) { var b = ev.target.closest('[data-wk]'); if (b) { ev.stopPropagation(); wkBlaettern(+b.dataset.wk); } });
+    ms.addEventListener('touchstart', function (ev) { if (!ev.target.closest('#wkbox')) { x0 = null; return; } x0 = ev.touches[0].clientX; y0 = ev.touches[0].clientY; }, { passive: true });
+    ms.addEventListener('touchend', function (ev) { if (x0 === null) return; var t = ev.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) wkBlaettern(dx > 0 ? -1 : 1); }, { passive: true });
+  })();
   function neuZeichnen() { if (ui.view === 'lohn') renderLohn(); else renderMonat(); }
   function setSeg(seg) {
     ui.mseg = seg === 'konten' ? 'konten' : 'monat';
@@ -3088,7 +3114,7 @@
     var lg = E.lgFuer(E.LOHNGRUPPEN[w.paket], todayISO()); if (!lg) return '';
     var gl = lgListe(lg, w.art, w.lg, w.beruf); if (!gl.length) return '';
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0];
-    var h = '<div class="field"><label for="wz-lg">' + (w.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><small>Die Lohngruppe (oder Einstufung) bestimmt, welchen Mindestlohn dir der Kollektivvertrag zusteht. Du musst sie nicht kennen: Trage einfach deinen Stundenlohn vom Lohnzettel ein. Kennst du sie, kann die App prüfen, ob dein Lohn dem Kollektivvertrag entspricht. Du findest sie oben auf dem Lohnzettel (bei „Einstufung“, „Lohngruppe“ oder „Verwendungsgruppe“) oder im Dienstvertrag. Steht sie nirgends, frag in der Firma nach.</small><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
+    var h = '<div class="field"><label for="wz-lg">' + (w.art === 'lehrling' ? 'Lehrjahr laut Kollektivvertrag' : gehaltKv(w.paket) ? 'Einstufung laut Kollektivvertrag (Verwendungsgruppe)' : 'Lohngruppe laut Kollektivvertrag') + ' (' + esc(lg.stand) + ')</label><small>Die Lohngruppe (oder Einstufung) bestimmt, welchen Mindestlohn dir der Kollektivvertrag zusteht. Du musst sie nicht kennen: Trage einfach deinen Stundenlohn vom Lohnzettel ein. Kennst du sie, kann die App prüfen, ob dein Lohn dem Kollektivvertrag entspricht. Du findest sie oben auf dem Lohnzettel (bei „Einstufung“, „Lohngruppe“ oder „Verwendungsgruppe“) oder im Dienstvertrag. Steht sie nirgends, frag in der Firma nach.</small><select id="wz-lg" data-wf="lg"><option value="">Nicht sicher / selbst eintragen</option>' +
       gl.map(function (x) { return '<option value="' + esc(x.id) + '"' + (w.lg === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select></div>';
     if (g && lg.stufen && g.l.length > 1) h += '<div class="field"><label for="wz-ls">Stufe</label><select id="wz-ls" data-wf="ls"><option value="">Bitte wählen</option>' + lgSt(lg, g).map(function (s, i) { return '<option value="' + i + '"' + (String(w.ls) === String(i) ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select></div>';
     return h;
@@ -3177,7 +3203,7 @@
     var einf = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].einfach;
     var off = w.mode === 'start' ? 1 : 0, num = w.step === 'mia' ? 1 : (w.step === 'beruf' || w.step === 'art' ? 1 : w.step === 'bausteine' ? 2 : w.step === 'kv' ? 3 : 4) + off;
     if (w.mode === 'start') { nSteps = !w.beruf || (E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten) ? 2 : 1; num = w.step === 'art' ? 2 : 1; }
-    var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: w.mode === 'start' ? 'Hallo! Nur eine Frage, dann kannst du loslegen: Was machst du?' : 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: 'Fast fertig. Jetzt noch dein Lohn.' }[w.step] || '';
+    var say = { mia: 'Hallo! Wen möchtest du an deiner Seite haben?', beruf: w.mode === 'start' ? 'Hallo! Nur eine Frage, dann kannst du loslegen: Was machst du?' : 'Damit ich alles passend einrichte: Was machst du?', art: 'Noch eine Frage, dann weiß ich es.', bausteine: 'Sag mir, was du aufzeichnen willst. Den Rest blende ich aus.', kv: 'Der Kollektivvertrag steht auf deinem Lohnzettel.', lohn: (gehaltKv(w.paket) ? 'Fast fertig. Jetzt noch dein Gehalt.' : 'Fast fertig. Jetzt noch dein Lohn.') }[w.step] || '';
     var wo = E.BERUFE[w.beruf] ? miaOutfit(w.beruf, w.art) : [];
     var sc = ''; // keine Fahrzeug-Szene mehr: nur Mia
     if (sc) html += '<div class="wzscene">' + sc + '<div class="wzsay">' + esc(say) + '</div></div>';
@@ -3223,16 +3249,17 @@
       html += '<h3>Wer bist du, und wer soll dich begleiten?</h3>' + miaFelder(w);
     } else {
       var pw = E.PAKETE[w.paket].werte;
-      html += '<h3>Dein Lohn</h3>' +
-        lohnGruppenHtml(w) +
-        '<div class="field"><label for="wz-lohn">Stundenlohn (€ pro Stunde)</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>' +
+      var gh = gehaltKv(w.paket), fMon = '<div class="field"><label for="wz-monat">' + (gh ? 'Monatsgehalt (€ brutto)' : 'Fixer Monatslohn (€ brutto, optional)') + '</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>',
+        fStd = '<div class="field"><label for="wz-lohn">' + (gh ? 'Stundenlohn (optional, rechnet die App sonst aus dem Gehalt aus)' : 'Stundenlohn (€ pro Stunde)') + '</label><input type="number" id="wz-lohn" inputmode="decimal" step="0.01" min="0" data-wf="lohn" value="' + esc(w.lohn) + '"></div>';
+      html += '<h3>' + (gh ? 'Dein Gehalt' : 'Dein Lohn') + '</h3>' +
+        lohnGruppenHtml(w) + (gh ? fMon : fStd) +
         '<details class="wzfehlt" data-wzmore' + (w.more ? ' open' : '') + '><summary>Weitere Angaben (optional)</summary><p class="hint">Alles andere kannst du später in den Einstellungen ändern. Mia hilft dir dabei.</p>' + (w.mode === 'start' ? miaFelder(w) : '') +
         '<div class="field"><label for="wz-einst">' + (['handel', 'gastro', 'buero', 'de_handel', 'de_gastro', 'de_buero'].indexOf(w.paket) >= 0 ? 'Einstufung auf deinem Lohnzettel (zum Beispiel „Gruppe 3“)' : 'Einstufung auf deinem Lohnzettel (zum Beispiel „Kraftfahrer 3a“ oder „LG 1/A“)') + '</label><input type="text" id="wz-einst" maxlength="60" data-wf="einst" value="' + esc(w.einst || '') + '"></div>' +
-((E.BERUFE[w.beruf] || {}).einfach || w.monat || String(w.paket).indexOf('de_') === 0 ? '<div class="field"><label for="wz-monat">Fixer Monatslohn (€ brutto, optional)</label><input type="number" id="wz-monat" inputmode="decimal" step="0.01" min="0" data-wf="monat" value="' + esc(w.monat || '') + '"></div>' : '') +
+(gh ? fStd : ((E.BERUFE[w.beruf] || {}).einfach || w.monat || String(w.paket).indexOf('de_') === 0 ? fMon : '')) +
 '<div class="field"><label for="wz-wo">Wochenstunden</label><input type="number" id="wz-wo" inputmode="decimal" step="0.5" min="0" data-wf="wochen" value="' + esc(w.wochen) + '"></div>' +
 (w.diaeten && (pw.diaeten.modell === 'stunde' || pw.diaeten.modell === 'aus') ? '<div class="field"><label for="wz-ds">Diäten (€ pro Stunde)</label><input type="number" id="wz-ds" inputmode="decimal" step="0.01" min="0" data-wf="dsatz" value="' + esc(w.dsatz) + '"></div>' : '') + '</details>' +
         (w.mode === 'start' ? '<h4>Mithelfen (optional)</h4><label class="check"><input type="checkbox" data-wfc="statistik"' + (w.cStat ? ' checked' : '') + '><span>Anonym melden, in welchem Beruf und wie stark mein Lohnzettel von meiner Aufzeichnung abweicht. Ohne Namen, E-Mail und genaue Beträge.</span></label><label class="check"><input type="checkbox" data-wfc="miaFragen"' + (w.cMia ? ' checked' : '') + '><span>Fragen, die Mia nicht beantworten kann, an den Entwickler schicken, damit sie dazulernt.</span></label>' : '') +
-        '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">Alles steht auf deinem Lohnzettel: Lohngruppe oder Einstufung oben, Stundenlohn in der Zeile „Lohn“ oder „Stundenlohn“, Wochenstunden im Dienstvertrag. Weißt du etwas nicht, lass es leer. Du kannst es später nachtragen.</p></details>' +
+        '<details class="wzfehlt"><summary>Wo finde ich das?</summary><p class="hint">' + (gh ? 'Alles steht auf deinem Gehaltszettel: Verwendungsgruppe oder Einstufung oben, das Monatsgehalt in der Zeile „Gehalt“, Wochenstunden im Dienstvertrag. Weißt du etwas nicht, lass es leer. Du kannst es später nachtragen.' : 'Alles steht auf deinem Lohnzettel: Lohngruppe oder Einstufung oben, Stundenlohn in der Zeile „Lohn“ oder „Stundenlohn“, Wochenstunden im Dienstvertrag. Weißt du etwas nicht, lass es leer. Du kannst es später nachtragen.') + '</p></details>' +
         '<p class="hint">Fehlt dir noch etwas? Kein Problem: Du kannst schon starten und alles später in den Einstellungen nachtragen. Die App rechnet dann auch deine bisherigen Tage damit neu.</p>';
     }
     var canNext = (w.step === 'beruf' && w.beruf) || (w.step === 'art' && w.art) || w.step === 'bausteine' || w.step === 'kv' || w.step === 'lohn' || w.step === 'mia';
@@ -3351,6 +3378,7 @@
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en || !!(en.diaeten && en.diaeten.modell === 'aus' && E.BERUFE[en.beruf] && E.BERUFE[en.beruf].diaeten === false);
     if (!en) return;
     if (en.ueberstunden && !en.ueberstunden.sollProTag) en.ueberstunden.sollProTag = {};
+    var smL = $('#s-monat-l'); if (smL) smL.textContent = abwLab(gehaltKv(en.paket) ? 'Monatsgehalt (€ brutto)' : 'Fixer Monatslohn (€ brutto, optional)');
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {

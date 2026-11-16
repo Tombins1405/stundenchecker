@@ -980,8 +980,8 @@ h3[data-ico="toggle"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://ww
 
 details#an-card > summary > span, details#fb-det > summary > span, details.auf > summary > span { flex: 1 1 auto; min-width: 0; }
 /* Problem melden: kleiner runder Knopf, deckt keinen Text mehr zu; die Seite bekommt unten Platz dafür */
-.fbfloat { left: 8px; bottom: 8px; width: 48px; height: 48px; min-height: 48px; padding: 0; justify-content: center; gap: 0; font-size: 0; border-radius: 50%; }
-.fbfloat svg { width: 22px; height: 22px; }
+.fbfloat { left: 8px; bottom: 8px; width: auto; height: 40px; min-height: 40px; padding: 0 12px; justify-content: center; gap: 6px; font-size: .8rem; border-radius: 999px; opacity: .95; }
+.fbfloat svg { width: 18px; height: 18px; }
 .fbfloat .fbl { white-space: nowrap; }
 .fbfloat.weg { width: auto; padding: 0 14px; border-radius: 999px; font-size: .85rem; gap: 6px; }
 .fbfloat.weg .fbl { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
@@ -996,3 +996,9 @@ details#s-kv > summary::after { order: 2; }
 label.check button.info, .check button.info { flex: none; width: 32px; height: 32px; }
 details#pl-det > summary { display: flex; align-items: center; gap: 10px; min-height: 40px; cursor: pointer; }
 details#pl-det > summary > h3 { margin: 0; }
+/* Wochen-Auswertung: blättern */
+.wkbox .wknav { align-items: center; gap: 8px; }
+.wkbox .wknav span { flex: 1; text-align: center; font-weight: 700; }
+.wkb { flex: none; width: 40px; height: 36px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: inherit; font-size: 1.4rem; line-height: 1; cursor: pointer; }
+.wkb:disabled { opacity: .3; cursor: default; }
+.wkbox { touch-action: pan-y; }
