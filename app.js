@@ -4088,6 +4088,26 @@
       });
     });
   }
+  // Installierte App: das Symbol am Startbildschirm legt das Handy beim Installieren fest. Neues Symbol = einmal neu installieren, Mia erklärt wie.
+  function appInstalliert() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+  function iconNeuInstallieren() {
+    if (!appInstalliert()) return;
+    try { localStorage.removeItem('stundenchecker.noinstall'); } catch (e) { }
+    var S = window.StundenSync, an = !!(S && S.angemeldet && S.angemeldet()), ios = /iphone|ipad|ipod/i.test(navigator.userAgent), url = new URL('./', location.href).href;
+    if (an && S.sichern) S.sichern();
+    var d = $('#icon-dlg');
+    if (!d) { d = document.createElement('div'); d.id = 'icon-dlg'; d.className = 'cropov'; document.body.appendChild(d); }
+    var st = [abwLab(ios ? 'Halte das Stunden-Checker-Symbol auf dem Home-Bildschirm gedrückt und wähle „App entfernen“.' : 'Halte das Stunden-Checker-Symbol auf dem Startbildschirm gedrückt und wähle „Deinstallieren“.'),
+      abwLab(ios ? 'Öffne den Stunden-Checker in Safari (Link unten).' : 'Öffne den Stunden-Checker im Browser (Link unten).'),
+      abwLab(ios ? 'Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Jetzt ist dein neues Symbol dabei.' : 'Tippe auf „Installieren“. Jetzt ist dein neues Symbol dabei.')];
+    d.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true"><h3>' + esc(abwLab('Neues App-Symbol')) + '</h3><p>' + esc(abwLab('Dein neues Symbol ist gespeichert. Auf dem Startbildschirm ändert es sich erst, wenn du die App einmal neu installierst. Das Handy übernimmt das Symbol nur beim Installieren.')) + '</p>' +
+      (an ? '<div class="notice">✓ ' + esc(abwLab('Deine Daten sind in deinem Konto gesichert und kommen nach dem Neu-Installieren automatisch zurück.')) + '</div>' : '<div class="notice warn">' + esc(abwLab('Achtung: Du bist nicht angemeldet. Melde dich zuerst an, damit deine Daten gesichert sind. Sonst können sie beim Entfernen verloren gehen.')) + '</div>') +
+      '<ol style="padding-left:20px;margin:10px 0">' + st.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol><p class="nott"><a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a></p>' +
+      '<div class="btns"><button type="button" class="btn" id="icon-dlg-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn primary" id="icon-dlg-x">' + esc(abwLab('Später')) + '</button></div></div>';
+    d.hidden = false;
+    $('#icon-dlg-x').onclick = function () { d.hidden = true; };
+    $('#icon-dlg-copy').onclick = function () { try { navigator.clipboard.writeText(url).then(function () { toast('Link kopiert.'); }); } catch (e) { } };
+  }
   function renderIconPick() {
     var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
     var fotoOn = ''; try { fotoOn = localStorage.getItem('stundenchecker.iconimg') || ''; } catch (e) { }
@@ -4103,7 +4123,7 @@
     function pickClick(ev) {
       var b = ev.target.closest('[data-icon]'); if (!b) return;
       try { localStorage.setItem('stundenchecker.icon', b.dataset.icon); } catch (e) { }
-      renderIconPick(); applyAppIcon(b.dataset.icon);
+      renderIconPick(); applyAppIcon(b.dataset.icon); iconNeuInstallieren();
     }
     $('#icon-pick').addEventListener('click', pickClick);
     $('#icon-pick2').addEventListener('click', pickClick);
@@ -4144,7 +4164,7 @@
       var c = document.createElement('canvas'); c.width = c.height = 256; var k = 256 / 280, g = c.getContext('2d');
       g.fillStyle = '#1f2937'; g.fillRect(0, 0, 256, 256); g.drawImage(cr.img, cr.x * k, cr.y * k, cr.img.width * cr.s * k, cr.img.height * cr.s * k);
       try { localStorage.setItem('stundenchecker.iconimg', c.toDataURL('image/jpeg', 0.88)); localStorage.setItem('stundenchecker.icon', 'foto'); } catch (e) { toast('Das Bild konnte nicht gespeichert werden.'); return; }
-      $('#crop').hidden = true; cr.img = null; renderIconPick(); applyAppIcon('foto'); toast('Dein Foto ist jetzt das App-Symbol.');
+      $('#crop').hidden = true; cr.img = null; renderIconPick(); applyAppIcon('foto'); if (appInstalliert()) iconNeuInstallieren(); else toast('Dein Foto ist jetzt das App-Symbol.');
     });
   })();
 

@@ -102,6 +102,8 @@
       if (!uid) return;
       status('Wird gespeichert …'); clearTimeout(timer); timer = setTimeout(push, 1500);
     },
+    angemeldet: function () { return !!uid; },
+    sichern: function () { clearTimeout(timer); return uid ? push() : Promise.resolve(false); },
     beforeLogout: function () { // alles sichern, danach die Daten von diesem Gerät entfernen (wichtig, wenn mehrere Personen ein Gerät benutzen)
       clearTimeout(timer);
       return push().then(function (ok) { if (ok) { del(KEY); del(META); } return ok; });
