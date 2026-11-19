@@ -4220,6 +4220,9 @@
         var set = function (sel, href) { var el = document.querySelector(sel); if (el) el.setAttribute('href', href); };
         set('link[rel="apple-touch-icon"]', p192 || p512);
         set('link[rel="icon"]', p192 || p512);
+        // Android: mit einem Symbol, das nur im Handy-Speicher liegt, legt Chrome keine echte App an, sondern nur eine Verknüpfung.
+        // Darum dort für das Installieren die feste Datei behalten; das eigene Foto gilt nur in der App.
+        if (/android/i.test(navigator.userAgent)) { set('link[rel="manifest"]', 'manifest.webmanifest'); return; }
         var base = new URL('./', location.href).href;
         var man = { id: base + 'index.html', name: 'Stunden-Checker', short_name: 'Stunden', start_url: base + 'index.html', scope: base, display: 'standalone', background_color: '#1f2937', theme_color: '#1f2937', lang: 'de',
           icons: [{ src: p192 || p512, sizes: '192x192', type: 'image/png', purpose: 'any' }, { src: p512, sizes: '512x512', type: 'image/png', purpose: 'any' }, { src: p512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
@@ -4251,6 +4254,7 @@
     $('#icon-dlg-copy').onclick = function () { try { navigator.clipboard.writeText(url).then(function () { toast('Link kopiert.'); }); } catch (e) { } };
   }
   function renderIconPick() {
+    var fh0 = $('#icon-foto-hint'); if (fh0) fh0.hidden = !/android/i.test(navigator.userAgent);
     var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
     var fotoOn = ''; try { fotoOn = localStorage.getItem('stundenchecker.iconimg') || ''; } catch (e) { }
     var html = APPICONS.map(function (x) {
@@ -4387,11 +4391,12 @@
       var h = '', btn = '';
       if (schritt === 1) {
         h = (installiert() ? '' : '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [1, 2])) + '</p>') + '<h3>' + t('Such dir dein App-Symbol aus') + '</h3><p>' + t('So sieht der Stunden-Checker dann auf deinem Startbildschirm aus. Wähle jetzt, das Handy übernimmt das Symbol nur beim Installieren.') + '</p>' +
-          '<div id="icon-pick3" class="ipicks"></div><label class="btn" for="icon-file" id="inst-foto" style="margin-top:8px;text-align:center">' + t('Eigenes Foto verwenden') + '</label>';
+          '<div id="icon-pick3" class="ipicks"></div><label class="btn" for="icon-file" id="inst-foto" style="margin-top:8px;text-align:center">' + t('Eigenes Foto verwenden') + '</label>' + (android ? '<p class="hint">' + t('Ein eigenes Foto kann Android nur als Verknüpfung mit kleinem Browser-Zeichen anlegen, nicht als richtige App. Für die richtige App wähle eines der fertigen Symbole.') + '</p>' : '');
         btn = '<button type="button" class="btn primary" id="inst-weiter">' + t('Weiter') + '</button><button type="button" class="btn" id="inst-zu">' + t('Später') + '</button>';
       } else if (schritt === 2) {
         var a = anleitung();
-        h = '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [2, 2])) + '</p><h3>' + t('Jetzt installieren') + '</h3>' + a.text +
+        var fotoIk = false; try { fotoIk = localStorage.getItem('stundenchecker.icon') === 'foto'; } catch (e) { }
+        h = '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [2, 2])) + '</p><h3>' + t('Jetzt installieren') + '</h3>' + (android && fotoIk ? '<p class="notice warn">' + t('Du hast ein eigenes Foto gewählt. Damit entsteht nur eine Verknüpfung, keine richtige App. Geh zurück und wähle ein fertiges Symbol.') + '</p>' : '') + a.text +
           (a.link ? '<p class="nott" style="word-break:break-all"><a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a></p>' : '') +
           '<p class="hint">' + t('Danach findest du den Stunden-Checker als Symbol auf deinem Startbildschirm. Öffne ihn ab jetzt immer dort, dann musst du den Link nicht mehr suchen.') + '</p>';
         btn = (a.knopf ? '<button type="button" class="btn primary" id="inst-go">📲 ' + t('Jetzt installieren') + '</button>' : '') + (a.link ? '<button type="button" class="btn" id="inst-copy">' + t('Link kopieren') + '</button>' : '') +
