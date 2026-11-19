@@ -4311,16 +4311,32 @@
     var ua = navigator.userAgent || '', ios = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /android/i.test(ua);
     var inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|; wv\)/i.test(ua), samsung = /SamsungBrowser/i.test(ua), firefox = /Firefox|FxiOS/i.test(ua), iosAnders = ios && /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
     var url = new URL('./', location.href).href;
-    function li(arr) { return '<ol class="inst-ol">' + arr.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol>'; }
+    // Symbole selbst zeichnen (manche Handys zeigen ⋮ und ☰ als Schrift nicht an) und ein kleines Handy-Bild, wo man tippen muss
+    var IK = {
+      punkte: '<svg viewBox="0 0 24 24" class="ik"><circle cx="12" cy="5" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="12" cy="19" r="2.4"/></svg>',
+      striche: '<svg viewBox="0 0 24 24" class="ik"><rect x="3" y="5" width="18" height="2.6" rx="1.3"/><rect x="3" y="10.7" width="18" height="2.6" rx="1.3"/><rect x="3" y="16.4" width="18" height="2.6" rx="1.3"/></svg>',
+      teilen: '<svg viewBox="0 0 24 24" class="ik ik-s"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H5.5v10.5h13V10H16" fill="none" stroke-width="2.2" stroke-linejoin="round"/></svg>'
+    };
+    function sym(h) { return h.replace(/⋮/g, IK.punkte).replace(/☰/g, IK.striche); }
+    function handy(pos, ik) {
+      var x = pos === 'or' ? 96 : pos === 'ur' ? 96 : 60, y = pos === 'or' ? 30 : 178;
+      return '<div class="inst-bild"><svg viewBox="0 0 120 210" aria-hidden="true"><rect x="6" y="4" width="108" height="202" rx="16" class="ib-rahmen"/>' +
+        (pos === 'or' ? '<rect x="12" y="18" width="96" height="24" rx="5" class="ib-leiste"/><rect x="18" y="25" width="62" height="10" rx="5" class="ib-adr"/>' : '<rect x="12" y="166" width="96" height="24" rx="5" class="ib-leiste"/>') +
+        '<rect x="18" y="' + (pos === 'or' ? 52 : 22) + '" width="84" height="8" rx="4" class="ib-text"/><rect x="18" y="' + (pos === 'or' ? 66 : 36) + '" width="60" height="8" rx="4" class="ib-text"/>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="18" class="ib-kreis"/><g transform="translate(' + (x - 11) + ',' + (y - 11) + ') scale(0.92)" class="ib-ik">' + IK[ik].replace(/<\/?svg[^>]*>/g, '') + '</g></svg>' +
+        '<p>' + esc(abwLab(pos === 'or' ? 'Hier oben rechts tippen' : pos === 'ur' ? 'Hier unten rechts tippen' : 'Hier unten in der Mitte tippen')) + '</p></div>';
+    }
+    var leisteTipp = function () { return '<p class="hint">' + esc(abwLab('Siehst du die Leiste mit dem Symbol nicht? Wische auf der Seite ein kleines Stück nach unten, dann kommt sie wieder.')) + '</p>'; };
+    function li(arr) { return '<ol class="inst-ol">' + arr.map(function (x) { return '<li>' + sym(x) + '</li>'; }).join('') + '</ol>'; }
     function t(x) { return esc(abwLab(x)); }
     function anleitung() {
       if (deferred) return { text: '<p>' + t('Tippe auf „Jetzt installieren“ und im Fenster vom Handy noch einmal auf „Installieren“.') + '</p>', knopf: true };
-      if (inApp) return { text: '<p class="notice warn">' + t('Du bist im Browser von WhatsApp, Facebook oder Instagram. Dort geht das Installieren nicht.') + '</p>' + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Wähle „Im Browser öffnen“ oder „In Chrome öffnen“.'), t('Dort tippst du noch einmal auf „Als App aufs Handy legen“.')]), link: true };
-      if (ios && !iosAnders) return { text: li([t('Tippe unten in der Mitte auf das Teilen-Symbol (Viereck mit Pfeil nach oben).'), t('Wische nach oben und tippe auf „Zum Home-Bildschirm“.'), t('Tippe oben rechts auf „Hinzufügen“.')]) };
-      if (iosAnders) return { text: li([t('Tippe auf das Teilen-Symbol (Viereck mit Pfeil nach oben), oben in der Adresszeile oder unten.'), t('Tippe auf „Zum Home-Bildschirm“ und dann auf „Hinzufügen“.')]) + '<p class="hint">' + t('Findest du das nicht, öffne den Link in Safari.') + '</p>', link: true };
-      if (samsung) return { text: li([t('Tippe unten rechts auf ☰ (drei Striche).'), t('Tippe auf „Seite hinzufügen zu“ (manchmal nur „Hinzufügen zu“).'), t('Wähle „Startbildschirm“ und tippe auf „Hinzufügen“.')]) };
-      if (android && firefox) return { text: li([t('Tippe auf ⋮ (drei Punkte).'), t('Tippe auf „Installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Hinzufügen“.')]) };
-      if (android) return { text: li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Installieren“.')]) };
+      if (inApp) return { text: '<p class="notice warn">' + t('Du bist im Browser von WhatsApp, Facebook oder Instagram. Dort geht das Installieren nicht.') + '</p>' + handy('or', 'punkte') + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Wähle „Im Browser öffnen“ oder „In Chrome öffnen“.'), t('Dort tippst du noch einmal auf „Als App aufs Handy legen“.')]), link: true };
+      if (ios && !iosAnders) return { text: handy('um', 'teilen') + li([t('Tippe unten in der Mitte auf das Teilen-Symbol (Viereck mit Pfeil nach oben).'), t('Wische nach oben und tippe auf „Zum Home-Bildschirm“.'), t('Tippe oben rechts auf „Hinzufügen“.')]) + leisteTipp() };
+      if (iosAnders) return { text: handy('or', 'teilen') + li([t('Tippe auf das Teilen-Symbol (Viereck mit Pfeil nach oben), oben in der Adresszeile oder unten.'), t('Tippe auf „Zum Home-Bildschirm“ und dann auf „Hinzufügen“.')]) + '<p class="hint">' + t('Findest du das nicht, öffne den Link in Safari.') + '</p>', link: true };
+      if (samsung) return { text: handy('ur', 'striche') + li([t('Tippe unten rechts auf ☰ (drei Striche).'), t('Tippe auf „Seite hinzufügen zu“ (manchmal nur „Hinzufügen zu“).'), t('Wähle „Startbildschirm“ und tippe auf „Hinzufügen“.')]) + leisteTipp() };
+      if (android && firefox) return { text: handy('or', 'punkte') + li([t('Tippe auf ⋮ (drei Punkte).'), t('Tippe auf „Installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Hinzufügen“.')]) + leisteTipp() };
+      if (android) return { text: handy('or', 'punkte') + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Installieren“.')]) + leisteTipp() };
       return { text: '<p>' + t('Am Computer: In Chrome oder Edge rechts in der Adresszeile auf das Symbol zum Installieren klicken. Am Handy geht es am einfachsten: öffne dort den Link.') + '</p>', link: true };
     }
     function zeige(schritt) {
