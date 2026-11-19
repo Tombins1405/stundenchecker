@@ -322,8 +322,9 @@ details#s-adv > summary { cursor: pointer; font-weight: 600; }
 .ib-pick { margin-top: 6px; }
 .ib-pick span { flex: 0 0 auto; font-size: 0.85rem; }
 #icon-pick { display: flex; gap: 8px; flex-wrap: wrap; }
-.ipk { width: 44px; height: 44px; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; }
-.ipk svg { width: 100%; height: 100%; display: block; }
+.ipk { width: 66px; padding: 3px 2px 4px; border: 2px solid transparent; border-radius: 12px; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: inherit; font: inherit; }
+.ipk svg, .ipk img { width: 44px; height: 44px; display: block; border-radius: 10px; object-fit: cover; }
+.ipk-n { font-size: .68rem; line-height: 1.15; text-align: center; overflow-wrap: anywhere; hyphens: auto; max-width: 62px; }
 .ipk.on { border-color: #fff; }
 .installbar #install-go { background: #64b5f6; color: #0f1b2d; border-color: #64b5f6; font-weight: 700; white-space: nowrap; flex: 0 0 auto; }
 .installbar #install-x { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); width: 36px; height: 36px; flex: 0 0 auto; font-size: 1.3rem; line-height: 1; }
@@ -1072,6 +1073,8 @@ body.wischt #mia-btn, body.wischt #fb-float { opacity: .12; pointer-events: none
 .kl-box { text-align: center; font-weight: 700; }
 .kl-spin { width: 44px; height: 44px; margin: 0 auto 14px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--accent); animation: klspin 1s linear infinite; }
 @keyframes klspin { to { transform: rotate(360deg); } }
-.ipk-mehr { background: #1f2937; color: #fff; font-size: 1.6rem; font-weight: 700; line-height: 1; border-color: #64b5f6; }
+.ipk-mehr .ipk-plus { width: 44px; height: 44px; border-radius: 10px; background: #1f2937; color: #fff; border: 2px solid #64b5f6; font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 /* Installieren und Symbol ändern: Knöpfe bleiben unten sichtbar, auch auf kleinen Handys */
 #inst-dlg .lzbox > .btns, #icon-dlg .lzbox > .btns { position: sticky; bottom: -18px; margin: 0 -18px -18px; padding: 10px 18px 18px; background: var(--surface); box-shadow: 0 -6px 12px rgba(0,0,0,.08); }
+/* Knopf-Beschriftungen (label.btn) in aufklappbaren Bereichen: als eigener Block, sonst überlappen sie den Text darüber */
+details label.btn { display: block; margin-top: 10px; }
