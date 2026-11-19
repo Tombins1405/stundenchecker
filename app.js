@@ -4703,11 +4703,11 @@
   function planGet(ds) {
     var e = (data.plan || {})[ds]; if (!e) return null;
     var s = e.c ? schichten().filter(function (x) { return x.c === e.c; })[0] : null;
-    var o = s ? { c: s.c, n: s.n, von: s.von, bis: s.bis, p: +s.p || 0, st: s.st || 'arbeit' } : { c: e.c || '', n: e.n || e.c || '', von: e.von || '', bis: e.bis || '', p: +e.p || 0, st: e.st || 'arbeit' };
+    var o = s ? { c: s.c, n: s.n, von: e.von || s.von, bis: e.bis || s.bis, p: e.p != null ? +e.p : (+s.p || 0), st: s.st || 'arbeit', anders: !!(e.von || e.bis) } : { c: e.c || '', n: e.n || e.c || '', von: e.von || '', bis: e.bis || '', p: +e.p || 0, st: e.st || 'arbeit' };
     o.hist = e.hist || []; return o;
   }
   function planText(o) { return !o ? '' : (o.c && o.c !== o.n ? o.c + ' ' : '') + abwLab(o.n || '') + (o.von && o.bis ? ' ' + o.von + '–' + o.bis : ''); }
-  function planKern(e) { return e ? JSON.stringify({ c: e.c || '', n: e.c ? '' : (e.n || ''), von: e.c ? '' : (e.von || ''), bis: e.c ? '' : (e.bis || '') }) : ''; }
+  function planKern(e) { return e ? JSON.stringify({ c: e.c || '', n: e.c ? '' : (e.n || ''), von: e.von || '', bis: e.bis || '' }) : ''; }
   function planSet(ds, neu) { // neu: { c } oder { n, von, bis, p, st } oder null; Änderungen an einem schon geplanten Tag kommen in die Liste
     var pl = planDaten(), alt = pl[ds];
     if (planKern(alt) === planKern(neu)) return false;
@@ -4717,7 +4717,8 @@
     else if (hist.length) pl[ds] = { c: '', n: 'Kein Dienst', st: 'frei', hist: hist }; else delete pl[ds];
     return true;
   }
-  function planAltText(h) { var a = h.alt || {}, s = a.c ? schichten().filter(function (x) { return x.c === a.c; })[0] : null; return planText(s ? { c: s.c, n: s.n, von: s.von, bis: s.bis } : a); }
+  function planAltText(h) { var a = h.alt || {}, s = a.c ? schichten().filter(function (x) { return x.c === a.c; })[0] : null; return planText(s ? { c: s.c, n: s.n, von: a.von || s.von, bis: a.bis || s.bis } : a); }
+  function planStd(o) { if (!o || (o.st && o.st !== 'arbeit') || !o.von || !o.bis) return 0; var a = E.toMin(o.von), b = E.toMin(o.bis); if (b <= a) b += 1440; return Math.max(0, b - a - (o.p || 0)) / 60; }
   function planHistHtml(o) {
     if (!o || !o.hist || !o.hist.length) return '';
     return o.hist.map(function (h) { var t = new Date(h.t); return '<div class="' + (h.kurz ? 'rot' : 'hint') + '">' + esc(abw1(h.kurz ? 'Dienstplan am {0} kurzfristig geändert (weniger als 2 Wochen vorher). Vorher: {1}' : 'Dienstplan am {0} geändert. Vorher: {1}', [isNaN(t) ? '' : t.toLocaleDateString('de-AT'), planAltText(h) || abwLab('kein Dienst')])) + '</div>'; }).join('');
@@ -4736,7 +4737,7 @@
     var an = planAn(wAt(ui.edDate)); btn.hidden = !an; var o = an ? planGet(ui.edDate) : null;
     if (!o) { box.hidden = true; box.innerHTML = ''; return; }
     var leer = !data.days[ui.edDate] && !ui.edDraft.von && !ui.edDraft.bis;
-    box.innerHTML = '<strong>' + esc(abw1('Laut Dienstplan: {0}', [planText(o) + (o.p ? ', ' + abw1('{0} min Pause', [o.p]) : '')])) + '</strong>' + planHistHtml(o) + (leer ? '<div class="btns" style="margin-top:8px"><button type="button" class="btn primary" id="e-plan-take">' + esc(abwLab('So übernehmen')) + '</button></div>' : '');
+    box.innerHTML = '<strong>' + esc(abw1('Laut Dienstplan: {0}', [planText(o) + (o.p ? ', ' + abw1('{0} min Pause', [o.p]) : '')])) + '</strong>' + (o.anders ? '<div class="hint">' + esc(abwLab('An diesem Tag mit anderen Zeiten als sonst bei dieser Schicht.')) + '</div>' : '') + planHistHtml(o) + (leer ? '<div class="btns" style="margin-top:8px"><button type="button" class="btn primary" id="e-plan-take">' + esc(abwLab('So übernehmen')) + '</button></div>' : '');
     box.hidden = false; var tk = $('#e-plan-take'); if (tk) tk.onclick = planUebernehmen;
   }
   // Kalenderdatei (.ics) aus einer Dienstplan-App einlesen
@@ -4750,7 +4751,7 @@
     var n = 0;
     out.forEach(function (e) {
       var s = e.s || '', st = /urlaub|vacation|holiday/i.test(s) ? 'urlaub' : (/frei|off\b|ruhe/i.test(s) ? 'frei' : 'arbeit'), sc = schichten().filter(function (x) { return x.c && (s === x.c || s.toLowerCase() === String(x.n || '').toLowerCase()); })[0];
-      var neu = sc ? { c: sc.c } : { n: s.slice(0, 40) || abwLab('Dienst'), von: e.a.hm, bis: e.b && e.b.hm ? e.b.hm : '', st: e.a.hm ? st : (st === 'arbeit' ? 'arbeit' : st) };
+      var neu = sc ? (function () { var x = { c: sc.c }, bb = e.b && e.b.hm ? e.b.hm : ''; if (e.a.hm && bb && (e.a.hm !== sc.von || bb !== sc.bis)) { x.von = e.a.hm; x.bis = bb; } return x; })() : { n: s.slice(0, 40) || abwLab('Dienst'), von: e.a.hm, bis: e.b && e.b.hm ? e.b.hm : '', st: e.a.hm ? st : (st === 'arbeit' ? 'arbeit' : st) };
       if (planSet(e.a.ds, neu)) n++;
     });
     return n;
@@ -4759,21 +4760,27 @@
     var p0 = E.parseISO(mk + '-01'), y = p0.y, m = p0.m, dim = E.daysInMonth(y, m), sch = schichten();
     $('#lz-h').textContent = abw1('Dienstplan {0}', [MON[m - 1] + ' ' + y]);
     var opts = function (cur, ds) { var o = planGet(ds), h = '<option value="">–</option>' + sch.map(function (s) { return '<option value="' + esc(s.c) + '"' + (cur === s.c ? ' selected' : '') + '>' + esc(s.c + ' ' + abwLab(s.n) + (s.von && s.bis ? ' ' + s.von + '–' + s.bis : '')) + '</option>'; }).join(''); if (o && !o.c && o.n) h += '<option value="__eigen" selected>' + esc(planText(o)) + '</option>'; return h; };
-    var rows = ''; for (var d = 1; d <= dim; d++) { var ds = E.iso(y, m, d), e = (data.plan || {})[ds], o = planGet(ds); rows += '<div class="planrow"><span class="pl-d">' + WD[E.weekday(ds)] + ' ' + d + '.</span><select data-plan="' + ds + '">' + opts(e && e.c, ds) + '</select></div>' + (o && o.hist && o.hist.length ? '<div class="pl-hist">' + planHistHtml(o) + '</div>' : ''); }
+    var rows = '', summe = 0; for (var d = 1; d <= dim; d++) { var ds = E.iso(y, m, d), e = (data.plan || {})[ds], o = planGet(ds); summe += planStd(o);
+      rows += '<div class="planrow"><span class="pl-d">' + WD[E.weekday(ds)] + ' ' + d + '.</span><select data-plan="' + ds + '">' + opts(e && e.c, ds) + '</select>' + (e && e.c ? '<button type="button" class="btn pl-zt' + (o.anders ? ' on' : '') + '" data-plzt="' + ds + '" aria-label="' + esc(abwLab('Andere Zeiten an diesem Tag')) + '">🕘</button>' : '') + '</div>' +
+        (e && e.c && o.anders ? '<div class="pl-hist hint">' + esc(abw1('An diesem Tag: {0}', [o.von + '–' + o.bis])) + '</div>' : '') +
+        '<div class="pl-zeit" data-plzeit="' + ds + '" hidden><div class="grid2"><div class="field"><label>' + esc(abwLab('Beginn')) + '</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" data-plv="' + ds + '" value="' + esc(o ? o.von : '') + '"></div><div class="field"><label>' + esc(abwLab('Ende')) + '</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" data-plb="' + ds + '" value="' + esc(o ? o.bis : '') + '"></div></div></div>' +
+        (o && o.hist && o.hist.length ? '<div class="pl-hist">' + planHistHtml(o) + '</div>' : ''); }
     $('#lz-body').innerHTML = (sch.length ? '' : '<p class="notice warn">' + esc(abwLab('Lege zuerst in den Einstellungen bei „Meine Schichten (Dienstplan)“ deine Schichten an.')) + '</p>') +
       '<div class="plnav"><button type="button" class="btn" id="pl-prev" aria-label="' + esc(abwLab('Vorheriger Monat')) + '">‹</button><button type="button" class="btn" id="pl-next" aria-label="' + esc(abwLab('Nächster Monat')) + '">›</button></div>' +
       '<details class="wzfehlt"><summary>' + esc(abwLab('Schnell eintragen: Kürzel der Reihe nach')) + '</summary><div class="field"><label for="pl-txt">' + esc(abwLab('Zum Beispiel: F F S S N N X X (X = frei), beginnend am 1. des Monats')) + '</label><input type="text" id="pl-txt" autocomplete="off"></div><button type="button" class="btn" id="pl-txt-ok">' + esc(abwLab('Übernehmen')) + '</button></details>' +
       '<details class="wzfehlt"><summary>' + esc(abwLab('Kalenderdatei (.ics) aus der Dienstplan-App einlesen')) + '</summary><label class="btn" for="pl-ics" style="text-align:center">' + esc(abwLab('Datei wählen')) + '</label><input type="file" id="pl-ics" accept=".ics,text/calendar" hidden></details>' +
-      '<div class="planlist">' + rows + '</div>';
+      '<p class="pl-sum"><strong>' + esc(abw1('Geplant in diesem Monat: {0} h', [fh(Math.round(summe * 100) / 100)])) + '</strong></p><div class="planlist">' + rows + '</div>';
     $('#lz-btns').innerHTML = '<button type="button" class="btn primary" id="pl-ok">' + esc(abwLab('Fertig')) + '</button>';
     $('#lz-dlg').hidden = false;
     var nach = function () { save(); planDialog(mk); };
     $('#pl-ok').onclick = function () { $('#lz-dlg').hidden = true; renderEditor(); };
+    $('#lz-body').onclick = function (ev) { var zb = ev.target.closest('[data-plzt]'); if (!zb) return; var zr = $('[data-plzeit="' + zb.dataset.plzt + '"]'); if (zr) zr.hidden = !zr.hidden; };
     $('#pl-prev').onclick = function () { planDialog(m === 1 ? (y - 1) + '-12' : y + '-' + pad(m - 1)); };
     $('#pl-next').onclick = function () { planDialog(m === 12 ? (y + 1) + '-01' : y + '-' + pad(m + 1)); };
     $('#lz-body').onchange = function (ev) {
       var t = ev.target;
       if (t.dataset && t.dataset.plan) { if (t.value === '__eigen') return; planSet(t.dataset.plan, t.value ? { c: t.value } : null); nach(); return; }
+      if (t.dataset && (t.dataset.plv || t.dataset.plb)) { var dz = t.dataset.plv || t.dataset.plb, ez = (data.plan || {})[dz]; if (!ez || !ez.c) return; var sz = schichten().filter(function (x) { return x.c === ez.c; })[0] || {}, vz = $('[data-plv="' + dz + '"]').value, bz = $('[data-plb="' + dz + '"]').value, nz = { c: ez.c }; if (vz && vz !== sz.von) nz.von = vz; if (bz && bz !== sz.bis) nz.bis = bz; if ((nz.von || nz.bis) && !(nz.von && nz.bis)) { nz.von = vz || sz.von; nz.bis = bz || sz.bis; } planSet(dz, nz); nach(); return; }
       if (t.id === 'pl-ics') { var f = t.files && t.files[0]; if (!f) return; var rd = new FileReader(); rd.onload = function () { var n = planIcs(rd.result); save(); toast(abw1('{0} Tage aus der Kalenderdatei übernommen.', [n])); planDialog(mk); }; rd.readAsText(f); }
     };
     $('#pl-txt-ok').onclick = function () {
