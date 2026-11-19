@@ -1023,3 +1023,7 @@ details#pl-det > summary > h3 { margin: 0; }
 .pl-zt.on { border-color: var(--accent); }
 .pl-zeit { margin: 0 0 6px 64px; }
 .pl-sum { margin: 6px 0; }
+.pl-top { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.pl-top .btn { flex: 1 1 140px; }
+.planrow.pl-leer .pl-d { opacity: .55; }
+#pll-txt { width: 100%; font-family: monospace; font-size: 13px; }

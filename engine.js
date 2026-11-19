@@ -3885,9 +3885,97 @@
     return { ok: true, brutto: r2(brutto), teile: teile, diaeten: r2(summe.diaetenBetrag || 0), fix: fix !== null, laufend: !!laufend };
   }
 
+  /* Dienstplan aus gelesenem Text (Foto, Ausdruck, eingefügter Text): Liste „Tag Zeit Kürzel“ oder eine Zeile mit Kürzeln je Tag */
+  function planLesen(text, opt) {
+    opt = opt || {}; var y = opt.y, m = opt.m, dim = daysInMonth(y, m), codes = (opt.codes || []).map(function (c) { return String(c).toUpperCase(); });
+    var p2 = function (x) { return (x < 10 ? '0' : '') + x; }, namen = {};
+    (opt.namen || []).forEach(function (x) { if (x && x.n && x.c && String(x.n).length >= 3) namen[String(x.n).toUpperCase()] = String(x.c).toUpperCase(); });
+    var hm = function (h, mi) { h = +h; mi = +(mi || 0); return h <= 24 && mi < 60 ? p2(h % 24) + ':' + p2(mi) : null; };
+    var WORT = { FREI: 'frei', RUHE: 'frei', RT: 'frei', URLAUB: 'urlaub', UL: 'urlaub', URL: 'urlaub', KRANK: 'krank', KR: 'krank', ZA: 'za' };
+    // typische Lesefehler bei Kürzeln: 0 statt O, 1 statt I/l, 5 statt S, 8 statt B
+    function kuerzel(t) {
+      var u = String(t).toUpperCase().replace(/[.,:;'"`´!]+$/g, '').replace(/^[.,:;'"`´]+/, '');
+      if (!u) return null;
+      if (codes.indexOf(u) >= 0) return { c: u };
+      if (namen[u]) return { c: namen[u] };
+      var v = u.replace(/0/g, 'O').replace(/5/g, 'S').replace(/8/g, 'B'), v2 = u.replace(/O/g, '0').replace(/[IL|]/g, '1');
+      if (/[A-ZÄÖÜ]/.test(u) && codes.indexOf(v) >= 0) return { c: v };
+      if (/[A-ZÄÖÜ]/.test(u.charAt(0)) && codes.indexOf(u.charAt(0) + v2.slice(1)) >= 0) return { c: u.charAt(0) + v2.slice(1) };
+      if (WORT[u]) return { st: WORT[u] };
+      return null;
+    }
+    // zusammengeklebte Zellen trennen, z. B. „-VIF2-VIF2“ -> - V1 F2 - V1 F2 (Lesefehler I/l->1, Z->2, O->0, 5->S)
+    var AEHN = { '1': /[1IlL|!i]/, '2': /[2Z]/, '0': /[0OoD]/, 'S': /[S5s]/, 'B': /[B8]/, 'O': /[O0]/ };
+    var lang = codes.slice().sort(function (a, b) { return b.length - a.length; });
+    function passt(t, i, c) { if (i + c.length > t.length) return false; for (var j = 0; j < c.length; j++) { var z = t.charAt(i + j), k = c.charAt(j); if (z.toUpperCase() === k) continue; if (j > 0 && AEHN[k] && AEHN[k].test(z)) continue; return false; } return true; }
+    function zerlege(t) {
+      if (!lang.length || t.length < 2) return null;
+      var n = t.length, best = [], i, j;
+      best[0] = { f: 0, w: [] };
+      for (i = 0; i < n; i++) {
+        if (!best[i]) continue; var b0 = best[i];
+        var setz = function (to, f, z) { if (!best[to] || f < best[to].f) best[to] = { f: f, w: b0.w.concat(z ? [z] : []) }; };
+        var ch = t.charAt(i);
+        if (/[-–—\/]/.test(ch)) setz(i + 1, b0.f, { leer: 1 });
+        else if (/[.,'`´:;]/.test(ch)) setz(i + 1, b0.f);
+        lang.forEach(function (c) { if (passt(t, i, c)) setz(i + c.length, b0.f, { c: c }); });
+        for (j = 1; j <= 2 && i + j <= n; j++) { var st = t.slice(i, i + j); if (/^[A-Za-zÄÖÜäöü][A-Za-z0-9]?$/.test(st)) setz(i + j, b0.f + 2, { neu: st.toUpperCase() }); }
+      }
+      var e = best[n]; if (!e || e.w.length < 2 || e.f > e.w.length) return null;
+      return e.w.map(function (z) { return z.leer ? null : z; });
+    }
+    function zeit(s) {
+      var r = /(\d{1,2})(?:[:.,](\d{2}))?\s*(?:-|–|—|bis|~)\s*(\d{1,2})(?:[:.,](\d{2}))?(?!\d)/i.exec(s);
+      if (!r) return null; if (r[2] == null && r[4] == null && (+r[1] > 24 || +r[3] > 24)) return null;
+      var a = hm(r[1], r[2]), b = hm(r[3], r[4]); if (!a || !b || a === b) return null; return { von: a, bis: b, idx: r.index, len: r[0].length };
+    }
+    var zeilen = String(text || '').split(/\r?\n/).map(function (l) { return l.replace(/[|_\[\]{}]+/g, ' ').replace(/\s+/g, ' ').trim(); }).filter(function (l) { return l.length > 0; });
+    // 1. Liste: Zeile beginnt mit (Wochentag) Tag. (Monat.)
+    var liste = {}, nL = 0;
+    zeilen.forEach(function (l) {
+      var r = /^(?:[A-Za-zÄÖÜäöü]{2,3}\.?,?\s*)?(\d{1,2})\.(?:\s?(\d{1,2})\.(?:\s?(\d{4}|\d{2}(?![:.,\d-])))?)?\s*(.*)$/.exec(l); if (!r) return;
+      var d = +r[1]; if (d < 1 || d > dim) return; if (r[2] && +r[2] !== m) return;
+      var rest = r[4] || '', z = zeit(rest), e = null, toks = (z ? rest.slice(0, z.idx) + ' ' + rest.slice(z.idx + z.len) : rest).split(/\s+/).filter(Boolean), k = null, unb = null;
+      for (var i = 0; i < toks.length && !k; i++) { k = kuerzel(toks[i]); if (!k && !unb && /^[A-ZÄÖÜ][A-Z0-9ÄÖÜ]{0,3}$/.test(toks[i])) unb = toks[i]; }
+      if (k && k.c) { e = { c: k.c }; if (z) { e.von = z.von; e.bis = z.bis; } }
+      else if (k && k.st) e = { st: k.st };
+      else if (z) e = { von: z.von, bis: z.bis, neu: unb || '' };
+      else if (unb) e = { neu: unb };
+      if (e) { liste[iso(y, m, d)] = e; nL++; }
+    });
+    if (nL >= 3) return { art: 'liste', tage: liste, reihen: [] };
+    // 2. Reihe: eine Zeile pro Person, ein Kürzel je Tag
+    var reihen = [];
+    zeilen.forEach(function (l, li) {
+      var toks = l.split(' '), nums = toks.filter(function (t) { return /^\d{1,2}\.?$/.test(t); }).length;
+      if (nums >= 8 && nums >= toks.length * 0.7) return; // Kopfzeile mit Tagesnummern
+      var name = [], zellen = [], bek = 0, start = true;
+      toks.forEach(function (t) {
+        var k = kuerzel(t), z = /\d/.test(t) ? zeit(t) : null, leer = /^[-–—\/·.x]$/i.test(t) && !(k && k.c), zl = (!k && !z && !leer) ? zerlege(t) : null;
+        if (start && !k && !z && !leer && !zl && /[A-Za-zÄÖÜäöüß]{3,}/.test(t)) { name.push(t); return; }
+        start = false;
+        if (k) { zellen.push(k.c ? { c: k.c } : { st: k.st }); bek++; }
+        else if (z) zellen.push({ von: z.von, bis: z.bis });
+        else if (leer) zellen.push(null);
+        else if (zl) zl.forEach(function (x) { zellen.push(x); if (x && x.c) bek++; });
+        else if (/^[A-ZÄÖÜa-zäöü][A-Za-z0-9ÄÖÜäöü]{0,3}$/.test(t)) zellen.push({ neu: t.toUpperCase() });
+      });
+      if (zellen.length >= 3) reihen.push({ i: li, name: name.join(' '), text: l, zellen: zellen, bek: bek });
+    });
+    var nm = String(opt.name || '').toLowerCase().split(/\s+/).filter(function (x) { return x.length >= 3; });
+    reihen.forEach(function (r) { var t = r.text.toLowerCase(); r.meins = nm.some(function (x) { return t.indexOf(x) >= 0; }); r.wert = (r.meins ? 1000 : 0) + r.bek * 3 + r.zellen.length; });
+    reihen.sort(function (a, b) { return b.wert - a.wert; });
+    return { art: 'reihe', tage: reihen.length ? planReihe(reihen[0], y, m, opt.ab || 1) : {}, reihen: reihen };
+  }
+  function planReihe(r, y, m, ab) {
+    var dim = daysInMonth(y, m), out = {};
+    r.zellen.forEach(function (z, i) { var d = ab + i; if (d > dim) return; out[iso(y, m, d)] = z; });
+    return out;
+  }
+
   return {
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
-    iso: iso, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
+    iso: iso, planLesen: planLesen, planReihe: planReihe, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     LAENDER_AT: LAENDER_AT, kvLand: kvLand, rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
     neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, ortTyp: ortTyp, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     parseSchnell: parseSchnell, wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone

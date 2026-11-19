@@ -332,8 +332,9 @@
     out.foto = true; return out;
   }
   // Bild für die Texterkennung vorbereiten: verkleinern, Graustufen, Schatten und graue Flächen ausgleichen, Kontrast anheben.
-  function fotoVorbereiten(quelle, bw, bh) {
-    var lang = Math.max(bw, bh), sc = lang > 2400 ? 2400 / lang : 1, w = Math.round(bw * sc), h = Math.round(bh * sc);
+  function fotoVorbereiten(quelle, bw, bh, opt) {
+    opt = opt || {};
+    var lang = Math.max(bw, bh), sc = lang > 2400 ? 2400 / lang : (opt.gitter && lang < 2000 ? 2000 / lang : 1), w = Math.round(bw * sc), h = Math.round(bh * sc);
     var c = document.createElement('canvas'); c.width = w; c.height = h; var cx = c.getContext('2d', { willReadFrequently: true });
     cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(quelle, 0, 0, w, h);
     var id = cx.getImageData(0, 0, w, h), px = id.data, g = new Uint8Array(w * h), i, x, y;
@@ -351,8 +352,21 @@
         var o = (y * w + x) * 4; px[o] = px[o + 1] = px[o + 2] = nv; px[o + 3] = 255;
       }
     }
+    if (opt.gitter) gitterWeg(px, w, h);
     cx.putImageData(id, 0, 0);
     return new Promise(function (ok, fail) { c.toBlob(function (bl) { if (!bl) { fail(new Error('Bild')); return; } var fr = new FileReader(); fr.onload = function () { ok(new Uint8Array(fr.result)); }; fr.onerror = fail; fr.readAsArrayBuffer(bl); }, 'image/png'); });
+  }
+  // Tabellenlinien (Dienstplan-Raster) entfernen: lange waagrechte und senkrechte Striche weiß machen, Schrift bleibt
+  function gitterWeg(px, w, h) {
+    var dunkel = function (i) { return px[i * 4] < 140; }, weg = new Uint8Array(w * h), x, y, a, L = 0, colRun = new Int32Array(w);
+    var minH = Math.max(40, Math.round(w * 0.25));
+    for (y = 0; y < h; y++) { a = -1; for (x = 0; x <= w; x++) { var dk = x < w && dunkel(y * w + x); if (dk && a < 0) a = x; if (!dk && a >= 0) { if (x - a >= minH) for (var k = a; k < x; k++) weg[y * w + k] = 1; a = -1; } } }
+    for (x = 0; x < w; x++) { var r = 0, best = 0; for (y = 0; y < h; y++) { if (dunkel(y * w + x)) { r++; if (r > best) best = r; } else r = 0; } colRun[x] = best; if (best > L) L = best; }
+    if (L >= h * 0.15 && L >= 40) {
+      var minV = Math.max(40, Math.round(L * 0.5));
+      for (x = 0; x < w; x++) { if (colRun[x] < minV) continue; a = -1; for (y = 0; y <= h; y++) { var dv = y < h && dunkel(y * w + x); if (dv && a < 0) a = y; if (!dv && a >= 0) { if (y - a >= minV) for (var k2 = a; k2 < y; k2++) weg[k2 * w + x] = 1; a = -1; } } }
+    }
+    for (var i = 0; i < w * h; i++) if (weg[i]) { px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = 255; }
   }
   function bildLaden(file) {
     if (root.createImageBitmap) return root.createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (b) { return { q: b, w: b.width, h: b.height }; }, function () { return bildLadenImg(file); });
@@ -394,6 +408,19 @@
       });
     });
   }
-  var api = { bauZeilen: bauZeilen, fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  // Rohtext für andere Zwecke (z. B. Dienstplan): Fotos oder PDF, alles auf dem Gerät
+  function leseRoh(files, basis, opt) {
+    var teile = [], p = Promise.resolve();
+    Array.prototype.forEach.call(files, function (f) {
+      p = p.then(function () {
+        if (/pdf/i.test(f.type || '') || /\.pdf$/i.test(f.name || '')) {
+          return f.arrayBuffer().then(function (buf) { var nein = function () { return Promise.reject(new Error('Kennwort')); }; return lesePdf(buf, nein, basis).then(function (o) { return o.hatText ? o : lesePdfBild(buf, nein, basis); }); }).then(function (o) { teile.push(o.lines.join('\n')); });
+        }
+        return bildLaden(f).then(function (b) { return fotoVorbereiten(b.q, b.w, b.h, opt); }).then(function (by) { return ocrText(by, basis); }).then(function (t) { teile.push(t); });
+      });
+    });
+    return p.then(function () { return teile.join('\n'); });
+  }
+  var api = { leseRoh: leseRoh, bauZeilen: bauZeilen, fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
