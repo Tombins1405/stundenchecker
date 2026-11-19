@@ -9,7 +9,23 @@
     if (!t) { var p = sel.closest('.field'); var l2 = p && p.querySelector('label,.lbl'); if (l2) t = l2.textContent; }
     return (t || '').replace(/\s+/g, ' ').trim();
   }
-  function upgrade(sel) { if (sel._sp || sel.multiple) return; sel._sp = true; sel.setAttribute('data-sp', '1'); }
+  function upgrade(sel) { if (sel._sp || sel.multiple) return; sel._sp = true; sel.setAttribute('data-sp', '1'); lang(sel); }
+  // Lange Auswahl-Texte im Feld nicht abschneiden: der gewählte Text steht über dem Feld und darf zwei, drei Zeilen haben
+  function lang(sel) {
+    if (sel._spl || !sel.parentNode || !sel.closest('.field')) return;
+    var max = 0; for (var i = 0; i < sel.options.length; i++) max = Math.max(max, (sel.options[i].textContent || '').length);
+    if (max < 28) return;
+    var w = document.createElement('span'); w.className = 'sp-wrap'; sel.parentNode.insertBefore(w, sel); w.appendChild(sel);
+    var t = document.createElement('span'); t.className = 'sp-text'; t.setAttribute('aria-hidden', 'true'); w.appendChild(t);
+    sel._spl = t; sel.classList.add('sp-lang'); zeig(sel);
+    sel.addEventListener('change', function () { zeig(sel); });
+  }
+  function zeig(sel) {
+    var t = sel._spl; if (!t) return; var o = sel.options[sel.selectedIndex], x = o ? o.textContent : '';
+    if (t.textContent !== x) t.textContent = x;
+    if (sel.offsetParent !== null) { var h = Math.max(50, t.offsetHeight); if (sel._sph !== h) { sel._sph = h; sel.style.height = h + 'px'; } }
+  }
+  setInterval(function () { var l = document.querySelectorAll('select.sp-lang'); for (var i = 0; i < l.length; i++) if (l[i].offsetParent !== null) zeig(l[i]); }, 600);
   function scan(root) {
     var l = root.querySelectorAll ? root.querySelectorAll('select') : []; for (var i = 0; i < l.length; i++) upgrade(l[i]);
     if (root.matches && root.matches('select')) upgrade(root);
@@ -32,7 +48,7 @@
         if (ev.target === ov) { close(); return; }
         var b = ev.target.closest('[data-i]');
         if (b && cur) {
-          var o = cur.options[+b.dataset.i]; if (o && !o.disabled) { var changed = cur.selectedIndex !== +b.dataset.i; cur.selectedIndex = +b.dataset.i; if (changed) { cur.dispatchEvent(new Event('input', { bubbles: true })); cur.dispatchEvent(new Event('change', { bubbles: true })); } }
+          var o = cur.options[+b.dataset.i]; if (o && !o.disabled) { var changed = cur.selectedIndex !== +b.dataset.i; cur.selectedIndex = +b.dataset.i; zeig(cur); if (changed) { cur.dispatchEvent(new Event('input', { bubbles: true })); cur.dispatchEvent(new Event('change', { bubbles: true })); } }
           close(); return;
         }
         if (ev.target.closest('[data-sp-x]')) close();

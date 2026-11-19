@@ -223,7 +223,7 @@
     if (view === 'einstellungen') { renderPraemienSettings(); renderDiensteSettings(); renderSettings(); fillBackup(); renderCheck(); }
     renderOpenDay();
     window.scrollTo(0, 0);
-    if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01');
+    if (wzNeeds() && !ui.wiz) { if (syncWartet()) { if (!ui.wzWarte) { ui.wzWarte = true; var wz1 = function () { ui.wzWarte = false; if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01'); }; document.addEventListener('sc-geladen', wz1, { once: true }); setTimeout(function () { if (ui.wzWarte) { document.removeEventListener('sc-geladen', wz1); wz1(); } }, 8000); } } else wzOpen('start', '2026-01-01'); }
     renderMia();
   }
 
@@ -2944,6 +2944,8 @@
 
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
   var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
+  // Nach dem Anmelden erst die Daten aus dem Konto laden, dann (nur wenn wirklich leer) die Einrichtung zeigen
+  function syncWartet() { try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return false; } catch (e) { } if (window.StundenSync) return !!(StundenSync.laedt && StundenSync.laedt()); return !!(window.firebase && firebase.apps && firebase.apps.length); }
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
@@ -3496,6 +3498,7 @@
     var smL = $('#s-monat-l'); if (smL) smL.textContent = abwLab(gehaltKv(en.paket) ? 'Monatsgehalt (€ brutto)' : 'Fixer Monatslohn (€ brutto, optional)');
     var bauS = E.istBau(en); $('#s-sw-t').textContent = bauS ? 'Die Schlechtwetterregelung (BUAK) gilt für mich' : 'Ich zeichne Ausfallstunden auf (Firma schickt mich wegen Wetter oder fehlender Arbeit heim)'; $('#s-sw-h').textContent = bauS ? 'Schlechtwetter' : 'Ausfallstunden';
     $('#s-formtitle').textContent = 'Meine Werte ab ' + fmtDate(en.gueltigAb);
+    $('#s-delete').textContent = abw1('Werte ab {0} löschen', [fmtDate(en.gueltigAb)]);
     $$('#s-form [data-path], #s-form2 [data-path]').forEach(function (inp) {
       var v = getPath(en, inp.dataset.path);
       if (inp.dataset.type === 'zuart') inp.checked = v !== 'kv';
@@ -4177,6 +4180,7 @@
     ['haube', 'Kochhaube', '<path d="M28 58V46a14 14 0 0 1 4-27 18 18 0 0 1 32 0 14 14 0 0 1 4 27v12z" fill="#f3f4f6"/><rect x="28" y="62" width="40" height="12" rx="3" fill="#64b5f6"/>'],
     ['stern', 'Stern', '<path d="M48 16l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z" fill="#fbbf24"/>']
   ];
+  window.StundenIcon = { svg: function (k) { return iconSvg(k); }, keys: function () { return APPICONS.map(function (x) { return x[0]; }); } };
   function iconSvg(key) {
     var ic = APPICONS.filter(function (x) { return x[0] === key; })[0] || APPICONS[0];
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="512" height="512"><rect width="96" height="96" rx="20" fill="#1f2937"/>' + ic[2] + '</svg>';
@@ -4193,7 +4197,15 @@
     }
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg(key));
   }
+  // Fertige Symbol-Dateien je Auswahl (icons/…, manifest-….webmanifest): das Handy kann sie beim Installieren und später immer wieder laden
   function applyAppIcon(key) {
+    var fest = key !== 'foto' && APPICONS.some(function (x) { return x[0] === key; });
+    if (fest) {
+      var set1 = function (sel, href) { var el = document.querySelector(sel); if (el) el.setAttribute('href', href); };
+      if (key === 'uhr') { set1('link[rel="manifest"]', 'manifest.webmanifest'); set1('link[rel="apple-touch-icon"]', 'icon-192.png'); set1('link[rel="icon"]', 'icon-192.png'); }
+      else { set1('link[rel="manifest"]', 'manifest-' + key + '.webmanifest'); set1('link[rel="apple-touch-icon"]', 'icons/app-' + key + '-192.png'); set1('link[rel="icon"]', 'icons/app-' + key + '-192.png'); }
+      return;
+    }
     iconPng(key, 512, function (p512) {
       if (!p512) return;
       iconPng(key, 192, function (p192) {
@@ -4237,11 +4249,15 @@
   }
   (function () {
     var cur = null; try { cur = localStorage.getItem('stundenchecker.icon'); } catch (e) { }
+    // Symbol-Wahl ist auch im Konto gemerkt: nach dem Neu-Installieren (Handy-Daten gelöscht) kommt sie mit dem Anmelden zurück
+    var pi = (data.profil || {}).appIcon;
+    if (!cur && pi && pi !== 'foto' && APPICONS.some(function (x) { return x[0] === pi; })) { cur = pi; try { localStorage.setItem('stundenchecker.icon', pi); } catch (e) { } }
     renderIconPick();
     if (cur && cur !== 'uhr') applyAppIcon(cur);
     function pickClick(ev) {
       var b = ev.target.closest('[data-icon]'); if (!b) return;
       try { localStorage.setItem('stundenchecker.icon', b.dataset.icon); } catch (e) { }
+      if (b.dataset.icon !== 'foto') { data.profil = data.profil || {}; if (data.profil.appIcon !== b.dataset.icon) { data.profil.appIcon = b.dataset.icon; save(); } }
       renderIconPick(); applyAppIcon(b.dataset.icon); iconNeuInstallieren();
     }
     window.__pickClick = pickClick; if ($('#icon-pick')) $('#icon-pick').addEventListener('click', pickClick);
@@ -4301,6 +4317,8 @@
     $('#update-go').addEventListener('click', function () { try { if (isDirty()) { toast('Bitte zuerst den Tag speichern.'); return; } } catch (e) { } location.reload(); });
   })();
 
+  (function () { var t = null; window.addEventListener('scroll', function () { if (!document.body.classList.contains('wischt')) document.body.classList.add('wischt'); clearTimeout(t); t = setTimeout(function () { document.body.classList.remove('wischt'); }, 900); }, { passive: true }); })();
+
   /* ---- Als App installieren: Knopf überall, wo man ihn braucht, und Schritt für Schritt mit Symbol-Auswahl ---- */
   (function () {
     var deferred = null, bar = $('#installbar'), wieder = false;
@@ -4308,7 +4326,13 @@
     function weg() { try { var v = +localStorage.getItem(KEY) || 0; return v > 1 && Date.now() - v < 3 * 86400000; } catch (e) { return false; } } // „×“ blendet den Hinweis 3 Tage aus
     function installiert() { return appInstalliert(); }
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
-    function knoepfe() { var an = !installiert(); document.querySelectorAll('[data-install]').forEach(function (b) { b.hidden = !an; }); if (bar) bar.hidden = !an || weg(); }
+    function knoepfe() {
+      var an = !installiert();
+      document.querySelectorAll('[data-install]').forEach(function (b) { b.hidden = !an && b.id !== 'k-install'; });
+      var k = $('#k-install'); if (k) k.textContent = an ? '📲 ' + abwLab('Als App aufs Handy legen') : '🎨 ' + abwLab('App-Symbol ändern');
+      if (bar) bar.hidden = !an || weg();
+    }
+    window.installKnoepfe = knoepfe;
     window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); deferred = ev; knoepfe(); });
     window.addEventListener('appinstalled', function () { deferred = null; knoepfe(); var d = $('#inst-dlg'); if (d && !d.hidden) zeige(3); });
     var ua = navigator.userAgent || '', ios = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /android/i.test(ua);
@@ -4333,7 +4357,10 @@
     function li(arr) { return '<ol class="inst-ol">' + arr.map(function (x) { return '<li>' + sym(x) + '</li>'; }).join('') + '</ol>'; }
     function t(x) { return esc(abwLab(x)); }
     function anleitung() {
-      if (deferred) return { text: '<p>' + t('Tippe auf „Jetzt installieren“ und im Fenster vom Handy noch einmal auf „Installieren“.') + '</p>', knopf: true };
+      if (deferred) { var hand = handAnl(); return { text: '<p>' + t('Tippe auf „Jetzt installieren“ und im Fenster vom Handy noch einmal auf „Installieren“.') + '</p>' + (hand ? '<details class="wzfehlt"><summary>' + t('Es passiert nichts? So geht es von Hand') + '</summary>' + hand.text + '</details>' : ''), knopf: true }; }
+      return handAnl() || { text: '' };
+    }
+    function handAnl() {
       if (inApp) return { text: '<p class="notice warn">' + t('Du bist im Browser von WhatsApp, Facebook oder Instagram. Dort geht das Installieren nicht.') + '</p>' + handy('or', 'punkte') + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Wähle „Im Browser öffnen“ oder „In Chrome öffnen“.'), t('Dort tippst du noch einmal auf „Als App aufs Handy legen“.')]), link: true };
       if (ios && !iosAnders) return { text: handy('um', 'teilen') + li([t('Tippe unten in der Mitte auf das Teilen-Symbol (Viereck mit Pfeil nach oben).'), t('Wische nach oben und tippe auf „Zum Home-Bildschirm“.'), t('Tippe oben rechts auf „Hinzufügen“.')]) + leisteTipp() };
       if (iosAnders) return { text: handy('or', 'teilen') + li([t('Tippe auf das Teilen-Symbol (Viereck mit Pfeil nach oben), oben in der Adresszeile oder unten.'), t('Tippe auf „Zum Home-Bildschirm“ und dann auf „Hinzufügen“.')]) + '<p class="hint">' + t('Findest du das nicht, öffne den Link in Safari.') + '</p>', link: true };
@@ -4346,7 +4373,7 @@
       var d = $('#inst-dlg'); if (!d) { d = document.createElement('div'); d.id = 'inst-dlg'; d.className = 'cropov'; document.body.appendChild(d); }
       var h = '', btn = '';
       if (schritt === 1) {
-        h = '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [1, 2])) + '</p><h3>' + t('Such dir dein App-Symbol aus') + '</h3><p>' + t('So sieht der Stunden-Checker dann auf deinem Startbildschirm aus. Wähle jetzt, das Handy übernimmt das Symbol nur beim Installieren.') + '</p>' +
+        h = (installiert() ? '' : '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [1, 2])) + '</p>') + '<h3>' + t('Such dir dein App-Symbol aus') + '</h3><p>' + t('So sieht der Stunden-Checker dann auf deinem Startbildschirm aus. Wähle jetzt, das Handy übernimmt das Symbol nur beim Installieren.') + '</p>' +
           '<div id="icon-pick3" class="ipicks"></div><label class="btn" for="icon-file" id="inst-foto" style="margin-top:8px;text-align:center">' + t('Eigenes Foto verwenden') + '</label>';
         btn = '<button type="button" class="btn primary" id="inst-weiter">' + t('Weiter') + '</button><button type="button" class="btn" id="inst-zu">' + t('Später') + '</button>';
       } else if (schritt === 2) {
@@ -4362,7 +4389,7 @@
       }
       d.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true">' + h + '<div class="btns">' + btn + '</div></div>';
       d.hidden = false;
-      if (schritt === 1) { renderIconPick(); var p3 = $('#icon-pick3'); if (p3 && window.__pickClick) p3.addEventListener('click', window.__pickClick); $('#inst-foto').addEventListener('click', function () { wieder = true; d.hidden = true; }); $('#inst-weiter').onclick = function () { zeige(2); }; }
+      if (schritt === 1) { renderIconPick(); var p3 = $('#icon-pick3'); if (p3 && window.__pickClick) p3.addEventListener('click', function (ev) { if (installiert() && ev.target.closest('[data-icon]')) d.hidden = true; window.__pickClick(ev); }); $('#inst-foto').addEventListener('click', function () { wieder = true; d.hidden = true; }); $('#inst-weiter').onclick = function () { if (installiert()) { d.hidden = true; iconNeuInstallieren(); } else zeige(2); }; }
       if ($('#inst-zu')) $('#inst-zu').onclick = function () { d.hidden = true; };
       if ($('#inst-go')) $('#inst-go').onclick = function () { if (!deferred) { zeige(2); return; } var dp = deferred; dp.prompt(); dp.userChoice.then(function (r) { deferred = null; if (r && r.outcome === 'accepted') zeige(3); else zeige(2); }, function () { zeige(2); }); };
       if ($('#inst-copy')) $('#inst-copy').onclick = function () { try { navigator.clipboard.writeText(url).then(function () { toast(abwLab('Link kopiert.')); }); } catch (e) { } };
@@ -5061,7 +5088,8 @@
       ['dienstplan', '🗓', 'Dienstplan', function () { planDialog(todayISO().slice(0, 7)); }, planAn(w)],
       ['fristen', '⏰', 'Ausbildungen, Ausweise und Fristen', function () { miaOrtGo(miaWoGet('fristen')); }, sichtbar('#fr-card')],
       ['urlaub', '🌴', 'Urlaub, Zeitausgleich und Überstunden', function () { miaOrtGo(miaWoGet('urlaubskartei')); }, true],
-      ['install', '📲', 'Als App aufs Handy legen', function () { if (window.installDialog) window.installDialog(); }, !appInstalliert()]
+      ['install', '📲', 'Als App aufs Handy legen', function () { if (window.installDialog) window.installDialog(); }, !appInstalliert()],
+      ['symbol', '🎨', 'App-Symbol ändern', function () { if (window.installDialog) window.installDialog(); }, appInstalliert()]
     ].filter(function (x) { return x[4]; });
     box.innerHTML = X.map(function (x) { return '<button type="button" class="xtile" data-x="' + x[0] + '"><span class="xi">' + x[1] + '</span><span>' + esc(abwLab(x[2])) + '</span></button>'; }).join('');
     box.onclick = function (ev) { var b = ev.target.closest('[data-x]'); if (!b) return; var f = X.filter(function (x) { return x[0] === b.dataset.x; })[0]; if (f) f[3](); };

@@ -1058,3 +1058,12 @@ h3[data-ico="extras"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://ww
 .st-ul li { margin: 6px 0; line-height: 1.45; }
 #lz-body h4 { margin: 14px 0 4px; }
 .st-links a { font-weight: 700; }
+.sp-wrap { position: relative; display: block; }
+.sp-wrap > select.sp-lang { width: 100%; max-width: 100%; color: transparent; text-shadow: none; }
+.sp-wrap > .sp-text { position: absolute; left: 0; right: 0; top: 0; padding: 13px 38px 13px 13.5px; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; pointer-events: none; color: var(--ink); font-size: inherit; }
+/* Beim Wischen gehen Mia und „Problem melden“ kurz aus dem Weg, damit nichts verdeckt ist */
+#mia-btn, #fb-float { transition: opacity .25s ease; }
+body.wischt #mia-btn, body.wischt #fb-float { opacity: .12; pointer-events: none; }
+/* Mias Sprechblase ist immer hell: auch ihre Knöpfe hell mit dunkler Schrift (sonst im dunklen Modus kaum lesbar) */
+.miabubble2 .btn:not(.primary) { background: linear-gradient(180deg, #ffffff, #eef2f7); color: #1f2937; border-color: #9fb3cc; }
+.miabubble2 textarea, .miabubble2 select { background: #f8fafc; color: #1f2937; }

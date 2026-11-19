@@ -1,0 +1,32 @@
+{
+  "name": "Stunden-Checker",
+  "short_name": "Stunden",
+  "description": "Jede Stunde. Jeder Euro. Im Blick.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#1f2937",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "icons/app-lkw-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-lkw-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/app-lkw-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "./index.html",
+  "scope": "./"
+}

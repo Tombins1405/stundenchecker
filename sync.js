@@ -7,7 +7,9 @@
   if (!cfg || !cfg.apiKey || /HIER/.test(cfg.apiKey) || !window.firebase || !firebase.firestore || !firebase.apps.length) return;
 
   var KEY = 'stundenchecker.v1', META = 'stundenchecker.sync';
-  var db = firebase.firestore(), uid = null, timer = null;
+  var db = firebase.firestore(), uid = null, timer = null, laedt = true, weg = false;
+  function fertig() { if (!laedt || weg) return; laedt = false; document.dispatchEvent(new Event('sc-geladen')); }
+  setTimeout(fertig, 8000);
 
   function rd(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function wr(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -19,7 +21,7 @@
     return !d || (!Object.keys(d.days || {}).length && !(d.settings || []).length && !Object.keys(d.abgleich || {}).length && !Object.keys(d.profil || {}).length);
   }
   function status(t, cls) { var el = document.getElementById('a-sync'); if (el) { el.textContent = t; el.className = 'a-sync ' + (cls || ''); } }
-  function reload() {
+  function reload() { weg = true;
     var last = 0; try { last = +sessionStorage.getItem('sc.rl') || 0; } catch (e) {}
     if (Date.now() - last < 15000) return;
     try { sessionStorage.setItem('sc.rl', String(Date.now())); } catch (e) {}
@@ -93,7 +95,7 @@
       if ((m.t || 0) > (m.syncedT || 0)) return push(); // auf diesem Gerät gibt es noch nicht gespeicherte Änderungen
       if ((remote.t || 0) > (m.syncedT || 0)) return useRemote(remote); // neuere Daten von einem anderen Gerät
       status('In deinem Konto gespeichert ✓', 'ok');
-    }, function () { status('Keine Verbindung zum Konto. Deine Daten bleiben auf diesem Gerät.', 'bad'); });
+    }, function () { status('Keine Verbindung zum Konto. Deine Daten bleiben auf diesem Gerät.', 'bad'); }).then(fertig, fertig);
   }
 
   window.StundenSync = {
@@ -103,6 +105,7 @@
       status('Wird gespeichert …'); clearTimeout(timer); timer = setTimeout(push, 1500);
     },
     angemeldet: function () { return !!uid; },
+    laedt: function () { return laedt; },
     sichern: function () { clearTimeout(timer); return uid ? push() : Promise.resolve(false); },
     beforeLogout: function () { // alles sichern, danach die Daten von diesem Gerät entfernen (wichtig, wenn mehrere Personen ein Gerät benutzen)
       clearTimeout(timer);
@@ -110,5 +113,5 @@
     }
   };
 
-  firebase.auth().onAuthStateChanged(function (u) { uid = u ? u.uid : null; if (uid) start(); });
+  firebase.auth().onAuthStateChanged(function (u) { uid = u ? u.uid : null; if (uid) { laedt = true; start(); } else fertig(); });
 })();
