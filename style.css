@@ -1078,3 +1078,9 @@ body.wischt #mia-btn, body.wischt #fb-float { opacity: .12; pointer-events: none
 #inst-dlg .lzbox > .btns, #icon-dlg .lzbox > .btns { position: sticky; bottom: -18px; margin: 0 -18px -18px; padding: 10px 18px 18px; background: var(--surface); box-shadow: 0 -6px 12px rgba(0,0,0,.08); }
 /* Knopf-Beschriftungen (label.btn) in aufklappbaren Bereichen: als eigener Block, sonst überlappen sie den Text darüber */
 details label.btn { display: block; margin-top: 10px; }
+#kv-vorschlag { margin-top: 12px; }
+#kv-vorschlag p { margin: 0 0 6px; }
+#kv-vorschlag .btn { display: block; width: 100%; margin-top: 8px; }
+#kv-vorschlag small { display: block; margin-top: 8px; }
+#kv-aendern { display: block; width: 100%; margin: 6px 0 4px; }
+#s-kv .kv-melden { margin-top: 14px; }
