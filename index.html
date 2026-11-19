@@ -14,7 +14,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261119152433">
+<link rel="stylesheet" href="style.css?v=20261119154425">
 </head>
 <body>
 
@@ -22,6 +22,7 @@
   <div class="auth-box">
     <div class="brand">Stunden<b>-</b>Checker</div>
     <div class="slogan">Jede Stunde. Jeder Euro. Im Blick.</div>
+    <button type="button" class="btn a-inst" id="a-install" data-install="1" hidden>📲 Als App aufs Handy legen</button>
     <div class="a-tabs">
       <button type="button" id="a-tab-login" class="on">Anmelden</button>
       <button type="button" id="a-tab-reg">Neu hier</button>
@@ -89,7 +90,7 @@
 <div id="wiz" class="cropov" hidden><div class="cropbox wizbox" id="wiz-body"></div></div>
 <div id="crop" class="cropov" hidden><div class="cropbox"><p><strong>Bild verschieben und mit dem Regler vergrößern</strong></p><canvas id="crop-c" width="280" height="280"></canvas><input type="range" id="crop-z" min="100" max="400" value="100" aria-label="Zoom"><div class="btns"><button type="button" class="btn" id="crop-ok">Übernehmen</button><button type="button" class="btn" id="crop-x">Abbrechen</button></div></div></div>
 <div class="installbar" id="updatebar" hidden><div class="ib-top"><span>Es gibt eine neue Version vom Stunden-Checker.</span><button type="button" class="btn" id="update-go">Jetzt aktualisieren</button></div></div>
-<div class="installbar" id="installbar" hidden><div class="ib-top"><span>Stunden-Checker als App auf dein Handy legen?</span><button type="button" class="btn" id="install-go">Installieren</button><button type="button" class="iconbtn" id="install-x" aria-label="Schließen">×</button></div><div class="ib-pick"><span>Dein Symbol:</span><div id="icon-pick"></div></div></div>
+<div class="installbar" id="installbar" hidden><div class="ib-top"><span>Stunden-Checker als App auf dein Handy legen?</span><button type="button" class="btn" id="install-go">Installieren</button><button type="button" class="iconbtn" id="install-x" aria-label="Schließen">×</button></div></div>
 
 
 <main class="wrap">
@@ -415,6 +416,7 @@
         <label class="btn" for="icon-file" style="margin-top:8px;text-align:center">Eigenes Foto verwenden</label>
         <input type="file" id="icon-file" accept="image/*" hidden>
       </div>
+      <button type="button" class="btn primary" id="k-install" data-install="1" hidden>📲 Als App aufs Handy legen</button>
     </div>
     <div class="card" id="news-card">
       <h3 data-ico="news">Neuigkeiten</h3>
@@ -789,21 +791,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261119152433";</script>
-<script src="engine.js?v=20261119152433"></script>
+<script>window.APP_VERSION="20261119154425";</script>
+<script src="engine.js?v=20261119154425"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261119152433"></script>
-<script src="timepicker.js?v=20261119152433"></script>
-<script src="datepicker.js?v=20261119152433"></script>
-<script src="selectpicker.js?v=20261119152433"></script>
-<script src="pdf.js?v=20261119152433"></script>
-<script src="lzread.js?v=20261119152433"></script>
-<script src="app.js?v=20261119152433"></script>
-<script src="auth.js?v=20261119152433"></script>
-<script src="sync.js?v=20261119152433"></script>
-<script src="insights.js?v=20261119152433"></script>
+<script src="firebase-config.js?v=20261119154425"></script>
+<script src="timepicker.js?v=20261119154425"></script>
+<script src="datepicker.js?v=20261119154425"></script>
+<script src="selectpicker.js?v=20261119154425"></script>
+<script src="pdf.js?v=20261119154425"></script>
+<script src="lzread.js?v=20261119154425"></script>
+<script src="app.js?v=20261119154425"></script>
+<script src="auth.js?v=20261119154425"></script>
+<script src="sync.js?v=20261119154425"></script>
+<script src="insights.js?v=20261119154425"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

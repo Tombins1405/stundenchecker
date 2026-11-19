@@ -1027,3 +1027,13 @@ details#pl-det > summary > h3 { margin: 0; }
 .pl-top .btn { flex: 1 1 140px; }
 .planrow.pl-leer .pl-d { opacity: .55; }
 #pll-txt { width: 100%; font-family: monospace; font-size: 13px; }
+
+/* Installieren: Knopf auf der Anmeldeseite und Schritt-für-Schritt-Fenster */
+.auth .a-inst { background: #1e3a5f; color: #fff; border-color: #64b5f6; font-weight: 700; }
+#k-install { width: 100%; margin-top: 10px; }
+.inst-schritt { font-size: .85rem; opacity: .75; margin: 0 0 6px; }
+.inst-ol { padding-left: 22px; margin: 8px 0; }
+.inst-ol li { margin: 6px 0; line-height: 1.4; }
+.inst-ol b { white-space: nowrap; }
+#inst-dlg, #crop { z-index: 410; }
+@media (max-width: 360px) { .schrow .grid2 { grid-template-columns: 1fr; } }
