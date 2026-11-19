@@ -18,7 +18,7 @@
   function setMeta(m) { wr(META, JSON.stringify(m)); }
   function localData() { try { var d = JSON.parse(rd(KEY)); return d && typeof d.days === 'object' ? d : null; } catch (e) { return null; } }
   function empty(d) {
-    return !d || (!Object.keys(d.days || {}).length && !(d.settings || []).length && !Object.keys(d.abgleich || {}).length && !Object.keys(d.profil || {}).length);
+    return !d || (!Object.keys(d.days || {}).length && !(d.settings || []).length && !Object.keys(d.abgleich || {}).length); // nur App-Merker im Profil zählen nicht als eigene Daten
   }
   function status(t, cls) { var el = document.getElementById('a-sync'); if (el) { el.textContent = t; el.className = 'a-sync ' + (cls || ''); } }
   function reload() { weg = true;
@@ -29,6 +29,34 @@
   }
   function stash() { var raw = rd(KEY); if (raw) wr(KEY + '.vor-anmeldung-' + Date.now(), raw); } // Sicherheitskopie, falls Daten eines anderen Kontos auf dem Gerät lagen
 
+  // Abgleich zwischen Geräten: Basis = Stand beim letzten Speichern im Konto. Was nur ein Gerät geändert hat, bleibt erhalten;
+  // was beide geändert haben, gilt die Fassung von diesem Gerät. So löscht ein altes Gerät nicht mehr die Eingaben vom anderen.
+  var BASIS = KEY + '.basis';
+  function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
+  function nachAb(x) { return Array.isArray(x) && x.length && x.every(function (e) { return isObj(e) && typeof e.gueltigAb === 'string'; }); }
+  function m3(b, a, t) {
+    var sa = JSON.stringify(a), sb = JSON.stringify(b), st = JSON.stringify(t);
+    if (sa === sb) return t;
+    if (st === sb || sa === st) return a;
+    if (isObj(a) && isObj(t) && (b === undefined || isObj(b))) {
+      var r = {}, ks = {}; [a, t, b || {}].forEach(function (o) { Object.keys(o).forEach(function (k) { ks[k] = 1; }); });
+      Object.keys(ks).forEach(function (k) { var v = m3((b || {})[k], a[k], t[k]); if (v !== undefined) r[k] = v; });
+      return r;
+    }
+    if (nachAb(a) && nachAb(t)) { // Werte je Gültigkeitsdatum zusammenführen
+      var mb = {}, ma = {}, mt = {}, all = {};
+      (nachAb(b) ? b : []).forEach(function (e) { mb[e.gueltigAb] = e; });
+      a.forEach(function (e) { ma[e.gueltigAb] = e; all[e.gueltigAb] = 1; }); t.forEach(function (e) { mt[e.gueltigAb] = e; all[e.gueltigAb] = 1; });
+      return Object.keys(all).sort().map(function (k) { return m3(mb[k], ma[k], mt[k]); }).filter(function (e) { return e !== undefined; });
+    }
+    return a;
+  }
+  function zusammen(remoteJson) {
+    var loc = null, rem = null, bas; try { loc = JSON.parse(rd(KEY)); } catch (e) { } try { rem = JSON.parse(remoteJson); } catch (e) { }
+    try { bas = JSON.parse(rd(BASIS)); } catch (e) { bas = undefined; } if (bas === null) bas = undefined;
+    if (!loc) return remoteJson; if (!rem) return rd(KEY);
+    return JSON.stringify(m3(bas, loc, rem));
+  }
   function nDays(d) { var n = d && d.days ? Object.keys(d.days).length : 0; return n + (n === 1 ? ' Tag' : ' Tage'); }
   function ask(title, text, labels) { // Auswahl-Fenster: gibt die Nummer des gewählten Knopfs zurück
     return new Promise(function (res) {
@@ -42,16 +70,28 @@
       document.body.appendChild(o);
     });
   }
-  function useRemote(remote) { wr(KEY, remote.json); setMeta({ uid: uid, t: remote.t || 0, syncedT: remote.t || 0 }); reload(); }
+  function useRemote(remote) { wr(KEY, remote.json); wr(BASIS, remote.json); setMeta({ uid: uid, t: remote.t || 0, syncedT: remote.t || 0 }); reload(); }
 
   function push() {
     var raw = rd(KEY), m = meta(), cut = new Date().toISOString();
     if (!uid || !raw || m.uid !== uid) return Promise.resolve(false);
     if (raw.length > 900000) { status('Es sind zu viele Daten für die Speicherung im Konto.', 'bad'); return Promise.resolve(false); }
-    var t = m.t || Date.now();
+    var t = m.t || Date.now(), ref = db.collection('users').doc(uid), gemischt = false, raw0 = raw;
     status('Wird gespeichert …');
-    return db.collection('users').doc(uid).set({ json: raw, t: t, v: 1, updated: firebase.firestore.FieldValue.serverTimestamp() }).then(function () {
-      var mm = meta(); if ((mm.t || 0) <= t) { mm.syncedT = t; setMeta(mm); }
+    return db.runTransaction(function (tx) {
+      return tx.get(ref).then(function (sn) {
+        var r = sn.exists ? sn.data() : null, out = raw;
+        // Hat ein anderes Gerät seit meinem letzten Speichern etwas ins Konto geschrieben? Dann zusammenführen statt überschreiben.
+        if (r && r.json && (r.t || 0) > (m.syncedT || 0) && r.json !== raw) { out = zusammen(r.json); gemischt = out !== raw; t = Math.max(t, (r.t || 0) + 1); }
+        raw = out;
+        tx.set(ref, { json: out, t: t, v: 1, updated: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+    }).then(function () {
+      wr(BASIS, raw);
+      var neu = rd(KEY) !== raw0; // während des Speicherns hier schon wieder etwas geändert: nächste Runde führt es zusammen
+      if (gemischt && !neu) { wr(KEY, raw); document.dispatchEvent(new Event('sc-fremd')); }
+      else if (gemischt && neu) { try { wr(KEY, JSON.stringify(m3(JSON.parse(raw0), JSON.parse(rd(KEY)), JSON.parse(raw)))); document.dispatchEvent(new Event('sc-fremd')); } catch (e) { } }
+      var mm = meta(); if (!neu) { mm.t = Math.max(mm.t || 0, t); mm.syncedT = t; setMeta(mm); } else { mm.syncedT = t; setMeta(mm); }
       status('In deinem Konto gespeichert ✓', 'ok');
       // Serverzeit lesen: Notizen, die in diesem Speichervorgang schon enthalten waren, bekommen damit einen Zeitpunkt, den das Handy nicht verstellen kann
       db.collection('users').doc(uid).get({ source: 'server' }).then(function (sn) {
@@ -92,7 +132,7 @@
           setMeta({ uid: uid, t: Date.now(), syncedT: 0 }); return push();
         });
       }
-      if ((m.t || 0) > (m.syncedT || 0)) return push(); // auf diesem Gerät gibt es noch nicht gespeicherte Änderungen
+      if ((m.t || 0) > (m.syncedT || 0)) return push(); // auf diesem Gerät gibt es noch nicht gespeicherte Änderungen; ist das Konto neuer, führt push() beides zusammen
       if ((remote.t || 0) > (m.syncedT || 0)) return useRemote(remote); // neuere Daten von einem anderen Gerät
       status('In deinem Konto gespeichert ✓', 'ok');
     }, function () { status('Keine Verbindung zum Konto. Deine Daten bleiben auf diesem Gerät.', 'bad'); }).then(fertig, fertig);

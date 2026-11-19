@@ -103,6 +103,8 @@
       if (+w.ls === alt && alt !== neu) { w.ls = neu; w.lsKorr = true; }
     });
   })();
+  // Das Konto hat Änderungen von einem anderen Gerät dazugemischt: übernehmen und neu anzeigen (außer man tippt gerade)
+  document.addEventListener('sc-fremd', function () { if (fremdeAenderung()) { var ae = document.activeElement; if (!(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) { try { show(ui.view || 'erfassen', true); } catch (e) { } } } });
   window.addEventListener('storage', function (ev) { if (ev.key === KEY && ev.newValue !== lastRaw) fremdeAenderung(); });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
