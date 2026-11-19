@@ -14,7 +14,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261119060634">
+<link rel="stylesheet" href="style.css?v=20261119061537">
 </head>
 <body>
 
@@ -317,6 +317,10 @@
           <input type="number" id="e-diaeten" inputmode="decimal" step="0.25" min="0">
           <small>Leer lassen übernimmt den Vorschlag. Trage eine Zahl ein, wenn deine Firma anders zählt.</small>
         </div>
+        <div class="field" id="e-weitgroup" hidden>
+          <label for="e-weit" id="e-weitl">Am weitesten entfernt vom Dienstort (für den Diätenzettel)</label>
+          <input type="text" id="e-weit" maxlength="80" autocomplete="off" list="e-weit-list"><datalist id="e-weit-list"></datalist>
+        </div>
         </div></details>
       </div>
 
@@ -352,7 +356,7 @@
         <button type="button" class="btn danger" id="e-delete">Tag löschen</button>
       </div>
     </form>
-    <details id="rb-card" class="card rbcard"><summary><strong>Bericht an die Firma</strong></summary>
+    <details id="rb-card" class="card rbcard"><summary><strong>Berichte als PDF</strong></summary>
       <div class="field"><label for="rb-art">Welcher Bericht?</label><select id="rb-art"><option value="tag">Tagesbericht</option><option value="woche">Wochenbericht</option><option value="halb">Halbmonatsbericht (1.–15. oder 16.–Ende)</option><option value="monat">Monatsbericht</option></select></div>
       <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
       <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
@@ -510,7 +514,7 @@
       <label class="check"><input type="checkbox" data-bsx="praemien"> Prämien</label>
       <label class="check"><input type="checkbox" data-bsx="dienste"> Bereitschaft und Notdienst</label>
       <label class="check"><input type="checkbox" data-bsx="homeoffice"> Homeoffice-Tage</label>
-      <label class="check"><input type="checkbox" data-bsx="bericht"> Bericht an die Firma (PDF)</label>
+      <label class="check"><input type="checkbox" data-bsx="bericht"> Berichte als PDF (zum Speichern oder für die Firma)</label>
     </div>
     <div class="card" id="s-form" hidden>
       <h3 id="s-formtitle">Meine Werte</h3>
@@ -690,6 +694,7 @@
 
     <div class="card" id="s-berichte">
       <h3 data-ico="doc">Berichte an die Firma</h3>
+      <div class="field"><label for="rb-dienstort">Dienstort (Firmensitz, optional, steht auf dem Diätenzettel)</label><input type="text" id="rb-dienstort" maxlength="80" autocomplete="off"></div>
       <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
@@ -772,21 +777,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261119060634";</script>
-<script src="engine.js?v=20261119060634"></script>
+<script>window.APP_VERSION="20261119061537";</script>
+<script src="engine.js?v=20261119061537"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261119060634"></script>
-<script src="timepicker.js?v=20261119060634"></script>
-<script src="datepicker.js?v=20261119060634"></script>
-<script src="selectpicker.js?v=20261119060634"></script>
-<script src="pdf.js?v=20261119060634"></script>
-<script src="lzread.js?v=20261119060634"></script>
-<script src="app.js?v=20261119060634"></script>
-<script src="auth.js?v=20261119060634"></script>
-<script src="sync.js?v=20261119060634"></script>
-<script src="insights.js?v=20261119060634"></script>
+<script src="firebase-config.js?v=20261119061537"></script>
+<script src="timepicker.js?v=20261119061537"></script>
+<script src="datepicker.js?v=20261119061537"></script>
+<script src="selectpicker.js?v=20261119061537"></script>
+<script src="pdf.js?v=20261119061537"></script>
+<script src="lzread.js?v=20261119061537"></script>
+<script src="app.js?v=20261119061537"></script>
+<script src="auth.js?v=20261119061537"></script>
+<script src="sync.js?v=20261119061537"></script>
+<script src="insights.js?v=20261119061537"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>
