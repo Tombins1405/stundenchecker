@@ -2767,6 +2767,7 @@
     { id: 'betrieb', k: ["betriebsurlaub", "betrieb geschlossen", "company closed"], sel: '#s-bf', pfad: ["Einstellungen", "Betrieb geschlossen"], unter: "Was ich aufzeichne" },
     { id: 'feste', k: ["feste freie tage", "jede woche frei", "berufsschultag", "fixed days off"], sel: '#fest-card', pfad: ["Einstellungen", "Feste freie Tage"] },
     { id: 'konto', k: ["abmelden", "konto", "anmelden", "passwort", "log out", "account"], sel: '#a-sync', pfad: ["Einstellungen", "Konto"] },
+    { id: 'applink', k: ["link zur app", "link verloren", "link weg", "adresse der app", "app link", "link finden", "link schicken"], sel: '#x-card', pfad: ["Profil", "Extras und Werkzeuge", "Link zur App"] },
     { id: 'extras', k: ["extras", "werkzeuge", "zusatzfunktionen", "steuerausgleich", "arbeitnehmerveranlagung", "steuer tipps"], sel: '#x-card', pfad: ["Profil", "Extras und Werkzeuge"] },
     { id: 'installieren', k: ["app installieren", "installieren", "startbildschirm", "app symbol", "app-symbol", "als app", "aufs handy", "home-bildschirm", "install"], sel: '#k-install', pfad: ["Profil", "Mein App-Symbol"] },
     { id: 'mia', k: ["mia aussehen", "mia gestalten", "mia farbe", "figur", "begleiter", "warnweste farbe", "mia kleidung", "stimme von mia", "companion"], sel: '#mia-choose', pfad: ["Profil", "Mein Begleiter"] },
@@ -4255,10 +4256,12 @@
       '<ol style="padding-left:20px;margin:10px 0">' + st.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' +
       '<p class="nott" style="word-break:break-all;font-weight:700">' + esc(url) + '</p>' +
       '<p class="hint">' + esc(abwLab('Sagt das Handy „Diese App wurde bereits installiert“? Dann ist das alte Symbol noch da. Zuerst Schritt 2 machen.')) + '</p>' +
-      '<div class="btns"><button type="button" class="btn primary" id="icon-dlg-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn" id="icon-dlg-x">' + esc(abwLab('Später')) + '</button></div></div>';
+      (navigator.share ? '<p class="hint">' + esc(abwLab('Tipp: Mit „Link teilen“ schickst du ihn dir selbst, zum Beispiel in WhatsApp. Dann findest du ihn nach dem Deinstallieren sicher wieder.')) + '</p>' : '') +
+      '<div class="btns"><button type="button" class="btn primary" id="icon-dlg-copy">' + esc(abwLab('Link kopieren')) + '</button>' + (navigator.share ? '<button type="button" class="btn" id="icon-dlg-share">' + esc(abwLab('Link teilen')) + '</button>' : '') + '<button type="button" class="btn" id="icon-dlg-x">' + esc(abwLab('Später')) + '</button></div></div>';
     d.hidden = false;
     $('#icon-dlg-x').onclick = function () { d.hidden = true; };
     $('#icon-dlg-copy').onclick = function () { linkKopieren(url); };
+    if ($('#icon-dlg-share')) $('#icon-dlg-share').onclick = function () { linkTeilen(url); };
   }
   // Link in die Zwischenablage, auch wenn das Handy die moderne Variante nicht erlaubt
   function linkKopieren(url) {
@@ -4267,6 +4270,19 @@
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, alt); else alt(); } catch (e) { alt(); }
   }
   window.linkKopieren = linkKopieren;
+  function linkTeilen(url) { try { navigator.share({ title: 'Stunden-Checker', url: url }).catch(function () { }); } catch (e) { linkKopieren(url); } }
+  // Link zur App: zum Wiederfinden (z. B. vor dem Neu-Installieren) und zum Weitergeben
+  function linkDialog() {
+    var url = new URL('./', location.href).href, d = $('#icon-dlg');
+    if (!d) { d = document.createElement('div'); d.id = 'icon-dlg'; d.className = 'cropov'; document.body.appendChild(d); }
+    d.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true"><h3>' + esc(abwLab('Link zur App')) + '</h3><p>' + esc(abwLab('Mit diesem Link öffnest du den Stunden-Checker in jedem Browser, zum Beispiel nach einem neuen Handy oder zum Neu-Installieren. Schick ihn dir am besten selbst, dann hast du ihn immer.')) + '</p>' +
+      '<p class="nott" style="word-break:break-all;font-weight:700">' + esc(url) + '</p>' +
+      '<div class="btns">' + (navigator.share ? '<button type="button" class="btn primary" id="ld-share">' + esc(abwLab('Link teilen')) + '</button>' : '') + '<button type="button" class="btn' + (navigator.share ? '' : ' primary') + '" id="ld-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn" id="ld-x">' + esc(abwLab('Schließen')) + '</button></div></div>';
+    d.hidden = false;
+    $('#ld-x').onclick = function () { d.hidden = true; };
+    $('#ld-copy').onclick = function () { linkKopieren(url); };
+    if ($('#ld-share')) $('#ld-share').onclick = function () { linkTeilen(url); };
+  }
   function renderIconPick() {
     var fh0 = $('#icon-foto-hint'); if (fh0) fh0.hidden = !/android/i.test(navigator.userAgent);
     var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
@@ -5160,7 +5176,8 @@
       ['fristen', '⏰', 'Ausbildungen, Ausweise und Fristen', function () { miaOrtGo(miaWoGet('fristen')); }, sichtbar('#fr-card')],
       ['urlaub', '🌴', 'Urlaub, Zeitausgleich und Überstunden', function () { miaOrtGo(miaWoGet('urlaubskartei')); }, true],
       ['install', '📲', 'Als App aufs Handy legen', function () { if (window.installDialog) window.installDialog(); }, !appInstalliert()],
-      ['symbol', '🎨', 'App-Symbol ändern', function () { if (window.installDialog) window.installDialog(); }, appInstalliert()]
+      ['symbol', '🎨', 'App-Symbol ändern', function () { if (window.installDialog) window.installDialog(); }, appInstalliert()],
+      ['link', '🔗', 'Link zur App', function () { linkDialog(); }, true]
     ].filter(function (x) { return x[4]; });
     box.innerHTML = X.map(function (x) { return '<button type="button" class="xtile" data-x="' + x[0] + '"><span class="xi">' + x[1] + '</span><span>' + esc(abwLab(x[2])) + '</span></button>'; }).join('');
     box.onclick = function (ev) { var b = ev.target.closest('[data-x]'); if (!b) return; var f = X.filter(function (x) { return x[0] === b.dataset.x; })[0]; if (f) f[3](); };
