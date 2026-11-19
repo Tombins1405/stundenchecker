@@ -678,21 +678,21 @@
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1518] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1580] }
     ] },
-    handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, gruppen: [
-      { id: 'A', name: 'Beschäftigungsgruppe A: Hilfstätigkeiten, z. B. Lagerhilfe (Angestellte, Gehalt ÷ 158)', l: [13.23, 13.56, 13.88, null, null] },
-      { id: 'B', name: 'Beschäftigungsgruppe B: einfache Verkaufs- und Warentätigkeit, z. B. Regalbetreuer (Angestellte, Gehalt ÷ 158)', l: [13.65, 14.06, 14.46, null, null] },
-      { id: 'C', name: 'Beschäftigungsgruppe C: Standardaufgaben, z. B. Verkauf und Kassa mit Lehre (Angestellte, Gehalt ÷ 158)', l: [14.25, 14.77, 15.52, 16.23, 17.01] },
-      { id: 'D', name: 'Beschäftigungsgruppe D: eigenverantwortliche Aufgaben, z. B. Verkauf mit Zusatzaufgaben (Angestellte, Gehalt ÷ 158)', l: [14.95, 15.88, 16.94, 17.99, 19.06] },
-      { id: 'E', name: 'Beschäftigungsgruppe E: Fachberatung und eingeschränkte Führung, z. B. Abteilungsleitung (Angestellte, Gehalt ÷ 158)', l: [16.04, 17.47, 18.90, 20.34, 21.75] },
-      { id: 'F', name: 'Beschäftigungsgruppe F: Fach- und Führungsaufgaben, z. B. Filialleitung (Angestellte, Gehalt ÷ 158)', l: [18.22, 20.38, 22.53, 24.70, 26.86] },
-      { id: 'G', name: 'Beschäftigungsgruppe G: Führung größerer Einheiten (Angestellte, Gehalt ÷ 158)', l: [22.53, 24.91, 27.30, 29.68, 32.06] },
-      { id: 'H', name: 'Beschäftigungsgruppe H (Angestellte, Gehalt ÷ 158)', l: [27.72, 30.32, 32.93, 35.52, 38.11] },
+    handel: { stand: 'ab 1.1.2026', stufen: STUFEN_HANDEL, teiler: 158, gruppen: [ // Monatsgehälter laut Gehaltstafel (wko.at), Stunde = Gehalt ÷ 158
+      { id: 'A', m: true, name: 'Beschäftigungsgruppe A: Hilfstätigkeiten, z. B. Lagerhilfe (Angestellte, Gehalt ÷ 158)', l: [2090.00, 2142.00, 2193.00, null, null] },
+      { id: 'B', m: true, name: 'Beschäftigungsgruppe B: einfache Verkaufs- und Warentätigkeit, z. B. Regalbetreuer (Angestellte, Gehalt ÷ 158)', l: [2156.00, 2221.00, 2284.00, null, null] },
+      { id: 'C', m: true, name: 'Beschäftigungsgruppe C: Standardaufgaben, z. B. Verkauf und Kassa mit Lehre (Angestellte, Gehalt ÷ 158)', l: [2251.00, 2334.00, 2452.00, 2565.00, 2687.00] },
+      { id: 'D', m: true, name: 'Beschäftigungsgruppe D: eigenverantwortliche Aufgaben, z. B. Verkauf mit Zusatzaufgaben (Angestellte, Gehalt ÷ 158)', l: [2362.00, 2509.00, 2676.00, 2843.00, 3011.00] },
+      { id: 'E', m: true, name: 'Beschäftigungsgruppe E: Fachberatung und eingeschränkte Führung, z. B. Abteilungsleitung (Angestellte, Gehalt ÷ 158)', l: [2535.00, 2760.00, 2986.00, 3214.00, 3437.00] },
+      { id: 'F', m: true, name: 'Beschäftigungsgruppe F: Fach- und Führungsaufgaben, z. B. Filialleitung (Angestellte, Gehalt ÷ 158)', l: [2879.00, 3220.00, 3560.00, 3903.00, 4244.00] },
+      { id: 'G', m: true, name: 'Beschäftigungsgruppe G: Führung größerer Einheiten (Angestellte, Gehalt ÷ 158)', l: [3560.00, 3936.00, 4314.00, 4690.00, 5065.00] },
+      { id: 'H', m: true, name: 'Beschäftigungsgruppe H (Angestellte, Gehalt ÷ 158)', l: [4380.00, 4790.00, 5203.00, 5612.00, 6022.00] },
       { id: 'L1', m: true, lehrling: true, name: 'Lehrling, 1. Lehrjahr', l: [1026] },
       { id: 'L2', m: true, lehrling: true, name: 'Lehrling, 2. Lehrjahr', l: [1200] },
       { id: 'L3', m: true, lehrling: true, name: 'Lehrling, 3. Lehrjahr', l: [1518] },
       { id: 'L4', m: true, lehrling: true, name: 'Lehrling, 4. Lehrjahr', l: [1580] }
     ] },
-    klein: { stand: 'ab 1.1.2026', stufen: STUFEN_AT, eintritt: true, gruppen: [
+    klein: { stand: 'ab 1.1.2026', stufen: ['bis 1 Jahr im Betrieb', 'über 1 bis 3 Jahre', 'über 3 bis 10 Jahre', 'über 10 bis 15 Jahre', 'über 15 Jahre'], eintritt: true, schwellen: [1, 3, 10, 15], gruppen: [ // Kleintransport-KV: eigene Stufen nach Betriebszugehörigkeit (wko.at)
       { id: '1', name: 'Kraftfahrer bis 3,5 t und sonstige Arbeiter (Kleintransportgewerbe)', l: [11.20, 11.56, 11.80, 12.27, 12.87] }
     ] },
     bau: { stand: 'ab 1.5.2026', stufen: null, gruppen: [

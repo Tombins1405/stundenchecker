@@ -91,6 +91,16 @@
   }
   var data = load();
   (function () { var p = data.profil || (data.profil = {}); if (p.erfMehrMig === undefined) { p.erfMehrMig = true; if (Object.keys(data.days || {}).length) p.erfMehrAlt = true; } })(); // Wer schon Tage hat, sieht „Mehr zum Tag“ weiter offen
+  // 17.11.: Kleintransport-KV hat eigene Stufen (1/3/10/15 Jahre statt 5/10/15/20). Stufen, die die App früher aus dem Eintritt gerechnet hat, einmal neu rechnen.
+  (function () {
+    var p = data.profil || {}; if (p.kleinStufeMig || !validISO(p.eintritt)) { p.kleinStufeMig = true; return; } p.kleinStufeMig = true;
+    (data.settings || []).forEach(function (w) {
+      if (w.paket !== 'klein' || w.ls == null || w.ls === '') return;
+      var y = (new Date(w.gueltigAb + 'T00:00:00') - new Date(p.eintritt + 'T00:00:00')) / 31557600000; if (!(y >= 0)) return;
+      var alt = 0, neu = 0; [5, 10, 15, 20].forEach(function (x) { if (y >= x) alt++; }); [1, 3, 10, 15].forEach(function (x) { if (y >= x) neu++; });
+      if (+w.ls === alt && alt !== neu) { w.ls = neu; w.lsKorr = true; }
+    });
+  })();
   window.addEventListener('storage', function (ev) { if (ev.key === KEY && ev.newValue !== lastRaw) fremdeAenderung(); });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
@@ -2536,7 +2546,7 @@
       var k = ev.target && ev.target.dataset && ev.target.dataset.bsx; if (!k) return;
       data.settings.forEach(function (st) { var b = E.bausteine(st); b[k] = ev.target.checked; st.bausteine = b; });
       save(); ins('baustein_' + k + (ev.target.checked ? '_an' : '_aus'));
-      $('#s-praemien').hidden = !E.bausteine(wAt(todayISO())).praemien; $('#s-dienste').hidden = !E.bausteine(wAt(todayISO())).dienste;
+      $('#s-praemien').hidden = !E.bausteine(wAt(todayISO())).praemien; $('#s-dienste').hidden = !E.bausteine(wAt(todayISO())).dienste; var sbr2 = $('#s-berichte'); if (sbr2) sbr2.hidden = !E.bausteine(wAt(todayISO())).bericht; var rbc2 = $('#rb-card'); if (rbc2) rbc2.hidden = !E.bausteine(wAt(todayISO())).bericht || !Object.keys(data.days).length;
       toast(ev.target.checked ? 'Eingeschaltet. Du findest es jetzt beim Erfassen.' : 'Ausgeschaltet. Beim Erfassen ist es jetzt ausgeblendet, deine Einträge bleiben erhalten.');
     });
     on('#e-mehrbox > summary', 'click', function () { var bx = $('#e-mehrbox'); setTimeout(function () { var p = data.profil || (data.profil = {}); p.erfMehr = !!bx.open; save(); }, 0); });
@@ -3410,6 +3420,7 @@
     if (en && !en.bausteine) en.bausteine = { fahrzeug: true, kunden: true, praemien: true };
     $('#s-praemien').hidden = !!(en && en.bausteine && en.bausteine.praemien === false);
     $('#s-dienste').hidden = !!(en && en.bausteine && en.bausteine.dienste === false);
+    var sbr = $('#s-berichte'); if (sbr) sbr.hidden = !!(en && en.bausteine && en.bausteine.bericht === false);
     bsRender(en);
     $('#s-form').hidden = !en; $('#s-form2').hidden = !en || !!(en.diaeten && en.diaeten.modell === 'aus' && E.BERUFE[en.beruf] && E.BERUFE[en.beruf].diaeten === false);
     if (!en) return;
@@ -4754,7 +4765,7 @@
     function arbeitstag(s) { var p = E.parseISO(s), r = tageVon(s, s)[0]; return !!r && r.typ === 'werktag' && !r.feiertag; }
     function periodenEnde(rh, s) { var p = E.parseISO(s), dim = E.daysInMonth(p.y, p.m); if (rh === 'woche') { var wd = E.weekday(s); return addDays(s, wd === 0 ? 0 : 7 - wd); } if (rh === 'monat') return E.iso(p.y, p.m, dim); if (rh === 'halb') return E.iso(p.y, p.m, p.d <= 15 ? 15 : dim); return s; }
     function bFrage(s) {
-      var pr = data.profil || {}, rh = pr.berichtRhythmus || 'nie'; if (rh === 'nie') return;
+      var pr = data.profil || {}, rh = pr.berichtRhythmus || 'nie'; if (rh === 'nie' || !E.bausteine(wAt(s)).bericht) return; // Bericht ausgeschaltet: nicht danach fragen
       var st = data.days[s]; if (!st || st.status !== 'arbeit' || !st.von || !st.bis) return;
       var ende = periodenEnde(rh, s), fertig = true;
       for (var d = addDays(s, 1); d <= ende; d = addDays(d, 1)) { if (arbeitstag(d)) { fertig = false; break; } }
