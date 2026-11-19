@@ -1067,3 +1067,8 @@ body.wischt #mia-btn, body.wischt #fb-float { opacity: .12; pointer-events: none
 /* Mias Sprechblase ist immer hell: auch ihre Knöpfe hell mit dunkler Schrift (sonst im dunklen Modus kaum lesbar) */
 .miabubble2 .btn:not(.primary) { background: linear-gradient(180deg, #ffffff, #eef2f7); color: #1f2937; border-color: #9fb3cc; }
 .miabubble2 textarea, .miabubble2 select { background: #f8fafc; color: #1f2937; }
+.konto-laedt { position: fixed; inset: 0; z-index: 150; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.konto-laedt[hidden] { display: none; }
+.kl-box { text-align: center; font-weight: 700; }
+.kl-spin { width: 44px; height: 44px; margin: 0 auto 14px; border-radius: 50%; border: 5px solid var(--line); border-top-color: var(--accent); animation: klspin 1s linear infinite; }
+@keyframes klspin { to { transform: rotate(360deg); } }
