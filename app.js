@@ -2767,7 +2767,6 @@
     { id: 'betrieb', k: ["betriebsurlaub", "betrieb geschlossen", "company closed"], sel: '#s-bf', pfad: ["Einstellungen", "Betrieb geschlossen"], unter: "Was ich aufzeichne" },
     { id: 'feste', k: ["feste freie tage", "jede woche frei", "berufsschultag", "fixed days off"], sel: '#fest-card', pfad: ["Einstellungen", "Feste freie Tage"] },
     { id: 'konto', k: ["abmelden", "konto", "anmelden", "passwort", "log out", "account"], sel: '#a-sync', pfad: ["Einstellungen", "Konto"] },
-    { id: 'applink', k: ["link zur app", "link verloren", "link weg", "adresse der app", "app link", "link finden", "link schicken"], sel: '#x-card', pfad: ["Profil", "Extras und Werkzeuge", "Link zur App"] },
     { id: 'extras', k: ["extras", "werkzeuge", "zusatzfunktionen", "steuerausgleich", "arbeitnehmerveranlagung", "steuer tipps"], sel: '#x-card', pfad: ["Profil", "Extras und Werkzeuge"] },
     { id: 'installieren', k: ["app installieren", "installieren", "startbildschirm", "app symbol", "app-symbol", "als app", "aufs handy", "home-bildschirm", "install"], sel: '#k-install', pfad: ["Profil", "Mein App-Symbol"] },
     { id: 'mia', k: ["mia aussehen", "mia gestalten", "mia farbe", "figur", "begleiter", "warnweste farbe", "mia kleidung", "stimme von mia", "companion"], sel: '#mia-choose', pfad: ["Profil", "Mein Begleiter"] },
@@ -4194,7 +4193,27 @@
     ['wagen', 'Einkaufswagen', '<path d="M12 26h12l8 32h38l8-24H28" fill="none" stroke="#f3f4f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="38" cy="70" r="6" fill="#64b5f6"/><circle cx="64" cy="70" r="6" fill="#64b5f6"/>'],
     ['schluessel', 'Schraubenschlüssel', '<path d="M64 18a18 18 0 0 0-16 26L18 74l6 6 30-30a18 18 0 0 0 26-16l-11 11-9-2-2-9z" fill="#64b5f6"/>'],
     ['haube', 'Kochhaube', '<path d="M28 58V46a14 14 0 0 1 4-27 18 18 0 0 1 32 0 14 14 0 0 1 4 27v12z" fill="#f3f4f6"/><rect x="28" y="62" width="40" height="12" rx="3" fill="#64b5f6"/>'],
-    ['stern', 'Stern', '<path d="M48 16l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z" fill="#fbbf24"/>']
+    ['stern', 'Stern', '<path d="M48 16l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z" fill="#fbbf24"/>'],
+    ['bus', 'Bus', '<rect x="12" y="22" width="72" height="46" rx="9" fill="#64b5f6"/><rect x="18" y="29" width="17" height="15" rx="2" fill="#f3f4f6"/><rect x="39" y="29" width="17" height="15" rx="2" fill="#f3f4f6"/><rect x="60" y="29" width="18" height="15" rx="2" fill="#f3f4f6"/><circle cx="28" cy="70" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/><circle cx="68" cy="70" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/>'],
+    ['zug', 'Zug', '<rect x="24" y="14" width="48" height="56" rx="12" fill="#64b5f6"/><rect x="30" y="22" width="36" height="17" rx="3" fill="#f3f4f6"/><circle cx="35" cy="56" r="4.5" fill="#fbbf24"/><circle cx="61" cy="56" r="4.5" fill="#fbbf24"/><path d="M32 72l-10 12M64 72l10 12" stroke="#f3f4f6" stroke-width="5" stroke-linecap="round"/>'],
+    ['transporter', 'Lieferwagen', '<path d="M10 30h50l12 14h14v24H10z" fill="#f3f4f6"/><path d="M62 33l9 11H62z" fill="#64b5f6"/><rect x="10" y="52" width="76" height="5" fill="#64b5f6"/><circle cx="26" cy="68" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/><circle cx="70" cy="68" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/>'],
+    ['auto', 'Auto', '<path d="M12 60l7-17c2-5 6-8 12-8h34c6 0 10 3 12 8l7 17v10H12z" fill="#64b5f6"/><path d="M27 46l4-7h34l4 7z" fill="#f3f4f6"/><circle cx="28" cy="70" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/><circle cx="68" cy="70" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/>'],
+    ['rettung', 'Rettungswagen', '<rect x="8" y="34" width="54" height="32" rx="3" fill="#f3f4f6"/><path d="M62 42h12l12 13v11H62z" fill="#f3f4f6"/><rect x="8" y="52" width="78" height="6" fill="#ef4444"/><rect x="26" y="26" width="14" height="8" rx="2" fill="#64b5f6"/><circle cx="26" cy="68" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/><circle cx="70" cy="68" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/>'],
+    ['stapler', 'Stapler', '<rect x="18" y="42" width="34" height="22" rx="3" fill="#fbbf24"/><path d="M24 42V26h20l8 16" fill="none" stroke="#f3f4f6" stroke-width="5" stroke-linejoin="round"/><rect x="56" y="18" width="6" height="50" fill="#f3f4f6"/><rect x="60" y="62" width="26" height="5" fill="#f3f4f6"/><rect x="64" y="42" width="20" height="18" rx="2" fill="#d6a25b"/><circle cx="28" cy="68" r="8" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/><circle cx="48" cy="70" r="6" fill="#1f2937" stroke="#f3f4f6" stroke-width="4"/>'],
+    ['paket', 'Paket', '<rect x="18" y="28" width="60" height="50" rx="4" fill="#d6a25b"/><rect x="18" y="28" width="60" height="12" rx="4" fill="#c18a45"/><rect x="43" y="28" width="10" height="50" fill="#f3f4f6"/>'],
+    ['hammer', 'Hammer', '<g transform="rotate(-40 48 48)"><rect x="44" y="34" width="9" height="50" rx="4" fill="#d6a25b"/><rect x="26" y="18" width="44" height="18" rx="4" fill="#f3f4f6"/></g>'],
+    ['zahnrad', 'Zahnrad', '<rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(0 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(45 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(90 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(135 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(180 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(225 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(270 48 48)"/><rect x="43" y="12" width="10" height="16" rx="2" fill="#64b5f6" transform="rotate(315 48 48)"/><circle cx="48" cy="48" r="24" fill="#64b5f6"/><circle cx="48" cy="48" r="9" fill="#1f2937"/>'],
+    ['herz', 'Herz', '<path d="M48 80C20 62 11 45 21 32c8-10 22-9 27 2 5-11 19-12 27-2 10 13 1 30-27 48z" fill="#ef4444"/><path d="M22 50h15l6-11 8 21 6-10h17" fill="none" stroke="#f3f4f6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'],
+    ['zahn', 'Zahn', '<path d="M30 20c8-4 14 2 18 2s10-6 18-2c10 5 8 22 4 32-3 8-4 24-9 24-4 0-5-14-13-14s-9 14-13 14c-5 0-6-16-9-24-4-10-6-27 4-32z" fill="#f3f4f6"/>'],
+    ['eimer', 'Eimer', '<path d="M24 40h48l-7 40H31z" fill="#64b5f6"/><path d="M28 40a20 20 0 0 1 40 0" fill="none" stroke="#f3f4f6" stroke-width="5"/><circle cx="40" cy="26" r="5" fill="#f3f4f6"/><circle cx="55" cy="20" r="4" fill="#f3f4f6"/><circle cx="64" cy="30" r="3" fill="#f3f4f6"/>'],
+    ['schild', 'Schild', '<path d="M48 12l30 10v22c0 18-12 31-30 40C30 75 18 62 18 44V22z" fill="#64b5f6"/><path d="M34 47l10 10 19-21" fill="none" stroke="#f3f4f6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'],
+    ['schere', 'Schere', '<path d="M37 58L66 16M59 58L30 16" stroke="#64b5f6" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="70" r="10" fill="none" stroke="#f3f4f6" stroke-width="6"/><circle cx="64" cy="70" r="10" fill="none" stroke="#f3f4f6" stroke-width="6"/>'],
+    ['brille', 'Brille', '<circle cx="29" cy="52" r="14" fill="none" stroke="#64b5f6" stroke-width="6"/><circle cx="67" cy="52" r="14" fill="none" stroke="#64b5f6" stroke-width="6"/><path d="M43 50q5-7 10 0M15 48l-6-9M81 48l6-9" fill="none" stroke="#64b5f6" stroke-width="5" stroke-linecap="round"/>'],
+    ['brot', 'Brot', '<path d="M16 60c0-18 14-28 32-28s32 10 32 28v12H16z" fill="#d6a25b"/><path d="M33 42l-5 12M49 39l-5 13M65 42l-5 12" stroke="#f3f4f6" stroke-width="4" stroke-linecap="round"/>'],
+    ['besteck', 'Besteck', '<rect x="30" y="44" width="8" height="38" rx="4" fill="#f3f4f6"/><path d="M26 16v22a8 8 0 0 0 16 0V16M34 16v20" fill="none" stroke="#f3f4f6" stroke-width="5" stroke-linecap="round"/><path d="M60 82V16c10 4 14 16 14 30h-6v36z" fill="#f3f4f6"/>'],
+    ['blatt', 'Blatt', '<path d="M76 16C40 16 18 38 20 74c36 2 58-20 56-58z" fill="#34d399"/><path d="M22 74L62 32" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>'],
+    ['gondel', 'Gondel', '<path d="M6 28L90 14" stroke="#f3f4f6" stroke-width="4" stroke-linecap="round"/><path d="M48 21v14" stroke="#f3f4f6" stroke-width="4"/><rect x="26" y="35" width="44" height="40" rx="9" fill="#ef4444"/><rect x="32" y="43" width="32" height="14" rx="2" fill="#f3f4f6"/>'],
+    ['zylinder', 'Zylinder', '<rect x="32" y="20" width="32" height="42" rx="3" fill="#f3f4f6"/><rect x="32" y="48" width="32" height="7" fill="#ef4444"/><rect x="18" y="60" width="60" height="9" rx="4.5" fill="#f3f4f6"/>']
   ];
   window.StundenIcon = { svg: function (k) { return iconSvg(k); }, keys: function () { return APPICONS.map(function (x) { return x[0]; }); } };
   function iconSvg(key) {
@@ -4271,27 +4290,27 @@
   }
   window.linkKopieren = linkKopieren;
   function linkTeilen(url) { try { navigator.share({ title: 'Stunden-Checker', url: url }).catch(function () { }); } catch (e) { linkKopieren(url); } }
-  // Link zur App: zum Wiederfinden (z. B. vor dem Neu-Installieren) und zum Weitergeben
-  function linkDialog() {
-    var url = new URL('./', location.href).href, d = $('#icon-dlg');
-    if (!d) { d = document.createElement('div'); d.id = 'icon-dlg'; d.className = 'cropov'; document.body.appendChild(d); }
-    d.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true"><h3>' + esc(abwLab('Link zur App')) + '</h3><p>' + esc(abwLab('Mit diesem Link öffnest du den Stunden-Checker in jedem Browser, zum Beispiel nach einem neuen Handy oder zum Neu-Installieren. Schick ihn dir am besten selbst, dann hast du ihn immer.')) + '</p>' +
-      '<p class="nott" style="word-break:break-all;font-weight:700">' + esc(url) + '</p>' +
-      '<div class="btns">' + (navigator.share ? '<button type="button" class="btn primary" id="ld-share">' + esc(abwLab('Link teilen')) + '</button>' : '') + '<button type="button" class="btn' + (navigator.share ? '' : ' primary') + '" id="ld-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn" id="ld-x">' + esc(abwLab('Schließen')) + '</button></div></div>';
-    d.hidden = false;
-    $('#ld-x').onclick = function () { d.hidden = true; };
-    $('#ld-copy').onclick = function () { linkKopieren(url); };
-    if ($('#ld-share')) $('#ld-share').onclick = function () { linkTeilen(url); };
-  }
+  // Welche Symbole zu welchem Beruf passen: die stehen bei der Auswahl gleich vorne
+  var ICON_BERUF = { lkw: ['lkw', 'lkwkran', 'kran'], handwerk: ['hammer', 'schluessel'], bagger: ['bagger', 'kran'], klein: ['transporter', 'paket'], aussendienst: ['auto', 'laptop'], lager: ['stapler', 'paket'],
+    mechaniker: ['schluessel', 'zahnrad'], bund: ['ordner', 'laptop'], buero: ['laptop', 'ordner'], handel: ['wagen', 'euro'], gastro: ['haube', 'besteck'], reinigung: ['eimer'], security: ['schild'], lebensmittel: ['wagen', 'brot'],
+    konditor: ['brot', 'haube'], optiker: ['brille'], fleischer: ['besteck', 'haube'], bahn: ['zug'], bus: ['bus'], gaertner: ['blatt'], industrie: ['zahnrad', 'hammer'], post: ['paket', 'transporter'], ordination: ['zahn', 'herz'],
+    zahntechnik: ['zahn'], textilreinigung: ['eimer'], rauchfangkehrer: ['zylinder'], schaedling: ['schild', 'eimer'], kunststoff: ['zahnrad'], garage: ['auto', 'schluessel'], kosmetik: ['schere'], seilbahn: ['gondel'],
+    lmindustrie: ['zahnrad', 'brot'], kino: ['stern'], rettung: ['rettung', 'herz'], friseur: ['schere'], pflege: ['herz'] };
   function renderIconPick() {
     var fh0 = $('#icon-foto-hint'); if (fh0) fh0.hidden = !/android/i.test(navigator.userAgent);
     var cur = 'uhr'; try { cur = localStorage.getItem('stundenchecker.icon') || 'uhr'; } catch (e) { }
     var fotoOn = ''; try { fotoOn = localStorage.getItem('stundenchecker.iconimg') || ''; } catch (e) { }
-    var html = APPICONS.map(function (x) {
+    var bf = (wAt(todayISO()) || {}).beruf, vorn = ICON_BERUF[bf] || [];
+    var liste = APPICONS.filter(function (x) { return x[0] === 'uhr'; }).concat(vorn.map(function (k) { return APPICONS.filter(function (x) { return x[0] === k; })[0]; }).filter(Boolean), APPICONS.filter(function (x) { return x[0] !== 'uhr' && vorn.indexOf(x[0]) < 0; }));
+    // Erst die passenden und ein paar weitere zeigen, der Rest mit „Mehr Symbole“ (sonst wird das Fenster auf kleinen Handys zu lang)
+    if (!ui.iconAlle) { var kurz = liste.slice(0, 11); if (cur !== 'foto' && !kurz.some(function (x) { return x[0] === cur; })) { var cx = liste.filter(function (x) { return x[0] === cur; })[0]; if (cx) kurz[10] = cx; } var mehr = liste.length > kurz.length; liste = kurz; }
+    var html = liste.map(function (x) {
       return '<button type="button" class="ipk' + (x[0] === cur ? ' on' : '') + '" data-icon="' + x[0] + '" aria-label="' + x[1] + '" title="' + x[1] + '"><svg viewBox="0 0 96 96"><rect width="96" height="96" rx="20" fill="#1f2937"/>' + x[2] + '</svg></button>';
     }).join('') + (fotoOn ? '<button type="button" class="ipk' + (cur === 'foto' ? ' on' : '') + '" data-icon="foto" aria-label="Eigenes Foto" title="Eigenes Foto"><img src="' + fotoOn + '" alt=""></button>' : '');
+    if (!ui.iconAlle && mehr) html += '<button type="button" class="ipk ipk-mehr" aria-label="' + esc(abwLab('Mehr Symbole')) + '" title="' + esc(abwLab('Mehr Symbole')) + '">+</button>';
     ['#icon-pick', '#icon-pick2', '#icon-pick3'].forEach(function (s) { var el = $(s); if (el) el.innerHTML = html; });
   }
+  document.addEventListener('click', function (ev) { if (ev.target.closest && ev.target.closest('.ipk-mehr')) { ui.iconAlle = true; renderIconPick(); } });
   (function () {
     var cur = null; try { cur = localStorage.getItem('stundenchecker.icon'); } catch (e) { }
     // Symbol-Wahl ist auch im Konto gemerkt: nach dem Neu-Installieren (Handy-Daten gelöscht) kommt sie mit dem Anmelden zurück
@@ -5176,8 +5195,7 @@
       ['fristen', '⏰', 'Ausbildungen, Ausweise und Fristen', function () { miaOrtGo(miaWoGet('fristen')); }, sichtbar('#fr-card')],
       ['urlaub', '🌴', 'Urlaub, Zeitausgleich und Überstunden', function () { miaOrtGo(miaWoGet('urlaubskartei')); }, true],
       ['install', '📲', 'Als App aufs Handy legen', function () { if (window.installDialog) window.installDialog(); }, !appInstalliert()],
-      ['symbol', '🎨', 'App-Symbol ändern', function () { if (window.installDialog) window.installDialog(); }, appInstalliert()],
-      ['link', '🔗', 'Link zur App', function () { linkDialog(); }, true]
+      ['symbol', '🎨', 'App-Symbol ändern', function () { if (window.installDialog) window.installDialog(); }, appInstalliert()]
     ].filter(function (x) { return x[4]; });
     box.innerHTML = X.map(function (x) { return '<button type="button" class="xtile" data-x="' + x[0] + '"><span class="xi">' + x[1] + '</span><span>' + esc(abwLab(x[2])) + '</span></button>'; }).join('');
     box.onclick = function (ev) { var b = ev.target.closest('[data-x]'); if (!b) return; var f = X.filter(function (x) { return x[0] === b.dataset.x; })[0]; if (f) f[3](); };
