@@ -1579,6 +1579,38 @@
     Array.prototype.forEach.call(document.querySelectorAll('#e-kunden details.kd'), function (dt) { var k = ui.edDraft.kunden[+dt.dataset.kd], sm = dt.firstElementChild; if (k && sm) sm.innerHTML = kSumme(k, +dt.dataset.kd, tour); });
   }
   document.addEventListener('toggle', function (ev) { var d0 = ev.target; if (d0 && d0.classList && d0.classList.contains('kd')) { (ui.kOpen = ui.kOpen || {})[+d0.dataset.kd] = d0.open; } }, true);
+  /* ---- Weitester Ort vom Dienstort (Diätenzettel): km je Ort merken, automatisch den weitesten nehmen ---- */
+  function weitModus() { return (data.profil && data.profil.weitModus) || 'km'; }
+  function ortKm() { var p = data.profil || (data.profil = {}); return p.ortKm || (p.ortKm = {}); }
+  function ortSchl(n) { return String(n || '').trim().toLowerCase(); }
+  function weitAuto(d) { // höchste bekannte Entfernung unter den Orten des Tages; nur eindeutig, wenn alle Orte eine Entfernung haben oder es nur einen Ort gibt
+    var ks = (d.kunden || []).map(function (k) { return (k.name || '').trim(); }).filter(Boolean), km = ortKm(), best = null, bk = -1, alle = true;
+    ks.forEach(function (n) { var e = km[ortSchl(n)]; if (e && e.km != null) { if (+e.km > bk) { bk = +e.km; best = n; } } else alle = false; });
+    if (ks.length === 1) return { ort: ks[0], km: bk >= 0 ? bk : null };
+    return best && (alle || weitModus() !== 'selbst') ? { ort: best, km: bk, unsicher: !alle } : null;
+  }
+  function weitOrtTag(d) { var a = d.weitOrt ? { ort: d.weitOrt, km: (ortKm()[ortSchl(d.weitOrt)] || {}).km } : (weitModus() === 'selbst' ? null : weitAuto(d)); return a; }
+  var geoWarte = Promise.resolve(), geoCache = {};
+  function geoSuche(q) { // OpenStreetMap: nur mit Zustimmung (Einstellung „Automatisch mit Landkarte“), höchstens eine Anfrage pro Sekunde
+    q = String(q || '').trim(); if (!q) return Promise.resolve(null); if (geoCache[q] !== undefined) return Promise.resolve(geoCache[q]);
+    geoWarte = geoWarte.then(function () { return new Promise(function (r) { setTimeout(r, 1100); }); }).then(function () {
+      return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=at,de&accept-language=de&q=' + encodeURIComponent(q.replace(/^(baustelle|bst\.?|kunde|fa\.?|firma)\s+/i, ''))).then(function (r) { return r.json(); }).then(function (j) { var x = j && j[0] ? { lat: +j[0].lat, lon: +j[0].lon } : null; geoCache[q] = x; return x; }).catch(function () { return null; });
+    }); return geoWarte;
+  }
+  function geoKm(a, b) { var R = 6371, t = Math.PI / 180, dLa = (b.lat - a.lat) * t, dLo = (b.lon - a.lon) * t, h = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(a.lat * t) * Math.cos(b.lat * t) * Math.sin(dLo / 2) * Math.sin(dLo / 2); return Math.round(2 * R * Math.asin(Math.sqrt(h))); }
+  function weitKarte(namen) { // fehlende Entfernungen mit der Landkarte ausrechnen (Luftlinie, reicht zum Vergleichen)
+    var p = data.profil || {}; if (weitModus() !== 'karte' || !p.dienstort) return Promise.resolve(false);
+    var km = ortKm(), offen = namen.filter(function (n) { var e = km[ortSchl(n)]; return !(e && e.km != null); }); if (!offen.length) return Promise.resolve(false);
+    return geoSuche(p.dienstort).then(function (dz) { if (!dz) return false; var ch = false; return offen.reduce(function (pr, n) { return pr.then(function () { return geoSuche(n).then(function (g) { if (g) { km[ortSchl(n)] = { km: geoKm(dz, g), quelle: 'karte' }; ch = true; } }); }); }, Promise.resolve()).then(function () { if (ch) save(); return ch; }); });
+  }
+  function weitRender() {
+    var box = $('#e-kmlist'), wg = $('#e-weitgroup'); if (!box || !wg || wg.hidden) return;
+    var d = ui.edDraft || {}, ks = []; (d.kunden || []).forEach(function (k) { var n = (k.name || '').trim(); if (n && ks.indexOf(n) < 0) ks.push(n); });
+    var md = weitModus(), km = ortKm();
+    box.innerHTML = md === 'selbst' || !ks.length ? '' : ks.map(function (n) { var e = km[ortSchl(n)] || {}; return '<label class="kmrow"><span>' + esc(n) + '</span><input type="number" inputmode="decimal" min="0" step="1" data-ortkm="' + esc(n) + '" value="' + (e.km != null ? e.km : '') + '" placeholder="' + esc(abwLab(md === 'karte' ? 'wird gesucht' : 'km')) + '"><span>km</span></label>'; }).join('');
+    var a = md === 'selbst' ? null : weitAuto(d); $('#e-weit').placeholder = a ? a.ort + (a.km != null ? ' (' + a.km + ' km)' : '') : '';
+    if (md === 'karte') weitKarte(ks).then(function (ch) { if (ch && ui.edDraft === d) weitRender(); });
+  }
   function renderKunden() {
     var tour = ortW();
     $('#e-kunden').innerHTML = ui.edDraft.kunden.map(function (k, i) {
@@ -1667,7 +1699,7 @@
       $('#e-weitl').textContent = abw1('Am weitesten entfernt vom Dienstort: {0} (für den Diätenzettel)', [abwLab(ortW(w).one)]);
       $('#e-weit').value = d.weitOrt || ''; var wl = {}; (d.kunden || []).forEach(function (k) { if (k.name) wl[k.name] = 1; }); Object.keys(data.days).forEach(function (k) { var x = data.days[k]; if (x && x.weitOrt) wl[x.weitOrt] = 1; });
       $('#e-weit-list').innerHTML = Object.keys(wl).slice(0, 40).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('');
-      $('#e-weit').placeholder = (d.kunden || []).filter(function (k) { return k.name; }).length === 1 ? d.kunden.filter(function (k) { return k.name; })[0].name : '';
+      weitRender();
     }
     mehrBox(d, w);
     var hatTage = Object.keys(data.days).some(function (k) { return k !== ui.edDate; });
@@ -3927,6 +3959,9 @@
     }
   }
   document.addEventListener('input', function (ev) { if (ev.target.id === 'e-date') return; onInput(ev); });
+  document.addEventListener('change', function (ev) { var t = ev.target; if (!t) return;
+    if (t.dataset && t.dataset.ortkm != null) { var v = parseFloat(String(t.value).replace(',', '.')), km = ortKm(), k = ortSchl(t.dataset.ortkm); if (isNaN(v) || v < 0) delete km[k]; else km[k] = { km: Math.round(v), quelle: 'selbst' }; save(); weitRender(); return; }
+    if (t.closest && t.closest('#e-kunden')) setTimeout(weitRender, 50); });
   document.addEventListener('change', function (ev) {
     var t = ev.target;
     if (t.id === 's-lg-take') {
@@ -4747,7 +4782,7 @@
       } else if (typ === 'diaeten') { // Diätenzettel: Datum, am weitesten entfernter Ort, Diätenstunden und Betrag, Summe (Monat)
         var vD = E.iso(p.y, p.m, 1), bD = E.iso(p.y, p.m, new Date(p.y, p.m, 0).getDate()), owD = ortW(wAt(vD)), sh = 0, se = 0, pr0 = data.profil || {}; name = 'Diaetenzettel-' + p.y + '-' + pad(p.m);
         var rowsD = tageVon(vD, bD).filter(function (r) { return (r.diaetenStd || 0) > 0 || (r.diaetenBetrag || 0) > 0; }).map(function (r) {
-          var d = data.days[r.datum] || {}, ks = (d.kunden || []).map(function (k) { return k.name; }).filter(Boolean), ort = d.weitOrt || (ks.length === 1 ? ks[0] : '');
+          var d = data.days[r.datum] || {}, wo = weitOrtTag(d), ort = wo ? wo.ort + (wo.km != null ? ' (' + wo.km + ' km)' : '') : '';
           sh += r.diaetenStd || 0; se += r.diaetenBetrag || 0;
           return [WD[E.weekday(r.datum)] + ' ' + fmtDate(r.datum), ort, fh(r.diaetenStd || 0), r.diaetenBetrag ? eur.format(r.diaetenBetrag) : ''];
         });
@@ -4777,14 +4812,14 @@
       if (teilFehler) toast(abw1('Teilen geht auf diesem Handy gerade nicht. Der Bericht liegt jetzt im Ordner „Downloads“. Öffne ihn dort und teile ihn von dort. (Hinweis: {0})', [teilFehler]), 12000);
       else toast(abw1('Gespeichert: {0} (Ordner „Downloads“).', [erg.name]));
     }
-    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.dienstort = $('#rb-dienstort').value.trim(); p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
-    function fuellen() { var pr = data.profil || {}; if ($('#rb-dienstort')) $('#rb-dienstort').value = pr.dienstort || ''; var hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (hat) $('#rb-name').value = ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); else if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
+    function merken() { var p = data.profil || (data.profil = {}); p.berichtName = $('#rb-name').value.trim(); p.berichtRhythmus = $('#rb-rhythmus').value; p.berichtMail = $('#rb-mail').value.trim(); p.dienstort = $('#rb-dienstort').value.trim(); p.weitModus = $('#rb-weitmodus').value; p.berichtArt = $('#rb-art').value; try { save(); } catch (e) { } }
+    function fuellen() { var pr = data.profil || {}; if ($('#rb-dienstort')) $('#rb-dienstort').value = pr.dienstort || ''; if ($('#rb-weitmodus')) $('#rb-weitmodus').value = pr.weitModus || 'km'; var hat = !!((pr.vorname || '') + (pr.nachname || '')).trim(); if (hat) $('#rb-name').value = ((pr.vorname || '') + ' ' + (pr.nachname || '')).trim(); else if (!$('#rb-name').value) $('#rb-name').value = pr.berichtName || ''; if (!$('#rb-mail').value) $('#rb-mail').value = pr.berichtMail || ''; if (pr.berichtArt) $('#rb-art').value = pr.berichtArt; $('#rb-rhythmus').value = pr.berichtRhythmus || 'nie'; $('#rb-sigon').checked = pr.sigAn === true; $('#rb-sigwrap').hidden = !$('#rb-sigon').checked; }
     fuellen();
     var vorgabe = null; card.addEventListener('toggle', function () { if (!card.open) return; fuellen(); $('#rb-datum').value = vorgabe || (ui.edDate && /^\d{4}-\d{2}-\d{2}$/.test(ui.edDate) ? ui.edDate : todayISO()); vorgabe = null; });
     $('#rb-ohnestd').checked = !!(data.profil && data.profil.berichtOhneStd);
     $('#rb-ohnestd').addEventListener('change', function () { (data.profil || (data.profil = {})).berichtOhneStd = this.checked; save(); });
     $('#rb-sigon').addEventListener('change', function () { $('#rb-sigwrap').hidden = !this.checked; (data.profil || (data.profil = {})).sigAn = this.checked; merken(); });
-    $('#rb-name').addEventListener('change', merken); $('#rb-mail').addEventListener('change', merken); $('#rb-dienstort').addEventListener('change', merken);
+    $('#rb-name').addEventListener('change', merken); $('#rb-mail').addEventListener('change', merken); $('#rb-dienstort').addEventListener('change', merken); $('#rb-weitmodus').addEventListener('change', function () { merken(); if (this.value === 'karte' && !(data.profil || {}).dienstort) toast('Trag bitte auch deinen Dienstort ein, sonst kann die App keine Entfernung ausrechnen.'); });
     $('#rb-rhythmus').addEventListener('change', function () { merken(); var v = this.value; if (v !== 'nie') $('#rb-art').value = v; });
     $('#rb-art').addEventListener('change', function () { $('#rb-datum').value = $('#rb-datum').value || todayISO(); });
     /* Nach dem Speichern eines Tages: ist heute der Tag für den Bericht? */
@@ -4863,22 +4898,24 @@
       var kannTeilen = !!(flx && navigator.share && (!navigator.canShare || navigator.canShare({ files: [flx] })));
       $('#rb-dh').textContent = 'Dein Bericht';
       $('#rb-dbody').innerHTML = '<div id="rb-vor" style="max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff"><p class="hint" style="padding:12px">Bericht wird angezeigt …</p></div>';
-      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-send">' + (kannTeilen ? 'Senden' : 'Speichern') + '</button><button type="button" class="btn" id="rb-dx">Schließen</button>';
+      $('#rb-dbtns').innerHTML = '<button type="button" class="btn primary" id="rb-send">' + esc(abwLab('Senden')) + '</button><button type="button" class="btn" id="rb-dx">Schließen</button>';
       $('#rb-dlg').hidden = false;
       $('#rb-dx').onclick = zu;
+      // Senden: zuerst das Teilen des Handys. Klappt das nicht (je nach Browser verschieden), gibt es Knöpfe, die überall gehen: nochmal versuchen, PDF öffnen, PDF speichern
+      function plan2(grund) {
+        ins('bericht_share_' + String(grund || 'fehlt').replace(/[^A-Za-z]/g, '').slice(0, 30));
+        $('#rb-dbody').insertAdjacentHTML('afterbegin', '<div class="notice warn" id="rb-plan2">' + esc(abwLab(kannTeilen ? 'Das Senden hat auf diesem Handy nicht geklappt. Tippe auf „Nochmal senden“. Geht es dann auch nicht, öffne das PDF und teile es dort mit dem Teilen-Zeichen, oder speichere es.' : 'Dieses Handy kann die Datei nicht direkt aus der App senden. Öffne das PDF und teile es dort mit dem Teilen-Zeichen, oder speichere es und hänge es in WhatsApp oder in der E-Mail mit der Büroklammer an.')) + '</div>');
+        $('#rb-dbtns').innerHTML = (kannTeilen ? '<button type="button" class="btn primary" id="rb-nochmal">' + esc(abwLab('Nochmal senden')) + '</button>' : '') + '<button type="button" class="btn' + (kannTeilen ? '' : ' primary') + '" id="rb-open">' + esc(abwLab('PDF öffnen')) + '</button><button type="button" class="btn" id="rb-save2">' + esc(abwLab('PDF speichern')) + '</button><button type="button" class="btn" id="rb-dx">' + esc(abwLab('Schließen')) + '</button>';
+        $('#rb-dx').onclick = zu;
+        if ($('#rb-nochmal')) $('#rb-nochmal').onclick = function () { var sh; try { sh = navigator.share({ files: [flx] }); } catch (e) { sh = null; } if (sh && sh.then) sh.then(function () { zu(); ins('bericht_share_ok2'); }, function (er) { if (!er || er.name !== 'AbortError') toast(abwLab('Das hat wieder nicht geklappt. Bitte öffne das PDF oder speichere es.')); }); };
+        $('#rb-open').onclick = function () { var u = URL.createObjectURL(new Blob([erg.bytes], { type: 'application/pdf' })), w2 = null; try { w2 = window.open(u, '_blank'); } catch (e) { } if (!w2) { var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); } setTimeout(function () { URL.revokeObjectURL(u); }, 120000); ins('bericht_oeffnen'); };
+        $('#rb-save2').onclick = function () { speichern(erg); };
+      }
       $('#rb-send').onclick = function () {
-        if (kannTeilen) {
-          var sh1; try { sh1 = navigator.share({ files: [flx] }); } catch (e) { sh1 = null; } // zuerst nur die Datei: manche Handy-Browser lehnen Datei plus Text ab
-          if (sh1 && sh1.then) {
-            sh1.then(function () { zu(); }, function (er) {
-              if (er && er.name === 'AbortError') return;
-              var sh2; try { sh2 = navigator.share({ files: [flx], title: 'Stundenbericht', text: 'Hallo, anbei mein Bericht.' }); } catch (e) { sh2 = null; }
-              if (sh2 && sh2.then) sh2.then(function () { zu(); }, function (er2) { if (er2 && er2.name === 'AbortError') return; ins('bericht_share_fehler'); speichern(erg, (er2 && er2.name) || (er && er.name) || 'unbekannt'); });
-              else { ins('bericht_share_fehler'); speichern(erg, (er && er.name) || 'unbekannt'); }
-            }); return;
-          }
-        }
-        ins('bericht_share_fehlt'); speichern(erg);
+        if (!kannTeilen) { plan2('fehlt'); return; }
+        var sh1; try { sh1 = navigator.share({ files: [flx] }); } catch (e) { plan2(e && e.name); return; } // nur die Datei: manche Handy-Browser lehnen Datei plus Text ab
+        if (!sh1 || !sh1.then) { plan2('kein'); return; }
+        sh1.then(function () { zu(); }, function (er) { if (er && er.name === 'AbortError') return; plan2(er && er.name); });
       };
       var vb = $('#rb-vor').clientWidth || 400;
       try { window.StundenLz.zeigePdf(erg.bytes, $('#rb-vor'), vb).catch(function () { $('#rb-vor').innerHTML = '<p class="hint" style="padding:12px"><b>' + esc(erg.name) + '</b></p>'; }); } catch (e) { }

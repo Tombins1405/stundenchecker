@@ -14,7 +14,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261119061537">
+<link rel="stylesheet" href="style.css?v=20261119063930">
 </head>
 <body>
 
@@ -320,6 +320,7 @@
         <div class="field" id="e-weitgroup" hidden>
           <label for="e-weit" id="e-weitl">Am weitesten entfernt vom Dienstort (für den Diätenzettel)</label>
           <input type="text" id="e-weit" maxlength="80" autocomplete="off" list="e-weit-list"><datalist id="e-weit-list"></datalist>
+          <div id="e-kmlist" class="kmlist"></div>
         </div>
         </div></details>
       </div>
@@ -695,6 +696,7 @@
     <div class="card" id="s-berichte">
       <h3 data-ico="doc">Berichte an die Firma</h3>
       <div class="field"><label for="rb-dienstort">Dienstort (Firmensitz, optional, steht auf dem Diätenzettel)</label><input type="text" id="rb-dienstort" maxlength="80" autocomplete="off"></div>
+      <div class="field"><label for="rb-weitmodus">Wie findet die App den am weitesten entfernten Ort?</label><select id="rb-weitmodus"><option value="km">Ich trage je Ort einmal die km ein, danach automatisch</option><option value="karte">Automatisch mit Landkarte (OpenStreetMap)</option><option value="selbst">Ich wähle den Ort jeden Tag selbst</option></select><small>Mit Landkarte wird nur der Ortsname (zum Beispiel „Baustelle Melk“) und dein Dienstort an OpenStreetMap geschickt, damit die App die Entfernung ausrechnen kann. Die km merkt sich die App, du kannst sie beim Tag ändern.</small></div>
       <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
@@ -777,21 +779,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261119061537";</script>
-<script src="engine.js?v=20261119061537"></script>
+<script>window.APP_VERSION="20261119063930";</script>
+<script src="engine.js?v=20261119063930"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261119061537"></script>
-<script src="timepicker.js?v=20261119061537"></script>
-<script src="datepicker.js?v=20261119061537"></script>
-<script src="selectpicker.js?v=20261119061537"></script>
-<script src="pdf.js?v=20261119061537"></script>
-<script src="lzread.js?v=20261119061537"></script>
-<script src="app.js?v=20261119061537"></script>
-<script src="auth.js?v=20261119061537"></script>
-<script src="sync.js?v=20261119061537"></script>
-<script src="insights.js?v=20261119061537"></script>
+<script src="firebase-config.js?v=20261119063930"></script>
+<script src="timepicker.js?v=20261119063930"></script>
+<script src="datepicker.js?v=20261119063930"></script>
+<script src="selectpicker.js?v=20261119063930"></script>
+<script src="pdf.js?v=20261119063930"></script>
+<script src="lzread.js?v=20261119063930"></script>
+<script src="app.js?v=20261119063930"></script>
+<script src="auth.js?v=20261119063930"></script>
+<script src="sync.js?v=20261119063930"></script>
+<script src="insights.js?v=20261119063930"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

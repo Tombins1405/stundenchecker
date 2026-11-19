@@ -1002,3 +1002,9 @@ details#pl-det > summary > h3 { margin: 0; }
 .wkb { flex: none; width: 40px; height: 36px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: inherit; font-size: 1.4rem; line-height: 1; cursor: pointer; }
 .wkb:disabled { opacity: .3; cursor: default; }
 .wkbox { touch-action: pan-y; }
+
+/* km je Ort für den Diätenzettel */
+.kmlist { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.kmrow { display: flex; align-items: center; gap: 8px; }
+.kmrow span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.kmrow input { width: 90px; }
