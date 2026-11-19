@@ -221,7 +221,7 @@
     [/sozialwirtschaft|swoe|swö|pflege|gesundheit/, 'sozial'],
     [/reinigung|denkmal|fassaden/, 'reinigung'],
     [/bewachung|sicherheit|security/, 'bewachung'],
-    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/privatbahn|besoldungsordnung|lokalbahn/, 'bahn_dbo'], [/eisenbahn|westbahn|\b(oe|ö)bb\b/, 'bahn'], [/fleischer|metzger|fleischerei/, 'fleischer'], [/autobus|omnibus/, 'autobus'], [/taxi|personenbef(oe|ö)rderungsgewerbe/, 'taxi'], [/g(ae|ä)rtner|landschaftsg/, 'gaertner'], [/forstunternehm/, 'forst'], [/metalltechnische industrie.*arbeiter|arbeiter.*metalltechnische industrie/, 'metall_ind'], [/chemische industrie/, 'chemie'], [/papierindustrie/, 'papier'], [/textilindustrie/, 'textil'], [/post ag|österreichische post|oesterreichische post/, 'post'], [/(angestellte )?bei [aä]rzten|arztpraxis|ordination/, 'ordination_noe'], [/zahntechnik/, 'zahntechnik'], [/textilreinig|w(ae|ä)scher/, 'textilreinigung'], [/glaser/, 'glaser'], [/tapezierer/, 'tapezierer'], [/steinmetz|steinarbeiter/, 'steinmetz'], [/bodenleger/, 'bodenleger'], [/rauchfangkehrer/, 'rk_noe'], [/rauchfangkehrer[^\n]{0,80}wien/, 'rk_w'], [/rauchfangkehrer[^\n]{0,80}steiermark/, 'rk_stmk'], [/rauchfangkehrer[^\n]{0,80}k(ae|ä)rnten/, 'rk_ktn'], [/rauchfangkehrer[^\n]{0,80}salzburg/, 'rk_sbg'], [/rauchfangkehrer[^\n]{0,80}burgenland/, 'rk_bgld'], [/rauchfangkehrer[^\n]{0,80}ober(oe|ö)sterreich/, 'rk_ooe'], [/sch(ae|ä)dlingsbek/, 'schaedling'], [/kunststoffverarbeit/, 'kunststoff'], [/bauhilfsgewerbe|stuckateur|gipser/, 'bauhilfsgewerbe'], [/kosmetik|fu(ss|ß)pfleg|masseur/, 'kosmetik'], [/tankstell|garagen/, 'garage'], [/seilbahn|bergbahn|liftgesellschaft/, 'seilbahn'], [/reiseb(ü|ue)ro/, 'reisebuero_ang'], [/immobilien|hausverwalt/, 'immobilien_ang'], [/steuerberat|wirtschaftspr(ü|ue)f|wirtschaftstreuh/, 'steuerberatung_ang'], [/information und consulting|ingenieurb(ü|ue)ro|unternehmensberat/, 'ic_ang'], [/kuranstalt|rehabilitation|kurhaus|rehazentrum/, 'kur_reha'], [/agrarservice|agrarunternehm|lohnunternehm/, 'agrar'], [/rauchfangkehrer[^\\n]{0,80}tirol/, 'rk_t'], [/rauchfangkehrer[^\\n]{0,80}vorarlberg/, 'rk_vbg'], [/obst|gem(ü|ue)se|tiefk(ü|ue)hl/, 'lm_obst'], [/fleischwaren/, 'lm_fleisch'], [/getr(ä|ae)nke/, 'lm_getraenke'], [/kino|lichtspiel/, 'kino_w'], [/samariter|arbeiter-samariter/, 'asb_w'], [/rotes kreuz|rettungsdienst|grünes kreuz|krankentransport/, 'rettung_noe'], [/friseur/, 'friseur'],
+    [/b(ae|ä)cker/, 'baecker'], [/konditor/, 'konditor'], [/privatbahn|besoldungsordnung|lokalbahn/, 'bahn_dbo'], [/eisenbahn|westbahn|\b(oe|ö)bb\b/, 'bahn'], [/fleischer|fleischhauer|metzger|fleischerei/, 'fleischer'], [/autobus|omnibus/, 'autobus'], [/taxi|personenbef(oe|ö)rderungsgewerbe/, 'taxi'], [/g(ae|ä)rtner|landschaftsg/, 'gaertner'], [/forstunternehm/, 'forst'], [/metalltechnische industrie.*arbeiter|arbeiter.*metalltechnische industrie/, 'metall_ind'], [/chemische industrie/, 'chemie'], [/papierindustrie/, 'papier'], [/textilindustrie/, 'textil'], [/post ag|österreichische post|oesterreichische post/, 'post'], [/(angestellte )?bei [aä]rzten|arztpraxis|ordination/, 'ordination_noe'], [/zahntechnik/, 'zahntechnik'], [/textilreinig|w(ae|ä)scher/, 'textilreinigung'], [/glaser/, 'glaser'], [/tapezierer/, 'tapezierer'], [/steinmetz|steinarbeiter/, 'steinmetz'], [/bodenleger/, 'bodenleger'], [/rauchfangkehrer/, 'rk_noe'], [/rauchfangkehrer[^\n]{0,80}wien/, 'rk_w'], [/rauchfangkehrer[^\n]{0,80}steiermark/, 'rk_stmk'], [/rauchfangkehrer[^\n]{0,80}k(ae|ä)rnten/, 'rk_ktn'], [/rauchfangkehrer[^\n]{0,80}salzburg/, 'rk_sbg'], [/rauchfangkehrer[^\n]{0,80}burgenland/, 'rk_bgld'], [/rauchfangkehrer[^\n]{0,80}ober(oe|ö)sterreich/, 'rk_ooe'], [/sch(ae|ä)dlingsbek/, 'schaedling'], [/kunststoffverarbeit/, 'kunststoff'], [/bauhilfsgewerbe|stuckateur|gipser/, 'bauhilfsgewerbe'], [/kosmetik|fu(ss|ß)pfleg|masseur/, 'kosmetik'], [/tankstell|garagen/, 'garage'], [/seilbahn|bergbahn|liftgesellschaft/, 'seilbahn'], [/reiseb(ü|ue)ro/, 'reisebuero_ang'], [/immobilien|hausverwalt/, 'immobilien_ang'], [/steuerberat|wirtschaftspr(ü|ue)f|wirtschaftstreuh/, 'steuerberatung_ang'], [/information und consulting|ingenieurb(ü|ue)ro|unternehmensberat/, 'ic_ang'], [/kuranstalt|rehabilitation|kurhaus|rehazentrum/, 'kur_reha'], [/agrarservice|agrarunternehm|lohnunternehm/, 'agrar'], [/rauchfangkehrer[^\\n]{0,80}tirol/, 'rk_t'], [/rauchfangkehrer[^\\n]{0,80}vorarlberg/, 'rk_vbg'], [/obst|gem(ü|ue)se|tiefk(ü|ue)hl/, 'lm_obst'], [/fleischwaren/, 'lm_fleisch'], [/getr(ä|ae)nke/, 'lm_getraenke'], [/kino|lichtspiel/, 'kino_w'], [/samariter|arbeiter-samariter/, 'asb_w'], [/rotes kreuz|rettungsdienst|grünes kreuz|krankentransport/, 'rettung_noe'], [/friseur/, 'friseur'],
     [/holzbau/, 'holzbau'], [/dachdecker/, 'dachdecker'], [/pflasterer/, 'pflasterer'], [/fliesenleger/, 'fliesenleger'],
     [/tischler|holzverarbeit/, 'tischler'], [/maler|lackierer|anstreicher/, 'maler'],
     [/werbung|marktkommunikation/, 'werbung_ang'], [/bank/, 'banken_ang'], [/versicherung/, 'versicherung_ang'], [/informationstechn|it-|edv/, 'it_ang'],
@@ -255,7 +255,7 @@
       }
       if (!out.kv && /kollektivvertrag|\bkv\b/.test(lo) && !PERS.test(t)) {
         var rest = t.replace(/^.*?(kollektivvertrag|\bkv\b)\s*[:\-]?\s*/i, '').slice(0, 80);
-        if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; break; } }
+        if (rest && !/\d{4,}/.test(rest)) { out.kv = rest; var n = normMon(rest); for (var i = 0; i < KVMAP.length; i++) if (KVMAP[i][0].test(n)) { out.paket = KVMAP[i][1]; out.kvZeile = true; break; } }
       }
       var me2 = /(?:^|\s)(?:eintritt(?:sdatum)?|ein\.?\s*datum)\s*[:\-]?\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/i.exec(t); if (me2 && !out.eintritt) out.eintritt = iso(me2[1], me2[2], me2[3]);
       var mg2 = /(?:^|\s)(?:geb\.?(?:urts)?\s*(?:datum|dat\.?)?|geboren(?:\s+am)?)\s*[:\-]?\s*(\d{1,2})\.(\d{1,2})\.(\d{4})/i.exec(t); if (mg2 && !out.geb) out.geb = iso(mg2[1], mg2[2], mg2[3]);
@@ -269,9 +269,13 @@
       }
       var mt = /(?:^|\s)tarifgruppe\s*[:\-]?\s+([A-Za-z0-9\-\.]{1,12})(?:\s|$)/i.exec(t);
       if (mt) out.tarifgruppe = mt[1];
-      if (!out.einstufung) {
+      if (!out.einstufung || (out.beschaeftigt && out.einstufung === out.beschaeftigt.slice(0, 60) && !out.einstExpl)) {
         var me = /^(einstufung|lohngruppe|verwendungsgruppe|beschaeftigungsgruppe|beschäftigungsgruppe|gehaltsgruppe|entlohnungsgruppe|lohnstufe|kategorie|gruppe)\b\s*[:\-]?\s*(.{1,40})$/i.exec(t);
-        if (me && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(me[2])) out.einstufung = (me[1] + ' ' + me[2]).replace(/\s+/g, ' ').trim().slice(0, 60);
+        if (me && !PERS.test(t) && !/\d{1,3}(?:\.\d{3})*,\d\d/.test(me[2])) { out.einstufung = (me[1] + ' ' + me[2]).replace(/\s+/g, ' ').trim().slice(0, 60); out.einstExpl = true; }
+      }
+      if (!out.wst) {
+        var mw = /(?:^|\s)(?:wochenstunden|wochenstd\.?|wochenarbeitszeit|w(?:ö|oe)chentl(?:\.|iche)?\s*arbeitszeit|std\.?\s*\/\s*woche|stunden\s*\/\s*woche|stunden\s+pro\s+woche|besch(?:ä|ae)ftigungsausma(?:ß|ss)|ausma(?:ß|ss))\s*[:\-]?\s*(\d{1,2}(?:[,\.]\d{1,2})?)(?:\s*(?:std|stunden|h)\b)?(?!\s*%)(?!\d)/i.exec(t);
+        if (mw) { var wv = zahl(mw[1].replace('.', ',')); if (wv >= 1 && wv <= 60) out.wst = wv; }
       }
       if (out.stundenlohn === null) {
         var ms = /^(stundenlohn|grundlohn|stundensatz|lohn)\b[^\d€]{0,30}?(\d{1,3}(?:\.\d{3})*,\d{1,4})/i.exec(t);
@@ -289,7 +293,7 @@
     });
     if (LG && (out.stundenlohn !== null || out.monatslohn !== null)) {
       Object.keys(LG).forEach(function (pk) {
-        if (out.paket && out.paket !== pk) return;
+        if (out.paket && out.paket !== pk && pk.indexOf(out.paket + '_') !== 0) return; // auch Bundesland-Fassungen desselben KV (z. B. fleischer_t)
         LG[pk].gruppen.forEach(function (g) { var tabs = [g.l]; (LG[pk].folgt || []).forEach(function (f) { if (f.gruppen && f.gruppen[g.id]) tabs.push(f.gruppen[g.id]); }); tabs.forEach(function (tab) { tab.forEach(function (val, si) {
           if (val == null) return;
           var hit = g.m ? (out.monatslohn !== null && Math.abs(out.monatslohn - val) < 0.005) : (out.stundenlohn !== null && Math.abs(out.stundenlohn - val) < 0.005);
