@@ -3168,7 +3168,7 @@
   // Fehlt "bausteine" (ältere Konten), ist alles an: nichts verschwindet.
   function bausteine(w) {
     var s = (w && w.bausteine) || {};
-    return { fahrzeug: s.fahrzeug !== false, kunden: s.kunden !== false, praemien: s.praemien !== false, dienste: s.dienste !== false, bericht: s.bericht !== false, homeoffice: s.homeoffice === true };
+    return { fahrzeug: s.fahrzeug !== false, kunden: s.kunden !== false, praemien: s.praemien !== false, dienste: s.dienste !== false, bericht: s.bericht !== false, homeoffice: s.homeoffice === true, dienstplan: s.dienstplan === true };
   }
 
   /* ---------------------------------------------------------------- Werte "Gültig ab" */
