@@ -68,8 +68,8 @@
   }
   function fremdeAenderung() {
     var cur = null; try { cur = localStorage.getItem(KEY); } catch (e) { return false; }
-    if (!cur || lastRaw === null || cur === lastRaw) return false;
-    try { var t = JSON.parse(cur), b = JSON.parse(lastRaw); if (t && typeof t.days === 'object') { data = m3(b, data, t); lastRaw = cur; return true; } } catch (e) { }
+    if (!cur || cur === lastRaw) return false; // lastRaw leer: beim Start war hier noch nichts gespeichert (z. B. nach dem Anmelden)
+    try { var t = JSON.parse(cur), b = lastRaw === null ? { version: 1, settings: [], days: {}, abgleich: {}, profil: {} } : JSON.parse(lastRaw); if (t && typeof t.days === 'object') { data = m3(b, data, t); lastRaw = cur; return true; } } catch (e) { }
     return false;
   }
   function load() {
@@ -104,7 +104,7 @@
     });
   })();
   // Das Konto hat Änderungen von einem anderen Gerät dazugemischt: übernehmen und neu anzeigen (außer man tippt gerade)
-  document.addEventListener('sc-fremd', function () { if (fremdeAenderung()) { var ae = document.activeElement; if (!(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) { try { show(ui.view || 'erfassen', true); } catch (e) { } } } });
+  document.addEventListener('sc-fremd', function () { if (fremdeAenderung()) { if (ui.wiz && ui.wiz.mode === 'start' && (data.settings.length || Object.keys(data.days).length)) wzClose(false); var ae = document.activeElement; if (!(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))) { try { show(ui.view || 'erfassen', true); } catch (e) { } } } });
   window.addEventListener('storage', function (ev) { if (ev.key === KEY && ev.newValue !== lastRaw) fremdeAenderung(); });
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState !== 'visible') return;
@@ -222,7 +222,7 @@
     if (view === 'lohn') renderLohn();
     if (view === 'erfassen') renderEditor();
     if (view === 'konten') { renderKonten(); renderExtras(); }
-    if (view === 'einstellungen') { renderPraemienSettings(); renderDiensteSettings(); renderSettings(); fillBackup(); renderCheck(); }
+    if (view === 'einstellungen') { profilFelder(); renderPraemienSettings(); renderDiensteSettings(); renderSettings(); fillBackup(); renderCheck(); }
     renderOpenDay();
     window.scrollTo(0, 0);
     if (wzNeeds() && !ui.wiz) { if (syncWartet()) { if (!ui.wzWarte) { ui.wzWarte = true; var wz1 = function () { ui.wzWarte = false; if (wzNeeds() && !ui.wiz) wzOpen('start', '2026-01-01'); }; document.addEventListener('sc-geladen', wz1, { once: true }); setTimeout(function () { if (ui.wzWarte) { document.removeEventListener('sc-geladen', wz1); wz1(); } }, 8000); } } else wzOpen('start', '2026-01-01'); }
@@ -1165,6 +1165,12 @@
       toast(abw1(schon ? '{0} Tage eingetragen. {1} Tage waren schon belegt und bleiben unverändert. Kläre die freien Tage noch mit deiner Firma.' : '{0} Tage eingetragen. Kläre die freien Tage noch mit deiner Firma.', [n, schon]), 7000);
     });
   })();
+  // Eintritt und Auszahlungstag stehen bei den Einstellungen: dort auch immer mit den gespeicherten Werten füllen (sonst wirkten sie leer)
+  function profilFelder() {
+    var p = data.profil || {};
+    if (document.activeElement !== $('#k-eintritt')) $('#k-eintritt').value = p.eintritt || '';
+    if (document.activeElement !== $('#k-zahltag')) $('#k-zahltag').value = p.zahltag || '';
+  }
   function renderKonten() {
     renderJahr();
     try { renderBruttoJahr(); } catch (e) { }
@@ -1174,8 +1180,7 @@
     var p = data.profil || {};
     var kbl = $('#k-bl'), pkc = E.PAKETE[wAt(todayISO()).paket];
     if (kbl) { $('#k-blwrap').hidden = !(pkc && pkc.land === 'DE'); kbl.innerHTML = '<option value="">Bitte wählen</option>' + Object.keys(E.BUNDESLAENDER).map(function (k) { return '<option value="' + k + '"' + (p.bl === k ? ' selected' : '') + '>' + E.BUNDESLAENDER[k] + '</option>'; }).join(''); }
-    $('#k-eintritt').value = p.eintritt || '';
-    if (document.activeElement !== $('#k-zahltag')) $('#k-zahltag').value = p.zahltag || '';
+    profilFelder();
     $('#k-urlaubjahr').value = p.urlaubJahr == null ? '' : p.urlaubJahr;
     $('#k-lztag').value = p.lzTag == null ? '' : p.lzTag;
     $('#k-urlaubstart').value = p.urlaubStart == null ? '' : p.urlaubStart;
@@ -2947,7 +2952,7 @@
   /* ============================================================ ERSTE FRAGEN (Beruf, Bausteine, Kollektivvertrag, Lohn) */
   var WZ_ORDER = ['mia', 'beruf', 'art', 'bausteine', 'kv', 'lohn'];
   // Nach dem Anmelden erst die Daten aus dem Konto laden, dann (nur wenn wirklich leer) die Einrichtung zeigen
-  function syncWartet() { try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return false; } catch (e) { } if (window.StundenSync) return !!(StundenSync.laedt && StundenSync.laedt()); return !!(window.firebase && firebase.apps && firebase.apps.length); }
+  function syncWartet() { try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return false; } catch (e) { } if (window.StundenSync) return !!(StundenSync.laedt && StundenSync.laedt()); var c = window.FIREBASE_CONFIG; return !!(c && c.apiKey && !/HIER/.test(c.apiKey) && window.firebase); } // Anmeldung startet erst nach app.js: dann trotzdem warten
   function wzNeeds() { return data.settings.length === 0 && Object.keys(data.days).length === 0 && !ui.wizDismissed; }
   function wzOpen(mode, ab) {
     var cur = mode === 'change' ? wAt(ab) : null, w = { mode: mode, ab: ab, cStat: mode === 'start', cMia: mode === 'start', step: 'beruf', hist: [], beruf: null, art: null, b: { fahrzeug: true, kunden: true, praemien: true }, diaeten: true, sw: false, paket: 'gueter', eintritt: '', lohn: '', wochen: '', dsatz: '' };
@@ -3452,6 +3457,7 @@
     if ($('#c-praem')) $('#c-praem').checked = !!co.praemien;
   }
   function renderSettings() {
+    profilFelder();
     stzDom();
     var ah = $('#s-all-hint'), wn = wAt(todayISO()); if (ah) ah.textContent = wn && wn.diaeten && wn.diaeten.modell === 'aus' ? 'Deine Werte gelten immer ab einem Datum. Einen neuen Stundenlohn legst du bequemer direkt bei „Stundenlohn“ unten an.' : 'Deine Werte gelten immer ab einem Datum. Einen neuen Stundenlohn oder Diätensatz legst du bequemer direkt bei „Stundenlohn“ und „Diäten“ unten an.';
     try { renderFest(); } catch (e) { }
@@ -4225,18 +4231,21 @@
   function appInstalliert() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
   function iconNeuInstallieren() {
     if (!appInstalliert()) return;
-    try { localStorage.removeItem('stundenchecker.noinstall'); } catch (e) { }
+    try { localStorage.removeItem('stundenchecker.noinstall'); localStorage.removeItem('stundenchecker.installiert'); } catch (e) { }
     var S = window.StundenSync, an = !!(S && S.angemeldet && S.angemeldet()), ios = /iphone|ipad|ipod/i.test(navigator.userAgent), url = new URL('./', location.href).href;
     if (an && S.sichern) S.sichern();
     var d = $('#icon-dlg');
     if (!d) { d = document.createElement('div'); d.id = 'icon-dlg'; d.className = 'cropov'; document.body.appendChild(d); }
-    var st = [abwLab(ios ? 'Halte das Stunden-Checker-Symbol auf dem Home-Bildschirm gedrückt und wähle „App entfernen“.' : 'Halte das Stunden-Checker-Symbol auf dem Startbildschirm gedrückt und wähle „Deinstallieren“.'),
-      abwLab(ios ? 'Öffne den Stunden-Checker in Safari (Link unten).' : 'Öffne den Stunden-Checker im Browser (Link unten).'),
-      abwLab(ios ? 'Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Jetzt ist dein neues Symbol dabei.' : 'Tippe auf „Installieren“. Jetzt ist dein neues Symbol dabei.')];
+    // Android: der Link würde in der installierten App selbst aufgehen. Darum direkt im Browser öffnen, mit dem die App installiert wurde.
+    var android = /android/i.test(navigator.userAgent), pkg = /SamsungBrowser/i.test(navigator.userAgent) ? 'com.sec.android.app.sbrowser' : 'com.android.chrome';
+    var intent = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=' + pkg + ';S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+    var st = ios ? [abwLab('Tippe unten auf „Link kopieren“ und öffne den Link in Safari.'), abwLab('Halte das alte Stunden-Checker-Symbol auf dem Home-Bildschirm gedrückt und wähle „App entfernen“.'), abwLab('Tippe in Safari auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Jetzt ist dein neues Symbol dabei.')]
+      : [abwLab('Tippe unten auf „Im Browser öffnen“. Der Stunden-Checker geht im Browser auf.'), abwLab('Geh auf den Startbildschirm, halte das alte Stunden-Checker-Symbol gedrückt und wähle „Deinstallieren“.'), abwLab('Geh zurück in den Browser und tippe auf „Als App aufs Handy legen“. Jetzt ist dein neues Symbol dabei.')];
     d.innerHTML = '<div class="lzbox" role="dialog" aria-modal="true"><h3>' + esc(abwLab('Neues App-Symbol')) + '</h3><p>' + esc(abwLab('Dein neues Symbol ist gespeichert. Auf dem Startbildschirm ändert es sich erst, wenn du die App einmal neu installierst. Das Handy übernimmt das Symbol nur beim Installieren.')) + '</p>' +
       (an ? '<div class="notice">✓ ' + esc(abwLab('Deine Daten sind in deinem Konto gesichert und kommen nach dem Neu-Installieren automatisch zurück.')) + '</div>' : '<div class="notice warn">' + esc(abwLab('Achtung: Du bist nicht angemeldet. Melde dich zuerst an, damit deine Daten gesichert sind. Sonst können sie beim Entfernen verloren gehen.')) + '</div>') +
-      '<ol style="padding-left:20px;margin:10px 0">' + st.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol><p class="nott"><a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a></p>' +
-      '<div class="btns"><button type="button" class="btn" id="icon-dlg-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn primary" id="icon-dlg-x">' + esc(abwLab('Später')) + '</button></div></div>';
+      '<ol style="padding-left:20px;margin:10px 0">' + st.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>' +
+      '<p class="hint">' + esc(abwLab('Sagt das Handy „Diese App wurde bereits installiert“? Dann ist das alte Symbol noch da. Zuerst Schritt 2 machen.')) + '</p>' +
+      '<div class="btns">' + (android ? '<a class="btn primary" id="icon-dlg-open" href="' + esc(intent) + '">' + esc(abwLab('Im Browser öffnen')) + '</a>' : '') + '<button type="button" class="btn" id="icon-dlg-copy">' + esc(abwLab('Link kopieren')) + '</button><button type="button" class="btn" id="icon-dlg-x">' + esc(abwLab('Später')) + '</button></div></div>';
     d.hidden = false;
     $('#icon-dlg-x').onclick = function () { d.hidden = true; };
     $('#icon-dlg-copy').onclick = function () { try { navigator.clipboard.writeText(url).then(function () { toast('Link kopiert.'); }); } catch (e) { } };
@@ -4325,6 +4334,8 @@
   (function () {
     var deferred = null, bar = $('#installbar'), wieder = false;
     var KEY = 'stundenchecker.noinstall';
+    function schonDa() { try { return localStorage.getItem('stundenchecker.installiert') === '1'; } catch (e) { return false; } }
+    if (installiert()) { try { localStorage.setItem('stundenchecker.installiert', '1'); } catch (e) { } }
     function weg() { try { var v = +localStorage.getItem(KEY) || 0; return v > 1 && Date.now() - v < 3 * 86400000; } catch (e) { return false; } } // „×“ blendet den Hinweis 3 Tage aus
     function installiert() { return appInstalliert(); }
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
@@ -4332,11 +4343,11 @@
       var an = !installiert();
       document.querySelectorAll('[data-install]').forEach(function (b) { b.hidden = !an && b.id !== 'k-install'; });
       var k = $('#k-install'); if (k) k.textContent = an ? '📲 ' + abwLab('Als App aufs Handy legen') : '🎨 ' + abwLab('App-Symbol ändern');
-      if (bar) bar.hidden = !an || weg();
+      if (bar) bar.hidden = !an || weg() || schonDa();
     }
     window.installKnoepfe = knoepfe;
     window.addEventListener('beforeinstallprompt', function (ev) { ev.preventDefault(); deferred = ev; knoepfe(); });
-    window.addEventListener('appinstalled', function () { deferred = null; knoepfe(); var d = $('#inst-dlg'); if (d && !d.hidden) zeige(3); });
+    window.addEventListener('appinstalled', function () { deferred = null; try { localStorage.setItem('stundenchecker.installiert', '1'); } catch (e) { } knoepfe(); var d = $('#inst-dlg'); if (d && !d.hidden) zeige(3); });
     var ua = navigator.userAgent || '', ios = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /android/i.test(ua);
     var inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|; wv\)/i.test(ua), samsung = /SamsungBrowser/i.test(ua), firefox = /Firefox|FxiOS/i.test(ua), iosAnders = ios && /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
     var url = new URL('./', location.href).href;
@@ -4395,7 +4406,7 @@
       if ($('#inst-zu')) $('#inst-zu').onclick = function () { d.hidden = true; };
       if ($('#inst-go')) $('#inst-go').onclick = function () { if (!deferred) { zeige(2); return; } var dp = deferred; dp.prompt(); dp.userChoice.then(function (r) { deferred = null; if (r && r.outcome === 'accepted') zeige(3); else zeige(2); }, function () { zeige(2); }); };
       if ($('#inst-copy')) $('#inst-copy').onclick = function () { try { navigator.clipboard.writeText(url).then(function () { toast(abwLab('Link kopiert.')); }); } catch (e) { } };
-      if ($('#inst-fertig')) $('#inst-fertig').onclick = function () { if (deferred) zeige(1); else d.hidden = true; };
+      if ($('#inst-fertig')) $('#inst-fertig').onclick = function () { if (deferred) zeige(1); else { d.hidden = true; if (bar) bar.hidden = true; } };
     }
     // Nach „Eigenes Foto“ (Zuschneiden) geht es mit Schritt 1 weiter
     ['#crop-ok', '#crop-x'].forEach(function (sel) { var b = $(sel); if (b) b.addEventListener('click', function () { if (!wieder) return; wieder = false; setTimeout(function () { zeige(1); }, 50); }); });

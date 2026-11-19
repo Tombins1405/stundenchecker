@@ -21,10 +21,10 @@
     return !d || (!Object.keys(d.days || {}).length && !(d.settings || []).length && !Object.keys(d.abgleich || {}).length); // nur App-Merker im Profil zählen nicht als eigene Daten
   }
   function status(t, cls) { var el = document.getElementById('a-sync'); if (el) { el.textContent = t; el.className = 'a-sync ' + (cls || ''); } }
-  function reload() { weg = true;
-    var last = 0; try { last = +sessionStorage.getItem('sc.rl') || 0; } catch (e) {}
-    if (Date.now() - last < 15000) return;
-    try { sessionStorage.setItem('sc.rl', String(Date.now())); } catch (e) {}
+  function reload(daten) { weg = true;
+    var l = []; try { l = JSON.parse(sessionStorage.getItem('sc.rl2') || '[]').filter(function (x) { return Date.now() - x < 30000; }); } catch (e) {}
+    if (l.length >= (daten ? 3 : 1)) { weg = false; fertig(); return; } // Schutz gegen Endlos-Neuladen; die Daten sind trotzdem schon übernommen
+    l.push(Date.now()); try { sessionStorage.setItem('sc.rl2', JSON.stringify(l)); } catch (e) {}
     location.reload();
   }
   function stash() { var raw = rd(KEY); if (raw) wr(KEY + '.vor-anmeldung-' + Date.now(), raw); } // Sicherheitskopie, falls Daten eines anderen Kontos auf dem Gerät lagen
@@ -70,7 +70,8 @@
       document.body.appendChild(o);
     });
   }
-  function useRemote(remote) { wr(KEY, remote.json); wr(BASIS, remote.json); setMeta({ uid: uid, t: remote.t || 0, syncedT: remote.t || 0 }); reload(); }
+  // Daten aus dem Konto: sofort in die laufende App übernehmen (auch wenn das Neuladen der Seite gerade gesperrt ist), dann neu laden
+  function useRemote(remote) { wr(KEY, remote.json); wr(BASIS, remote.json); setMeta({ uid: uid, t: remote.t || 0, syncedT: remote.t || 0 }); document.dispatchEvent(new Event('sc-fremd')); reload(true); }
 
   function push() {
     var raw = rd(KEY), m = meta(), cut = new Date().toISOString();
