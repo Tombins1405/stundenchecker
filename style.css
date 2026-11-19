@@ -1049,3 +1049,12 @@ details#pl-det > summary > h3 { margin: 0; }
 .ib-ik path { fill: none; }
 @keyframes ibpuls { 50% { transform: scale(1.15); } }
 @media (prefers-reduced-motion: reduce) { .ib-kreis { animation: none; } }
+h3[data-ico="extras"] { --ico: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22black%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Crect x=%223%22 y=%223%22 width=%227%22 height=%227%22 rx=%221.5%22/%3E%3Crect x=%2214%22 y=%223%22 width=%227%22 height=%227%22 rx=%221.5%22/%3E%3Crect x=%223%22 y=%2214%22 width=%227%22 height=%227%22 rx=%221.5%22/%3E%3Cpath d=%22M17.5 14v7M14 17.5h7%22/%3E%3C/svg%3E"); }
+.xgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.xtile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 92px; padding: 10px 8px; border-radius: 14px; border: 1px solid rgba(100,181,246,.45); background: linear-gradient(180deg, rgba(100,181,246,.22), rgba(100,181,246,.08)); color: inherit; font: inherit; font-weight: 700; font-size: .92rem; line-height: 1.2; text-align: center; box-shadow: 0 2px 0 rgba(0,0,0,.25); cursor: pointer; }
+.xtile:active { transform: translateY(1px); box-shadow: none; }
+.xtile .xi { font-size: 1.7rem; line-height: 1; }
+.st-ul { padding-left: 20px; margin: 6px 0 12px; }
+.st-ul li { margin: 6px 0; line-height: 1.45; }
+#lz-body h4 { margin: 14px 0 4px; }
+.st-links a { font-weight: 700; }
