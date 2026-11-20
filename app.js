@@ -2971,7 +2971,7 @@
     if (cur) {
       w.beruf = cur.beruf || null; w.art = cur.art || null; var bb = E.bausteine(cur); w.b = { fahrzeug: bb.fahrzeug, kunden: bb.kunden, praemien: bb.praemien, dienste: bb.dienste, bericht: bb.bericht, homeoffice: bb.homeoffice };
       w.diaeten = cur.diaeten.modell !== 'aus'; w.sw = !!cur.schlechtwetter; w.paket = cur.paket || 'gueter'; w.kvGewaehlt = !!cur.paket; w.bl = (data.profil && data.profil.bl) || '';
-      w.einst = cur.einstufung || ''; w.lg = cur.lg || null; w.ls = cur.ls != null ? cur.ls : null; w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); w.dsatz = cur.diaeten.satz || '';
+      w.einst = cur.einstufung || ''; w.lg = cur.lg || null; w.ls = cur.ls != null ? cur.ls : null; w.lohn = cur.stundenlohn == null ? '' : cur.stundenlohn; w.wochen = E.wochenStd(cur.ueberstunden); var wpk = E.PAKETE[cur.paket]; w.wstEigen = wpk && +w.wochen > 0 && +w.wochen !== +wpk.werte.ueberstunden.wochenStd ? +w.wochen : null; w.dsatz = cur.diaeten.satz || '';
     }
     w.mia = (miaCfg().figur); ui.wiz = w; wzRender(); $('#wiz').hidden = false;
   }
@@ -2981,13 +2981,13 @@
     if (w.paket !== neu) { w.lg = null; w.ls = null; }
     var eigen = alt && +w.wochen > 0 && +w.wochen !== +alt.werte.ueberstunden.wochenStd;
     w.paket = neu; w.kvGewaehlt = true; var kl0 = E.kvLand(neu); if (kl0 && kl0.length === 1 && !landAT()) landSetzen(kl0[0]);
-    if (!eigen) w.wochen = pn.ueberstunden.wochenStd; w.dsatz = pn.diaeten.modell === 'stunde' ? pn.diaeten.satz : '';
+    if (!eigen) w.wochen = w.wstEigen > 0 ? w.wstEigen : pn.ueberstunden.wochenStd; w.dsatz = pn.diaeten.modell === 'stunde' ? pn.diaeten.satz : '';
   }
   function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; }
   function wzSetBeruf(k) {
     var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
     w.diaeten = b.diaeten; w.sw = b.sw; w.paket = b.paket;
-    var p = E.PAKETE[w.paket].werte; w.wochen = p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : '';
+    var p = E.PAKETE[w.paket].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : p.ueberstunden.wochenStd; w.dsatz = p.diaeten.modell === 'stunde' ? p.diaeten.satz : '';
   }
   function wzNext() {
     var w = ui.wiz; if (w.step === 'lzhinweis') { wzFinish(); return; }
@@ -3009,7 +3009,7 @@
     var at = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; });
     var wahl = ak && E.PAKETE[ak] ? ak : (kvL[0] || at[0] || kvs[0] || 'gueter');
     if (!E.PAKETE[wahl]) wahl = 'gueter';
-    w.paket = wahl; var pv = E.PAKETE[wahl].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null;
+    w.paket = wahl; var pv = E.PAKETE[wahl].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null;
     if (!data.profil) data.profil = {}; data.profil.kvAuto = wahl; // Mia fragt nach dem ersten Lohnzettel, ob er stimmt
   }
   function wzBack() { var w = ui.wiz; if (!w.hist.length) { wzClose(true); return; } w.step = w.hist.pop(); wzRender(); }
@@ -3219,7 +3219,7 @@
   }
 
   function wzFinish() {
-    var w = ui.wiz;
+    var w = ui.wiz; if (w.monatAuto && w.lg) lohnVorschlag(w); // Wochenstunden können sich nach der Wahl der Lohngruppe geändert haben
     ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
     var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
     if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.zaUmr = old.zaUmr; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
@@ -3272,7 +3272,7 @@
     var lg = E.lgFuer(E.LOHNGRUPPEN[w.paket], todayISO()); if (!lg) return;
     var g = lg.gruppen.filter(function (x) { return x.id === w.lg; })[0]; if (!g) return;
     var i = lg.stufen && g.l.length > 1 ? (w.ls === '' || w.ls == null ? -1 : +w.ls) : 0; if (i < 0 || g.l[i] == null) return;
-    if (g.m) { w.monat = g.l[i]; w.monatAuto = true; w.lohn = Math.round(g.l[i] / lgTeiler(lg, w.wochen) * 100) / 100; }
+    if (g.m) { var vz0 = +E.PAKETE[w.paket].werte.ueberstunden.wochenStd || 0, wo0 = +w.wochen || 0, tf = vz0 > 0 && wo0 > 0 && wo0 < vz0 ? wo0 / vz0 : 1; w.monat = Math.round(g.l[i] * tf * 100) / 100; w.monatAuto = true; w.lohn = Math.round(g.l[i] / lgTeiler(lg, vz0 || w.wochen) * 100) / 100; } // Teilzeit: Monatslohn anteilig, Stundenlohn wie Vollzeit
     else { if (w.monatAuto) { w.monat = ''; w.monatAuto = false; } w.lohn = g.l[i]; }
   }
   // Berufe alphabetisch, „Etwas anderes“ immer zuletzt
@@ -3429,7 +3429,7 @@
       if (kvL.length) { kvs = kvL.concat(kvs.filter(function (k) { return kvL.indexOf(k) < 0; })); }
       if (w.scan && !w.scanDone) { w.scanDone = true; lzAnwenden(w, w.scan.k, w.scan.tr); }
       if (w.kvGewaehlt && E.PAKETE[w.paket] && kvs.indexOf(w.paket) < 0) kvs.unshift(w.paket);
-      if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
+      if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
       var cp = E.PAKETE[w.paket]; html += lzFremdHtml(w);
       var kvAt = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; }), auto = (ak && String(ak).indexOf('de_') !== 0) ? ak : (kvL.length === 1 ? kvL[0] : (kvAt.length === 1 ? kvAt[0] : null));
       var kvListe = '<div class="wzlist">' + kvs.map(function (k) { return '<button type="button" class="btn wzopt' + (w.paket === k ? ' on' : '') + '" data-wk="' + k + '">' + (k === 'eigen' ? 'Weiß ich nicht / eigene Werte' : esc(E.PAKETE[k].name)) + '</button>'; }).join('') + '</div>';
@@ -3492,7 +3492,7 @@
       if (t.id === 'wz-back') { wzBack(); return; }
     });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (!ui.wiz) return; if (t.dataset.wc) { var k = t.dataset.wc; if (k === 'diaeten' || k === 'sw') ui.wiz[k] = t.checked; else ui.wiz.b[k] = t.checked; } });
-    ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-such') { wzSuche(t.value); return; } if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') ui.wiz[t.dataset.wf] = t.value; });
+    ov.addEventListener('input', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-such') { wzSuche(t.value); return; } if (ui.wiz && t.dataset.wf && t.tagName !== 'SELECT') { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'wochen') ui.wiz.wstEigen = +t.value > 0 ? +t.value : null; } });
     ov.addEventListener('change', function (ev) { var t = ev.target; if (ui.wiz && t.id === 'wz-kvall' && t.value && E.PAKETE[t.value]) { wzKvWechsel(ui.wiz, t.value); wzRender(); return; }
       if (ui.wiz && t.id === 'wz-land') { landSetzen(t.value); ui.wiz.kvGewaehlt = false; wzRender(); return; } if (ui.wiz && t.dataset && t.dataset.wfc) { if (t.dataset.wfc === 'beide') { ui.wiz.cStat = t.checked; ui.wiz.cMia = t.checked; } else if (t.dataset.wfc === 'statistik') ui.wiz.cStat = t.checked; else ui.wiz.cMia = t.checked; return; } if (ui.wiz && t.tagName === 'SELECT' && (t.dataset.wf === 'lg' || t.dataset.wf === 'ls')) { ui.wiz[t.dataset.wf] = t.value; if (t.dataset.wf === 'lg') ui.wiz.ls = ''; lohnVorschlag(ui.wiz); wzRender(); } });
     $('#kv-aendern').addEventListener('click', function () { kvAendern(curEntry() || wAt(todayISO())); });
@@ -5857,10 +5857,10 @@
     if (k.paket && E.PAKETE[k.paket] && ((k.kvZeile && !/^(gewerbe_ang|industrie_ang)$/.test(k.paket)) || kvs.indexOf(k.paket) >= 0)) // steht der KV ausdrücklich auf dem Lohnzettel, gilt er
       pak = tr && E.PAKETE[tr.paket] && (tr.paket === k.paket || tr.paket.indexOf(k.paket + '_') === 0) ? tr.paket : lzLandPaket(k.paket);
     if (!pak && tr && kvs.indexOf(tr.paket) >= 0) pak = tr.paket;
-    if (pak && pak !== w.paket) { var pv = E.PAKETE[pak].werte; w.paket = pak; w.wochen = pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
+    if (pak && pak !== w.paket) { var pv = E.PAKETE[pak].werte; w.paket = pak; w.wochen = w.wstEigen > 0 ? w.wstEigen : pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
     w.kvFremd = !!(pak && kvs.length && kvs.indexOf(pak) < 0); w.lzBeruf = lzBerufVorschlag(k, tr);
     if (pak) { w.kvGewaehlt = true; w.kvAusLz = true; var kl1 = E.kvLand(pak); if (tr && !tr.hinweis && tr.paket === pak && kl1 && kl1.length === 1 && !landAT()) landSetzen(kl1[0]); }
-    if (k.wst) w.wochen = k.wst;
+    if (k.wst) { w.wochen = k.wst; w.wstEigen = k.wst; }
     if (k.stundenlohn !== null) w.lohn = k.stundenlohn;
     if (k.monatslohn !== null && k.stundenlohn === null) w.monat = k.monatslohn;
     if (k.einstufung) w.einst = k.einstufung;
