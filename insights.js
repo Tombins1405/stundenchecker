@@ -75,6 +75,28 @@
         db().collection('statistik').doc(anonId() + '_praemien').set({ monat: 'praemien', beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, praemien: liste, t: stamp() }).catch(function () {});
       } catch (e) {}
     },
+    // Lernen aus dem Lohnzettel, nur mit Einwilligung „Lohnzettel“: Lohnprogramm, Bezeichnungen und Zeilennamen ohne Zahlen,
+    // was erkannt wurde und was der Nutzer gewählt hat. Firmenname nur mit eigener Einwilligung „Firma“. Nie Namen, Beträge, Adresse.
+    // Liegt in „statistik“ (monat = 'lz'), damit die bestehenden Datenbank-Regeln reichen. Je Gerät und Lohnzettel-Art ein Dokument.
+    lernen: function (p) {
+      var co = consent(); if (!ON || !co.lohnzettel || !p) return;
+      try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return; } catch (e) {}
+      try {
+        var info = (app().info && app().info()) || {}, z = [], txt = function (v, n) { return String(v == null ? '' : v).replace(/\d{1,3}(?:\.\d{3})*,\d\d/g, '').replace(/\s+/g, ' ').trim().slice(0, n || 60); };
+        if (p.programm) z.push({ a: 'programm', w: txt(p.programm, 30) });
+        if (p.kv) z.push({ a: 'kv', w: txt(p.kv, 80), p: p.kvPaket || null });
+        if (p.als) z.push({ a: 'als', w: txt(p.als, 40), b: p.berufErkannt || null });
+        if (p.einst) z.push({ a: 'einst', w: txt(p.einst, 60) });
+        if (p.firma && co.firma) z.push({ a: 'firma', w: txt(p.firma, 60) });
+        if (p.gewaehlt) z.push({ a: 'gewaehlt', w: txt(p.gewaehlt, 80) });
+        (p.zeilen || []).slice(0, 150).forEach(function (r) { var w = txt(r.l, 48); if (w) z.push({ a: 'zeile', w: w, k: r.k || null }); });
+        if (!z.length) return;
+        var sig = JSON.stringify(z), h = 0; for (var i = 0; i < sig.length; i++) h = (h * 31 + sig.charCodeAt(i)) | 0;
+        var k = 'stundenchecker.lzsig.' + (h >>> 0).toString(36); if (rd(k)) return; wr(k, '1');
+        var form = (p.programm || '') + '|' + (p.kv || '') + '|' + (p.zeilen || []).map(function (r) { return r.l; }).join('|'), hf = 0; for (var j = 0; j < form.length; j++) hf = (hf * 31 + form.charCodeAt(j)) | 0;
+        db().collection('statistik').doc(anonId() + '_lz_' + (hf >>> 0).toString(36)).set({ monat: 'lz', beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, zeilen: z, t: stamp() }).catch(function () {});
+      } catch (e) {}
+    },
     // Anonyme Abweichungs-Statistik, nur mit Einwilligung: Beruf, Zeilen, Status, Größe grob (0,5 h)
     statistik: function (monat, rows) {
       if (!ON || !consent().statistik || !rows || !rows.length) return;

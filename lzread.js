@@ -425,6 +425,11 @@
     });
     return p.then(function () { return teile.join('\n'); });
   }
-  var api = { leseRoh: leseRoh, bauZeilen: bauZeilen, fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
+  // Lohnverrechnungsprogramm erkennen (steht meist in der Fuß- oder Kopfzeile); nur der Name, sonst nichts
+  var PROG = [[/\bbmd\b|\bntcs\b/i, 'BMD'], [/\brzl\b/i, 'RZL'], [/\bdatev\b/i, 'DATEV'], [/sage\s*dpw|sagedpw|\bdpw\b/i, 'Sage DPW'], [/infoniqa/i, 'Infoniqa'],
+    [/successfactors|\bsap\b/i, 'SAP'], [/p\s*&\s*i\s+loga|\bloga\b/i, 'P&I LOGA'], [/\badp\b/i, 'ADP'], [/personio/i, 'Personio'], [/lexware/i, 'Lexware'],
+    [/agenda[\s\-]*(lohn|software)/i, 'Agenda'], [/addison/i, 'Addison'], [/edlohn|eurodata/i, 'eurodata'], [/winline|mesonic/i, 'Mesonic WinLine'], [/abacus/i, 'Abacus'], [/workday/i, 'Workday']];
+  function programm(lines) { var t = (lines || []).map(String).join(' \n '); for (var i = 0; i < PROG.length; i++) if (PROG[i][0].test(t)) return PROG[i][1]; return null; }
+  var api = { programm: programm, leseRoh: leseRoh, bauZeilen: bauZeilen, fotoZeilen: fotoZeilen, leseFotos: leseFotos, lesePdfBild: lesePdfBild, rechenprobe: rechenprobe, kopf: kopf,  zeigePdf: zeigePdf, parse: parse, norm: norm, zahl: zahl, NAMEN: NAMEN, zeilenAus: zeilenAus, lesePdf: lesePdf };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.StundenLz = api;
 })(typeof window !== 'undefined' ? window : globalThis);
