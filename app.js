@@ -162,6 +162,10 @@
       else if (/Windows/.test(ua)) os = 'Windows'; else if (/Mac OS X/.test(ua)) os = 'macOS'; else if (/Linux/.test(ua)) os = 'Linux';
       if ((m = ua.match(/SamsungBrowser\/(\d+)/))) br = 'Samsung Internet ' + m[1];
       else if ((m = ua.match(/EdgA?\/(\d+)/))) br = 'Edge ' + m[1];
+      else if ((m = ua.match(/(?:OPR|OPT)\/(\d+)/))) br = 'Opera ' + m[1];
+      else if ((m = ua.match(/(?:HuaweiBrowser|HONORBrowser)\/(\d+)/))) br = 'Huawei-Browser ' + m[1];
+      else if ((m = ua.match(/MiuiBrowser\/(\d+)/))) br = 'Xiaomi-Browser ' + m[1];
+      else if ((m = ua.match(/(UCBrowser|YaBrowser|HeyTapBrowser|VivoBrowser|DuckDuckGo)\/(\d+)/))) br = m[1] + ' ' + m[2];
       else if ((m = ua.match(/(?:CriOS|Chrome)\/(\d+)/))) br = 'Chrome ' + m[1];
       else if ((m = ua.match(/(?:FxiOS|Firefox)\/(\d+)/))) br = 'Firefox ' + m[1];
       else if ((m = ua.match(/Version\/(\d+).*Safari/))) br = 'Safari ' + m[1];
@@ -4491,14 +4495,18 @@
     window.addEventListener('appinstalled', function () { deferred = null; try { localStorage.setItem('stundenchecker.installiert', '1'); } catch (e) { } knoepfe(); var d = $('#inst-dlg'); if (d && !d.hidden) zeige(3); });
     var ua = navigator.userAgent || '', ios = /iphone|ipad|ipod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /android/i.test(ua);
     var inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|; wv\)/i.test(ua), samsung = /SamsungBrowser/i.test(ua), firefox = /Firefox|FxiOS/i.test(ua), iosAnders = ios && /CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+    var edge = android && /EdgA\//.test(ua), andererBr = android && !samsung && !firefox && !edge && /OPR\/|OPT\/|HuaweiBrowser|HONORBrowser|MiuiBrowser|XiaoMi|UCBrowser|YaBrowser|HeyTapBrowser|VivoBrowser|DuckDuckGo|Ecosia|Puffin|Silk/i.test(ua);
+    var chromeLink = 'intent://' + location.host + location.pathname + '#Intent;scheme=https;package=com.android.chrome;end';
+    var falschTipp = function () { return '<p class="notice warn">' + t('Wichtig: Nicht „Lesezeichen“, „Favoriten“ oder „Seite speichern“ wählen. Damit kommt kein Symbol auf den Startbildschirm.') + '</p>'; };
     var url = new URL('./', location.href).href;
     // Symbole selbst zeichnen (manche Handys zeigen ⋮ und ☰ als Schrift nicht an) und ein kleines Handy-Bild, wo man tippen muss
     var IK = {
       punkte: '<svg viewBox="0 0 24 24" class="ik"><circle cx="12" cy="5" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="12" cy="19" r="2.4"/></svg>',
+      punkteq: '<svg viewBox="0 0 24 24" class="ik"><circle cx="5" cy="12" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="19" cy="12" r="2.4"/></svg>',
       striche: '<svg viewBox="0 0 24 24" class="ik"><rect x="3" y="5" width="18" height="2.6" rx="1.3"/><rect x="3" y="10.7" width="18" height="2.6" rx="1.3"/><rect x="3" y="16.4" width="18" height="2.6" rx="1.3"/></svg>',
       teilen: '<svg viewBox="0 0 24 24" class="ik ik-s"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H5.5v10.5h13V10H16" fill="none" stroke-width="2.2" stroke-linejoin="round"/></svg>'
     };
-    function sym(h) { return h.replace(/⋮/g, IK.punkte).replace(/☰/g, IK.striche); }
+    function sym(h) { return h.replace(/⋮/g, IK.punkte).replace(/⋯/g, IK.punkteq).replace(/☰/g, IK.striche); }
     function handy(pos, ik) {
       var x = pos === 'or' ? 96 : pos === 'ur' ? 96 : 60, y = pos === 'or' ? 30 : 178;
       return '<div class="inst-bild"><svg viewBox="0 0 120 210" aria-hidden="true"><rect x="6" y="4" width="108" height="202" rx="16" class="ib-rahmen"/>' +
@@ -4518,9 +4526,11 @@
       if (inApp) return { text: '<p class="notice warn">' + t('Du bist im Browser von WhatsApp, Facebook oder Instagram. Dort geht das Installieren nicht.') + '</p>' + handy('or', 'punkte') + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Wähle „Im Browser öffnen“ oder „In Chrome öffnen“.'), t('Dort tippst du noch einmal auf „Als App aufs Handy legen“.')]), link: true };
       if (ios && !iosAnders) return { text: handy('um', 'teilen') + li([t('Tippe unten in der Mitte auf das Teilen-Symbol (Viereck mit Pfeil nach oben).'), t('Wische nach oben und tippe auf „Zum Home-Bildschirm“.'), t('Tippe oben rechts auf „Hinzufügen“.')]) + leisteTipp() };
       if (iosAnders) return { text: handy('or', 'teilen') + li([t('Tippe auf das Teilen-Symbol (Viereck mit Pfeil nach oben), oben in der Adresszeile oder unten.'), t('Tippe auf „Zum Home-Bildschirm“ und dann auf „Hinzufügen“.')]) + '<p class="hint">' + t('Findest du das nicht, öffne den Link in Safari.') + '</p>', link: true };
-      if (samsung) return { text: handy('ur', 'striche') + li([t('Tippe unten rechts auf ☰ (drei Striche). Ist dort keiner, schau oben rechts.'), t('Tippe auf „Seite hinzufügen zu“ (manchmal nur „Hinzufügen zu“).'), t('Wähle „Startbildschirm“ und tippe auf „Hinzufügen“.')]) + leisteTipp() };
-      if (android && firefox) return { text: handy('or', 'punkte') + li([t('Tippe auf ⋮ (drei Punkte).'), t('Tippe auf „Installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Hinzufügen“.')]) + leisteTipp() };
-      if (android) return { text: handy('or', 'punkte') + li([t('Tippe oben rechts auf ⋮ (drei Punkte).'), t('Tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Installieren“.')]) + leisteTipp() };
+      if (samsung) return { text: handy('ur', 'striche') + li([t('Tippe unten rechts auf ☰ (drei Striche). Ist dort keiner, schau oben rechts.'), t('Tippe auf „Seite hinzufügen zu“ (manchmal nur „Hinzufügen zu“).'), t('Wähle „Startbildschirm“ und tippe auf „Hinzufügen“.')]) + falschTipp() + leisteTipp() };
+      if (android && firefox) return { text: handy('or', 'punkte') + li([t('Tippe auf ⋮ (drei Punkte).'), t('Tippe auf „Installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Hinzufügen“.')]) + falschTipp() + leisteTipp(), chrome: true };
+      if (edge) return { text: handy('um', 'punkteq') + li([t('Tippe unten in der Mitte auf ⋯ (drei Punkte).'), t('Suche im Menü „Zum Telefon hinzufügen“, „App installieren“ oder „Zum Startbildschirm hinzufügen“. Manchmal musst du im Menü zur Seite wischen.'), t('Bestätige mit „Installieren“ oder „Hinzufügen“.')]) + falschTipp() + leisteTipp(), chrome: true };
+      if (andererBr) return { text: '<p>' + t('Dein Handy verwendet einen eigenen Browser. Dort heißt der Punkt fast immer „Zum Startbildschirm hinzufügen“.') + '</p>' + li([t('Tippe auf das Menü: drei Punkte ⋮ oder drei Striche ☰, oben rechts oder unten.'), t('Tippe auf „Zum Startbildschirm hinzufügen“. Steht er nicht direkt da, schau unter „Hinzufügen zu“ oder „Teilen“.'), t('Bestätige mit „Hinzufügen“.')]) + falschTipp() + leisteTipp(), chrome: true };
+      if (android) return { text: handy('or', 'punkte') + li([t('Tippe auf ⋮ (drei Punkte), meistens oben rechts, bei manchen Handys unten rechts.'), t('Tippe auf „App installieren“ oder „Zum Startbildschirm hinzufügen“.'), t('Bestätige mit „Installieren“.')]) + falschTipp() + leisteTipp() };
       return { text: '<p>' + t('Am Computer: In Chrome oder Edge rechts in der Adresszeile auf das Symbol zum Installieren klicken. Am Handy geht es am einfachsten: öffne dort den Link.') + '</p>', link: true };
     }
     function zeige(schritt) {
@@ -4535,6 +4545,7 @@
         var fotoIk = false; try { fotoIk = localStorage.getItem('stundenchecker.icon') === 'foto'; } catch (e) { }
         h = '<p class="inst-schritt">' + esc(abw1('Schritt {0} von {1}', [2, 2])) + '</p><h3>' + t('Jetzt installieren') + '</h3>' + (android && fotoIk ? '<p class="notice warn">' + t('Du hast ein eigenes Foto gewählt. Damit entsteht nur eine Verknüpfung, keine richtige App. Geh zurück und wähle ein fertiges Symbol.') + '</p>' : '') + a.text +
           (a.link ? '<p class="nott" style="word-break:break-all"><a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a></p>' : '') +
+          (a.chrome ? '<p class="hint">' + t('Klappt es nicht? Am einfachsten geht es in Google Chrome. Hast du Chrome nicht, nimm die Schritte oben.') + '</p><p><a class="btn" id="inst-chrome" href="' + esc(chromeLink) + '">' + t('In Chrome öffnen') + '</a></p>' : '') +
           '<p class="hint">' + t('Danach findest du den Stunden-Checker als Symbol auf deinem Startbildschirm. Öffne ihn ab jetzt immer dort, dann musst du den Link nicht mehr suchen.') + '</p>';
         btn = (a.knopf ? '<button type="button" class="btn primary" id="inst-go">📲 ' + t('Jetzt installieren') + '</button>' : '') + (a.link ? '<button type="button" class="btn" id="inst-copy">' + t('Link kopieren') + '</button>' : '') +
           '<button type="button" class="btn' + (a.knopf ? '' : ' primary') + '" id="inst-fertig">' + t(a.knopf ? 'Zurück' : 'Erledigt') + '</button>';
@@ -5302,31 +5313,47 @@
     wkoBehalt: ['WKO: Behaltezeit nach der Lehre', 'https://www.wko.at/lehre/behaltezeit-weiterbeschaeftigung-lehrlinge', '09/2026'],
     bmfFrei: ['Finanzministerium: Steuerfreie Leistungen des Arbeitgebers', 'https://www.bmf.gv.at/themen/steuern/arbeitnehmerveranlagung/allgemeines-zur-lohn-und-einkommenssteuer/steuerfreie-leistungen-des-arbeitgebers.html', '2026'],
     estg26: ['Unternehmensserviceportal: Einkommensteuergesetz, Novelle 2026 (§ 68)', 'https://www.usp.gv.at/aktuelles/gesetzliche-neuerungen/Bundesgesetzblatt/estg-ia-666.html', '02/2026'],
-    bfgVertr: ['Bundesfinanzgericht RV/2100324/2022 zum Vertreterpauschale (§ 1 Z 9 Verordnung über Durchschnittssätze)', 'https://findok.bmf.gv.at/findok/iwg/148/148399/148399.1.pdf', '07/2025']
+    bfgVertr: ['Bundesfinanzgericht RV/2100324/2022 zum Vertreterpauschale (§ 1 Z 9 Verordnung über Durchschnittssätze)', 'https://findok.bmf.gv.at/findok/iwg/148/148399/148399.1.pdf', '07/2025'],
+    kvGueter: ['WKO: Kollektivvertrag Güterbeförderungsgewerbe, Arbeiter, ab 1.1.2026 (Art. V und VIa)', 'https://www.wko.at/kollektivvertrag/kollektivvertrag-gueterbefoerderungsgewerbe-2026', '01/2026'],
+    azg16: ['§ 16 Arbeitszeitgesetz (Einsatzzeit der Lenker)', 'https://www.jusline.at/gesetz/azg/paragraf/16', '10/2026'],
+    wkoLRZ: ['WKO: Lenker von Verordnungsfahrzeugen, Ruhezeiten', 'https://www.wko.at/arbeitszeit/lenker-verordnungsfahrzeugen-ruhezeiten', '01/2026'],
+    wkoLAZ: ['WKO: Lenker von Verordnungsfahrzeugen, Arbeitszeit', 'https://www.wko.at/arbeitszeit/lenker-verordnungsfahrzeuge-arbeitszeit', '01/2026'],
+    avrag7a: ['§ 7a Arbeitsvertragsrechts-Anpassungsgesetz (Nichtaushändigung eines Dienstzettels)', 'https://www.jusline.at/gesetz/avrag/paragraf/7a', '2024']
   };
   var RQ_GEPRUEFT = '20.11.2026';
   function rqLink(id) { var q = RQ[id]; return q ? '<li><a href="' + q[1] + '" target="_blank" rel="noopener">' + esc(abwLab(q[0])) + '</a> · ' + esc(abw1('Stand {0}', [q[2]])) + '</li>' : ''; }
   var RE_ALLE = [
     ['Für jede Überstunde bekommst du mindestens 50 % Zuschlag. Statt Geld kann Zeitausgleich vereinbart sein, dann 1,5 Stunden frei für jede Überstunde. Arbeitest du schon mehr als 10 Stunden am Tag oder 50 in der Woche, entscheidest du selbst: Geld oder Zeitausgleich.', 'akAZ'],
-    ['Du darfst höchstens 12 Stunden am Tag und 60 Stunden in der Woche arbeiten. Über 10 Stunden am Tag oder 50 in der Woche darfst du weitere Überstunden ohne Begründung ablehnen.', 'akAZ'],
+    ['Hast du mit der Firma eine Durchrechnung oder Gleitzeit vereinbart, sind Mehrstunden innerhalb der vereinbarten Grenzen noch keine Überstunden. Sie werden 1:1 mit Freizeit ausgeglichen. Die Grenzen stehen in deinem Kollektivvertrag oder in der Vereinbarung.', 'akAZ'],
+    ['Du darfst höchstens 12 Stunden am Tag und 60 Stunden in der Woche arbeiten. Über 10 Stunden am Tag oder 50 in der Woche darfst du weitere Überstunden ohne Begründung ablehnen.', 'akAZ', 'nl'],
     ['Arbeitest du mehr als 6 Stunden am Tag, steht dir eine halbe Stunde Pause zu.', 'akAZ'],
-    ['Zwischen zwei Arbeitstagen hast du mindestens 11 Stunden am Stück frei. Der Kollektivvertrag kann das nur mit Ausgleich verkürzen.', 'akAZ'],
-    ['In jeder Woche hast du 36 Stunden am Stück frei.', 'akAZ'],
+    ['Zwischen zwei Arbeitstagen hast du mindestens 11 Stunden am Stück frei. Der Kollektivvertrag kann das nur mit Ausgleich verkürzen.', 'akAZ', 'nl'],
+    ['In jeder Woche hast du 36 Stunden am Stück frei.', 'akAZ', 'nl'],
     ['Arbeitest du an einem Feiertag, bekommst du das Feiertagsentgelt und zusätzlich die gearbeiteten Stunden bezahlt.', 'akAZ'],
     ['Die Firma muss deine Arbeitszeit aufzeichnen. Verlangst du es nachweislich (zum Beispiel schriftlich), muss sie dir die Aufzeichnungen einmal im Monat kostenlos geben.', 'akAZ'],
     ['Du hast 5 Wochen bezahlten Urlaub im Jahr, ab dem 26. Arbeitsjahr 6 Wochen. Auch in Teilzeit sind es 5 Wochen, nur in Arbeitstagen gerechnet.', 'akAR'],
     ['Bist du krank, zahlt die Firma weiter: im 1. Arbeitsjahr 6 Wochen voll, ab dem 2. Jahr 8 Wochen, ab dem 16. Jahr 10 Wochen, ab dem 26. Jahr 12 Wochen, danach jeweils 4 Wochen die Hälfte. Melde den Krankenstand sofort.', 'akAR'],
     ['Musst du einen kranken nahen Angehörigen pflegen, hast du bis zu einer Woche im Arbeitsjahr bezahlt frei (Pflegefreistellung).', 'akAR'],
-    ['Du hast ein Recht auf einen Dienstzettel. Darin muss stehen, welcher Kollektivvertrag gilt, wie du eingestuft bist und wie hoch dein Grundlohn ist. Vergleiche das mit deinem Lohnzettel.', 'akAR'],
+    ['Du hast ein Recht auf einen Dienstzettel, gleich nach Arbeitsbeginn. Darin muss stehen, welcher Kollektivvertrag gilt, wie du eingestuft bist und wie hoch dein Grundlohn ist. Vergleiche das mit deinem Lohnzettel. Steht all das in deinem schriftlichen Arbeitsvertrag, brauchst du keinen eigenen Dienstzettel.', 'akAR'],
+    ['Bekommst du keinen Dienstzettel, verlange ihn schriftlich (Brief oder E-Mail) und hebe eine Kopie auf. Gibt ihn die Firma trotzdem nicht her, kann sie dafür bestraft werden: 100 bis 436 Euro. Die Arbeiterkammer hilft dir kostenlos.', 'avrag7a'],
     ['Urlaubs- und Weihnachtsgeld stehen nicht im Gesetz, sondern im Kollektivvertrag oder im Arbeitsvertrag. Dort steht, was dir zusteht.', 'akAR'],
     ['Ab dem 2. Monat zahlt die Firma 1,53 % deines Bruttolohns für deine Abfertigung (Abfertigung neu) ein. Der Beitrag muss auf der Lohnabrechnung stehen.', 'akAR'],
     ['Viele Arbeits- und Kollektivverträge haben Fristen, nach denen offene Ansprüche verfallen. Fordere fehlende Stunden oder fehlendes Geld darum bald und schriftlich ein, am besten eingeschrieben.', 'akAZ']
   ];
+  function voLenker(w) { var b = (w && w.beruf) || '', a = (w && w.art) || ''; return b === 'lkw' || (b === 'bus' && ['linie', 'reise', 'schueler'].indexOf(a) >= 0); } // Lkw über 3,5 t und Busse: eigene Lenker-Regeln (EU-Lenk- und Ruhezeiten)
   function rechtePunkte(w) {
     var o = [], b = w.beruf || '', a = w.art || '', pk = E.PAKETE[w.paket], vz = +(w.ueberstunden || {}).vollzeitStd || (pk ? +pk.werte.ueberstunden.wochenStd : 0), wst = E.wochenStd ? +E.wochenStd(w.ueberstunden) : +(w.ueberstunden || {}).wochenStd;
     var lgL = E.lgFuer(E.LOHNGRUPPEN[w.paket], w.gueltigAb), lgG = lgL && w.lg ? lgL.gruppen.filter(function (x) { return x.id === w.lg; })[0] : null, lehr = a === 'lehrling' || !!(lgG && lgG.lehrling);
     if (vz > 0 && wst > 0 && wst < vz) o.push(['Arbeitest du in Teilzeit mehr als vereinbart, bekommst du für diese Mehrstunden 25 % Zuschlag. Er fällt weg, wenn die Stunden innerhalb von 3 Monaten 1:1 mit Freizeit ausgeglichen werden oder wenn dein Kollektivvertrag ihn ausschließt.', 'akAZ']);
-    if (b === 'lkw' || (b === 'bus' && ['linie', 'reise', 'schueler'].indexOf(a) >= 0)) o.push(['Die Lenkpause (Fahrtunterbrechung) ist bezahlte Arbeitszeit, außer sie ist gleichzeitig deine Ruhepause. In der Lenkpause darfst du keine anderen Arbeiten machen, zum Beispiel nicht laden.', 'wkoLenk']);
+    if (voLenker(w)) {
+      o.push(['Die Lenkpause (Fahrtunterbrechung) ist bezahlte Arbeitszeit, außer sie ist gleichzeitig deine Ruhepause. In der Lenkpause darfst du keine anderen Arbeiten machen, zum Beispiel nicht laden.', 'wkoLenk']);
+      if (b === 'lkw' && w.paket === 'gueter') o.push(['Für dich als Lenker zählt die Einsatzzeit: von Arbeitsbeginn bis Arbeitsende, mit allen Pausen. Bei Lkw über 3,5 t darf sie laut Kollektivvertrag Güterbeförderung länger als 12 Stunden sein, solange deine tägliche Ruhezeit eingehalten wird. Das sind bis zu 13 Stunden. Ist die Ruhezeit verkürzt (9 Stunden) oder geteilt (3 und 9 Stunden), sind bis zu 15 Stunden möglich.', 'kvGueter']);
+      else o.push(['Für dich als Lenker zählt die Einsatzzeit: von Arbeitsbeginn bis Arbeitsende, mit allen Pausen. Sie darf grundsätzlich 12 Stunden nicht überschreiten. Bei Lkw über 3,5 t und Bussen kann dein Kollektivvertrag mehr erlauben, solange deine tägliche Ruhezeit eingehalten wird.', 'azg16']);
+      o.push(['Bei Lkw über 3,5 t und Bussen darf die Arbeitszeit am Tag länger als 12 Stunden sein, die Grenze setzen Einsatzzeit und Ruhezeit. In der Woche darfst du höchstens 60 Stunden arbeiten, im Schnitt höchstens 48. Der Kollektivvertrag kann im Schnitt bis 55 erlauben, wenn die Stunden über 48 Arbeitsbereitschaft sind.', 'wkoLAZ']);
+      o.push(['Deine tägliche Ruhezeit: mindestens 11 Stunden am Stück innerhalb von 24 Stunden. Zwischen zwei Wochenruhezeiten darf sie dreimal auf 9 Stunden verkürzt werden, ohne Ausgleich. Teilen geht auch: zuerst mindestens 3, dann mindestens 9 Stunden.', 'wkoLRZ']);
+      o.push(['Pro Woche hast du mindestens 45 Stunden am Stück frei. Sie darf auf 24 Stunden verkürzt werden, wenn du die fehlenden Stunden bis zum Ende der dritten Woche danach am Stück nachholst. Von zwei Wochen hintereinander muss mindestens eine die vollen 45 Stunden haben. Im grenzüberschreitenden Güterverkehr gibt es Ausnahmen.', 'wkoLRZ']);
+    } else if (b === 'klein' || (b === 'bus' && a === 'taxi')) o.push(['Für dich als Lenker zählt die Einsatzzeit: von Arbeitsbeginn bis Arbeitsende, mit allen Pausen. Sie darf grundsätzlich 12 Stunden nicht überschreiten. Dein Kollektivvertrag kann höchstens 14 Stunden erlauben.', 'azg16']);
+    if ((b === 'lkw' || b === 'klein') && w.paket === 'gueter') o.push(['Im Kollektivvertrag Güterbeförderung kann eine Durchrechnung für bis zu 26 Wochen vereinbart werden. Dann dürfen einzelne Wochen bis 48 Stunden und einzelne Tage bis 10 Stunden normale Arbeitszeit sein, im Schnitt bleiben es 40. Diese Stunden werden 1:1 mit Freizeit ausgeglichen, ohne Zuschlag. Wie lange jede Woche dauert, muss im Voraus feststehen. Ohne so eine Vereinbarung gibt es keine Durchrechnung: Dann sind Stunden über deiner normalen Arbeitszeit Überstunden mit 50 % Zuschlag, zwischen 20 und 5 Uhr mit 100 %.', 'kvGueter']);
     if (E.istBau(w) && w.paket !== 'de_bau') { o.push(['Am Bau läuft dein Urlaub über die BUAK. Für 52 Arbeitswochen gibt es 30 Werktage Urlaub. Das Urlaubsentgelt samt Urlaubszuschuss zahlt die Firma vor dem Urlaub aus, die BUAK ersetzt es ihr.', 'uspBau']); o.push(['Wird am Bau wegen Schlechtwetter die Arbeit eingestellt, bekommst du 60 % deines Lohns als Schlechtwetterentschädigung. Die Firma zahlt sie mit dem Lohn aus.', 'wkoSW']); }
     if (b === 'pflege' && a === 'dgkp') o.push(['Als diplomierte Pflegekraft musst du in jeweils 5 Jahren mindestens 60 Stunden Fortbildung machen. Was du dafür selbst bezahlst, kannst du von der Steuer absetzen.', 'gukg63']);
     if (b === 'pflege' && (a === 'pa' || a === 'pfa')) o.push(['In der Pflegeassistenz und Pflegefachassistenz musst du in jeweils 5 Jahren mindestens 40 Stunden Fortbildung machen. Was du dafür selbst bezahlst, kannst du von der Steuer absetzen.', 'gukg104c']);
@@ -5348,7 +5375,7 @@
     $('#lz-h').textContent = abwLab('Deine Rechte im Beruf');
     $('#lz-body').innerHTML = '<p class="hint">' + L('Das Wichtigste aus Gesetz und Kollektivvertrag, mit Quelle. Dein Kollektivvertrag kann mehr vorsehen. Das ist keine Rechtsberatung. Die Arbeiterkammer berät dich kostenlos.') + '</p>' +
       (akn.length ? '<p class="notice warn">' + esc(akn.length === 1 ? abwLab('Für die Arbeiterkammer hast du einen Punkt notiert. Du findest ihn in der Übersicht unter „Jahr und Konten“, „Festgehaltene Abweichungen“.') : abw1('Für die Arbeiterkammer hast du {0} Punkte notiert. Du findest sie in der Übersicht unter „Jahr und Konten“, „Festgehaltene Abweichungen“.', [akn.length])) + '</p>' : '') +
-      (eig.length ? '<h4>' + L('Für deinen Beruf') + '</h4>' + li(eig) : '') + '<h4>' + L('Für alle') + '</h4>' + li(RE_ALLE) +
+      (eig.length ? '<h4>' + L('Für deinen Beruf') + '</h4>' + li(eig) : '') + '<h4>' + L('Für alle') + '</h4>' + li(RE_ALLE.filter(function (x) { return !(x[2] === 'nl' && voLenker(w)); })) +
       '<p class="hint">' + esc(abw1('Geprüft am {0}. Gesetze ändern sich, im Zweifel gilt die Quelle.', [RQ_GEPRUEFT])) + '</p>' +
       '<p class="nott st-links"><a href="https://www.arbeiterkammer.at" target="_blank" rel="noopener">Arbeiterkammer</a> · <a href="https://www.oesterreich.gv.at" target="_blank" rel="noopener">oesterreich.gv.at</a></p>';
     $('#lz-btns').innerHTML = '<button type="button" class="btn primary" id="rq-ok">' + L('Schließen') + '</button>';
