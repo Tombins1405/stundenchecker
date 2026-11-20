@@ -1084,3 +1084,6 @@ details label.btn { display: block; margin-top: 10px; }
 #kv-vorschlag small { display: block; margin-top: 8px; }
 #kv-aendern { display: block; width: 100%; margin: 6px 0 4px; }
 #s-kv .kv-melden { margin-top: 14px; }
+.rq-ul li { margin: 10px 0; }
+.rq-src { display: block; margin-top: 3px; color: var(--ink-2); font-size: .82rem; line-height: 1.35; }
+.rq-src a { color: var(--accent); }
