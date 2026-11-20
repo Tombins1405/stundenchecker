@@ -1087,3 +1087,17 @@ details label.btn { display: block; margin-top: 10px; }
 .rq-ul li { margin: 10px 0; }
 .rq-src { display: block; margin-top: 3px; color: var(--ink-2); font-size: .82rem; line-height: 1.35; }
 .rq-src a { color: var(--accent); }
+/* Auswahlfelder: überall der gleiche Pfeil nach unten (nicht vom Handy abhängig), damit man sieht, dass man etwas auswählen kann */
+:root { --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' fill='none' stroke='%234b5563' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+:root[data-theme="dark"] { --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' fill='none' stroke='%23a3aebf' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' fill='none' stroke='%23a3aebf' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); } }
+select:not([multiple]) { -webkit-appearance: none; appearance: none; background-image: var(--chev); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px 16px; padding-right: 34px; }
+.miabubble2 select:not([multiple]) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' fill='none' stroke='%234b5563' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px 16px; }
+/* Zwei Knopfreihen untereinander: Abstand dazwischen (sonst kleben sie zusammen, wo der Rahmen keinen Abstand macht) */
+.btns + .btns { margin-top: 10px; }
+div.card > .btns + .btns, .lzbox > .btns + .btns { margin-top: 0; }
+/* Diätenzettel: beim Tag antippen, was draufkommt */
+#e-weitgroup { margin-top: 8px; }
+#e-weitgroup .chips { margin-top: 2px; }
+/* Mias Startkarte ist immer hell: auch die hellen Knöpfe hell mit dunkler Schrift (im dunklen Modus war „Später“ kaum lesbar) */
+.miakarte .btn:not(.primary) { background: linear-gradient(180deg, #ffffff, #eef2f7); color: #1f2937; border-color: #9fb3cc; }
