@@ -1103,3 +1103,8 @@ div.card > .btns + .btns, .lzbox > .btns + .btns { margin-top: 0; }
 .miakarte .btn:not(.primary) { background: linear-gradient(180deg, #ffffff, #eef2f7); color: #1f2937; border-color: #9fb3cc; }
 /* Datum und „Art des Tages“: Ist am Handy die Schrift größer eingestellt, passt das Datum nicht mehr daneben. Dann rutscht „Art des Tages“ automatisch darunter, statt dass das Datum abgeschnitten wird. */
 .grid2.g-datum { grid-template-columns: repeat(auto-fit, minmax(calc(4.6em + 60px), 1fr)); }
+/* Berichte an die Firma: ein Kasten je Bericht */
+.rbbox { border: 2px solid var(--line, #d0d7de); border-radius: 12px; padding: 10px 12px 4px; margin: 0 0 12px; background: var(--card2, rgba(0,0,0,.02)); }
+.rbtitel { font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; color: var(--accent, #1565c0); }
+.rbmit { font-weight: 600; margin: 4px 0 2px; }
+.rbbox .btns { margin-top: 4px; }

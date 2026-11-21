@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261121134237">
+<link rel="stylesheet" href="style.css?v=20261121191208">
 </head>
 <body>
 
@@ -361,7 +361,8 @@
       </div>
     </form>
     <details id="rb-card" class="card rbcard"><summary><strong>Berichte als PDF</strong></summary>
-      <div class="field"><label for="rb-art">Welcher Bericht?</label><select id="rb-art"><option value="tag">Tagesbericht</option><option value="woche">Wochenbericht</option><option value="halb">Halbmonatsbericht (1.–15. oder 16.–Ende)</option><option value="monat">Monatsbericht</option></select></div>
+      <div class="field"><label for="rb-was">Welcher Bericht?</label><select id="rb-was"><option value="stunden">Stundenbericht (Arbeitszeit)</option><option value="diaeten">Diätenzettel</option></select></div>
+      <div class="field"><label for="rb-art">Für welchen Zeitraum?</label><select id="rb-art"><option value="tag">Ein Tag</option><option value="woche">Eine Woche</option><option value="halb">Ein halber Monat (1.–15. oder 16.–Ende)</option><option value="monat">Ein Monat</option></select></div>
       <div class="field"><label for="rb-datum">Für den Tag, die Woche oder den Monat von</label><input type="date" id="rb-datum"></div>
       <div class="btns"><button type="button" class="btn primary" id="rb-share">PDF erstellen und senden</button><button type="button" class="btn" id="rb-dl">PDF speichern</button></div>
       <div class="btns"><button type="button" class="btn" id="rb-kal">📅 In den Handy-Kalender</button></div>
@@ -716,19 +717,16 @@
     </div>
     <div class="card" id="s-berichte">
       <h3 data-ico="doc">Berichte an die Firma</h3>
-      <div class="field" id="rb-berichte"><label>Welche Berichte verlangt deine Firma?</label><small>Schalte jeden Bericht ein, den du abgeben musst. Die App fragt dich dann zur richtigen Zeit, ob sie ihn gleich fertig machen soll. Erstellen kannst du jeden Bericht auch jederzeit selbst unter „Erfassen“.</small></div>
-      <label class="check"><input type="checkbox" data-rbb="tag"><span>Tagesbericht (jeden Tag)</span></label>
-      <label class="check"><input type="checkbox" data-rbb="woche"><span>Wochenbericht (am letzten Arbeitstag der Woche)</span></label>
-      <label class="check"><input type="checkbox" data-rbb="halb"><span>Halbmonatsbericht (um den 15. und zum Monatsende)</span></label>
-      <label class="check"><input type="checkbox" data-rbb="monat"><span>Monatsbericht (zum Monatsende)</span></label>
-      <label class="check" id="rb-bdw"><input type="checkbox" data-rbb="diaeten"><span>Diätenzettel (zum Monatsende)</span></label>
+      <div class="field" id="rb-berichte"><label>Welche Berichte verlangt deine Firma?</label><small>Lege jeden Bericht an, den du abgeben musst: was es ist, wie oft und was draufstehen soll. Die App fragt dich dann zur richtigen Zeit, ob sie ihn gleich fertig machen soll. Erstellen kannst du jeden Bericht auch jederzeit selbst unter „Erfassen“.</small></div>
+      <div id="rb-blist"></div>
+      <div class="btns"><button type="button" class="btn" id="rb-badd">+ Bericht dazu</button></div>
       <div class="field"><label for="rb-dienstort">Dienstort (Firmensitz, optional, steht auf dem Diätenzettel)</label><input type="text" id="rb-dienstort" maxlength="80" autocomplete="off"></div>
       <label class="check" id="rb-weitwahlw"><input type="checkbox" id="rb-weitwahl"><span>Beim Tag antippen, welcher Kunde oder welche Baustelle auf den Diätenzettel kommt</span></label>
       <div class="field" hidden><label for="rb-weitmodus">Wie findet die App den am weitesten entfernten Ort?</label><select id="rb-weitmodus"><option value="km">Ich trage je Ort einmal die km ein, danach automatisch</option><option value="karte">Automatisch mit Landkarte (OpenStreetMap)</option><option value="selbst">Ich wähle den Ort jeden Tag selbst</option></select><small>Mit Landkarte wird nur der Ortsname (zum Beispiel „Baustelle Melk“) und dein Dienstort an OpenStreetMap geschickt, damit die App die Entfernung ausrechnen kann. Die km merkt sich die App, du kannst sie beim Tag ändern.</small></div>
       <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
       
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
-      <label class="check"><input type="checkbox" id="rb-ohnestd"> Im Halbmonatsbericht keine Stunden- und Summenspalten drucken</label>
+      
       <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
       <div class="field" id="rb-sigwrap" hidden><label for="rb-sig">Unterschreibe hier mit dem Finger oder der Maus</label><canvas id="rb-sig" width="480" height="150" style="width:100%;max-width:420px;height:auto;aspect-ratio:480/150;border:1px solid var(--line,#bbb);border-radius:8px;background:#fff;touch-action:none"></canvas><label class="btn" for="rb-sigfile" style="align-self:flex-start">Bild deiner Unterschrift wählen</label><input type="file" id="rb-sigfile" accept="image/*" hidden><button type="button" class="linkbtn" id="rb-sigclr" style="align-self:flex-start">Unterschrift löschen</button></div>
     </div>
@@ -809,21 +807,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261121134237";</script>
-<script src="engine.js?v=20261121134237"></script>
+<script>window.APP_VERSION="20261121191208";</script>
+<script src="engine.js?v=20261121191208"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261121134237"></script>
-<script src="timepicker.js?v=20261121134237"></script>
-<script src="datepicker.js?v=20261121134237"></script>
-<script src="selectpicker.js?v=20261121134237"></script>
-<script src="pdf.js?v=20261121134237"></script>
-<script src="lzread.js?v=20261121134237"></script>
-<script src="app.js?v=20261121134237"></script>
-<script src="auth.js?v=20261121134237"></script>
-<script src="sync.js?v=20261121134237"></script>
-<script src="insights.js?v=20261121134237"></script>
+<script src="firebase-config.js?v=20261121191208"></script>
+<script src="timepicker.js?v=20261121191208"></script>
+<script src="datepicker.js?v=20261121191208"></script>
+<script src="selectpicker.js?v=20261121191208"></script>
+<script src="pdf.js?v=20261121191208"></script>
+<script src="lzread.js?v=20261121191208"></script>
+<script src="app.js?v=20261121191208"></script>
+<script src="auth.js?v=20261121191208"></script>
+<script src="sync.js?v=20261121191208"></script>
+<script src="insights.js?v=20261121191208"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

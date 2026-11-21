@@ -97,6 +97,18 @@
         db().collection('statistik').doc(anonId() + '_lz_' + (hf >>> 0).toString(36)).set({ monat: 'lz', beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, zeilen: z, t: stamp() }).catch(function () {});
       } catch (e) {}
     },
+    // Welche Berichte eine Firma verlangt (was, wie oft, was draufsteht), nur mit Einwilligung „Mithelfen“; Firmenname nur mit eigener Einwilligung „Firma“.
+    // Damit lernt die App, was in einer Firma üblich ist. Je Gerät ein Dokument, wird überschrieben.
+    berichte: function (liste, firma) {
+      var co = consent(); if (!ON || !co.statistik || !liste) return;
+      try { if (localStorage.getItem('stundenchecker.probe.active') === '1') return; } catch (e) {}
+      try {
+        var info = (app().info && app().info()) || {}, fi = co.firma && firma ? String(firma).replace(/\s+/g, ' ').trim().slice(0, 60) : null;
+        var l = liste.slice(0, 12).map(function (e) { return { was: e.was, oft: e.oft, mit: (e.mit || []).slice(0, 6) }; }), sig = JSON.stringify([l, fi, info.beruf]), k = 'stundenchecker.bersig';
+        if (rd(k) === sig) return; wr(k, sig);
+        db().collection('statistik').doc(anonId() + '_berichte').set({ monat: 'berichte', beruf: info.beruf || null, paket: info.paket || null, land: info.land || null, firma: fi, berichte: l, t: stamp() }).catch(function () {});
+      } catch (e) {}
+    },
     // Anonyme Abweichungs-Statistik, nur mit Einwilligung: Beruf, Zeilen, Status, Größe grob (0,5 h)
     statistik: function (monat, rows) {
       if (!ON || !consent().statistik || !rows || !rows.length) return;
