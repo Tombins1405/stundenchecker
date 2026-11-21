@@ -395,7 +395,7 @@
     },
     sozial: {
       name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
-      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: 50 % Zuschlag, mehrere Zuschläge zählen nur einmal. Lehrlingseinkommen der Pflegelehre ab 1.4.2026 (Quelle: vida.at, Abschlussprotokoll): 966,30 / 1.228,20 / 1.460,40 / 1.909,20 € im 1. bis 4. Lehrjahr.',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: die App rechnet 50 %, mehrere Zuschläge zählen nur einmal. Laut Abschlussprotokoll (Quelle: vida.at) gibt es nach § 31 für Sonn- und Feiertage aber einen festen Zuschlag von 6,22 € je Stunde (ab 1.4.2026). Für mobile Dienste kann anderes gelten: vergleiche mit deinem Lohnzettel. Lehrlingseinkommen der Pflegelehre ab 1.4.2026 (Quelle: vida.at, Abschlussprotokoll): 966,30 / 1.228,20 / 1.460,40 / 1.909,20 € im 1. bis 4. Lehrjahr.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -3027,8 +3027,8 @@
       arten: {
         linie: { name: 'Linienbus', b: { fahrzeug: true, kunden: false, praemien: true } },
         reise: { name: 'Reisebus / Gelegenheitsverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
-        taxi: { name: 'Taxi / Mietwagen', b: { fahrzeug: true, kunden: false, praemien: true } },
-        schueler: { name: 'Schülertransport / Krankenbeförderung', b: { fahrzeug: true, kunden: false, praemien: true } },
+        taxi: { name: 'Taxi / Mietwagen', paket: 'taxi', b: { fahrzeug: true, kunden: false, praemien: true } },
+        schueler: { name: 'Schülertransport / Krankenbeförderung', paket: 'taxi_b', b: { fahrzeug: true, kunden: false, praemien: true } },
         werkstatt: { name: 'Werkstätte und Garage (Bus)', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
     gaertner: { name: 'Gärtner und Forst', paket: 'gaertner', kvs: ['gaertner', 'forst', 'agrar', 'eigen'], einfach: true, diaeten: true, sw: true, b: { fahrzeug: true, kunden: true, praemien: true },
@@ -3287,7 +3287,7 @@
   // Pausen innerhalb einer Zeitspanne [A, B] (Minuten ab 0:00, B darf über Mitternacht hinaus gehen).
   // Es zählt nur der Teil einer Pause, der in der Spanne liegt; überlappende oder doppelte Pausen zählen nur einmal;
   // eine verdrehte Pause (Ende weit vor Beginn, also ein Tippfehler) zählt gar nicht. So kann eine Pause nie zu viel Arbeitszeit abziehen.
-  function pausenIn(day, A, B, warn) {
+  function pausenIn(day, A, B, warn, mark, delta) {
     var teile = [], aussen = false, verdreht = false, anzahl = 0;
     ((day && day.pausen) || []).forEach(function (p) {
       var s = toMin(p && p.von), e = toMin(p && p.bis); if (s === null || e === null || e === s) return;
@@ -3298,11 +3298,13 @@
     });
     teile.sort(function (x, y) { return x.a - y.a; });
     var min = 0, ende = -1e9, doppelt = false, lbls = [];
+    var seg = [];
     teile.forEach(function (t) {
       if (t.a < ende) doppelt = true;
-      var a = Math.max(t.a, ende); if (t.b > a) { min += t.b - a; ende = t.b; }
+      var a = Math.max(t.a, ende); if (t.b > a) { min += t.b - a; ende = t.b; if (seg.length && seg[seg.length - 1].b === a) seg[seg.length - 1].b = t.b; else seg.push({ a: a, b: t.b }); }
       if (lbls.indexOf(t.lbl) < 0) lbls.push(t.lbl);
     });
+    if (delta && mark) seg.forEach(function (g) { if (g.a < mark && g.b > mark) min = Math.max(0, min + delta); }); // Pause über die Zeitumstellung: echte Dauer
     if (warn) {
       if (verdreht) warn.push('Eine Pause endet vor ihrem Beginn. Sie wird nicht gezählt.');
       if (aussen) warn.push('Eine Pause liegt ganz oder teilweise außerhalb der Arbeitszeit. Abgezogen wird nur der Teil dazwischen.');
@@ -3319,8 +3321,8 @@
     var brutto = bis - von;
     if (brutto < 0) brutto += 1440;
     if (brutto === 0) warn.push('Von und Bis sind gleich.');
-    var pz = pausenIn(day, von, von + brutto, warn); // Uhrzeit-Spanne des Dienstes, vor der Sommer-/Winterzeit-Korrektur
     var dst = dstKorrektur(dateStr, von, bis);
+    var pz = pausenIn(day, von, von + brutto, warn, dst ? (von < 180 && bis > von ? 180 : 1620) : 0, dst); // Uhrzeit-Spanne des Dienstes, vor der Sommer-/Winterzeit-Korrektur
     if (dst && brutto + dst > 0) brutto += dst; else dst = 0;
     var pausen = pz.min;
     // Automatischer Pausenabzug (zum Beispiel 60 Minuten), wenn der Tag keine eigene Pause hat. Die Diäten zählen weiter ab Beginn bis Ende.

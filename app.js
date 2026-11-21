@@ -1752,7 +1752,7 @@
     box.open = offen || drin;
   }
   // Homeoffice gibt es vor allem im Büro (auch Büro-Arten in anderen Berufen)
-  function hoPasst(w) { if (!w) return false; if (['buero', 'aussendienst', 'bund'].indexOf(w.beruf) >= 0) return true; var b = E.BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && /Büro|Verwaltung/.test(a.name)); }
+  function hoPasst(w) { if (!w) return false; if (w.beruf === 'reinigung' || w.beruf === 'security') return false; if (['buero', 'aussendienst', 'bund'].indexOf(w.beruf) >= 0) return true; var b = E.BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && /Büro|Verwaltung/.test(a.name)); }
   function bsRender(en) {
     var bs = E.bausteine(en || wAt(todayISO()));
     // Was der Beruf gar nicht braucht (z. B. Fahrzeug und Baustellen im Büro), wird nicht angeboten, solange es aus ist
@@ -1767,7 +1767,7 @@
       return '<div class="pause">' +
         '<div class="field"><label for="p-v' + i + '">Pause ' + (i + 1) + ' von</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="p-v' + i + '" data-i="' + i + '" data-f="von" value="' + esc(p.von) + '"></div>' +
         '<div class="field"><label for="p-b' + i + '">bis</label><input type="text" readonly inputmode="none" data-time="1" placeholder="--:--" id="p-b' + i + '" data-i="' + i + '" data-f="bis" value="' + esc(p.bis) + '"></div>' +
-        '<button type="button" class="rm" data-rm="' + i + '" aria-label="Pause ' + (i + 1) + ' entfernen">×</button></div>';
+        '<button type="button" class="rm" data-rm="' + i + '" aria-label="' + esc(abwLab('Pause entfernen')) + ' ' + (i + 1) + '">×</button></div>';
     }).join('');
   }
 
@@ -2991,7 +2991,7 @@
     w.paket = neu; w.kvGewaehlt = true; var kl0 = E.kvLand(neu); if (kl0 && kl0.length === 1 && !landAT()) landSetzen(kl0[0]);
     if (!eigen) w.wochen = w.wstEigen > 0 ? w.wstEigen : pn.ueberstunden.wochenStd; w.dsatz = pn.diaeten.modell === 'stunde' ? pn.diaeten.satz : '';
   }
-  function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; }
+  function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; if (a.paket && E.PAKETE[a.paket]) { w.paket = a.paket; var pa0 = E.PAKETE[a.paket].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pa0.ueberstunden.wochenStd; w.dsatz = pa0.diaeten.modell === 'stunde' ? pa0.diaeten.satz : ''; } w.kvGewaehlt = false; w.lg = null; w.ls = null; }
   function wzSetBeruf(k) {
     var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
     w.diaeten = b.diaeten; w.sw = b.sw; w.paket = b.paket;
@@ -4764,7 +4764,7 @@
     try { localStorage.setItem('stundenchecker.lang', l); } catch (e) {}
     var sl = $('#ui-lang'); if (sl) sl.value = l; var ml = $('#mia-lang'); if (ml) ml.value = l;
     document.documentElement.lang = l; document.documentElement.dir = UI_RTL[l] ? 'rtl' : 'ltr';
-    uiLoad(l, function () { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); });
+    uiLoad(l, function () { uiApply(document.body); if (ui.miaPaint) ui.miaPaint(); try { renderEditor(); } catch (e) {} });
   }
   (function () {
     var sl = $('#ui-lang'); if (sl) { sl.innerHTML = Object.keys(MIA_LANGS).map(function (k) { return '<option value="' + k + '">' + MIA_LANGS[k].n + '</option>'; }).join(''); sl.value = uiLang(); sl.addEventListener('change', function () { uiSetLang(this.value); }); }
