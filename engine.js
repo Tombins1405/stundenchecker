@@ -3374,6 +3374,7 @@
       // Nach Kollektivvertrag: Die Stunden zählen einfach. Der Zuschlag steht in einer eigenen Zeile und wird nicht zu Überstunden.
       res.kv = true; res.faktor = 1; res.wertMin = m.netto; res.zuPct = pct; res.zuMin = pct > 0 ? m.netto : 0;
       var solltag = istSollTag(w.ueberstunden, wd), de = !!(PAKETE[w.paket] && PAKETE[w.paket].land === 'DE');
+      if (w.paket === 'bau' && typ === 'feiertag' && status === 'arbeit' && !solltag && pct === 50) { pct = 100; res.zuPct = 100; } // Bau-KV § 4 Z 3 lit. f bb: Feiertag an regelmäßig freiem Tag 100 %, ohne Feiertagsentgelt
       if (typ === 'feiertag' && status === 'arbeit' && solltag && !de) {
         // Österreich (§ 9 Arbeitsruhegesetz): Feiertagsentgelt für die ausgefallenen Sollstunden plus Bezahlung der gearbeiteten Stunden.
         // Gearbeitete Stunden bis zum Tagessoll sind "Feiertagsarbeit" (einfach bezahlt), nur die Stunden darüber zählen in die Überstunden.
