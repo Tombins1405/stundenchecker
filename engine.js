@@ -3284,6 +3284,32 @@
     if (!schnitt) return 0;
     return umMar ? -60 : 60;
   }
+  // Pausen innerhalb einer Zeitspanne [A, B] (Minuten ab 0:00, B darf über Mitternacht hinaus gehen).
+  // Es zählt nur der Teil einer Pause, der in der Spanne liegt; überlappende oder doppelte Pausen zählen nur einmal;
+  // eine verdrehte Pause (Ende weit vor Beginn, also ein Tippfehler) zählt gar nicht. So kann eine Pause nie zu viel Arbeitszeit abziehen.
+  function pausenIn(day, A, B, warn) {
+    var teile = [], aussen = false, verdreht = false, anzahl = 0;
+    ((day && day.pausen) || []).forEach(function (p) {
+      var s = toMin(p && p.von), e = toMin(p && p.bis); if (s === null || e === null || e === s) return;
+      if (e < s) { if (e + 1440 - s >= 720) { verdreht = true; return; } e += 1440; } // über Mitternacht (z. B. 23:45–00:15) ist in Ordnung
+      anzahl++; var drin = 0;
+      [-1440, 0, 1440].forEach(function (off) { var a = Math.max(A, s + off), b = Math.min(B, e + off); if (b > a) { teile.push({ a: a, b: b, lbl: p.von + '–' + p.bis }); drin += b - a; } });
+      if (drin < e - s) aussen = true;
+    });
+    teile.sort(function (x, y) { return x.a - y.a; });
+    var min = 0, ende = -1e9, doppelt = false, lbls = [];
+    teile.forEach(function (t) {
+      if (t.a < ende) doppelt = true;
+      var a = Math.max(t.a, ende); if (t.b > a) { min += t.b - a; ende = t.b; }
+      if (lbls.indexOf(t.lbl) < 0) lbls.push(t.lbl);
+    });
+    if (warn) {
+      if (verdreht) warn.push('Eine Pause endet vor ihrem Beginn. Sie wird nicht gezählt.');
+      if (aussen) warn.push('Eine Pause liegt ganz oder teilweise außerhalb der Arbeitszeit. Abgezogen wird nur der Teil dazwischen.');
+      if (doppelt) warn.push('Pausen überschneiden sich. Dieselben Minuten werden nur einmal abgezogen.');
+    }
+    return { min: min, lbls: lbls, anzahl: anzahl };
+  }
   function dayMinutes(day, w, dateStr) {
     var von = toMin(day && day.von), bis = toMin(day && day.bis), warn = [];
     if (von === null || bis === null) return { brutto: 0, pausen: 0, netto: 0, warn: warn };
@@ -3293,19 +3319,12 @@
     var brutto = bis - von;
     if (brutto < 0) brutto += 1440;
     if (brutto === 0) warn.push('Von und Bis sind gleich.');
+    var pz = pausenIn(day, von, von + brutto, warn); // Uhrzeit-Spanne des Dienstes, vor der Sommer-/Winterzeit-Korrektur
     var dst = dstKorrektur(dateStr, von, bis);
     if (dst && brutto + dst > 0) brutto += dst; else dst = 0;
-    var pausen = 0;
-    (day.pausen || []).forEach(function (p) {
-      var s = toMin(p.von), e = toMin(p.bis);
-      if (s === null || e === null) return;
-      if (s < von) s += 1440;
-      if (e < s) e += 1440;
-      if (e < s) { warn.push('Eine Pause endet vor ihrem Beginn. Sie wird nicht gezählt.'); return; } // falsch eingetragene Pause darf die Arbeitszeit nie verlängern
-      pausen += e - s;
-    });
+    var pausen = pz.min;
     // Automatischer Pausenabzug (zum Beispiel 60 Minuten), wenn der Tag keine eigene Pause hat. Die Diäten zählen weiter ab Beginn bis Ende.
-    if (pausen === 0 && w && +w.pauseAutoMin > 0 && brutto > 0) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
+    if (pz.anzahl === 0 && w && +w.pauseAutoMin > 0 && brutto > 0) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
     var netto = brutto - pausen;
     if (netto < 0) { warn.push('Die Pausen sind länger als die Arbeitszeit.'); netto = 0; }
     return { brutto: brutto, pausen: pausen, netto: netto, warn: warn, dst: dst };
@@ -3400,18 +3419,13 @@
   // Jeder Eintrag mit von und bis zählt seine Zeit abzüglich der Pausen, die darin liegen.
   // Gibt es an dem Tag nur einen Kunden und keine Zeiten dazu, zählt die Arbeitszeit des Tages (netto).
   function kundenZeiten(day, w, dateStr) {
-    var pausen = ((day && day.pausen) || []).map(function (p) { return [toMin(p.von), toMin(p.bis), p.von + '–' + p.bis]; }).filter(function (p) { return p[0] !== null && p[1] !== null; });
     var abz = 0, pl = []; // Minuten Pause, die bei der zuletzt berechneten Zeit abgezogen wurden
     function dauer(von, bis) {
       abz = 0; pl = [];
       var a = toMin(von), b = toMin(bis); if (a === null || b === null) return null;
       if (b < a) b += 1440;
-      var min = b - a;
-      pausen.forEach(function (p) {
-        var s = p[0], e = p[1]; if (e < s) e += 1440;
-        [0, 1440].forEach(function (off) { var o = Math.min(b, e + off) - Math.max(a, s + off); if (o > 0) { min -= o; abz += o; if (pl.indexOf(p[2]) < 0) pl.push(p[2]); } });
-      });
-      return Math.max(0, min);
+      var pz = pausenIn(day, a, b); abz = pz.min; pl = pz.lbls;
+      return Math.max(0, b - a - abz);
     }
     var rows = [];
     ((day && day.kunden) || []).forEach(function (k, ki) {
@@ -3977,7 +3991,7 @@
     abgleich: abgleich, abgleichEuro: abgleichEuro, bruttoVorschau: bruttoVorschau, tagesZeilen: tagesZeilen, lzMitKorr: lzMitKorr, aufrollSumme: aufrollSumme, sonderAnteil: sonderAnteil, sonderSoll: sonderSoll, korrEuroZeile: korrEuroZeile, urlaubKartei: urlaubKartei, PAKETE: PAKETE, STATUS: STATUS, BUAK_KONTINGENT: BUAK_KONTINGENT,
     iso: iso, planLesen: planLesen, planReihe: planReihe, parseISO: parseISO, weekday: weekday, addDays: addDays, daysInMonth: daysInMonth, toMin: toMin,
     LAENDER_AT: LAENDER_AT, kvLand: kvLand, rundZeit: rundZeit, easter: easter, setRegion: setRegion, BUNDESLAENDER: BUNDESLAENDER, feiertage: feiertage, feiertagName: feiertagName, dayTyp: dayTyp,
-    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, ortTyp: ortTyp, wertAt: wertAt, dayMinutes: dayMinutes, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
+    neuerWertesatz: neuerWertesatz, lgAnstehend: lgAnstehend, lgFuer: lgFuer, kvWert: function (w, dateStr, keys) { return wRef(w, { kvRef: keys || true }, dateStr); }, kvLohn: kvLohn, unterKv: unterKv, KV_REGELN: KV_REGELN, praemienDay: praemienDay, freiModus: freiModus, zaUeber: zaUeber, BERUFE: BERUFE, berufName: berufName, LOHNGRUPPEN: LOHNGRUPPEN, istTour: istTour, istBau: istBau, bausteine: bausteine, ortTyp: ortTyp, wertAt: wertAt, dayMinutes: dayMinutes, pausenIn: pausenIn, kundenZeiten: kundenZeiten, praemienDay: praemienDay, calcDay: calcDay,
     parseSchnell: parseSchnell, wochenStd: wochenStd, tagesSoll: tagesSoll, sollTage: sollTage, istSollTag: istSollTag, calcMonth: calcMonth, sollFuer: sollFuer, swVerbraucht: swVerbraucht, buakStart: buakStart, h2: h2, r2: r2, clone: clone
   };
 });
