@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261121114655">
+<link rel="stylesheet" href="style.css?v=20261121134237">
 </head>
 <body>
 
@@ -87,7 +87,7 @@
   </div>
   <button type="button" class="miabtn2" id="mia-btn" aria-label="Mia"></button>
 </div>
-<button type="button" class="fbfloat" id="fb-float" title="Problem melden" aria-label="Problem melden" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M12 8v3.5M12 13.6v.01" stroke-linecap="round"/></svg><span class="fbl">Problem melden</span></button>
+<button type="button" class="fbfloat" id="fb-float" title="Rückmeldung" aria-label="Rückmeldung" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke-linecap="round" stroke-width="3"/></svg><span class="fbl">Rückmeldung</span></button>
 <div id="wiz" class="cropov" hidden><div class="cropbox wizbox" id="wiz-body"></div></div>
 <div id="crop" class="cropov" hidden><div class="cropbox"><p><strong>Bild verschieben und mit dem Regler vergrößern</strong></p><canvas id="crop-c" width="280" height="280"></canvas><input type="range" id="crop-z" min="100" max="400" value="100" aria-label="Zoom"><div class="btns"><button type="button" class="btn" id="crop-ok">Übernehmen</button><button type="button" class="btn" id="crop-x">Abbrechen</button></div></div></div>
 <div class="installbar" id="updatebar" hidden><div class="ib-top"><span>Es gibt eine neue Version vom Stunden-Checker.</span><button type="button" class="btn" id="update-go">Jetzt aktualisieren</button></div></div>
@@ -716,11 +716,17 @@
     </div>
     <div class="card" id="s-berichte">
       <h3 data-ico="doc">Berichte an die Firma</h3>
+      <div class="field" id="rb-berichte"><label>Welche Berichte verlangt deine Firma?</label><small>Schalte jeden Bericht ein, den du abgeben musst. Die App fragt dich dann zur richtigen Zeit, ob sie ihn gleich fertig machen soll. Erstellen kannst du jeden Bericht auch jederzeit selbst unter „Erfassen“.</small></div>
+      <label class="check"><input type="checkbox" data-rbb="tag"><span>Tagesbericht (jeden Tag)</span></label>
+      <label class="check"><input type="checkbox" data-rbb="woche"><span>Wochenbericht (am letzten Arbeitstag der Woche)</span></label>
+      <label class="check"><input type="checkbox" data-rbb="halb"><span>Halbmonatsbericht (um den 15. und zum Monatsende)</span></label>
+      <label class="check"><input type="checkbox" data-rbb="monat"><span>Monatsbericht (zum Monatsende)</span></label>
+      <label class="check" id="rb-bdw"><input type="checkbox" data-rbb="diaeten"><span>Diätenzettel (zum Monatsende)</span></label>
       <div class="field"><label for="rb-dienstort">Dienstort (Firmensitz, optional, steht auf dem Diätenzettel)</label><input type="text" id="rb-dienstort" maxlength="80" autocomplete="off"></div>
       <label class="check" id="rb-weitwahlw"><input type="checkbox" id="rb-weitwahl"><span>Beim Tag antippen, welcher Kunde oder welche Baustelle auf den Diätenzettel kommt</span></label>
       <div class="field" hidden><label for="rb-weitmodus">Wie findet die App den am weitesten entfernten Ort?</label><select id="rb-weitmodus"><option value="km">Ich trage je Ort einmal die km ein, danach automatisch</option><option value="karte">Automatisch mit Landkarte (OpenStreetMap)</option><option value="selbst">Ich wähle den Ort jeden Tag selbst</option></select><small>Mit Landkarte wird nur der Ortsname (zum Beispiel „Baustelle Melk“) und dein Dienstort an OpenStreetMap geschickt, damit die App die Entfernung ausrechnen kann. Die km merkt sich die App, du kannst sie beim Tag ändern.</small></div>
       <div class="field" hidden><label for="rb-name">Name auf den Berichten</label><input type="text" id="rb-name" maxlength="60" autocomplete="name"></div>
-      <div class="field"><label for="rb-rhythmus">Wann verlangt deine Firma den Bericht?</label><select id="rb-rhythmus"><option value="nie">Ich frage selbst, wenn ich ihn brauche</option><option value="tag">Jeden Tag</option><option value="woche">Jede Woche (am letzten Arbeitstag)</option><option value="halb">Zweimal im Monat (um den 15. und zum Monatsende)</option><option value="monat">Einmal im Monat (zum Monatsende)</option></select></div>
+      
       <div class="field"><label for="rb-mail">E-Mail der Firma (optional)</label><input type="email" id="rb-mail" maxlength="100" autocomplete="off"></div>
       <label class="check"><input type="checkbox" id="rb-ohnestd"> Im Halbmonatsbericht keine Stunden- und Summenspalten drucken</label>
       <label class="check"><input type="checkbox" id="rb-sigon"> Meine Unterschrift auf die Berichte drucken</label>
@@ -803,21 +809,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261121114655";</script>
-<script src="engine.js?v=20261121114655"></script>
+<script>window.APP_VERSION="20261121134237";</script>
+<script src="engine.js?v=20261121134237"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261121114655"></script>
-<script src="timepicker.js?v=20261121114655"></script>
-<script src="datepicker.js?v=20261121114655"></script>
-<script src="selectpicker.js?v=20261121114655"></script>
-<script src="pdf.js?v=20261121114655"></script>
-<script src="lzread.js?v=20261121114655"></script>
-<script src="app.js?v=20261121114655"></script>
-<script src="auth.js?v=20261121114655"></script>
-<script src="sync.js?v=20261121114655"></script>
-<script src="insights.js?v=20261121114655"></script>
+<script src="firebase-config.js?v=20261121134237"></script>
+<script src="timepicker.js?v=20261121134237"></script>
+<script src="datepicker.js?v=20261121134237"></script>
+<script src="selectpicker.js?v=20261121134237"></script>
+<script src="pdf.js?v=20261121134237"></script>
+<script src="lzread.js?v=20261121134237"></script>
+<script src="app.js?v=20261121134237"></script>
+<script src="auth.js?v=20261121134237"></script>
+<script src="sync.js?v=20261121134237"></script>
+<script src="insights.js?v=20261121134237"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>
