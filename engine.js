@@ -395,7 +395,7 @@
     },
     sozial: {
       name: 'Sozialwirtschaft Österreich (Pflege, Betreuung, Soziales)',
-      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit: die App rechnet 50 %, mehrere Zuschläge zählen nur einmal. Laut Abschlussprotokoll (Quelle: vida.at) gibt es nach § 31 für Sonn- und Feiertage aber einen festen Zuschlag von 6,22 € je Stunde (ab 1.4.2026). Für mobile Dienste kann anderes gelten: vergleiche mit deinem Lohnzettel. Lehrlingseinkommen der Pflegelehre ab 1.4.2026 (Quelle: vida.at, Abschlussprotokoll): 966,30 / 1.228,20 / 1.460,40 / 1.909,20 € im 1. bis 4. Lehrjahr.',
+      hinweis: 'SWÖ-KV (Sozialwirtschaft Österreich), Stand 1.4.2026 (Quelle: gpa.at): 37 Stunden/Woche, 8 Stunden/Tag, Überstunden 50 % (100 % nachts von 22 bis 6 Uhr und an Sonn- und Feiertagen), statt Geld ist Zeitausgleich möglich. Mehrstunden bei Teilzeit 33,3 %. Grundstundenlohn = Monatsgehalt geteilt durch 160,21. Nachtarbeit 9,45 € je Stunde, Rufbereitschaft 4,37 € je Stunde, Flexibilisierungszuschlag 51,30 € je Tag: lege sie bei Bedarf als Prämie an. Krankenhäuser und Pflegeheime der Länder und Gemeinden haben oft eigene Kollektivverträge: dann nimm „Eigene Werte“. Sonn- und Feiertagsarbeit (§ 31 Abs. 2): fester Zuschlag von 6,22 € je Stunde (bis 31.3.2026: 6,06 €); bei Außendiensteinsätzen in mobilen Diensten am Sonntag 50 %, am Feiertag 60 % des Grundstundenlohns. Treffen mehrere Zuschläge zusammen, gilt nur der höchste. Für die 6,22 € braucht die App deinen Lohn. Lehrlingseinkommen der Pflegelehre ab 1.4.2026 (Quelle: vida.at, Abschlussprotokoll): 966,30 / 1.228,20 / 1.460,40 / 1.909,20 € im 1. bis 4. Lehrjahr.',
       pruefen: true,
       werte: {
         diaeten: { modell: 'aus', satz: 0, maxStd: null, minStd: 0, vorschlag: 'anwesenheit', stufen: [] },
@@ -3370,6 +3370,11 @@
     var z = w.zuschlag, pct = 0;
     if (typ === 'sonntag') pct = z.so; else if (typ === 'feiertag') pct = z.ft; else if (typ === 'samstag') pct = z.sa;
     pct = +pct || 0;
+    if (w.paket === 'sozial' && (typ === 'sonntag' || typ === 'feiertag')) {
+      // SWÖ-KV § 31 Abs. 2: mobile Dienste (Außendienst) Sonntag 50 %, Feiertag 60 %; sonst fester Betrag je Stunde (6,06 €, ab 1.4.2026 6,22 €), umgerechnet auf den Grundstundenlohn
+      if (w.art === 'mobil') pct = typ === 'feiertag' ? 60 : 50;
+      else { var swGl = +w.monatslohn > 0 ? +w.monatslohn / 160.21 : +w.stundenlohn, swFx = dateStr >= '2026-04-01' ? 6.22 : 6.06; pct = swGl > 0 ? Math.round(swFx / swGl * 10000) / 100 : 0; }
+    }
     if (z.art === 'kv') {
       // Nach Kollektivvertrag: Die Stunden zählen einfach. Der Zuschlag steht in einer eigenen Zeile und wird nicht zu Überstunden.
       res.kv = true; res.faktor = 1; res.wertMin = m.netto; res.zuPct = pct; res.zuMin = pct > 0 ? m.netto : 0;

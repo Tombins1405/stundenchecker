@@ -1108,3 +1108,5 @@ div.card > .btns + .btns, .lzbox > .btns + .btns { margin-top: 0; }
 .rbtitel { font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; color: var(--accent, #1565c0); }
 .rbmit { font-weight: 600; margin: 4px 0 2px; }
 .rbbox .btns { margin-top: 4px; }
+#e-date-fehler { color: var(--bad); font-weight: 600; margin-top: 4px; font-size: .92em; }
+input.feld-fehler { border-color: var(--bad) !important; box-shadow: 0 0 0 2px rgba(220, 38, 38, .25); }

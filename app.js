@@ -1664,6 +1664,7 @@
     b.hidden = !(leer && kundenVomLetztenTag());
   }
   function openEditor(date, from, force) {
+    try { datFehler(false); } catch (e) {}
     if (!force && ui.edDraft && date !== ui.edDate && isDirty()) { askLeave(function () { openEditor(date, from, true); }); return; }
     ui.edDate = date; ui.edFrom = from || 'erfassen'; ui.kOpen = {};
     ui.edDraft = data.days[date] ? E.clone(data.days[date]) : blankDay();
@@ -1752,6 +1753,12 @@
     box.open = offen || drin;
   }
   // Homeoffice gibt es vor allem im Büro (auch Büro-Arten in anderen Berufen)
+  function datFehler(an) {
+    var f = $('#e-date'); if (!f) return; var m = $('#e-date-fehler');
+    if (an && !m) { m = document.createElement('div'); m.id = 'e-date-fehler'; m.className = 'rot'; m.setAttribute('role', 'alert'); f.parentNode.appendChild(m); }
+    if (m) { m.textContent = an ? abwLab('Dieses Datum gibt es nicht. Bitte ein gültiges Datum wählen.') + ' (' + abwLab('Gezeigt wird weiter') + ' ' + fmtDate(ui.edDate) + ')' : ''; m.hidden = !an; }
+    f.classList.toggle('feld-fehler', !!an);
+  }
   function hoPasst(w) { if (!w) return false; if (w.beruf === 'reinigung' || w.beruf === 'security') return false; if (['buero', 'aussendienst', 'bund'].indexOf(w.beruf) >= 0) return true; var b = E.BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && /Büro|Verwaltung/.test(a.name)); }
   function bsRender(en) {
     var bs = E.bausteine(en || wAt(todayISO()));
@@ -2071,6 +2078,7 @@
     $('#pa-zu').onclick = function () { dlg.hidden = true; };
   }
   function saveDay() {
+    var dfe = $('#e-date-fehler'); if (dfe && !dfe.hidden) { var dfi = $('#e-date'); if (dfi) dfi.focus(); return; } // ungültiges Datum: nicht speichern
     var d = ui.edDraft, st = d.status;
     if (st !== 'arbeit' && mitArbeit(st) && d.von) {
       var vor = data.days[ui.edDate], schonBestaetigt = vor && vor.status === st && vor.von === d.von && (vor.bis || '') === (d.bis || '');
@@ -2731,7 +2739,7 @@
     {"t": "Termine in den Handy-Kalender", "k": ["handy-kalender", "handykalender", "in den kalender", "outlook", "google kalender", "samsung kalender", "kalenderdatei", "kalender export", "termine in kalender", "eigener kalender", "welcher kalender", "kalender importieren", "aus dem kalender", "termine übernehmen", "synchronisieren", "automatisch kalender", "ganzes jahr kalender"], "a": "Ganz unten bei Erfassen, bei „Berichte als PDF“, tippst du auf „In den Handy-Kalender“. Wer den Dienstplan eingeschaltet hat, findet den Knopf auch im Dienstplan. Wähle den Monat und ob die geplanten Dienste, die aufgezeichneten Tage oder beides hinein sollen. Die App macht daraus eine Kalenderdatei, kostenlos und ohne Konto. In welchen Kalender die Termine kommen, wählst du beim Öffnen: Samsung und Apple fragen danach. In Outlook am Computer wählst du „Als neuen Kalender öffnen“ für einen eigenen Kalender „Stunden-Checker“ oder „Importieren“ in einen vorhandenen. Bei Google geht es über calendar.google.com, Einstellungen, Importieren. In die andere Richtung geht es auch: Unter „Aus deinem Kalender in die App holen“ wählst du eine Kalenderdatei, und Termine mit Uhrzeit werden nach deiner Prüfung als Arbeitszeit eingetragen. Bei „Zeitraum“ wählst du einen Monat, ein ganzes Jahr oder alles auf einmal. Schickst du die Datei später noch einmal, werden geänderte Tage ersetzt. Ganz von selbst abgleichen kann die App mit deinem Kalender nicht."},
     {"t": "Tipps für den Steuerausgleich", "k": ["steuerausgleich", "arbeitnehmerveranlagung", "steuer", "steuern", "finanzamt", "werbungskosten", "absetzen", "steuer zurueck", "lohnsteuer", "pendlerpauschale", "extras", "werkzeuge"], "a": "Im Profil ganz oben bei „Extras und Werkzeuge“ tippst du auf „Tipps für den Steuerausgleich“. Ich schaue mir deine Aufzeichnung und deinen Beruf an: zum Beispiel Diäten unter dem steuerlichen Höchstsatz, Überstunden, Homeoffice-Tage, Schulungen und Arbeitstage für die Pendlerpauschale. Dazu kommen Tipps für deinen Beruf und für alle, und bis wann du den Steuerausgleich machen kannst. Das ist keine Steuerberatung. Die Arbeiterkammer hilft dir kostenlos."},
     {"t": "Deine Rechte im Beruf", "k": ["rechte", "meine rechte", "arbeitsrecht", "rechte im beruf", "dienstzettel", "pflegefreistellung", "behaltezeit", "buak", "schlechtwetter", "mehrarbeitszuschlag"], "a": "Im Profil ganz oben bei „Extras und Werkzeuge“ tippst du auf „Deine Rechte im Beruf“. Dort steht das Wichtigste aus Gesetz und Kollektivvertrag, zum Beispiel zu Überstunden, Pausen, Urlaub, Krankenstand und Dienstzettel, dazu Punkte für deinen Beruf, etwa für Lehrlinge, Teilzeit, Bau, Pflege, Gastronomie oder Büro. Bei jedem Punkt steht die Quelle mit Stand. Das ist keine Rechtsberatung, die Arbeiterkammer berät dich kostenlos."},
-    {"t": "Verjährung und Verfall von Überstunden und Lohn", "k": ["verjähren", "verjährung", "verjährt", "verjaehren", "verfall", "verfallen", "verfällt", "verfallsfrist", "verfallsfristen", "verfallsklausel", "nachfordern", "einfordern", "wie lange nachfordern", "wie lange rückwirkend", "frist überstunden", "überstunden verfallen"], "a": "Nicht bezahlter Lohn und nicht bezahlte Überstunden verjähren grundsätzlich nach drei Jahren. Aber Achtung: Im Kollektivvertrag oder im Arbeitsvertrag kann eine kürzere Verfallsfrist stehen, im Kollektivvertrag oft nur 3 bis 6 Monate. Danach ist der Anspruch weg, wenn du ihn nicht rechtzeitig bei der Firma meldest. Darum: Offene Stunden möglichst bald schriftlich einfordern, am besten per eingeschriebenem Brief. Welche Frist bei dir gilt, steht im Kollektivvertrag und im Dienstvertrag. Die Arbeiterkammer berät dich dazu kostenlos. Ich kann dir diese Frist nicht für deinen Fall sagen, aber die App zeigt dir Unterschiede zum Lohnzettel, damit du sie früh bemerkst."}
+    {"t": "Verjährung und Verfall von Überstunden und Lohn", "k": ["verjähren", "verjährung", "verjährt", "verjaehren", "verfall", "verfallen", "verfällt", "verfallsfrist", "verfallsfristen", "verfallsklausel", "nachfordern", "einfordern", "wie lange nachfordern", "wie lange rückwirkend", "frist überstunden", "überstunden verfallen", "überstunden nicht bezahlt", "überstunden nicht gezahlt", "überstunden nicht ausbezahlt", "lohn nicht bezahlt", "nicht gezahlt", "nicht bezahlt", "nicht ausbezahlt", "geltend machen", "schriftlich geltend", "welche frist", "frist", "fristen lohn"], "a": "Nicht bezahlter Lohn und nicht bezahlte Überstunden verjähren grundsätzlich nach drei Jahren. Aber Achtung: Im Kollektivvertrag oder im Arbeitsvertrag kann eine kürzere Verfallsfrist stehen, im Kollektivvertrag oft nur 3 bis 6 Monate. Danach ist der Anspruch weg, wenn du ihn nicht rechtzeitig bei der Firma meldest. Darum: Offene Stunden möglichst bald schriftlich einfordern, am besten per eingeschriebenem Brief. Welche Frist bei dir gilt, steht im Kollektivvertrag und im Dienstvertrag. Die Arbeiterkammer berät dich dazu kostenlos. Ich kann dir diese Frist nicht für deinen Fall sagen, aber die App zeigt dir Unterschiede zum Lohnzettel, damit du sie früh bemerkst."}
   ];
   function miaFaqText(i, w) { var tr = MIA_TR[miaLang()]; return tr ? tr[i][w === 'a' ? 1 : 0] : MIA_FAQ[i][w]; }
   function miaDd(s) { return String(s).replace(/(.)\1+/g, '$1'); } // Tippfehler mit doppelten Buchstaben
@@ -3398,6 +3406,7 @@
         '<div class="field"><label for="wz-mianame">Wie soll sie oder er heißen?</label><input type="text" id="wz-mianame" maxlength="20" autocomplete="off" data-wf="miaName" placeholder="' + (w.mia === 'm' ? 'Milo' : 'Mia') + '" value="' + esc(w.miaName || '') + '"></div>' +
         '<div class="field"><label for="wz-vn">Dein Vorname</label><input type="text" id="wz-vn" maxlength="40" autocomplete="given-name" data-wf="vorname" value="' + esc(w.vorname || '') + '"></div><div class="field"><label for="wz-nn">Dein Nachname (kommt auf deine Berichte)</label><input type="text" id="wz-nn" maxlength="60" autocomplete="family-name" data-wf="nachname" value="' + esc(w.nachname || '') + '"></div>';
   }
+  function wzArtB(w, k) { var b = E.BERUFE[w.beruf], a = b && b.arten && w.art && b.arten[w.art]; return !!(a && a.b && a.b[k]); }
   function wzRender() {
     var w = ui.wiz, el = $('#wiz-body'), i = WZ_ORDER.indexOf(w.step), nSteps = 4, html = '';
     var shown = Math.min(i, 3) + (w.step === 'art' ? 0 : 1) + (i > 1 ? -1 : 0); // Schritt 1 (Beruf+Art), 2, 3, 4
@@ -3421,8 +3430,8 @@
       var wbw = { beruf: w.beruf, art: w.art }, proj = E.ortTyp(wbw) === 'projekt', wbr = w.b.bericht != null ? w.b.bericht : true;
       html += '<h3>Was möchtest du aufzeichnen?</h3><p class="hint">Du kannst das jederzeit ändern.</p>' +
         '<label class="check"><input type="checkbox" checked disabled><span>Arbeitszeit, Pausen, Urlaub und Krankenstand (immer dabei)</span></label>' +
-        (einf ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>') +
-        (einf && !proj ? '' : '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW(wbw).bs)) + '</span></label>') +
+        (einf && !wzArtB(w, 'fahrzeug') ? '' : '<label class="check"><input type="checkbox" data-wc="fahrzeug"' + (w.b.fahrzeug ? ' checked' : '') + '><span>Fahrzeug und Kilometer</span></label>') +
+        (einf && !proj && !wzArtB(w, 'kunden') ? '' : '<label class="check"><input type="checkbox" data-wc="kunden"' + (w.b.kunden ? ' checked' : '') + '><span>' + esc(abwLab(ortW(wbw).bs)) + '</span></label>') +
         (hoPasst(wbw) ? '<label class="check"><input type="checkbox" data-wc="homeoffice"' + (w.b.homeoffice ? ' checked' : '') + '><span>Homeoffice-Tage</span></label>' : '') +
         '<label class="check"><input type="checkbox" data-wc="bericht"' + (wbr ? ' checked' : '') + '><span>Berichte als PDF (zum Speichern oder für die Firma)</span></label>' +
         '<label class="check"><input type="checkbox" data-wc="praemien"' + (w.b.praemien ? ' checked' : '') + '><span>Prämien</span></label>' +
@@ -4057,7 +4066,7 @@
     if (t.dataset && t.dataset.path) { if (ev.type === 'change' && t.dataset.path === 'gueltigAb') onDateChange(t); else onSettingInput(t); return; }
     if (ev.type === 'change' && id === 's-paket') { var e = curEntry(); if (e) { e.paket = t.value; delete e.test; save(); paketInfo(e); renderSettings(); } return; }
     switch (id) {
-      case 'e-date': if (validISO(t.value)) openEditor(t.value, ui.edFrom); return;
+      case 'e-date': if (validISO(t.value)) { datFehler(false); openEditor(t.value, ui.edFrom); } else { datFehler(true); } return;
       case 'e-fv': if (t.value) ui.edDraft.fv = t.value; else delete ui.edDraft.fv; freiNote(); updatePreview(); return;
       case 'e-status': ui.edDraft.status = t.value; $('#e-work').hidden = !mitArbeit(t.value); $('#e-frbox').hidden = t.value !== 'freistellung'; if (t.value !== 'freistellung') { delete ui.edDraft.fv; $('#e-fv').value = ''; } else { freiNote(); } $('#e-erbox').hidden = t.value !== 'ersatzruhe'; if (t.value !== 'ersatzruhe' && t.value !== 'arbeit') delete ui.edDraft.extra; $('#e-erx').value = t.value === 'ersatzruhe' && ui.edDraft.extra ? ui.edDraft.extra : ''; renderPraemienTag(); anChips(); updatePreview(); return;
       case 'e-von': ui.edDraft.von = t.value; updatePreview(); return;
@@ -5457,7 +5466,7 @@
       var rows = tage.map(function (r) {
         var d = data.days[r.datum] || {}; sum += r.nettoMin || 0; sumD += r.diaetenStd || 0;
         var c = [WD[E.weekday(r.datum)] + ' ' + fmtDate(r.datum).replace(/\.\d{4}$/, '.'), art(r), d.von && d.bis ? d.von + '–' + d.bis : '', r.pausenMin ? hm(r.pausenMin) : ''];
-        if (m.stunden) c.push(r.nettoMin ? hh(r.nettoMin) : ''); if (m.diaeten) c.push(r.diaetenStd ? fh(r.diaetenStd) : '');
+        if (m.stunden) c.push(r.nettoMin ? hh(r.nettoMin) : (r.status !== 'arbeit' && r.creditMin > 0 ? '(' + hh(r.creditMin) + ')' : '')); if (m.diaeten) c.push(r.diaetenStd ? fh(r.diaetenStd) : '');
         if (m.kunden) c.push((d.kunden || []).map(function (k) { return k.name; }).filter(Boolean).join(', ')); if (m.praemien) c.push(prTag(d));
         return c;
       }).filter(function (c) { return c[1] || c[2]; });
@@ -5469,18 +5478,19 @@
     function sigLabel(dt) { return E.bausteine(wAt(dt || todayISO())).fahrzeug ? 'Unterschrift Fahrer/in' : 'Unterschrift Arbeitnehmer/in'; }
     function zeitblatt(von, bis, m) {
       m = m || bMit('stunden', 'halb', von);
-      var nm = bName(), rows = [], sN = 0, sU = 0, sU50 = 0, sU100 = 0, sD = 0;
+      var nm = bName(), rows = [], sN = 0, sU = 0, sU50 = 0, sU100 = 0, sD = 0, sC = 0;
       tageVon(von, bis).forEach(function (r) {
         var d = data.days[r.datum] || {}; if (r.leer && !(d.von || d.bis)) return;
         var w = wAt(r.datum), soll = Math.round(E.sollFuer(w.ueberstunden, E.weekday(r.datum)) * 60), net = r.nettoMin || 0;
         var frei = r.typ !== 'werktag', nor = frei ? 0 : Math.min(net, soll), ue = net - nor; if (r.status !== 'arbeit') { nor = 0; ue = 0; }
         sN += nor; sU += ue; if (frei) sU100 += ue; else sU50 += ue; sD += r.diaetenStd || 0;
+        var cr = r.status !== 'arbeit' && r.creditMin > 0 ? r.creditMin : 0; sC += cr; // Urlaub, Krankenstand, Feiertag: bezahlte Stunden in Klammern
         var ps = (d.pausen || []).filter(function (x) { return x.von && x.bis; }).map(function (x) { return x.von + '-' + x.bis; }).join(', ');
         var tour = (d.kunden || []).map(function (k) { return k.name; }).filter(Boolean).join(', '), prt = m.praemien ? prTag(d) : '';
         var fz = fahrzeugeVon(d).filter(function (f) { return f.kfz; }); if (!fz.length) fz = [{}];
         fz.forEach(function (f, i) {
           var first = i === 0, wk = WD[E.weekday(r.datum)];
-          rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? String(art(r)).replace(/\s*\(.*\)\s*$/, '') : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : '', first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '', first ? prt : '']);
+          rows.push([first ? '' + kw(r.datum) : '', first ? wk : '', first ? fmtDate(r.datum).replace(/\.(\d{4})$/, '.' + String(r.datum).slice(2, 4)) : '', first ? (d.von || (r.status !== 'arbeit' ? String(art(r)).replace(/\s*\(.*\)\s*$/, '') : '')) : '', first ? (d.bis || '') : '', f.kmVon == null ? '' : f.kmVon, f.kmBis == null ? '' : f.kmBis, f.kfz || '', first ? tour : '', first ? ps : '', first && nor ? fh(nor / 60) : (first && cr ? '(' + fh(cr / 60) + ')' : ''), first && ue ? fh(ue / 60) : '', first && r.diaetenStd ? fh(r.diaetenStd) : '', first ? prt : '']);
         });
       });
       var bsZ = E.bausteine(wAt(von)), owZ = ortW(wAt(von)); // Fahrzeug- und Kundenspalten nur, wenn man sie in diesem Beruf aufzeichnet
@@ -5490,6 +5500,7 @@
         rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD), ''], bold: true });
         rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '', '']);
         rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '', '']);
+        if (sC) rows.push(['', '', '(bezahlt, ohne Arbeit)', '', '', '', '', '', '', '', '(' + fh(sC / 60) + ')', '', '', '']);
       } else if (m.diaeten) rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', '', '', fh(sD), ''], bold: true });
       var tCols = [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }, { w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }, { w: 60 }];
       var tHead = ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', owZ.one, 'Ruhepause', 'Normal Std.', 'Über-Std.', 'Tagesgeld Std.', 'Prämien'];
