@@ -2915,7 +2915,7 @@
         lader: { name: 'Laderfahrer (Radlader)', b: { fahrzeug: false, kunden: true, praemien: true } },
         kran: { name: 'Kran / Kranfahrer', b: { fahrzeug: false, kunden: true, praemien: true } }
       } },
-    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'gueter', kvs: ['gueter', 'klein', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
+    klein: { name: 'Kleintransport (bis 3,5 t)', paket: 'klein', kvs: ['klein', 'gueter', 'de_spedition_nrw', 'de_spedition_by', 'de_logistik_sn', 'de_spedition', 'de_spedition_sonst', 'eigen'], diaeten: true, sw: false, b: { fahrzeug: true, kunden: true, praemien: false },
       arten: {
         tour: { name: 'Zustellung / Tour / Filiale', tour: true, b: { fahrzeug: true, kunden: true, praemien: false } },
         baustelle: { name: 'Baustelle / Handwerker', b: { fahrzeug: true, kunden: true, praemien: false } },
@@ -3027,8 +3027,8 @@
       arten: {
         linie: { name: 'Linienbus', b: { fahrzeug: true, kunden: false, praemien: true } },
         reise: { name: 'Reisebus / Gelegenheitsverkehr', b: { fahrzeug: true, kunden: false, praemien: true } },
-        taxi: { name: 'Taxi / Mietwagen', paket: 'taxi', b: { fahrzeug: true, kunden: false, praemien: true } },
-        schueler: { name: 'Schülertransport / Krankenbeförderung', paket: 'taxi_b', b: { fahrzeug: true, kunden: false, praemien: true } },
+        taxi: { name: 'Taxi / Mietwagen', kv: 'taxi', b: { fahrzeug: true, kunden: false, praemien: true } },
+        schueler: { name: 'Schülertransport / Krankenbeförderung', kv: 'taxi_b', b: { fahrzeug: true, kunden: false, praemien: true } },
         werkstatt: { name: 'Werkstätte und Garage (Bus)', b: { fahrzeug: true, kunden: false, praemien: true } }
       } },
     gaertner: { name: 'Gärtner und Forst', paket: 'gaertner', kvs: ['gaertner', 'forst', 'agrar', 'eigen'], einfach: true, diaeten: true, sw: true, b: { fahrzeug: true, kunden: true, praemien: true },

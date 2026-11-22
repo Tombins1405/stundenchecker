@@ -2999,7 +2999,7 @@
     w.paket = neu; w.kvGewaehlt = true; var kl0 = E.kvLand(neu); if (kl0 && kl0.length === 1 && !landAT()) landSetzen(kl0[0]);
     if (!eigen) w.wochen = w.wstEigen > 0 ? w.wstEigen : pn.ueberstunden.wochenStd; w.dsatz = pn.diaeten.modell === 'stunde' ? pn.diaeten.satz : '';
   }
-  function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; if (a.paket && E.PAKETE[a.paket]) { w.paket = a.paket; var pa0 = E.PAKETE[a.paket].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pa0.ueberstunden.wochenStd; w.dsatz = pa0.diaeten.modell === 'stunde' ? pa0.diaeten.satz : ''; } w.kvGewaehlt = false; w.lg = null; w.ls = null; }
+  function wzSetArt(k) { var w = ui.wiz; w.art = k; var a = E.BERUFE[w.beruf].arten[w.art]; w.b = { fahrzeug: a.b.fahrzeug, kunden: a.b.kunden, praemien: a.b.praemien }; if (a.sw !== undefined) w.sw = a.sw; if (a.diaeten !== undefined) w.diaeten = a.diaeten; w.kvGewaehlt = false; w.lg = null; w.ls = null; }
   function wzSetBeruf(k) {
     var b = E.BERUFE[k], w = ui.wiz; w.beruf = k; w.art = null; w.b = { fahrzeug: b.b.fahrzeug, kunden: b.b.kunden, praemien: b.b.praemien };
     w.diaeten = b.diaeten; w.sw = b.sw; w.paket = b.paket;
@@ -3023,7 +3023,8 @@
     var kvs = ((E.BERUFE[w.beruf] && E.BERUFE[w.beruf].kvs) || [(E.BERUFE[w.beruf] && E.BERUFE[w.beruf].paket) || 'eigen']).slice(), ar = E.BERUFE[w.beruf] && E.BERUFE[w.beruf].arten, ak = ar && w.art && ar[w.art] && ar[w.art].kv, wl = landAT();
     var kvL = berufHatLand(w.beruf) && wl ? kvs.filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(wl) >= 0; }) : [];
     var at = kvs.filter(function (k) { return k !== 'eigen' && String(k).indexOf('de_') !== 0; });
-    var wahl = ak && E.PAKETE[ak] ? ak : (kvL[0] || at[0] || kvs[0] || 'gueter');
+    var akL = ak && kvL.filter(function (k) { return k === ak || k.indexOf(ak + '_') === 0; })[0];
+    var wahl = akL || (ak && E.PAKETE[ak] ? ak : (kvL[0] || at[0] || kvs[0] || 'gueter'));
     if (!E.PAKETE[wahl]) wahl = 'gueter';
     w.paket = wahl; var pv = E.PAKETE[wahl].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null;
     if (!data.profil) data.profil = {}; data.profil.kvAuto = wahl; // Mia fragt nach dem ersten Lohnzettel, ob er stimmt
@@ -3443,6 +3444,7 @@
       if (ak && kvs.indexOf(ak) > 0) { kvs.splice(kvs.indexOf(ak), 1); kvs.unshift(ak); }
       var mitLand = berufHatLand(w.beruf), wl = landAT(), kvL = mitLand && wl ? kvs.filter(function (k) { var x = E.kvLand(k); return x && x.indexOf(wl) >= 0; }) : [];
       if (kvL.length) { kvs = kvL.concat(kvs.filter(function (k) { return kvL.indexOf(k) < 0; })); }
+      if (ak) { var akL = kvs.filter(function (k) { return (k === ak || k.indexOf(ak + '_') === 0) && kvL.indexOf(k) >= 0; })[0] || (kvs.indexOf(ak) >= 0 ? ak : null); if (akL) { kvs.splice(kvs.indexOf(akL), 1); kvs.unshift(akL); } } // Tätigkeit zuerst (regionale Variante davon vor der Bundesvariante)
       if (w.scan && !w.scanDone) { w.scanDone = true; lzAnwenden(w, w.scan.k, w.scan.tr); }
       if (w.kvGewaehlt && E.PAKETE[w.paket] && kvs.indexOf(w.paket) < 0) kvs.unshift(w.paket);
       if (!w.kvGewaehlt && kvs.indexOf(w.paket) !== 0) { w.paket = kvs[0]; var pv = E.PAKETE[w.paket].werte; w.wochen = w.wstEigen > 0 ? w.wstEigen : pv.ueberstunden.wochenStd; w.dsatz = pv.diaeten.modell === 'stunde' ? pv.diaeten.satz : ''; w.lg = null; w.ls = null; }
@@ -5500,7 +5502,7 @@
         rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', fh(sN / 60), fh(sU / 60), fh(sD), ''], bold: true });
         rows.push(['', '', 'davon Üst. 50 %', '', '', '', '', '', '', '', '', fh(sU50 / 60), '', '']);
         rows.push(['', '', 'davon Üst. 100 %', '', '', '', '', '', '', '', '', fh(sU100 / 60), '', '']);
-        if (sC) rows.push(['', '', '(bezahlt, ohne Arbeit)', '', '', '', '', '', '', '', '(' + fh(sC / 60) + ')', '', '', '']);
+        if (sC) rows.push(['', '', '(bezahlt frei)', '', '', '', '', '', '', '', '(' + fh(sC / 60) + ')', '', '', '']);
       } else if (m.diaeten) rows.push({ cells: ['', '', 'Summe', '', '', '', '', '', '', '', '', '', fh(sD), ''], bold: true });
       var tCols = [{ w: 22 }, { w: 24 }, { w: 52 }, { w: 40 }, { w: 36 }, { w: 48, al: 'r' }, { w: 48, al: 'r' }, { w: 56 }, { w: 60 }, { w: 70 }, { w: 40, al: 'r' }, { w: 36, al: 'r' }, { w: 40, al: 'r' }, { w: 60 }];
       var tHead = ['KW', 'Tag', 'Datum', 'Beginn', 'Ende', 'km Beginn', 'km Ende', 'KFZ', owZ.one, 'Ruhepause', 'Normal Std.', 'Über-Std.', 'Tagesgeld Std.', 'Prämien'];
