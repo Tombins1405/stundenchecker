@@ -125,8 +125,12 @@
     });
     return res;
   }
+  // Läuft auf diesem Handy schon eine neuere Version (z. B. alte Fenster/Tabs, die tagelang offen waren), lädt sich dieses Fenster nach dem Speichern neu
+  function veraltet() { try { var v = localStorage.getItem('stundenchecker.appver') || '', me = window.APP_VERSION || ''; if (me && (!v || me > v)) { localStorage.setItem('stundenchecker.appver', me); return false; } return !!me && v > me; } catch (e) { return false; } }
+  veraltet();
   function save() {
     fremdeAenderung();
+    if (veraltet()) setTimeout(function () { try { if (typeof isDirty === 'function' && isDirty()) return; } catch (e) { } location.reload(); }, 50);
     applyRegion();
     try { var wr0 = JSON.stringify(data); localStorage.setItem(KEY, wr0); lastRaw = wr0; speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
