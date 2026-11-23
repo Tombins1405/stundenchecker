@@ -55,10 +55,21 @@
   function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
   // Drei-Wege-Abgleich: Hat ein anderes Fenster (zum Beispiel die installierte App und ein offener Browser-Tab) zwischendurch etwas gespeichert,
   // gehen dessen Änderungen nicht verloren. Was ich nicht angefasst habe, kommt vom anderen Fenster; was beide geändert haben, gilt meine Fassung.
+  function nachId(x) { return Array.isArray(x) && x.length > 0 && x.every(function (e) { return isObj(e) && (typeof e.id === 'string' || typeof e.id === 'number') && e.id !== ''; }); }
+  function mId(b, a, t) { // Listen mit Einträgen (Ausweise, Prämien, Dienste, Berichte …): je Eintrag zusammenführen, damit nichts verschwindet
+    var bm = {}, am = {}, tm = {}, ord = [], hatB = Array.isArray(b);
+    (nachId(b) ? b : []).forEach(function (e) { bm[e.id] = e; });
+    a.forEach(function (e) { am[e.id] = e; if (ord.indexOf(e.id) < 0) ord.push(e.id); }); t.forEach(function (e) { tm[e.id] = e; if (ord.indexOf(e.id) < 0) ord.push(e.id); });
+    return ord.map(function (k) {
+      if (!hatB) return am[k] && tm[k] ? m3(undefined, am[k], tm[k]) : (am[k] || tm[k]); // ohne gemeinsamen Stand: alles behalten
+      return m3(bm[k], am[k], tm[k]);
+    }).filter(function (e) { return e !== undefined; });
+  }
   function m3(b, a, t) {
     var sa = JSON.stringify(a), sb = JSON.stringify(b), st = JSON.stringify(t);
     if (sa === sb) return t;
     if (st === sb || sa === st) return a;
+    if ((nachId(a) || (Array.isArray(a) && !a.length)) && (nachId(t) || (Array.isArray(t) && !t.length)) && (nachId(a) || nachId(t)) && !(typeof nachAb === 'function' && (nachAb(a) || nachAb(t)))) return mId(b, a, t);
     if (isObj(a) && isObj(t) && (b === undefined || isObj(b))) {
       var r = {}, ks = {}; [a, t, b || {}].forEach(function (o) { Object.keys(o).forEach(function (k) { ks[k] = 1; }); });
       Object.keys(ks).forEach(function (k) { var v = m3((b || {})[k], a[k], t[k]); if (v !== undefined) r[k] = v; });
@@ -83,11 +94,35 @@
     var p = data.profil || {}, cur = E.wertAt(data.settings, todayISO()), pk = cur && E.PAKETE[cur.paket];
     E.setRegion(pk && pk.land === 'DE' ? 'DE' : 'AT', p.bl || '');
   }
+  // Sicherheitsstand je Tag (die letzten 3 Tage) nur auf diesem Gerät: falls etwas verloren geht, kann die App es zurückholen
+  function standMerken() {
+    try {
+      var k = KEY + '.stand-' + todayISO(); if (localStorage.getItem(k) || !lastRaw || lastRaw.length > 400000) return;
+      localStorage.setItem(k, lastRaw);
+      Object.keys(localStorage).filter(function (x) { return x.indexOf(KEY + '.stand-') === 0; }).sort().reverse().slice(3).forEach(function (x) { localStorage.removeItem(x); });
+    } catch (e) { }
+  }
+  function kopienFristen() { // Ausweise aus Sicherheitsständen und Sicherheitskopien auf diesem Gerät
+    var out = {};
+    try { Object.keys(localStorage).filter(function (x) { return x.indexOf(KEY + '.') === 0 && /\.stand-/.test(x); }).sort().forEach(function (x) {
+      try { var d = JSON.parse(localStorage.getItem(x)); ((d && d.profil && d.profil.fristen) || []).forEach(function (f) { if (f && f.id && (f.ablauf || f.datum)) out[f.id] = f; }); } catch (e) { }
+    }); } catch (e) { }
+    return out;
+  }
+  function fristenFehlend() {
+    var k = kopienFristen(), nein = (data.profil && data.profil.frZurueckNein) || [], cur = (data.profil && data.profil.fristen) || [], res = [];
+    Object.keys(k).forEach(function (id) {
+      if (nein.indexOf(id) >= 0) return; var c = cur.filter(function (f) { return f.id === id; })[0], f = k[id];
+      if (!c) res.push({ f: f, neu: true }); else if (!c.ablauf && f.ablauf || !c.datum && f.datum) res.push({ f: f, neu: false });
+    });
+    return res;
+  }
   function save() {
     fremdeAenderung();
     applyRegion();
     try { var wr0 = JSON.stringify(data); localStorage.setItem(KEY, wr0); lastRaw = wr0; speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
+    standMerken();
   }
   var data = load();
   (function () { var p = data.profil || (data.profil = {}); if (p.erfMehrMig === undefined) { p.erfMehrMig = true; if (Object.keys(data.days || {}).length) p.erfMehrAlt = true; } })(); // Wer schon Tage hat, sieht „Mehr zum Tag“ weiter offen
@@ -3863,7 +3898,7 @@
     Object.keys(data.days).forEach(function (k) { if (data.days[k].test) delete data.days[k]; });
     data.settings = data.settings.filter(function (e) { return !e.test; });
     Object.keys(data.abgleich).forEach(function (k) { if (data.abgleich[k].test) delete data.abgleich[k]; });
-    if (data.profil && data.profil.test) data.profil = {};
+    if (data.profil && data.profil.test) delete data.profil.test; // nur die Markierung weg, eigene Einträge (Ausweise, Prämien …) bleiben
     save(); ui.setKey = null; toast('Beispieldaten entfernt.'); show(ui.view);
   }
   function renderCheck() {
@@ -4908,6 +4943,10 @@
   }
   function renderFristen() {
     var el = $('#fr-list'); if (!el) return;
+    var zb = $('#fr-zurueck'), fe = fristenFehlend(); if (zb) {
+      zb.hidden = !fe.length;
+      if (fe.length) zb.innerHTML = miaKopf() + '<p>' + esc(abwLab('In einer älteren Sicherung auf diesem Handy habe ich noch diese Einträge gefunden:')) + '</p><ul>' + fe.map(function (x) { return '<li>' + esc(abwLab(x.f.name || 'Frist')) + (x.f.ablauf ? ' · ' + esc(abwLab('Läuft ab am')) + ' ' + fmtDate(x.f.ablauf) : x.f.datum ? ' · ' + fmtDate(x.f.datum) : '') + '</li>'; }).join('') + '</ul><div class="btns"><button type="button" class="btn primary" id="fr-zur-ja">' + esc(abwLab('Zurückholen')) + '</button><button type="button" class="btn" id="fr-zur-nein">' + esc(abwLab('Nicht nötig')) + '</button></div>';
+    }
     var opt = function (arr, cur) { return arr.map(function (x) { return '<option value="' + x[0] + '"' + (String(cur) === String(x[0]) ? ' selected' : '') + '>' + x[1] + '</option>'; }).join(''); };
     var vl = [[7, '7 Tage vorher'], [14, '14 Tage vorher'], [30, '30 Tage vorher'], [60, '60 Tage vorher'], [90, '90 Tage vorher']];
     var ml = [['taeglich', 'Jeden Tag, bis es erledigt ist'], ['einmal', 'Einmal vorher und am Ablauftag'], ['nie', 'Nur im Kalender, ohne Meldung']];
@@ -4965,6 +5004,14 @@
       }
     });
     $('#fr-add').addEventListener('click', function () { var v = $('#fr-vorl'); v.hidden = !v.hidden; });
+    $('#fr-zurueck').addEventListener('click', function (ev) {
+      var id = ev.target && ev.target.id; if (id !== 'fr-zur-ja' && id !== 'fr-zur-nein') return;
+      var fe = fristenFehlend(), l = fristListe();
+      if (id === 'fr-zur-ja') {
+        fe.forEach(function (x) { if (x.neu) l.push(E.clone(x.f)); else l.forEach(function (c) { if (c.id === x.f.id) { if (!c.ablauf && x.f.ablauf) c.ablauf = x.f.ablauf; if (!c.datum && x.f.datum) c.datum = x.f.datum; } }); });
+        save(); renderFristen(); toast(abwLab('Zurückgeholt.'));
+      } else { data.profil.frZurueckNein = ((data.profil.frZurueckNein) || []).concat(fe.map(function (x) { return x.f.id; })); save(); renderFristen(); }
+    });
     $('#fr-eigen').addEventListener('click', function () { fristNeu('Neue Frist', 0); $('#fr-vorl').hidden = true; });
     $('#fr-eigen-a').addEventListener('click', function () { fristNeu('Neue Ausbildung', -1); $('#fr-vorl').hidden = true; });
     $('#fr-vorl').addEventListener('click', function (ev) { var b = ev.target.closest('[data-n]'); if (!b) return; fristNeu(b.dataset.n, +b.dataset.y); $('#fr-vorl').hidden = true; });

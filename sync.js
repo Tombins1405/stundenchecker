@@ -14,6 +14,7 @@
   function rd(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function wr(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function standWeg() { try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(KEY + '.stand-') === 0) localStorage.removeItem(k); }); } catch (e) {} } // Sicherheitsstände gehören nur zum angemeldeten Konto
   function meta() { try { return JSON.parse(rd(META)) || {}; } catch (e) { return {}; } }
   function setMeta(m) { wr(META, JSON.stringify(m)); }
   function localData() { try { var d = JSON.parse(rd(KEY)); return d && typeof d.days === 'object' ? d : null; } catch (e) { return null; } }
@@ -34,10 +35,21 @@
   var BASIS = KEY + '.basis';
   function isObj(x) { return x && typeof x === 'object' && !Array.isArray(x); }
   function nachAb(x) { return Array.isArray(x) && x.length && x.every(function (e) { return isObj(e) && typeof e.gueltigAb === 'string'; }); }
+  function nachId(x) { return Array.isArray(x) && x.length > 0 && x.every(function (e) { return isObj(e) && (typeof e.id === 'string' || typeof e.id === 'number') && e.id !== ''; }); }
+  function mId(b, a, t) { // Listen mit Einträgen (Ausweise, Prämien, Dienste, Berichte …): je Eintrag zusammenführen, damit nichts verschwindet
+    var bm = {}, am = {}, tm = {}, ord = [], hatB = Array.isArray(b);
+    (nachId(b) ? b : []).forEach(function (e) { bm[e.id] = e; });
+    a.forEach(function (e) { am[e.id] = e; if (ord.indexOf(e.id) < 0) ord.push(e.id); }); t.forEach(function (e) { tm[e.id] = e; if (ord.indexOf(e.id) < 0) ord.push(e.id); });
+    return ord.map(function (k) {
+      if (!hatB) return am[k] && tm[k] ? m3(undefined, am[k], tm[k]) : (am[k] || tm[k]); // ohne gemeinsamen Stand: alles behalten
+      return m3(bm[k], am[k], tm[k]);
+    }).filter(function (e) { return e !== undefined; });
+  }
   function m3(b, a, t) {
     var sa = JSON.stringify(a), sb = JSON.stringify(b), st = JSON.stringify(t);
     if (sa === sb) return t;
     if (st === sb || sa === st) return a;
+    if ((nachId(a) || (Array.isArray(a) && !a.length)) && (nachId(t) || (Array.isArray(t) && !t.length)) && (nachId(a) || nachId(t)) && !(typeof nachAb === 'function' && (nachAb(a) || nachAb(t)))) return mId(b, a, t);
     if (isObj(a) && isObj(t) && (b === undefined || isObj(b))) {
       var r = {}, ks = {}; [a, t, b || {}].forEach(function (o) { Object.keys(o).forEach(function (k) { ks[k] = 1; }); });
       Object.keys(ks).forEach(function (k) { var v = m3((b || {})[k], a[k], t[k]); if (v !== undefined) r[k] = v; });
@@ -106,7 +118,7 @@
   function geraetFremd() {
     var GU = 'stundenchecker.geraetUid', gu = rd(GU), weg = false;
     if (gu !== uid && (gu || empty(localData()))) ['stundenchecker.foto', 'stundenchecker.sig', 'stundenchecker.iconimg'].forEach(function (k) { if (rd(k)) { del(k); weg = true; } }); if (weg && rd('stundenchecker.icon') === 'foto') del('stundenchecker.icon');
-    if (gu !== uid) wr(GU, uid);
+    if (gu !== uid) { if (gu) standWeg(); wr(GU, uid); }
     return weg;
   }
   function start() {
@@ -150,7 +162,7 @@
     sichern: function () { clearTimeout(timer); return uid ? push() : Promise.resolve(false); },
     beforeLogout: function () { // alles sichern, danach die Daten von diesem Gerät entfernen (wichtig, wenn mehrere Personen ein Gerät benutzen)
       clearTimeout(timer);
-      return push().then(function (ok) { if (ok) { del(KEY); del(META); } return ok; });
+      return push().then(function (ok) { if (ok) { del(KEY); del(META); standWeg(); } return ok; });
     }
   };
 
