@@ -104,8 +104,16 @@
   }
   function kopienFristen() { // Ausweise aus Sicherheitsständen und Sicherheitskopien auf diesem Gerät
     var out = {};
-    try { Object.keys(localStorage).filter(function (x) { return x.indexOf(KEY + '.') === 0 && /\.stand-/.test(x); }).sort().forEach(function (x) {
-      try { var d = JSON.parse(localStorage.getItem(x)); ((d && d.profil && d.profil.fristen) || []).forEach(function (f) { if (f && f.id && (f.ablauf || f.datum)) out[f.id] = f; }); } catch (e) { }
+    var meUid = ''; try { meUid = (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || ''; } catch (e) { }
+    var meine = function (x, d) { // nur Kopien von diesem Konto
+      if (/\.stand-/.test(x)) return true;
+      if (!/\.(vor-anmeldung|genutzt)-/.test(x)) return false;
+      var m = /-u-(.+)$/.exec(x); if (m) return !!meUid && m[1] === meUid;
+      var p0 = (d && d.profil) || {}, p1 = data.profil || {}; if (!p0.vorname || p0.vorname !== p1.vorname) return false; // alte Kopie ohne Konto: gleiche Person (Vorname und mindestens 3 gleiche Tage)
+      var gl = Object.keys((d && d.days) || {}).filter(function (k) { return data.days[k]; }).length; return gl >= 3;
+    };
+    try { Object.keys(localStorage).filter(function (x) { return x.indexOf(KEY + '.') === 0 && /\.(stand|vor-anmeldung|genutzt)-/.test(x); }).sort().forEach(function (x) {
+      try { var d = JSON.parse(localStorage.getItem(x)); if (!meine(x, d)) return; ((d && d.profil && d.profil.fristen) || []).forEach(function (f) { if (f && f.id && (f.ablauf || f.datum)) out[f.id] = f; }); } catch (e) { }
     }); } catch (e) { }
     return out;
   }

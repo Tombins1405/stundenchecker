@@ -37,6 +37,7 @@
     'einladung/neu': 'Für ein neues Konto brauchst du einen Einladungscode. Tippe oben auf „Neu hier“.'
   };
   function msg(e) { return FEHLER[e && e.code] || ('Das hat leider nicht geklappt. Bitte noch einmal probieren. (Fehlercode: ' + ((e && e.code) || (e && e.message) || 'unbekannt') + ')'); }
+  var ui0 = {};
   function say(t, ok) { var m = $('#a-msg'); m.textContent = t || ''; m.className = 'a-msg' + (ok ? ' ok' : ''); m.hidden = !t; }
   function busy(on) { ['a-go', 'a-google', 'a-forgot'].forEach(function (i) { var b = document.getElementById(i); if (b) b.disabled = on; }); }
 
@@ -132,7 +133,15 @@
     }
     else if (id === 'a-logout') {
       var sy = window.StundenSync; ev.target.disabled = true;
-      (sy ? sy.beforeLogout() : Promise.resolve(false)).then(function (cleared) { return auth.signOut().then(function () { if (cleared) location.reload(); }); });
+      var trotz = ui0.logoutTrotz && Date.now() - ui0.logoutTrotz < 60000;
+      (sy ? sy.beforeLogout() : Promise.resolve(false)).then(function (cleared) {
+        if (!cleared && sy && sy.angemeldet && sy.angemeldet() && !trotz) { // nicht gespeichert: nicht abmelden, sonst gehen die letzten Änderungen verloren
+          ui0.logoutTrotz = Date.now(); ev.target.disabled = false;
+          var sm = document.getElementById('a-sync'); if (sm) { sm.className = 'a-sync bad'; sm.textContent = ('Deine letzten Änderungen sind noch nicht im Konto gespeichert (keine Verbindung). Bitte warte, bis du wieder Internet hast. Tippst du gleich noch einmal auf Abmelden, bleiben sie nur auf diesem Handy.'); }
+          return;
+        }
+        return auth.signOut().then(function () { if (cleared) location.reload(); });
+      });
     }
   });
   $('#a-form').addEventListener('submit', function (ev) { ev.preventDefault(); go(); });

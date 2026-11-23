@@ -28,7 +28,31 @@
     l.push(Date.now()); try { sessionStorage.setItem('sc.rl2', JSON.stringify(l)); } catch (e) {}
     location.reload(); return true;
   }
-  function stash() { var raw = rd(KEY); if (raw) wr(KEY + '.vor-anmeldung-' + Date.now(), raw); } // Sicherheitskopie, falls Daten eines anderen Kontos auf dem Gerät lagen
+  function stash() { var raw = rd(KEY), mu = meta().uid; if (raw) wr(KEY + '.vor-anmeldung-' + Date.now() + (mu ? '-u-' + mu : ''), raw); }
+  // Kopie mit noch nicht gespeicherten Änderungen dieses Kontos (z. B. abgemeldet ohne Verbindung, dann ein anderes Konto angemeldet):
+  // fehlende Tage und fehlende Einträge (Ausweise, Prämien …) wieder dazunehmen, nichts überschreiben
+  function rettung(remoteJson) {
+    var ks = []; try { ks = Object.keys(localStorage).filter(function (k) { return k.indexOf(KEY + '.vor-anmeldung-') === 0 && /-u-/.test(k) && k.slice(-(uid.length + 3)) === '-u-' + uid; }); } catch (e) { return null; }
+    if (!ks.length) return null;
+    var r; try { r = JSON.parse(remoteJson); } catch (e) { return null; } if (!r) return null; var neu = false;
+    ks.sort().forEach(function (k) {
+      var c; try { c = JSON.parse(rd(k)); } catch (e) { c = null; }
+      if (c && c.days) {
+        if (!r.days) r.days = {};
+        Object.keys(c.days).forEach(function (d) { if (!r.days[d]) { r.days[d] = c.days[d]; neu = true; } });
+        var cp = c.profil || {}; if (!r.profil) r.profil = {};
+        Object.keys(cp).forEach(function (n) {
+          if (!nachId(cp[n])) return; var rl = Array.isArray(r.profil[n]) ? r.profil[n] : (r.profil[n] = []);
+          cp[n].forEach(function (e) {
+            var x = rl.filter(function (y) { return isObj(y) && y.id === e.id; })[0];
+            if (!x) { rl.push(e); neu = true; } else Object.keys(e).forEach(function (f) { if ((x[f] === '' || x[f] === undefined || x[f] === null) && e[f] !== '' && e[f] != null) { x[f] = e[f]; neu = true; } });
+          });
+        });
+      }
+      wr(k.replace('.vor-anmeldung-', '.genutzt-'), rd(k)); del(k);
+    });
+    return neu ? JSON.stringify(r) : null;
+  } // Sicherheitskopie, falls Daten eines anderen Kontos auf dem Gerät lagen
 
   // Abgleich zwischen Geräten: Basis = Stand beim letzten Speichern im Konto. Was nur ein Gerät geändert hat, bleibt erhalten;
   // was beide geändert haben, gilt die Fassung von diesem Gerät. So löscht ein altes Gerät nicht mehr die Eingaben vom anderen.
@@ -136,7 +160,7 @@
           stash(); del(KEY); setMeta({ uid: uid, t: 0, syncedT: 0 }); reload();
         });
       }
-      if (locEmpty) { return useRemote(remote); }
+      if (locEmpty) { var rj = rettung(remote.json); if (rj) { wr(KEY, rj); wr(BASIS, remote.json); setMeta({ uid: uid, t: Date.now(), syncedT: remote.t || 0 }); status('Nicht gespeicherte Einträge von diesem Gerät wurden dazugenommen.', 'ok'); if (!reload(true)) { document.dispatchEvent(new Event('sc-fremd')); return push(); } return; } return useRemote(remote); }
       if (!mine) { // auf diesem Gerät und im Konto gibt es Daten, die nichts voneinander wissen
         return ask('Welche Daten behalten?', 'In deinem Konto sind schon Einträge (' + nDays(rd0) + '). Auf diesem Gerät gibt es auch Einträge (' + nDays(loc) + '). Welche sollen gelten? Die anderen werden als Sicherheitskopie im Browser aufgehoben.', ['Die aus dem Konto', 'Die von diesem Gerät']).then(function (i) {
           stash();
