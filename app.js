@@ -608,7 +608,7 @@
   function kvDiaeten(y, m, sm) {
     try {
       if (!sm) return null; var sk = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true, kvRef: ['diaet'] }).summe;
-      var d = Math.round((sk.diaetenBetrag - sm.diaetenBetrag) * 100) / 100; return Math.abs(d) >= 0.5 ? { firma: sm.diaetenBetrag, kv: sk.diaetenBetrag, diff: d } : null;
+      var d = Math.round((sk.diaetenBetrag - sm.diaetenBetrag) * 100) / 100; return d >= 0.5 ? { firma: sm.diaetenBetrag, kv: sk.diaetenBetrag, diff: d } : null;
     } catch (e) { return null; }
   }
   // Texte der Gegenüberstellung eines Monats (für Abweichungen, Kontrollbericht und die Liste für die Arbeiterkammer)
@@ -1251,6 +1251,20 @@
         if (z != null) chk = Math.abs(z - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗</span>';
         return '<tr><td>' + monKurz(r.jahr, r.monat) + '</td><td>+' + nf2.format(r.anspruch) + '</td><td>' + (r.genommen ? '−' + r.genommen : '0') + '</td><td><strong>' + nf2.format(r.saldo) + '</strong></td><td>' + numIn('ku-' + key, z, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table><p class="hint" style="margin-top:8px">Tage mit Status „Urlaub“ zählen als genommen. „Betrieb geschlossen“ zählt nur, wenn deine Firma ihn als Urlaub verrechnet (Einstellungen).</p>';
+    // Weichen alle Monate um denselben Wert ab, liegt es fast immer am ersten Monat: Eintrittsdatum (anteiliger Anspruch) oder Resturlaub zum Start
+    (function () {
+      if (!uk.length) return; var ds = [];
+      uk.forEach(function (r) { var z = (data.abgleich[r.jahr + '-' + (r.monat < 10 ? '0' : '') + r.monat] || {}).urlaubSaldo; if (z != null && z !== '') ds.push(Math.round((+z - r.saldo) * 100) / 100); });
+      if (ds.length < 2 || Math.abs(ds[0]) < 0.005 || ds.some(function (d) { return Math.abs(d - ds[0]) > 0.005; })) return;
+      var d = ds[0], e0 = E.parseISO(p.eintritt), jahr = p.urlaubJahr != null && p.urlaubJahr !== '' ? +p.urlaubJahr : 25, dim = E.daysInMonth(e0.y, e0.m), soll = Math.round((uk[0].anspruch + d) * 100) / 100, neuD = null;
+      for (var t = 1; t <= dim; t++) { var an = Math.round(jahr / 12 * Math.min(30, dim - t + 1) / 30 * 100) / 100; if (Math.abs(an - soll) < 0.005) { neuD = E.iso(e0.y, e0.m, t); if (Math.abs(t - e0.d) <= 3) break; } }
+      var txt = abw1(abwLab('Alle Monate weichen gleich um {0} Tage vom Lohnzettel ab. Das kommt aus dem ersten Monat.'), [(d > 0 ? '+' : '−') + nf2.format(Math.abs(d))]);
+      var h = '<div class="hint-box" id="uk-eintritt">' + miaKopf() + '<p class="no">' + esc(txt) + ' ';
+      if (neuD) h += esc(abw1(abwLab('Mit Eintritt am {0} stimmt es genau mit deinem Lohnzettel. Eingetragen ist {1}.'), [fmtDate(neuD), fmtDate(p.eintritt)])) + '</p><div class="btns"><button type="button" class="btn primary" id="uk-ein-ok" data-d="' + neuD + '">' + esc(abwLab('Eintrittsdatum ändern')) + '</button></div>';
+      else h += esc(abwLab('Prüfe in den Einstellungen dein Eintrittsdatum und den Resturlaub zum Start.')) + '</p>';
+      $('#k-urlaub').insertAdjacentHTML('beforeend', h + '</div>');
+      var b = $('#uk-ein-ok'); if (b) b.onclick = function () { data.profil.eintritt = b.getAttribute('data-d'); save(); renderKonten(); toast(abwLab('Geändert.')); };
+    })();
     // Zeitausgleich-Konto
     var keys = Object.keys(data.abgleich).sort(), saldo = +p.zaStart || 0, zrows = [];
     keys.forEach(function (k) {
