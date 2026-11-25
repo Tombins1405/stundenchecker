@@ -639,7 +639,7 @@
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
       kvTexte(y, m, sm, wmm).forEach(function (x) { out.push(x); });
       var lzS = (data.abgleich || {})[k] || {};
-      if (hasN(lzS.satz) && wmm && hasN(wmm.stundenlohn) && !(+wmm.monatslohn > 0) && Math.abs(+lzS.satz - +wmm.stundenlohn) > 0.004) { var sA = [eur.format(+lzS.satz), eur.format(+wmm.stundenlohn)], sT = 'Stundenlohn: auf dem Lohnzettel {0}, in deinen Einstellungen {1}.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(sT, sA), de: abw1(sT, sA, 1) }); }
+      if (hasN(lzS.satz) && wmm && hasN(wmm.stundenlohn) && !(+wmm.monatslohn > 0) && Math.abs(+lzS.satz - +wmm.stundenlohn) > 0.004 && !aufrollGeklaert(k, +wmm.stundenlohn)) { var sA = [eur.format(+lzS.satz), eur.format(+wmm.stundenlohn)], sT = 'Stundenlohn: auf dem Lohnzettel {0}, in deinen Einstellungen {1}.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(sT, sA), de: abw1(sT, sA, 1) }); }
       if (hasN(lzS.dSatz) && wmm && wmm.diaeten && wmm.diaeten.modell === 'stunde' && Math.abs(+lzS.dSatz - +wmm.diaeten.satz) > 0.004) { var dA = [eur.format(+lzS.dSatz), eur.format(+wmm.diaeten.satz)], dT = 'Diätensatz: auf dem Lohnzettel {0} je Stunde, in deinen Einstellungen {1} je Stunde.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(dT, dA), de: abw1(dT, dA, 1) }); }
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -836,6 +836,14 @@
   function zeilenOpts(sel) {
     var rows = ui.summe ? E.abgleich(ui.summe, {}, true, false) : [];
     return rows.filter(function (r) { return r.status !== 'info' && r.key !== 'gleit'; }).map(function (r) { return '<option value="' + esc(r.key) + '"' + (r.key === sel ? ' selected' : '') + '>' + esc(r.label) + '</option>'; }).join('') + '<option value="sonst"' + (sel === 'sonst' ? ' selected' : '') + '>Sonstiges (nur Notiz)</option>';
+  }
+  // Wurde der Stundenlohn dieses Monats später auf den eingestellten Satz aufgerollt, ist der alte Satz am Lohnzettel geklärt
+  function aufrollGeklaert(k, satz) {
+    var ok = false;
+    Object.keys(data.abgleich || {}).forEach(function (zk) { ((data.abgleich[zk] || {}).korr || []).forEach(function (e) {
+      if (e && e.art === 'aufroll' && e.bezug && k >= e.bezug && k <= (e.bis || e.bezug) && (!hasN(e.neu) || Math.abs(+e.neu - satz) < 0.005)) ok = true;
+    }); });
+    return ok;
   }
   function aufrollMonate(e) {
     var von = e.bezug, bis = e.bis || e.bezug, out = [];
