@@ -627,7 +627,12 @@
     for (var d = 1; d <= dim; d++) { var ds = E.iso(y, m, d), w = wAt(ds), x = data.days[ds]; if (w && E.istSollTag(w.ueberstunden, E.weekday(ds)) && E.dayTyp(ds) !== 'feiertag') soll++; if (x && ((x.status && x.status !== 'arbeit') || x.von || x.bis)) tage++; }
     return { tage: tage, soll: soll, voll: soll === 0 ? tage > 0 : tage >= Math.ceil(soll * 0.6) };
   }
-  function abwListe() {
+  // Abweichungen, die der Nutzer als geklärt markiert hat (z. B. mit der Firma besprochen): bleiben sichtbar, aber grau und ohne Summe
+  function abwKey(x) { return x.y + '-' + x.m + '-' + x.kat + '-' + String(x.de || x.text || '').split(':')[0].slice(0, 60); }
+  function abwGk() { return (data.profil && data.profil.abwGeklaert) || {}; }
+  function abwListe() { var g = abwGk(); return abwListeAlle().filter(function (x) { return !g[abwKey(x)]; }); }
+  function abwGeklaertListe() { var g = abwGk(); return abwListeAlle().filter(function (x) { return !!g[abwKey(x)]; }); }
+  function abwListeAlle() {
     var out = [], mon = {};
     Object.keys(data.days).forEach(function (d) { mon[d.slice(0, 7)] = 1; });
     Object.keys(data.abgleich).forEach(function (k) { mon[k] = 1; });
@@ -639,7 +644,8 @@
       var sm = E.calcMonth(data, y, m, todayISO(), { ohneSpaeter: true }).summe, r = ur[y + '-' + m], sw = sm.swStd || 0, wmm = wAt(k + '-01');
       kvTexte(y, m, sm, wmm).forEach(function (x) { out.push(x); });
       var lzS = (data.abgleich || {})[k] || {};
-      if (hasN(lzS.satz) && wmm && hasN(wmm.stundenlohn) && !(+wmm.monatslohn > 0) && Math.abs(+lzS.satz - +wmm.stundenlohn) > 0.004 && !aufrollGeklaert(k, +wmm.stundenlohn)) { var sA = [eur.format(+lzS.satz), eur.format(+wmm.stundenlohn)], sT = 'Stundenlohn: auf dem Lohnzettel {0}, in deinen Einstellungen {1}.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(sT, sA), de: abw1(sT, sA, 1) }); }
+      if (hasN(lzS.satz) && wmm && +wmm.stundenlohn > 0 && !(+wmm.monatslohn > 0) && (+lzS.satz > 2.5 * +wmm.stundenlohn || +lzS.satz < +wmm.stundenlohn / 2.5)) { var fA = [eur.format(+lzS.satz)], fT = 'Stundenlohn laut Lohnzettel {0}: Das ist sehr wahrscheinlich falsch eingelesen (vielleicht die Stunden statt dem Satz). Bitte beim Lohnzettel dieses Monats prüfen.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(fT, fA), de: abw1(fT, fA, 1) }); }
+      else       if (hasN(lzS.satz) && wmm && hasN(wmm.stundenlohn) && !(+wmm.monatslohn > 0) && Math.abs(+lzS.satz - +wmm.stundenlohn) > 0.004 && !aufrollGeklaert(k, +wmm.stundenlohn)) { var sA = [eur.format(+lzS.satz), eur.format(+wmm.stundenlohn)], sT = 'Stundenlohn: auf dem Lohnzettel {0}, in deinen Einstellungen {1}.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(sT, sA), de: abw1(sT, sA, 1) }); }
       if (hasN(lzS.dSatz) && wmm && wmm.diaeten && wmm.diaeten.modell === 'stunde' && Math.abs(+lzS.dSatz - +wmm.diaeten.satz) > 0.004) { var dA = [eur.format(+lzS.dSatz), eur.format(+wmm.diaeten.satz)], dT = 'Diätensatz: auf dem Lohnzettel {0} je Stunde, in deinen Einstellungen {1} je Stunde.'; out.push({ y: y, m: m, kat: 'satz', text: abw1(dT, dA), de: abw1(dT, dA, 1) }); }
       (sm.freiListe || []).forEach(function (x) {
         if (x.modus === 'za' && x.std > 0) out.push({ y: y, m: m, kat: 'firma', fehl: x.std, eur: euroStd(x.std, wmm), text: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)]), de: abw1('Am {0} hat dich die Firma freigestellt ({1} h) und die Stunden vom Zeitausgleich abgezogen.', [fmtShort(x.datum), fh(x.std)], 1) });
@@ -718,7 +724,7 @@
       (k.length ? '<div class="notice kvb" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_B)) + '</strong><p class="hint" style="margin:4px 0 0">' + esc(abwLab(ABW_BV)) + '</p><table class="cmp" style="margin-top:6px"><tbody>' + k.map(tr).join('') + '</tbody></table></div>' : '');
   }
   function abwListeHtml(l) {
-    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + '</li>'; };
+    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + ' <button type="button" class="linkbtn abwgk" data-gk="' + esc(abwKey(x)) + '">' + esc(abwLab('Geklärt')) + '</button></li>'; };
     return (a.length ? '<p class="abwh">' + esc(abwLab(ABW_A)) + '</p><ul class="rot" style="margin:0;padding-left:20px">' + a.map(li).join('') + '</ul>' : '') +
       (b.length ? '<p class="abwh">' + esc(abwLab(ABW_B)) + '</p><ul class="kvl" style="margin:0;padding-left:20px">' + b.map(li).join('') + '</ul>' : '');
   }
@@ -1268,7 +1274,7 @@
       for (var t = 1; t <= dim; t++) { var an = Math.round(jahr / 12 * Math.min(30, dim - t + 1) / 30 * 100) / 100; if (Math.abs(an - soll) < 0.005) { neuD = E.iso(e0.y, e0.m, t); if (Math.abs(t - e0.d) <= 3) break; } }
       var txt = abw1(abwLab('Alle Monate weichen gleich um {0} Tage vom Lohnzettel ab. Das kommt aus dem ersten Monat.'), [(d > 0 ? '+' : '−') + nf2.format(Math.abs(d))]);
       var h = '<div class="hint-box" id="uk-eintritt">' + miaKopf() + '<p class="no">' + esc(txt) + ' ';
-      if (neuD) h += esc(abw1(abwLab('Mit Eintritt am {0} stimmt es genau mit deinem Lohnzettel. Eingetragen ist {1}.'), [fmtDate(neuD), fmtDate(p.eintritt)])) + '</p><div class="btns"><button type="button" class="btn primary" id="uk-ein-ok" data-d="' + neuD + '">' + esc(abwLab('Eintrittsdatum ändern')) + '</button></div>';
+      if (neuD) h += esc(abw1(abwLab('Mit Eintritt am {0} stimmt es genau mit deinem Lohnzettel. Eingetragen ist {1}.'), [fmtDate(neuD), fmtDate(p.eintritt)])) + ' ' + esc(abwLab('Schau auf deinem Dienstzettel oder Lohnzettel, welches Datum stimmt.')) + (neuD > p.eintritt ? ' ' + esc(abwLab('Hast du wirklich schon am eingetragenen Tag angefangen, rechnet die Firma deinen Urlaub zu knapp.')) : '') + '</p><div class="btns"><button type="button" class="btn primary" id="uk-ein-ok" data-d="' + neuD + '">' + esc(abwLab('Eintrittsdatum ändern')) + '</button></div>';
       else h += esc(abwLab('Prüfe in den Einstellungen dein Eintrittsdatum und den Resturlaub zum Start.')) + '</p>';
       $('#k-urlaub').insertAdjacentHTML('beforeend', h + '</div>');
       var b = $('#uk-ein-ok'); if (b) b.onclick = function () { data.profil.eintritt = b.getAttribute('data-d'); save(); renderKonten(); toast(abwLab('Geändert.')); };
@@ -1293,11 +1299,15 @@
     var abw = abwListe();
     var akn = (data.profil && data.profil.akNotizen) || [];
     var aknHtml = akn.length ? '<div class="notice warn aknotiz"><strong>' + esc(abwLab('Für die Arbeiterkammer notiert')) + '</strong><ul>' + akn.map(function (x, i) { return '<li>' + esc(akNotizText(x)) + ' <button type="button" class="linkbtn" data-akdel="' + i + '">' + esc(abwLab('Erledigt')) + '</button></li>'; }).join('') + '</ul></div>' : '';
-    $('#k-abw').innerHTML = abw.length || akn.length ? aknHtml + (abw.length ? abwSummeHtml(abw) + abwListeHtml(abw) : '') + '<button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    var gkl = abwGeklaertListe(), gkm = abwGk();
+    var gkHtml = gkl.length ? '<details class="auf abwgkl" style="margin-top:10px"><summary><span>' + esc(abwLab('Bereits geklärt')) + ' (' + gkl.length + ')</span></summary><ul style="margin:0;padding-left:20px;color:var(--muted)">' + gkl.map(function (x) { var g = gkm[abwKey(x)] || {}; return '<li>✓ <b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + (g.d ? ' <small>(' + esc(abwLab('geklärt am')) + ' ' + fmtDate(g.d) + ')</small>' : '') + ' <button type="button" class="linkbtn" data-gkweg="' + esc(abwKey(x)) + '">' + esc(abwLab('Wieder offen')) + '</button></li>'; }).join('') + '</ul></details>' : '';
+    $('#k-abw').innerHTML = abw.length || akn.length || gkl.length ? aknHtml + (abw.length ? abwSummeHtml(abw) + abwListeHtml(abw) : '<p class="hint">' + esc(abwLab('Keine offenen Abweichungen.')) + '</p>') + gkHtml + '<button type="button" class="btn" id="abw-copy" style="margin-top:10px">Liste kopieren (für die Arbeiterkammer)</button>' : '<p class="hint">Keine Abweichungen festgehalten.</p>';
+    $$('#k-abw [data-gk]').forEach(function (b) { b.onclick = function (ev) { ev.stopPropagation(); var pf = data.profil || (data.profil = {}); if (!pf.abwGeklaert) pf.abwGeklaert = {}; pf.abwGeklaert[b.dataset.gk] = { d: todayISO() }; save(); renderKonten(); toast(abwLab('Als geklärt markiert. Du findest es unten bei „Bereits geklärt“.'), 4000); }; });
+    $$('#k-abw [data-gkweg]').forEach(function (b) { b.onclick = function (ev) { ev.stopPropagation(); var pf = data.profil || {}; if (pf.abwGeklaert) delete pf.abwGeklaert[b.dataset.gkweg]; save(); renderKonten(); }; });
     $$('#k-abw [data-akdel]').forEach(function (b) { b.onclick = function (ev) { ev.stopPropagation(); var l = (data.profil && data.profil.akNotizen) || []; l.splice(+b.dataset.akdel, 1); save(); renderKonten(); }; });
     var kb = $('#k-abw'); if (kb) kb.onclick = function (ev) { var r = ev.target.closest && ev.target.closest('tr.abwk'); if (!r) return; var k = r.dataset.abw, an = kb.dataset.hl === k; kb.dataset.hl = an ? '' : k; kb.classList.toggle('abwdim', !an); $$('#k-abw [data-abw]').forEach(function (e) { e.classList.toggle('abwhl', !an && e.dataset.abw === k); }); };
     var ac = $('#abw-copy'); if (ac) ac.onclick = function () {
-      var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + (akn.length ? abwLab('Für die Arbeiterkammer notiert') + ':\n' + akn.map(function (x) { return '- ' + akNotizText(x); }).join('\n') + '\n\n' : '') + (abw.length ? abwSummeText(abw) + abwListeText(abw) : '') + '\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
+      var txt = 'Abweichungen zwischen meiner Aufzeichnung und dem Lohnzettel\n(Stunden-Checker, Stand ' + fmtDate(todayISO()) + ')\n\n' + (akn.length ? abwLab('Für die Arbeiterkammer notiert') + ':\n' + akn.map(function (x) { return '- ' + akNotizText(x); }).join('\n') + '\n\n' : '') + (abw.length ? abwSummeText(abw) + abwListeText(abw) : '') + (gkl.length ? abwLab('Bereits geklärt') + ':\n' + gkl.map(function (x) { return '- ' + MON[x.m - 1] + ' ' + x.y + ': ' + (x.de || x.text); }).join('\n') + '\n' : '') + '\nDie Liste zeigt nur, was die App aus meinen Eintragungen und Lohnzetteln sieht. Sie ersetzt keine Rechtsberatung.';
       var done = function () { ac.textContent = 'Kopiert'; };
       try { navigator.clipboard.writeText(txt).then(done, function () { window.prompt('Text markieren und kopieren:', txt); }); } catch (e) { window.prompt('Text markieren und kopieren:', txt); }
     };

@@ -152,6 +152,7 @@
       var lab = norm(t.slice(0, i0)), art = /^(lohn|grundlohn|stundenlohn|normallohn|gehalt)$/.test(lab) ? 'satz' : /^(diaten|diaeten|taggeld|tagesgeld|taggelder)/.test(lab) ? 'dSatz' : null; if (!art || saetze[art]) return;
       var nums = t.slice(i0).match(/\d{1,3}(?:[ .]\d{3})*[.,]\d{2,5}|\d+[.,]\d{2,5}/g); if (!nums || nums.length < 3) return;
       var z = nums.map(function (x) { return fotoZahl(x); }), me = z[0], sa = z[1], be = z[z.length - 1];
+      if (me > 0 && sa > 0 && sa === Math.round(sa) && me !== Math.round(me)) { var tm = me; me = sa; sa = tm; } // Spalten vertauscht gelesen: Menge ist eine ganze Zahl (z. B. 88 h), der Satz hat Kommastellen (z. B. 14,38)
       if (me > 0 && sa > 0 && sa < 200 && be > 0 && Math.abs(me * sa - be) <= 0.03) saetze[art] = Math.round(sa * 10000) / 10000;
     });
     return { monat: monat(lines), zeilen: zeilen, sonder: sonder, satz: saetze.satz || null, dSatz: saetze.dSatz || null, lines: lines };
