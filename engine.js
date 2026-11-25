@@ -17,6 +17,7 @@
   var PAKETE = {
     gueter: {
       name: 'Güterbeförderung (Lkw)',
+      verfall: { monate: 3, quelle: 'KV Güterbeförderungsgewerbe Arbeiter 2026, Art. XII Z 1' }, // schriftlich binnen 3 Monaten ab Auszahlungstag (mit ordnungsgemäßer Abrechnung)
       hinweis: 'KV Güterbeförderungsgewerbe, Arbeiter, ab 1.1.2026: 40 Stunden/Woche, Überstunden 50 % (nachts 100 %), Tagesgeld 27,60 € = 2,30 € je Stunde. Überstunden werden pro Monat gerechnet: alle Stunden minus Sollstunden des Monats (Montag bis Freitag, Feiertage eingeschlossen). Zuschläge für Samstag/Sonntag nennt der KV nicht, sie hängen von der Firma ab. Feiertagsarbeit: gesetzlich doppelt bezahlt.',
       pruefen: false,
       werte: {

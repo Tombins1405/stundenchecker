@@ -731,8 +731,18 @@
     return (z.length ? '<div class="notice warn" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_A)) + '</strong><p style="margin:4px 0 0">Bislang fehlen dir gegenüber deinen Aufzeichnungen:</p><table class="cmp" style="margin-top:6px"><tbody>' + z.map(tr).join('') + '</tbody></table></div>' : '') +
       (k.length ? '<div class="notice kvb" style="margin-bottom:10px"><strong>' + esc(abwLab(ABW_B)) + '</strong><p class="hint" style="margin:4px 0 0">' + esc(abwLab(ABW_BV)) + '</p><table class="cmp" style="margin-top:6px"><tbody>' + k.map(tr).join('') + '</tbody></table></div>' : '');
   }
+  // Verfallsfrist laut Kollektivvertrag (nur wo geprüft hinterlegt): schriftlich einfordern bis …
+  function abwFrist(x) {
+    if (abwIstB(x) || !(x.fehl > 0 || x.eur > 0 || x.kat === 'satz' || x.kat === 'firma')) return '';
+    var w = wAt(x.y + '-' + (x.m < 10 ? '0' : '') + x.m + '-01'), pk = w && E.PAKETE[w.paket], vf = pk && pk.verfall; if (!vf) return '';
+    var zt = +((data.profil || {}).zahltag) || 15, y = x.y, m = x.m + 1 + vf.monate; while (m > 12) { m -= 12; y++; }
+    var d = E.iso(y, m, Math.min(zt, E.daysInMonth(y, m)));
+    var t = d >= todayISO() ? abw1(abwLab('Frist laut Kollektivvertrag: bis {0} schriftlich bei der Firma einfordern, sonst verfällt der Anspruch ({1}).'), [fmtDate(d), vf.quelle])
+      : abw1(abwLab('Die Frist laut Kollektivvertrag ist wahrscheinlich am {0} abgelaufen ({1}). Frag die Arbeiterkammer, ob du trotzdem noch etwas tun kannst, zum Beispiel wenn die Lohnabrechnung nicht ordnungsgemäß war.'), [fmtDate(d), vf.quelle]);
+    return ' <small class="abwfrist" style="display:block">⏳ ' + esc(t) + '</small>';
+  }
   function abwListeHtml(l) {
-    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + (x.afr ? ' <button type="button" class="linkbtn" data-afr="' + esc(x.afr.k) + '">' + esc(abwLab('Später nachgezahlt? Eintragen')) + '</button>' : '') + ' <button type="button" class="linkbtn abwgk" data-gk="' + esc(abwKey(x)) + '">' + esc(abwLab('Geklärt')) + '</button></li>'; };
+    var a = l.filter(function (x) { return !abwIstB(x); }), b = l.filter(abwIstB), li = function (x) { return '<li data-abw="' + (abwIstB(x) ? 'kvref' : x.kat) + '"><b>' + monKurz(x.y, x.m) + ':</b> ' + esc(x.text) + abwFrist(x) + (x.afr ? ' <button type="button" class="linkbtn" data-afr="' + esc(x.afr.k) + '">' + esc(abwLab('Später nachgezahlt? Eintragen')) + '</button>' : '') + ' <button type="button" class="linkbtn abwgk" data-gk="' + esc(abwKey(x)) + '">' + esc(abwLab('Geklärt')) + '</button></li>'; };
     return (a.length ? '<p class="abwh">' + esc(abwLab(ABW_A)) + '</p><ul class="rot" style="margin:0;padding-left:20px">' + a.map(li).join('') + '</ul>' : '') +
       (b.length ? '<p class="abwh">' + esc(abwLab(ABW_B)) + '</p><ul class="kvl" style="margin:0;padding-left:20px">' + b.map(li).join('') + '</ul>' : '');
   }
