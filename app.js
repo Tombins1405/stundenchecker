@@ -944,12 +944,13 @@
       if (e.art === 'aufroll') {
         var rg = E.aufrollSumme(aufrollMonate(e), (wAt(mk + '-01').ueberstunden || {}).zuschlagPct);
         var paid = hasN(e.betrag) ? +e.betrag : null, diff = paid == null ? null : Math.round((paid - rg.summe) * 100) / 100, chip = '';
-        if (diff !== null && rg.zeilen.length) chip = Math.abs(diff) < 0.5 ? '<span class="chip good">Passt</span>' : (diff < 0 ? '<span class="chip bad">Es fehlen ' + eur.format(-diff) + '</span>' : '<span class="chip warn">Zu viel bezahlt ' + eur.format(diff) + '</span>');
+        if (diff !== null && rg.zeilen.length && e.netto && rg.summe > 0) { var q = paid / rg.summe; chip = q >= 0.45 && q <= 0.85 ? '<span class="chip good">' + esc(abw1(abwLab('Passt ungefähr: {0} brutto sind nach Abzügen etwa {1} netto'), [eur.format(rg.summe), eur.format(rg.summe * 0.45) + '–' + eur.format(rg.summe * 0.85)])) + '</span>' : (q < 0.45 ? '<span class="chip bad">' + esc(abw1(abwLab('Wahrscheinlich zu wenig: {0} brutto wären etwa {1} netto'), [eur.format(rg.summe), eur.format(rg.summe * 0.45) + '–' + eur.format(rg.summe * 0.85)])) + '</span>' : '<span class="chip warn">' + esc(abwLab('Mehr als erwartet')) + '</span>'); }
+        else if (diff !== null && rg.zeilen.length) chip = Math.abs(diff) < 0.5 ? '<span class="chip good">Passt</span>' : (diff < 0 ? '<span class="chip bad">Es fehlen ' + eur.format(-diff) + '</span>' : '<span class="chip warn">Zu viel bezahlt ' + eur.format(diff) + '</span>');
         var tbl = rg.zeilen.length ? '<div class="rgw"><table class="rg"><thead><tr><th>Monat</th><th>Normal</th><th>Überstunden</th><th>je Stunde</th><th>Betrag</th></tr></thead><tbody>' + rg.zeilen.map(function (z) { return '<tr><td>' + esc(monName(z.monat).slice(0, 3) + ' ' + z.monat.slice(2, 4)) + '</td><td>' + fh(z.normalStd) + ' h</td><td>' + fh(z.ueberStd) + ' h</td><td>' + nf2.format(z.delta) + ' €</td><td>' + nf2.format(z.euro) + ' €</td></tr>'; }).join('') + '</tbody></table></div><p><strong>Fällig laut Rechnung: ' + eur.format(rg.summe) + '</strong> ' + chip + '</p><small class="abhint">Die Rechnung nimmt die Stunden von deinem Lohnzettel, wenn du sie eingetragen hast, sonst deine Aufzeichnung. Überstunden zählen mit Zuschlag.</small>' : '';
         return '<div class="abx" data-i="' + i + '">' + top +
           '<div class="abx-val"><div class="abf"><span class="abl">Von Monat</span><select data-f="bezug" aria-label="Von Monat">' + monOpts(e.bezug) + '</select></div><div class="abf"><span class="abl">Bis Monat</span><select data-f="bis" aria-label="Bis Monat">' + monOpts(e.bis || e.bezug) + '</select></div></div>' +
           '<div class="abx-val"><div class="abf"><span class="abl">Alter Stundenlohn</span><input type="number" data-f="alt" inputmode="decimal" step="0.01" value="' + (e.alt == null ? '' : esc(e.alt)) + '" aria-label="Alter Stundenlohn"></div><div class="abf"><span class="abl">Neuer Stundenlohn</span><input type="number" data-f="neu" inputmode="decimal" step="0.01" value="' + (e.neu == null ? '' : esc(e.neu)) + '" aria-label="Neuer Stundenlohn"></div></div>' +
-          '<div class="abx-val"><div class="abf"><span class="abl">Auf diesem Lohnzettel bezahlt (€)</span><input type="number" data-f="betrag" inputmode="decimal" step="0.01" value="' + (e.betrag == null ? '' : esc(e.betrag)) + '" aria-label="Auf diesem Lohnzettel bezahlt (€)"></div></div>' + note + tbl + '</div>';
+          '<div class="abx-val"><div class="abf"><span class="abl">Auf diesem Lohnzettel bezahlt (€)</span><input type="number" data-f="betrag" inputmode="decimal" step="0.01" value="' + (e.betrag == null ? '' : esc(e.betrag)) + '" aria-label="Auf diesem Lohnzettel bezahlt (€)"></div><div class="abf"><span class="abl">' + esc(abwLab('Der Betrag ist')) + '</span><select data-f="netto" aria-label="' + esc(abwLab('Der Betrag ist')) + '"><option value=""' + (e.netto ? '' : ' selected') + '>' + esc(abwLab('Brutto (bei den Lohnarten oben)')) + '</option><option value="1"' + (e.netto ? ' selected' : '') + '>' + esc(abwLab('Netto (unter NETTO, vor der Auszahlung)')) + '</option></select></div></div>' + note + tbl + '</div>';
       }
       var euro = e.zeile === 'sonst' ? e.einheit === '€' : E.korrEuroZeile(e.zeile);
       return '<div class="abx" data-i="' + i + '">' + top +
@@ -973,6 +974,7 @@
         if (t.value === 'aufroll') { e.bis = e.bis || e.bezug; if (e.neu == null) { var w = wAt(e.bezug + '-01'); e.neu = w && w.stundenlohn != null ? +w.stundenlohn : null; } }
       } else if (f === 'zeile') { e.zeile = t.value; e.einheit = t.value === 'sonst' ? (e.einheit || '€') : (E.korrEuroZeile(t.value) ? '€' : 'h'); }
       else if (f === 'bezug') { e.bezug = t.value; if (e.bis && e.bis < t.value) e.bis = t.value; }
+      else if (f === 'netto') { e.netto = t.value === '1'; }
       else e[f] = t.value;
       if (f === 'zeile' || f === 'wert') e.einheit = e.zeile === 'sonst' ? (e.einheit || '€') : (E.korrEuroZeile(e.zeile) ? '€' : 'h');
       after();
@@ -6040,6 +6042,13 @@
       if (!e) { e = { art: q.art, jahr: mo.y, voll: null, ist: null, notiz: '' }; l.push(e); }
       e.ist = q.betrag; n++; cur.gelesen = true;
     });
+    if (res.aufroll && !(cur.korr || []).some(function (e) { return e.art === 'aufroll'; })) { // Aufrollung vom Lohnzettel: Monate mit niedrigerem Satz davor suchen
+      var fr = abwListeAlle().filter(function (x) { return x.afr && x.afr.k < key; }).map(function (x) { return x.afr; }).sort(function (a, b) { return a.k < b.k ? -1 : 1; });
+      var pkA = mo.m === 1 ? (mo.y - 1) + '-12' : mo.y + '-' + pad(mo.m - 1);
+      if (!cur.korr) cur.korr = [];
+      cur.korr.push({ art: 'aufroll', bezug: fr.length ? fr[0].k : pkA, bis: fr.length ? fr[fr.length - 1].k : pkA, alt: fr.length ? fr[0].alt : null, neu: fr.length ? fr[0].neu : (wAt(pkA + '-01') || {}).stundenlohn, betrag: res.aufroll.betrag, netto: !!res.aufroll.netto, notiz: abwLab('Vom Lohnzettel gelesen. Bitte die Monate prüfen.') });
+      n++;
+    }
     save(); lzUi.erg.push({ y: mo.y, m: mo.m, n: n });
     return n;
   }

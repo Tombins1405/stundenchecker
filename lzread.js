@@ -145,6 +145,16 @@
       var b = zahl(mb[1].replace(/[ \u00a0]/g, '')); if (isNaN(b) || b <= 0) return;
       sonder.push({ art: art, betrag: b, label: t.slice(0, mb.index).replace(/\s+/g, ' ').trim() });
     });
+    // Aufrollung / Nachverrechnung früherer Monate („Aufrollung 89,95“): steht sie unter NETTO, ist es ein Netto-Betrag
+    var aufroll = null, nettoZ = -1;
+    lines.forEach(function (ln, i) { if (/^\s*netto\b/i.test(String(ln))) nettoZ = i; });
+    lines.forEach(function (ln, i) {
+      if (aufroll) return; var t = String(ln).trim(); if (!/^(aufrollung|aufroll|nachverrechnung|nachzahlung vormonat)/i.test(t)) return;
+      var mb = /(\d+(?:[. \u00a0]\d{3})*,\d{2})\s*€?\s*$/.exec(t), q = mb ? mb[1] : null;
+      [i + 1, i - 1].forEach(function (j) { if (q || !lines[j]) return; var m2 = /^\s*-?(\d+(?:[. \u00a0]\d{3})*,\d{2})\s*€?\s*$/.exec(String(lines[j])); if (m2) q = m2[1]; });
+      if (!q) return; var b = zahl(q.replace(/[ \u00a0]/g, '')); if (!(b > 0)) return;
+      aufroll = { betrag: b, netto: nettoZ >= 0 && i > nettoZ };
+    });
     // Stundensatz der Lohnzeile und Satz der Diätenzeile (Menge mal Satz muss den Betrag ergeben, sonst wird nichts übernommen)
     var saetze = {};
     lines.forEach(function (ln) {
@@ -155,7 +165,7 @@
       if (me > 0 && sa > 0 && sa === Math.round(sa) && me !== Math.round(me)) { var tm = me; me = sa; sa = tm; } // Spalten vertauscht gelesen: Menge ist eine ganze Zahl (z. B. 88 h), der Satz hat Kommastellen (z. B. 14,38)
       if (me > 0 && sa > 0 && sa < 200 && be > 0 && Math.abs(me * sa - be) <= 0.03) saetze[art] = Math.round(sa * 10000) / 10000;
     });
-    return { monat: monat(lines), zeilen: zeilen, sonder: sonder, satz: saetze.satz || null, dSatz: saetze.dSatz || null, lines: lines };
+    return { monat: monat(lines), zeilen: zeilen, sonder: sonder, satz: saetze.satz || null, dSatz: saetze.dSatz || null, aufroll: aufroll, lines: lines };
   }
   // Aus pdf.js-Textstücken Zeilen bauen (gleiche Höhe = eine Zeile).
   function zeilenAus(items) {
