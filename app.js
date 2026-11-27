@@ -3485,7 +3485,11 @@
     var res = wzSuchListe().map(function (e, i) {
       var b = E.BERUFE[e.id.split(':')[0]]; if (e.id === 'anderes' || !b) return null;
       e.kvs = (b.kvs || [b.paket]).slice(); var hay = e.hay + ' ' + sNorm(e.kvs.map(function (k) { return (E.PAKETE[k] && E.PAKETE[k].name) || ''; }).join(' '));
-      e.sc = toks.filter(function (t) { return sTreffer(t, hay); }).length; e.i = i; return e.sc ? e : null;
+      e.sc = toks.filter(function (t) { return sTreffer(t, hay); }).length; e.i = i; e.lgName = '';
+      if (e.sc) { var gn = String(f.gruppe || '').match(/\d+[a-z]?/i), heu = todayISO(); // Lohngruppe mit passendem Namen und passender Nummer (z. B. „Ladnerin“ + „9“ → Lohngruppe 9: Ladner/in) zählt stark
+        e.kvs.forEach(function (k) { var lg = E.LOHNGRUPPEN && E.lgFuer(E.LOHNGRUPPEN[k], heu); ((lg && lg.gruppen) || []).forEach(function (g) { var nm = sNorm(g.name); if (!toks.some(function (t) { return sTreffer(t, nm); })) return; var nr = gn && new RegExp('(gruppe|kategorie|stufe) ' + gn[0].toLowerCase() + '\\b').test(nm); var pl = nr ? 3 : 1; if (pl > (e.lgPl || 0)) { e.lgPl = pl; e.lgName = g.name; } }); });
+        e.sc += e.lgPl || 0; }
+      return e.sc ? e : null;
     }).filter(Boolean);
     if (!res.length || res.some(function (e) { return e.kvs.indexOf(pk) >= 0; })) return []; // der eingestellte Kollektivvertrag passt schon dazu
     return res.sort(function (a, b) { return b.sc - a.sc || a.i - b.i; }).slice(0, 4);
@@ -3502,7 +3506,7 @@
     if (!v.length) { box.hidden = true; box.innerHTML = ''; return; }
     box.dataset.ab = kc.gueltigAb;
     box.innerHTML = '<p>' + esc(abw1('Passt einer dieser Berufe besser? In der App ist gerade „{0}“ eingestellt.', [abwLab(E.PAKETE[kc.paket].name)])) + '</p>' +
-      v.map(function (e) { return '<button type="button" class="btn wzopt" data-kvw="' + e.id + '">' + esc(e.name) + (e.feld ? '<small> · ' + esc(e.feld) + '</small>' : '') + '</button>'; }).join('') +
+      v.map(function (e) { return '<button type="button" class="btn wzopt" data-kvw="' + e.id + '">' + esc(e.name) + (e.feld ? '<small> · ' + esc(e.feld) + '</small>' : '') + (e.lgPl >= 3 ? '<small> · ' + esc(abwLab(e.lgName)) + '</small>' : '') + '</button>'; }).join('') +
       '<small>' + esc(abw1('Tippe darauf, dann stellst du Beruf, Kollektivvertrag und Lohngruppe ab {0} neu ein.', [fmtDate(kc.gueltigAb)])) + '</small>';
     box.hidden = false; try { uiApply(box); } catch (e) { }
   }
