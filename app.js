@@ -642,7 +642,8 @@
       var tg = Object.keys(data.days).filter(function (d) { var x = data.days[d]; return d < grenze && x && (x.status || 'arbeit') === 'arbeit' && x.von; }).sort(); if (!tg.length) return;
       var std = 0; tg.forEach(function (d) { try { std += (E.calcDay(data.days[d], d, wAt(d)).nettoMin || 0) / 60; } catch (e) { } });
       var p0 = E.parseISO(tg[0]), lst = tg.map(fmtShort).join(', ');
-      if (anm && (!ein || anm > ein)) { var aT = 'Du hast am {0} gearbeitet ({1} h), angemeldet hat dich die Firma erst ab {2}. Die Firma muss dich vor dem ersten Arbeitstag anmelden (§ 33 ASVG). Prüfe, ob diese Stunden bezahlt wurden: Sie gehören zu deinem Lohn.', aA = [lst, fh(std), fmtDate(anm)]; out.push({ y: p0.y, m: p0.m, kat: 'firma', fehl: 0, eur: null, text: abw1(aT, aA), de: abw1(aT, aA, 1) }); }
+      if (anm && (!ein || anm > ein)) { var aT = 'Du hast am {0} gearbeitet ({1} h), angemeldet hat dich die Firma erst ab {2}. Die Firma muss dich vor dem ersten Arbeitstag anmelden (§ 33 ASVG). Prüfe, ob diese Stunden bezahlt wurden: Sie gehören zu deinem Lohn.', aA = [lst, fh(std), fmtDate(anm)]; var lzM = data.abgleich[tg[0].slice(0, 7)] || {}, offen = !hasN(lzM.lohn), wv = wAt(tg[0]) || {}; // ohne Lohnzettel dieses Monats: als fehlende Stunden zählen (mit Lohnzettel vergleicht die normale Prüfung)
+        out.push({ y: p0.y, m: p0.m, kat: 'stunden', fehl: offen ? Math.round(std * 100) / 100 : 0, eur: offen && +wv.stundenlohn > 0 ? Math.round(std * +wv.stundenlohn * 100) / 100 : null, text: abw1(aT, aA), de: abw1(aT, aA, 1) }); }
       else { var bT = 'Du hast am {0} gearbeitet, das ist vor deinem Eintrittsdatum {1}. Trag als Eintritt deinen ersten Arbeitstag ein. Hat dich die Firma erst später angemeldet, trag das bei „Angemeldet ab“ ein.', bA = [lst, fmtDate(ein)]; out.push({ y: p0.y, m: p0.m, kat: 'firma', fehl: 0, eur: null, text: abw1(bT, bA), de: abw1(bT, bA, 1) }); }
     })();
     Object.keys(data.days).forEach(function (d) { mon[d.slice(0, 7)] = 1; });
@@ -1298,7 +1299,7 @@
     else $('#k-urlaub').innerHTML = '<table class="cmp"><thead><tr><th>Monat</th><th>Anspruch</th><th>Genommen</th><th>Resturlaub</th><th>Laut Lohnzettel</th></tr></thead><tbody>' +
       uk.map(function (r) {
         var key = r.jahr + '-' + (r.monat < 10 ? '0' : '') + r.monat, z = (data.abgleich[key] || {}).urlaubSaldo, chk = '';
-        if (z != null) chk = Math.abs(z - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗</span>';
+        if (z != null) { var dz = Math.round((z - r.saldo) * 100) / 100; chk = Math.abs(dz) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗ ' + (dz > 0 ? '+' : '−') + nf2.format(Math.abs(dz)) + '</span>'; } // Unterschied gleich daneben (Lohnzettel minus App)
         return '<tr><td>' + monKurz(r.jahr, r.monat) + '</td><td>+' + nf2.format(r.anspruch) + '</td><td>' + (r.genommen ? '−' + r.genommen : '0') + '</td><td><strong>' + nf2.format(r.saldo) + '</strong></td><td>' + numIn('ku-' + key, z, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table><p class="hint" style="margin-top:8px">Tage mit Status „Urlaub“ zählen als genommen. „Betrieb geschlossen“ zählt nur, wenn deine Firma ihn als Urlaub verrechnet (Einstellungen).</p>';
     // Weichen alle Monate um denselben Wert ab, liegt es fast immer am ersten Monat: Eintrittsdatum (anteiliger Anspruch) oder Resturlaub zum Start
@@ -1326,7 +1327,7 @@
     });
     $('#k-za').innerHTML = zrows.length ? '<table class="cmp"><thead><tr><th>Monat</th><th>Stunden dazu/weg</th><th>Konto neu</th><th>Konto laut Lohnzettel (End-Saldo)</th></tr></thead><tbody>' +
       zrows.map(function (r) {
-        var chk = r.zettel != null ? (Math.abs(r.zettel - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗</span>' + (Math.abs(r.zettel - r.ver) < 0.005 && r.ver !== r.saldo ? '<small class="no">Das ist die Veränderung im Monat. Trage den End-Saldo ein.</small>' : '')) : '';
+        var chk = r.zettel != null ? (Math.abs(r.zettel - r.saldo) < 0.005 ? ' <span class="ok">✓</span>' : ' <span class="no">✗ ' + (r.zettel - r.saldo > 0 ? '+' : '−') + nf2.format(Math.abs(Math.round((r.zettel - r.saldo) * 100) / 100)) + '</span>' + (Math.abs(r.zettel - r.ver) < 0.005 && r.ver !== r.saldo ? '<small class="no">Das ist die Veränderung im Monat. Trage den End-Saldo ein.</small>' : '')) : '';
         return '<tr><td>' + monKurz(+r.key.slice(0, 4), +r.key.slice(5, 7)) + '</td><td>' + (r.ver >= 0 ? '+' : '−') + fh(Math.abs(r.ver)) + ' h</td><td><strong>' + fh(r.saldo) + ' h</strong></td><td>' + numIn('kz-' + r.key, r.zettel, 'Stand') + chk + '</td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint">Noch keine Buchung. Trage im Monatsabgleich die Zeile „Zeitausgleich-Konto“ ein, wenn dein Lohnzettel Zeitausgleich-Stunden zeigt.</p>';
     korrUeberblick(); renderSonder();
@@ -2878,7 +2879,7 @@
     { id: 'beruf', k: ['beruf wechseln', 'beruf aendern', 'beruf ändern', 'berufswechsel', 'jobwechsel', 'job wechsel', 'neuer job', 'arbeitsweise', 'change job'], sel: '#s-beruf', pfad: ['Einstellungen', 'Mein Beruf'], unter: 'Meine Daten' },
     { id: 'kv', k: ['kollektivvertrag', 'kv wechseln', 'kv aendern', 'kv ändern', 'collective agreement'], sel: '#s-kv', open: true, pfad: ['Einstellungen', 'Mein Beruf', 'Mein Kollektivvertrag'], unter: 'Meine Daten' },
     { id: 'bereitschaft', k: ['bereitschaft', 'notdienst', 'rufbereitschaft', 'standby', 'on call'], sel: '#s-dienste', pfad: ['Einstellungen', 'Bereitschaft und Notdienst'], unter: 'Meine Prämien' },
-    { id: 'pausen', k: ['pausenabzug', 'automatische pause', 'pause abziehen', 'pausen automatisch'], sel: '#s-pauseauto', pfad: ['Einstellungen', 'Meine Werte', 'Automatischer Pausenabzug (Minuten pro Tag)'], unter: 'Mein Beruf' },
+    { id: 'pausen', k: ['pausenabzug', 'automatische pause', 'pause abziehen', 'pausen automatisch', 'pause ab 6 stunden', 'pause erst ab', 'pause nach 6 stunden'], sel: '#s-pauseauto', pfad: ['Einstellungen', 'Meine Werte', 'Automatischer Pausenabzug (Minuten pro Tag)'], unter: 'Mein Beruf' },
     { id: 'runden', k: ['runden', 'aufrunden', 'abrunden', 'rounding'], sel: '#s-runan', pfad: ['Einstellungen', 'Meine Werte', 'Zeiten runden'], unter: 'Mein Beruf' },
     { id: 'lohnzettel', k: ['lohnzettel', 'stimmt mein lohnzettel', 'abrechnung vergleichen', 'payslip', 'abgleich'], sel: '#m-abgleich', pfad: ['Lohnzettel', 'Stimmt mein Lohnzettel?'] },
     { id: 'schnell', k: ['sprachnachricht', 'sprache', 'sprechen', 'diktieren', 'einsprechen', 'spracheingabe', 'whatsapp', 'per text', 'textnachricht', 'schnell erfassen', 'voice', 'dictate', 'quick entry'], sel: '#sq-card', pfad: ['Erfassen', 'Schnell erfassen'] },
@@ -3356,7 +3357,7 @@
     var w = ui.wiz; if (w.monatAuto && w.lg) lohnVorschlag(w); // Wochenstunden können sich nach der Wahl der Lohngruppe geändert haben
     ins(w.mode === 'start' ? 'assistent' : 'beruf_geaendert');
     var ab = w.mode === 'start' ? '2026-01-01' : w.ab, old = w.mode === 'change' ? wAt(ab) : null, set;
-    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.zaUmr = old.zaUmr; set.pauseAutoMin = old.pauseAutoMin; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
+    if (old && old.paket === w.paket) { set = E.clone(old); } else { set = E.neuerWertesatz(w.paket, ab); if (old) { set.betriebFrei = old.betriebFrei; set.freiVerr = old.freiVerr; set.zaUmr = old.zaUmr; set.pauseAutoMin = old.pauseAutoMin; set.pauseAutoAb = old.pauseAutoAb; set.runAn = old.runAn; set.runMin = old.runMin; set.runBeg = old.runBeg; set.runEnd = old.runEnd; } }
     set.gueltigAb = ab; delete set.test; set.beruf = w.beruf; set.art = w.art || null; set.bausteine = { fahrzeug: !!w.b.fahrzeug, kunden: !!w.b.kunden, praemien: !!w.b.praemien, dienste: w.b.dienste != null ? !!w.b.dienste : ['rettung', 'pflege'].indexOf(w.beruf) >= 0, bericht: w.b.bericht != null ? !!w.b.bericht : true, homeoffice: !!w.b.homeoffice };
     set.schlechtwetter = !!w.sw; set.einstufung = String(w.einst || '').trim().slice(0, 60);
     if (!w.diaeten) set.diaeten.modell = 'aus';

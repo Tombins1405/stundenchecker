@@ -15,7 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="lib/fonts/fonts.css">
-<link rel="stylesheet" href="style.css?v=20261127061056">
+<link rel="stylesheet" href="style.css?v=20261127123853">
 </head>
 <body>
 
@@ -605,6 +605,7 @@
       <div class="field"><label for="s-uzus">Überstundenzuschlag (%)</label><input type="number" id="s-uzus" inputmode="numeric" step="5" min="0" max="300" data-path="ueberstunden.zuschlagPct" data-type="num"><small>Auf dem Lohnzettel „Überstd.-Zusch. 50 %“. Wird nur für die Euro-Schätzung gebraucht.</small></div>
 
       <div class="field"><label for="s-pauseauto">Automatischer Pausenabzug (Minuten pro Tag)</label><input type="number" id="s-pauseauto" inputmode="numeric" step="5" min="0" data-path="pauseAutoMin" data-type="numnull"><small>Viele Firmen ziehen jeden Tag automatisch eine Pause ab, zum Beispiel 60 Minuten. Das gilt nur für Tage ohne eingetragene Pause und nur für die Stunden. Die Diäten zählen weiter von Beginn bis Ende. Leer lassen, wenn bei dir nichts abgezogen wird.</small></div>
+      <div class="field"><label for="s-pauseab">Pausenabzug erst ab einer Arbeitszeit von (Stunden)</label><input type="number" id="s-pauseab" inputmode="decimal" step="0.5" min="0" data-path="pauseAutoAb" data-type="numnull" placeholder="6"><small>Leer lassen heißt: ab mehr als 6 Stunden, wie im Arbeitszeitgesetz. Kürzere Tage bleiben ohne Abzug.</small></div>
 
       <label class="check" for="s-runan"><input type="checkbox" id="s-runan" data-path="runAn" data-type="bool"><span>Zeiten runden</span></label>
       <div id="s-runbox" hidden>
@@ -809,21 +810,21 @@
 <div id="bd-dlg" class="cropov" hidden><div id="bd-conf" aria-hidden="true"></div><div class="lzbox bdbox" role="dialog" aria-modal="true" aria-labelledby="bd-h"><div id="bd-mia"></div><h3 id="bd-h"></h3><p id="bd-t"></p><div class="btns"><button type="button" class="btn primary" id="bd-ok">Danke!</button></div></div></div>
 <div id="lz-dlg" class="cropov" hidden><div class="lzbox" role="dialog" aria-modal="true" aria-labelledby="lz-h"><h3 id="lz-h"></h3><div id="lz-body"></div><div class="btns" id="lz-btns"></div></div></div>
 <script>window.__scErr = []; window.addEventListener('error', function (e) { try { __scErr.push((e.message || '?') + ' @' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); } catch (x) { } });</script>
-<script>window.APP_VERSION="20261127061056";</script>
-<script src="engine.js?v=20261127061056"></script>
+<script>window.APP_VERSION="20261127123853";</script>
+<script src="engine.js?v=20261127123853"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js?v=20261127061056"></script>
-<script src="timepicker.js?v=20261127061056"></script>
-<script src="datepicker.js?v=20261127061056"></script>
-<script src="selectpicker.js?v=20261127061056"></script>
-<script src="pdf.js?v=20261127061056"></script>
-<script src="lzread.js?v=20261127061056"></script>
-<script src="app.js?v=20261127061056"></script>
-<script src="auth.js?v=20261127061056"></script>
-<script src="sync.js?v=20261127061056"></script>
-<script src="insights.js?v=20261127061056"></script>
+<script src="firebase-config.js?v=20261127123853"></script>
+<script src="timepicker.js?v=20261127123853"></script>
+<script src="datepicker.js?v=20261127123853"></script>
+<script src="selectpicker.js?v=20261127123853"></script>
+<script src="pdf.js?v=20261127123853"></script>
+<script src="lzread.js?v=20261127123853"></script>
+<script src="app.js?v=20261127123853"></script>
+<script src="auth.js?v=20261127123853"></script>
+<script src="sync.js?v=20261127123853"></script>
+<script src="insights.js?v=20261127123853"></script>
 <div id="boot-fail" hidden style="position:fixed;inset:0;z-index:9999;background:#fff;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:sans-serif">
   <h2 style="margin:0">Die App konnte nicht richtig starten.</h2>
   <p style="margin:0;max-width:22em">Schließe die App ganz und öffne sie in einer Minute neu. Deine Daten sind sicher.</p>

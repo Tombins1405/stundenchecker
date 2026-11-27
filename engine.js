@@ -3327,7 +3327,8 @@
     if (dst && brutto + dst > 0) brutto += dst; else dst = 0;
     var pausen = pz.min;
     // Automatischer Pausenabzug (zum Beispiel 60 Minuten), wenn der Tag keine eigene Pause hat. Die Diäten zählen weiter ab Beginn bis Ende.
-    if (pz.anzahl === 0 && w && +w.pauseAutoMin > 0 && brutto > 0) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
+    var pAb = w && w.pauseAutoAb != null && w.pauseAutoAb !== '' ? +w.pauseAutoAb : 6; // Pause erst ab mehr als 6 Stunden (§ 11 AZG), sonst wie eingestellt
+    if (pz.anzahl === 0 && w && +w.pauseAutoMin > 0 && brutto > 0 && brutto > pAb * 60) pausen = Math.min(brutto, Math.round(+w.pauseAutoMin));
     var netto = brutto - pausen;
     if (netto < 0) { warn.push('Die Pausen sind länger als die Arbeitszeit.'); netto = 0; }
     return { brutto: brutto, pausen: pausen, netto: netto, warn: warn, dst: dst };
