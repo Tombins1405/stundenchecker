@@ -738,10 +738,10 @@
   // Verfallsfrist laut Kollektivvertrag (nur wo geprüft hinterlegt): schriftlich einfordern bis …
   function abwFrist(x) {
     if (abwIstB(x) || !(x.fehl > 0 || x.eur > 0 || x.kat === 'satz' || x.kat === 'firma')) return '';
-    var w = wAt(x.y + '-' + (x.m < 10 ? '0' : '') + x.m + '-01'), pk = w && E.PAKETE[w.paket], vf = pk && pk.verfall; if (!vf) return '';
+    var w = wAt(x.y + '-' + (x.m < 10 ? '0' : '') + x.m + '-01'), vf = w && E.verfallFuer && E.verfallFuer(w.paket); if (!vf) return ''; if (vf.nurUeber && x.kat !== 'ueber') return '';
     var zt = +((data.profil || {}).zahltag) || 15, y = x.y, m = x.m + 1 + vf.monate; while (m > 12) { m -= 12; y++; }
     var d = E.iso(y, m, Math.min(zt, E.daysInMonth(y, m)));
-    var t = d >= todayISO() ? abw1(abwLab('Frist laut Kollektivvertrag: bis {0} schriftlich bei der Firma einfordern, sonst verfällt der Anspruch ({1}).'), [fmtDate(d), vf.quelle])
+    var t = d >= todayISO() ? abw1(abwLab(vf.schriftlich ? 'Frist laut Kollektivvertrag: bis {0} schriftlich bei der Firma einfordern, sonst verfällt der Anspruch ({1}).' : 'Frist laut Kollektivvertrag: bis {0} bei der Firma einfordern, am besten schriftlich, sonst verfällt der Anspruch ({1}).'), [fmtDate(d), vf.quelle])
       : abw1(abwLab('Die Frist laut Kollektivvertrag ist wahrscheinlich am {0} abgelaufen ({1}). Frag die Arbeiterkammer, ob du trotzdem noch etwas tun kannst, zum Beispiel wenn die Lohnabrechnung nicht ordnungsgemäß war.'), [fmtDate(d), vf.quelle]);
     return ' <small class="abwfrist" style="display:block">⏳ ' + esc(t) + '</small>';
   }
