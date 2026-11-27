@@ -130,7 +130,10 @@
   veraltet();
   function save() {
     fremdeAenderung();
-    if (veraltet()) setTimeout(function () { try { if (typeof isDirty === 'function' && isDirty()) return; } catch (e) { } location.reload(); }, 50);
+    if (veraltet()) setTimeout(function () { // höchstens einmal in 10 Minuten und nur mit Internet, damit nie eine Neulade-Schleife entsteht
+      try { if (typeof isDirty === 'function' && isDirty()) return; if (navigator.onLine === false) return; var lr = +localStorage.getItem('stundenchecker.verReload') || 0; if (Date.now() - lr < 600000) return; localStorage.setItem('stundenchecker.verReload', String(Date.now())); } catch (e) { return; }
+      location.reload();
+    }, 50);
     applyRegion();
     try { var wr0 = JSON.stringify(data); localStorage.setItem(KEY, wr0); lastRaw = wr0; speicherOk = true; if (window.StundenSync) window.StundenSync.changed(); }
     catch (e) { speicherOk = false; $('#storage-warn').hidden = false; }
