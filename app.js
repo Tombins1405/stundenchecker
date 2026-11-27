@@ -3470,6 +3470,17 @@
   }
   // Berufe zu den Suchwörtern; was im sichtbaren Namen vorkommt, steht vorne
   function berufSuche(toks) {
+    var r = berufSuche0(toks); if (r.length) return r;
+    // nichts gefunden: auch in den Lohngruppen der Kollektivverträge suchen (z. B. „Ladnerin“ → Fleischerei, Bäckerei, Konditorei)
+    var seen = {};
+    return wzSuchListe().map(function (e, i) {
+      var b = E.BERUFE[e.id.split(':')[0]]; if (e.id === 'anderes' || !b) return null; var bk = e.id.split(':')[0];
+      var ks = (b.kvs || [b.paket]).slice(), ak = e.id.split(':')[1], akv = ak && b.arten && b.arten[ak] && b.arten[ak].kv; if (akv) ks.unshift(akv);
+      var lh = kvLgHay(ks); if (!toks.every(function (t) { return sTreffer(t, e.hay + ' ' + lh); })) return null;
+      e.score = toks.filter(function (t) { return sTreffer(t, e.hay); }).length; e.i = i; if (seen[bk] && !e.score) return null; seen[bk] = 1; return e;
+    }).filter(Boolean).sort(function (a, b) { return b.score - a.score || a.i - b.i; });
+  }
+  function berufSuche0(toks) {
     return wzSuchListe().map(function (e, i) {
       if (e.id === 'anderes' || !toks.every(function (t) { return sTreffer(t, e.hay); })) return null;
       var vis = sNorm(e.name + ' ' + e.feld); e.score = (/:lehrling$/.test(e.id) && !toks.some(function (t) { return /lehr|azubi/.test(t); }) ? -1 : 0) + toks.reduce(function (z, t) { return z + ((' ' + vis + ' ').indexOf(' ' + t + ' ') >= 0 ? 4 : vis.indexOf(t) >= 0 ? 3 : e.hay.indexOf(t) >= 0 ? 2 : sTreffer(t, vis) ? 1 : 0); }, 0); e.i = i; return e;
@@ -3477,6 +3488,8 @@
   }
   // „Mein Kollektivvertrag“: passt das Eingetippte (z. B. Ladnerin) zu einem anderen Beruf als dem eingestellten, schlage ich ihn vor
   var KV_STOP = /^(kollektivvertrag\w*|vertrag|angestellte\w*|arbeiter\w*|gewerbe\w*|lohngruppe\w*|einstufung|gruppe|stufe|beschaeftigungsgruppe|verwendungsgruppe|fuer|und|oder|nach|jahr|jahre|berufsjahr\w*|dienstjahr\w*|oesterreich|wien|tirol|steiermark|kaernten|salzburg|vorarlberg|burgenland|niederoesterreich|oberoesterreich|teilzeit|vollzeit)$/;
+  var KV_LGH = {};
+  function kvLgHay(kvs) { var heu = todayISO(); return kvs.map(function (k) { if (KV_LGH[k] == null) { var lg = E.LOHNGRUPPEN && E.lgFuer(E.LOHNGRUPPEN[k], heu); KV_LGH[k] = sNorm(((lg && lg.gruppen) || []).map(function (g) { return String(g.name || '').replace(/\/innen/g, 'innen').replace(/\/in\b/g, 'in'); }).join(' ')); } return KV_LGH[k]; }).join(' '); }
   function kvVorschlaege(f, kc) {
     var pk = kc && kc.paket, pn = pk && E.PAKETE[pk] ? E.PAKETE[pk].name : '';
     var txt = (f.name && f.name !== pn ? f.name : '') + ' ' + (f.gruppe || '');
@@ -3484,15 +3497,18 @@
     if (!toks.length || !pk) return [];
     var res = wzSuchListe().map(function (e, i) {
       var b = E.BERUFE[e.id.split(':')[0]]; if (e.id === 'anderes' || !b) return null;
-      e.kvs = (b.kvs || [b.paket]).slice(); var hay = e.hay + ' ' + sNorm(e.kvs.map(function (k) { return (E.PAKETE[k] && E.PAKETE[k].name) || ''; }).join(' '));
+      e.kvs = (b.kvs || [b.paket]).slice(); var ak = e.id.split(':')[1], akv = ak && b.arten && b.arten[ak] && b.arten[ak].kv; if (akv && e.kvs.indexOf(akv) < 0) e.kvs.unshift(akv);
+      var hay = e.hay + ' ' + sNorm(e.kvs.map(function (k) { return (E.PAKETE[k] && E.PAKETE[k].name) || ''; }).join(' ')) + ' ' + kvLgHay(e.kvs); // auch die Namen der Lohngruppen (z. B. Ausbeinler/in, Vizemischer/in, Obergärtner/in)
       e.sc = toks.filter(function (t) { return sTreffer(t, hay); }).length; e.i = i; e.lgName = '';
-      if (e.sc) { var gn = String(f.gruppe || '').match(/\d+[a-z]?/i), heu = todayISO(); // Lohngruppe mit passendem Namen und passender Nummer (z. B. „Ladnerin“ + „9“ → Lohngruppe 9: Ladner/in) zählt stark
-        e.kvs.forEach(function (k) { var lg = E.LOHNGRUPPEN && E.lgFuer(E.LOHNGRUPPEN[k], heu); ((lg && lg.gruppen) || []).forEach(function (g) { var nm = sNorm(g.name); if (!toks.some(function (t) { return sTreffer(t, nm); })) return; var nr = gn && new RegExp('(gruppe|kategorie|stufe) ' + gn[0].toLowerCase() + '\\b').test(nm); var pl = nr ? 3 : 1; if (pl > (e.lgPl || 0)) { e.lgPl = pl; e.lgName = g.name; } }); });
-        e.sc += e.lgPl || 0; }
+      if (e.sc) { var gn = String(f.gruppe || '').match(/\b(\d+[a-z]?|[ivx]+|[a-h])\b/i), heu = todayISO(); // Lohngruppe mit passendem Namen und passender Nummer (z. B. „Ladnerin“ + „9“ → Lohngruppe 9: Ladner/in) zählt stark
+        e.kvs.forEach(function (k) { var lg = E.LOHNGRUPPEN && E.lgFuer(E.LOHNGRUPPEN[k], heu); ((lg && lg.gruppen) || []).forEach(function (g) { var nm = sNorm(String(g.name || '').replace(/\/innen/g, 'innen').replace(/\/in\b/g, 'in')); if (!toks.some(function (t) { return sTreffer(t, nm); })) return; var nr = gn && new RegExp('(gruppe|kategorie|stufe|klasse) ' + gn[0].toLowerCase() + '\\b').test(nm); var pl = nr ? 3 : 1; if (pl > (e.lgPl || 0)) { e.lgPl = pl; e.lgName = g.name; e.lgKv = k; } }); });
+        e.sc += (e.lgPl || 0) + toks.filter(function (t) { return sTreffer(t, sNorm(e.hay)); }).length; } // Treffer im Namen des Berufs bzw. der Arbeitsweise zählen extra
       return e.sc ? e : null;
     }).filter(Boolean);
-    if (!res.length || res.some(function (e) { return e.kvs.indexOf(pk) >= 0; })) return []; // der eingestellte Kollektivvertrag passt schon dazu
-    return res.sort(function (a, b) { return b.sc - a.sc || a.i - b.i; }).slice(0, 4);
+    if (!res.length) return [];
+    res.sort(function (a, b) { return b.sc - a.sc || a.i - b.i; });
+    var top = res[0].sc; if (res.some(function (e) { return e.sc === top && e.kvs.indexOf(pk) >= 0 && !(e.lgPl >= 3 && e.lgKv !== pk) && !res.some(function (o) { return o.sc === top && o.lgPl >= 3 && o.lgKv !== pk; }); })) return []; // der eingestellte Kollektivvertrag passt schon am besten dazu
+    var seen = {}; return res.filter(function (e) { var bk = e.id.split(':')[0]; if (seen[bk]) return false; seen[bk] = 1; return true; }).slice(0, 4); // je Beruf nur der beste Vorschlag
   }
   // gleich beim Kollektivvertrag einsteigen (Beruf bleibt), gilt für den ganzen jetzigen Zeitraum
   function kvAendern(kc) {
@@ -3500,6 +3516,7 @@
     if (!b || w.beruf === 'anderes' || (b.arten && !(w.art && b.arten[w.art]))) return;
     w.hist = b.arten ? ['beruf', 'art', 'bausteine'] : ['beruf', 'bausteine']; w.step = 'kv'; wzRender();
   }
+  try { window.__scTest = window.__scTest || {}; window.__scTest.kvVorschlaege = function (f, kc) { return kvVorschlaege(f, kc); }; } catch (e) { }
   function kvVorschlagZeigen(f, kc) {
     var box = $('#kv-vorschlag'); if (!box) return;
     var v = kvVorschlaege(f, kc);
